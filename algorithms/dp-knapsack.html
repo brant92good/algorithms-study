@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0/1 Knapsack (DP) — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>0/1 Knapsack (DP)</h1>
+<div class="mission">Pack the most valuable load into a fixed-capacity bag when each item is <strong>all-or-nothing</strong> — by building a table of answers to smaller bags.</div>
+
+<h2>What is it?</h2>
+<p>You have a knapsack (a bag) that can carry at most <strong>M</strong> units of weight. There are <strong>n</strong> items; item <em>i</em> has weight <code>wᵢ</code> and profit (value) <code>pᵢ</code>. You want to choose a set of items whose total weight fits in the bag and whose total profit is as large as possible.</p>
+<p>The <strong>"0/1"</strong> means each item is taken <em>whole or not at all</em> — you can't slice an item to take half of it. So for every item the decision is a single yes/no: <code>xᵢ = 1</code> (take it) or <code>xᵢ = 0</code> (skip it).</p>
+<p><strong>The core idea.</strong> Look at the items one at a time and split on the <em>first decision</em>. For the very first item you either skip it (the bag is unchanged) or take it (the bag now has <code>wᵢ</code> less room, and you've banked <code>pᵢ</code> profit). Either way, what's left is the <em>same kind of problem</em> on the remaining items — a <strong>subproblem</strong>. Dynamic programming solves every subproblem once and stores the answers in a table so they're never recomputed.</p>
+<p>Write <code>gᵢ(y)</code> for the best profit obtainable using only items <em>after</em> index <code>i</code> (that is, items <code>i+1 … n</code>) with a bag of capacity <code>y</code>. Splitting on the next item gives the recurrence:</p>
+<p style="text-align:center"><code>gᵢ(y) = max{ <b>g<sub>i+1</sub>(y)</b> ,&nbsp; <b>g<sub>i+1</sub>(y − w<sub>i+1</sub>) + p<sub>i+1</sub></b> }</code></p>
+<p>The left term is <strong>skip</strong> item <code>i+1</code>; the right term is <strong>take</strong> it (only allowed when <code>y ≥ w<sub>i+1</sub></code>). The base case is <code>gₙ(y) = 0</code> for every <code>y</code> (no items left ⇒ no profit), and the final answer is <code>g₀(M)</code>.</p>
+<p><strong>Tiny example.</strong> Items <code>(w,p)</code> = (1,1), (3,4), (4,5), (5,7) and capacity <code>M = 7</code>. We build a table of <code>gᵢ(y)</code>, one row per <code>i</code> (from the empty base row <code>g₄</code> up to <code>g₀</code>) and one column per capacity <code>y = 0…7</code>.</p>
+
+<h2>Watch it run</h2>
+<p>Each row is computed from the row <em>below</em> it. The <span style="color:var(--acc)"><strong>gold</strong></span> cell is the one being filled; the <span style="color:var(--amber,#d49a00)"><strong>amber</strong></span> cells are its two sources — <em>skip</em> = same column one row down, <em>take</em> = column <code>y−w</code> one row down, plus <code>p</code>.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(nM)</b></span>
+  <span class="chip">Space: <b>O(nM)</b></span>
+  <span class="chip">Class: <b>pseudo-polynomial</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The recurrence compares two futures: skip item i+1 (best with the same capacity y, gᵢ₊₁(y) = 4) versus take it (its profit p plus the best for the leftover capacity y−w, gᵢ₊₁(7−3)+4 = gᵢ₊₁(4)+4 = 5+4 = 9). The optimum is the larger, max(4, 9) = 9. The trap is forgetting to add p when taking, or forgetting that taking shrinks the capacity to y−w.">
+  <div class="q">Capacity left is y = 7 and the next item has weight 3, profit 4. From the row below you read gᵢ₊₁(7) = 4 and gᵢ₊₁(4) = 5. What is gᵢ(7)?</div>
+  <button class="opt">7</button>
+  <button class="opt">9</button>
+  <button class="opt">5</button>
+  <button class="opt">4</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="gₙ(y) is the best profit when no items remain (indices after n are empty), for any capacity y — and with nothing left to take, that profit is 0. It is not the capacity M, not p₁, and not −∞: the empty bag is feasible and worth exactly 0, which is what every recurrence step builds up from.">
+  <div class="q">In gᵢ(y) = max{ gᵢ₊₁(y), gᵢ₊₁(y−wᵢ₊₁)+pᵢ₊₁ }, what is the base case gₙ(y) for every capacity y?</div>
+  <button class="opt">M</button>
+  <button class="opt">p₁</button>
+  <button class="opt">0</button>
+  <button class="opt">−∞ (no items, so infeasible)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-knapsack">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em> (dynamic programming; the 0/1 knapsack table). This page uses the course's forward-formulation recurrence <code>gᵢ(y) = max{ g<sub>i+1</sub>(y), g<sub>i+1</sub>(y−w<sub>i+1</sub>) + p<sub>i+1</sub> }</code> with base <code>gₙ(y)=0</code>, solved backward through the index to reach <code>g₀(M)</code>.</p>
+<div class="note"><strong>Next in this bucket:</strong> Resource Allocation — distribute <em>m</em> resources across <em>n</em> projects to maximize profit, modeled as a longest path through a multistage graph.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// items 1..4 (1-indexed to match w_{i+1}, p_{i+1} in the recurrence)
+const W = [null,1,3,4,5], P = [null,1,4,5,7], n = 4, M = 7;
+const caps = [0,1,2,3,4,5,6,7];
+
+// g[i][y] for i = 0..n, y = 0..M  (g[n] is the all-zero base row)
+const g = []; for (let i=0;i<=n;i++) g.push(new Array(M+1).fill(0));
+for (let i=n-1;i>=0;i--) for (let y=0;y<=M;y++){
+  const skip = g[i+1][y];
+  const take = (y - W[i+1] >= 0) ? g[i+1][y - W[i+1]] + P[i+1] : -1;
+  g[i][y] = Math.max(skip, take);
+}
+
+// table layout: row 0 = g0 (top) ... row n = gn (bottom)
+const rowLabels = []; for (let i=0;i<=n;i++) rowLabels.push('g'+i);
+const colLabels = caps.map(y => 'y='+y);
+
+// build the matrix shown at a given "stage": rows for i >= revealFrom are shown, others null
+function matrixUpTo(revealFrom){
+  const m = [];
+  for (let i=0;i<=n;i++){
+    const row = [];
+    for (let y=0;y<=M;y++) row.push(i >= revealFrom ? g[i][y] : null);
+    m.push(row);
+  }
+  return m;
+}
+
+// frames: revealFrom = which g-index is the topmost revealed row.
+// act = [rowIdx,colIdx] current cell (rowIdx is the matrix row = the g-index).
+// dep = list of [rowIdx,colIdx] source cells (always in the row below).
+const frames = [];
+
+frames.push({
+  reveal: n, act:null, dep:[],
+  cap: `Base row <b>g₄(y) = 0</b> for every capacity — no items left means no profit. We build upward from here.`
+});
+
+frames.push({
+  reveal: 3, act:[3,7], dep:[[4,7],[4,2]],
+  cap: `Fill <b>g₃(7)</b> — only item 4 (w=5, p=7) is available. <b>skip</b>: g₄(7)=0. <b>take</b>: g₄(7−5)+7 = g₄(2)+7 = 7. max(0,7)=<b>7</b>.`
+});
+
+frames.push({
+  reveal: 2, act:[2,4], dep:[[3,4],[3,0]],
+  cap: `Row <b>g₂</b> adds item 3 (w=4, p=5). At y=4 — <b>skip</b>: g₃(4)=0. <b>take</b>: g₃(4−4)+5 = g₃(0)+5 = 5. max(0,5)=<b>5</b>.`
+});
+
+frames.push({
+  reveal: 1, act:[1,7], dep:[[2,7],[2,4]],
+  cap: `Row <b>g₁</b> adds item 2 (w=3, p=4). At y=7 — <b>skip</b>: g₂(7)=7. <b>take</b>: g₂(7−3)+4 = g₂(4)+4 = 5+4 = 9. max(7,9)=<b>9</b>.`
+});
+
+frames.push({
+  reveal: 0, act:[0,7], dep:[[1,7],[1,6]],
+  cap: `Top row <b>g₀</b> adds item 1 (w=1, p=1). At the full bag y=7 — <b>skip</b>: g₁(7)=9. <b>take</b>: g₁(7−1)+1 = g₁(6)+1 = 7+1 = 8. max(9,8)=<b>9</b>.`
+});
+
+frames.push({
+  reveal: 0, act:[0,7], dep:[],
+  cap: `<b>Answer: g₀(7) = 9.</b> The table is complete; the top-row cell g₀(M) holds the optimum profit for the whole problem.`
+});
+
+frames.push({
+  reveal: 0, act:null, dep:[], path:[[0,7],[1,7],[2,4],[3,0]],
+  cap: `<b>Which items?</b> Trace the choices: skip item 1, take item 2 (now y=4), take item 3 (now y=0), skip item 4. Load = items 2+3, weight 3+4=7, profit 4+5=<b>9</b>.`
+});
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const m = matrixUpTo(f.reveal);
+    const cls = {};
+    if (f.dep) f.dep.forEach(([r,c]) => { cls[r+','+c] = 'dep'; });
+    if (f.act) cls[f.act[0]+','+f.act[1]] = 'act';
+    if (f.path) f.path.forEach(([r,c]) => { cls[r+','+c] = 'path'; });
+    stage.innerHTML = ZOO.grid(m, { rows: rowLabels, cols: colLabels, cls });
+  }
+});
+</script>
+</body></html>

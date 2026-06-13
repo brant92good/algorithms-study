@@ -16,57 +16,45 @@
   <div class="hero">
     <div class="kicker">One algorithm per session · step through each one</div>
     <h1>🧬 Algorithm Zoo</h1>
-    <p class="lede">A guided tour of the classic algorithms, grouped by the <em>idea</em> behind them. Each card is a 3-minute interactive session: see what it does, watch it run step by step, answer two questions, mark it learned.</p>
+    <p class="lede">Every algorithm the course slides teach (Ch 6 – 7), one bite-size interactive session each: see what it does, watch it run step by step on the slide's own example, answer two questions, mark it learned. These complement the deeper <a href="../index.html#lessons">finals lessons</a> — the Zoo is for breadth, the lessons for depth.</p>
     <div class="progwrap"><div class="bar"></div></div>
     <div class="countdown" id="prog-count">0 / 0 learned</div>
   </div>
 
   <div class="bucket">
-    <h2>🪓 Divide &amp; Conquer <span class="tagline">— split the problem, solve the pieces, combine</span></h2>
+    <h2>🔎 Searching Strategies <span class="tagline">— Chapter 6: explore a solution tree</span></h2>
     <div class="zgrid">
-      <a class="algo" data-id="dc-binary-search" href="dc-binary-search.html"><span class="tick">✓</span><div class="t">Binary Search</div><div class="d">Halve a sorted range each step → O(log n).</div></a>
-      <a class="algo" data-id="dc-merge-sort" href="dc-merge-sort.html"><span class="tick">✓</span><div class="t">Merge Sort</div><div class="d">Split in half, sort each, merge back → O(n log n).</div></a>
-      <a class="algo" data-id="dc-quicksort" href="dc-quicksort.html"><span class="tick">✓</span><div class="t">Quicksort</div><div class="d">Partition around a pivot, recurse on each side.</div></a>
+      <a class="algo" data-id="search-dfs" href="search-dfs.html"><span class="tick">✓</span><div class="t">Depth-First Search</div><div class="d">Dive deep with a stack; backtrack on a dead end.</div></a>
+      <a class="algo" data-id="search-bfs" href="search-bfs.html"><span class="tick">✓</span><div class="t">Breadth-First Search</div><div class="d">Same tree, a queue, level by level.</div></a>
+      <a class="algo" data-id="search-hill-climbing" href="search-hill-climbing.html"><span class="tick">✓</span><div class="t">Hill Climbing</div><div class="d">Greedy local choice via f(n)=d(n)+w(n) — can get stuck.</div></a>
+      <a class="algo" data-id="search-best-first" href="search-best-first.html"><span class="tick">✓</span><div class="t">Best-First Search</div><div class="d">Pick the best node among ALL open ones — global view.</div></a>
+      <a class="algo" data-id="search-branch-and-bound" href="search-branch-and-bound.html"><span class="tick">✓</span><div class="t">Branch-and-Bound</div><div class="d">Add a bound that prunes losing branches → optimization (TSP).</div></a>
+      <a class="algo" data-id="search-astar" href="search-astar.html"><span class="tick">✓</span><div class="t">A* Algorithm</div><div class="d">f=g+h with admissible h≤h* → first goal popped is optimal.</div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>🤑 Greedy <span class="tagline">— take the locally best choice and never look back</span></h2>
+    <h2>✂️ Prune-and-Search <span class="tagline">— discard a constant fraction each round → O(n)</span></h2>
     <div class="zgrid">
-      <a class="algo" data-id="gr-huffman" href="gr-huffman.html"><span class="tick">✓</span><div class="t">Huffman Coding</div><div class="d">Merge the two rarest symbols repeatedly → optimal prefix code.</div></a>
-      <a class="algo" data-id="gr-kruskal-mst" href="gr-kruskal-mst.html"><span class="tick">✓</span><div class="t">Kruskal's MST</div><div class="d">Add the cheapest edge that doesn't make a cycle.</div></a>
-      <a class="algo" data-id="gr-dijkstra" href="gr-dijkstra.html"><span class="tick">✓</span><div class="t">Dijkstra</div><div class="d">Settle the nearest unvisited node, relax its edges.</div></a>
+      <a class="algo" data-id="prune-selection" href="prune-selection.html"><span class="tick">✓</span><div class="t">Selection (Median of Medians)</div><div class="d">k-th smallest in linear time; groups of 5, ≥n/4 pruned.</div></a>
+      <a class="algo" data-id="prune-linear-programming" href="prune-linear-programming.html"><span class="tick">✓</span><div class="t">2-Variable Linear Programming</div><div class="d">The F(x) upper envelope; slope test prunes constraints.</div></a>
+      <a class="algo" data-id="prune-1-center" href="prune-1-center.html"><span class="tick">✓</span><div class="t">1-Center Problem</div><div class="d">Smallest enclosing circle; prune ~n/16 each round.</div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>🧩 Dynamic Programming <span class="tagline">— solve small subproblems once, reuse them</span></h2>
+    <h2>🧩 Dynamic Programming <span class="tagline">— Chapter 7: solve subproblems once, reuse them</span></h2>
     <div class="zgrid">
-      <a class="algo" data-id="dp-fibonacci-memo" href="dp-fibonacci-memo.html"><span class="tick">✓</span><div class="t">Fibonacci &amp; Memoization</div><div class="d">Cache subresults → exponential becomes linear.</div></a>
-      <a class="algo" data-id="dp-knapsack01" href="dp-knapsack01.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Fill a value table over items × capacity.</div></a>
-      <a class="algo" data-id="dp-edit-distance" href="dp-edit-distance.html"><span class="tick">✓</span><div class="t">Edit Distance</div><div class="d">Cheapest edits to turn one string into another.</div></a>
+      <a class="algo" data-id="dp-multistage-graph" href="dp-multistage-graph.html"><span class="tick">✓</span><div class="t">Multistage Graph</div><div class="d">Shortest path by forward/backward reasoning; d(S,T)=9.</div></a>
+      <a class="algo" data-id="dp-knapsack" href="dp-knapsack.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Fill gᵢ(y) = max{ skip, take }.</div></a>
+      <a class="algo" data-id="dp-resource-allocation" href="dp-resource-allocation.html"><span class="tick">✓</span><div class="t">Resource Allocation</div><div class="d">Split units across projects to maximize profit.</div></a>
+      <a class="algo" data-id="dp-tsp" href="dp-tsp.html"><span class="tick">✓</span><div class="t">TSP (Held–Karp)</div><div class="d">State = (current city, visited set); O(n²·2ⁿ).</div></a>
+      <a class="algo" data-id="dp-lcs" href="dp-lcs.html"><span class="tick">✓</span><div class="t">Longest Common Subsequence</div><div class="d">Match → diag+1, else max(up,left); "acad".</div></a>
+      <a class="algo" data-id="dp-obst" href="dp-obst.html"><span class="tick">✓</span><div class="t">Optimal Binary Search Tree</div><div class="d">Try each key as root; frequent keys sit shallow.</div></a>
     </div>
   </div>
 
-  <div class="bucket">
-    <h2>🕸️ Graph Traversal <span class="tagline">— systematically visit every node</span></h2>
-    <div class="zgrid">
-      <a class="algo" data-id="gt-bfs" href="gt-bfs.html"><span class="tick">✓</span><div class="t">Breadth-First Search</div><div class="d">Explore level by level with a queue.</div></a>
-      <a class="algo" data-id="gt-dfs" href="gt-dfs.html"><span class="tick">✓</span><div class="t">Depth-First Search</div><div class="d">Dive deep with a stack, backtrack on dead ends.</div></a>
-      <a class="algo" data-id="gt-topo-sort" href="gt-topo-sort.html"><span class="tick">✓</span><div class="t">Topological Sort</div><div class="d">Order a DAG by repeatedly removing in-degree-0 nodes.</div></a>
-    </div>
-  </div>
-
-  <div class="bucket">
-    <h2>🔙 Backtracking <span class="tagline">— build a candidate, abandon it the moment it fails</span></h2>
-    <div class="zgrid">
-      <a class="algo" data-id="bt-n-queens" href="bt-n-queens.html"><span class="tick">✓</span><div class="t">N-Queens</div><div class="d">Place queens row by row; retreat on a conflict.</div></a>
-      <a class="algo" data-id="bt-subset-sum" href="bt-subset-sum.html"><span class="tick">✓</span><div class="t">Subset Sum</div><div class="d">In/out decisions down a tree, prune when over target.</div></a>
-      <a class="algo" data-id="bt-permutations" href="bt-permutations.html"><span class="tick">✓</span><div class="t">Permutations</div><div class="d">Fix one element at a time; recurse on the rest.</div></a>
-    </div>
-  </div>
-
-  <div class="note" style="margin-top:2rem"><strong>How to use:</strong> pick any bucket — order doesn't matter. Do one card, step the animation to the end, take the two questions. Your "learned" ticks are saved on this device and fill the bar above. These complement the deeper <a href="../index.html#lessons">finals lessons</a>; the Zoo is for breadth, the lessons for depth.</div>
+  <div class="note" style="margin-top:2rem"><strong>Scope:</strong> these are exactly the algorithms introduced in the course decks (Ch 6 Searching Strategies, Prune-and-Search, Ch 7 Dynamic Programming). <strong>NP-Completeness (Ch 8)</strong> is theory rather than an algorithm to step through — it's covered in <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device and fill the bar above.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

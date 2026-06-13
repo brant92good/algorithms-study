@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimal Binary Search Tree — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Optimal Binary Search Tree</h1>
+<div class="mission">Given keys you look up at different rates, build the binary search tree where the <strong>average</strong> lookup is as cheap as possible — by trying every key as the root and remembering the best subtrees.</div>
+
+<h2>What is it?</h2>
+<p>A <strong>binary search tree (BST)</strong> stores sorted keys so you can find one by comparing: start at the <strong>root</strong> (the top node), go left if your target is smaller, right if larger, and repeat. The number of comparisons to reach a key equals its <strong>level</strong> — the root is level 1, its children level 2, and so on. So the <strong>search cost</strong> of a key is just how deep it sits.</p>
+<p>Now suppose some keys are searched far more often than others. The <strong>expected cost</strong> of the whole tree is each key's level weighted by how often it is searched (its probability/weight). The same set of keys can be arranged into many valid BSTs, and they are <em>not</em> equally good: putting a <strong>frequently-searched key near the root</strong> makes most lookups short, while burying a popular key deep makes the average lookup expensive.</p>
+<p>The <strong>optimal BST</strong> problem: given sorted keys <code>a₁ &lt; a₂ &lt; … &lt; aₙ</code> with weights, find the arrangement with the smallest expected cost. We solve it with dynamic programming.</p>
+<p><strong>The core idea — "try every key as the root."</strong> Whatever the optimal tree looks like, <em>some</em> key <code>aₖ</code> sits at its root. Everything smaller than <code>aₖ</code> forms its left subtree; everything larger forms its right subtree — and by the principle of optimality, <em>those subtrees must themselves be optimal</em>. So if we write <code>C(i,j)</code> for the cost of the best tree over keys <code>aᵢ…aⱼ</code>:</p>
+<p style="text-align:center"><code>C(i,j) = min<sub>i≤k≤j</sub> [ C(i, k−1) + C(k+1, j) + W(i,j) ]</code></p>
+<p>Picking root <code>aₖ</code> costs the best left subtree <code>C(i,k−1)</code> plus the best right subtree <code>C(k+1,j)</code> plus <code>W(i,j)</code>, the total weight of every node in this range. Why add <code>W(i,j)</code>? Because giving the subtree a root pushes <em>every</em> node in it one level deeper, so the whole range pays one extra comparison each. We try every <code>k</code> and keep the cheapest.</p>
+<p><strong>Tiny concrete example</strong> (the set used below): keys <code>3, 7, 9, 12</code>. We fill a table of <code>C(i,j)</code> values, smallest ranges first, so that by the time we ask "what is the best tree over all four keys?", every sub-answer it needs is already sitting in the table.</p>
+
+<h2>Watch it run</h2>
+<p>Keys <code>a₁..a₄ = 3, 7, 9, 12</code>. Weights: search-weights <code>P = (3, 3, 1, 1)</code> and gap-weights <code>Q = (2, 3, 1, 1, 1)</code>, so <code>W(i,j)</code> = the sum of all P's and Q's covered by range <code>i…j</code>. The grid is the cost table <code>C(i,j)</code> (row <code>i</code>, column <code>j</code>). The diagonal is the empty base case <code>0</code>. We fill by <strong>increasing interval length</strong> <code>j−i</code> — each diagonal sweep. Gold = the cell being computed (<code>act</code>); blue = the two subproblem cells it combines (<code>dep</code>).</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(n³)</b></span>
+  <span class="chip">Space: <b>O(n²)</b></span>
+  <span class="chip">Builds: <b>min-cost BST</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="C(i,j) tries every key in the range as the root. For each candidate root aₖ, the cost is the best left subtree C(i,k−1) plus the best right subtree C(k+1,j) plus the range's total weight W(i,j) — the keys split exactly into 'smaller than the root' and 'larger than the root'. You take the minimum over all roots, not a fixed middle one, and you never multiply the subtree costs.">
+  <div class="q">To compute <code>C(2,4)</code> — the best tree over keys <code>7, 9, 12</code> — which formula does the algorithm use?</div>
+  <button class="opt">average of C(2,3) and C(3,4)</button>
+  <button class="opt">min over root k of [ C(2,k−1) + C(k+1,4) + W(2,4) ]</button>
+  <button class="opt">always pick the middle key as root, then add its two subtrees</button>
+  <button class="opt">C(2,3) × C(3,4) + W(2,4)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="A key's contribution to the expected cost is its weight times its level (depth). Placing a heavily-searched key near the root gives it a small level, so its large weight is multiplied by a small number — cheap. Bury it deep and that large weight gets multiplied by a big level, inflating the average. The tree's shape (balance, total node count) does not change a key's weight, only the level it is multiplied by.">
+  <div class="q">Two keys: <code>X</code> searched 100×, <code>Y</code> searched 2×. Why does the optimal tree tend to put <code>X</code> at or near the root?</div>
+  <button class="opt">X's big weight is multiplied by its level, so a small level keeps the average low</button>
+  <button class="opt">the root must always hold the numerically largest key</button>
+  <button class="opt">keeping X shallow makes the tree perfectly balanced</button>
+  <button class="opt">deeper keys are searched faster, so rare keys belong at the top</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-obst">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, §15.5 "Optimal binary search trees" (dynamic-programming chapter) — the same root-splitting recurrence and the <code>O(n³)</code> table fill. The recurrence <code>C(i,j)=min_k[C(i,k−1)+C(k+1,j)+W(i,j)]</code>, filled by increasing interval length, and the <code>O(n³)</code> bound (for each of the <code>n−m</code> cells at interval length <code>m</code>, trying <code>m+1</code> roots) come straight from this chapter.</p>
+<div class="note"><strong>Last in this bucket.</strong> That wraps the Dynamic Programming cards. Head back to the <a href="index.html">🧬 Algorithm Zoo map</a> to see your progress, or jump to the finals DP lessons to drill the recurrences end-to-end.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+/* ---- precompute the OBST DP for keys 3,7,9,12 ---- */
+const keys=[3,7,9,12];
+const P=[null,3,3,1,1];          // P1..P4  (successful-search weights)
+const Q=[2,3,1,1,1];             // Q0..Q4  (gap weights)
+const n=4;
+const W=(i,j)=>{let s=Q[i-1];for(let l=i;l<=j;l++)s+=P[l]+Q[l];return s;};
+// C[i][j] with empty base C[i][i-1]=0; R = best root
+const C=[],R=[];
+for(let i=0;i<=n+1;i++){C.push([]);R.push([]);}
+for(let i=1;i<=n+1;i++)C[i][i-1]=0;
+for(let len=1;len<=n;len++)for(let i=1;i+len-1<=n;i++){
+  const j=i+len-1;let best=Infinity,br=-1;
+  for(let k=i;k<=j;k++){const v=C[i][k-1]+C[k+1][j]+W(i,j);if(v<best){best=v;br=k;}}
+  C[i][j]=best;R[i][j]=br;
+}
+
+/* ---- snapshot helper: build a display matrix of what is "known so far" ---- */
+// We render a 4x4 grid where cell (r,c) shows C(r+1, c+1) for c+1 >= r+1 (upper triangle),
+// the diagonal-below base 0 is shown on the main diagonal label, blanks elsewhere.
+function gridFor(known){ // known = set of "i,j" strings already filled
+  const m=[];
+  for(let r=0;r<n;r++){m.push([]);for(let c=0;c<n;c++){
+    const i=r+1,j=c+1;
+    if(j<i){ m[r].push(null); }                         // below diagonal: unused
+    else if(known.has(i+','+j)) m[r].push(String(C[i][j]));
+    else m[r].push(null);
+  }}
+  return m;
+}
+const cols=keys.map((k,c)=>'j='+(c+1)), rows=keys.map((k,r)=>'i='+(r+1));
+
+/* ---- build frames ---- */
+const frames=[];
+const known=new Set();
+
+frames.push({
+  matrix:gridFor(known), act:[], dep:[],
+  cap:`The table holds <code>C(i,j)</code> = cost of the best BST over keys <code>a${'ᵢ'}…a${'ⱼ'}</code>. Empty ranges cost <b>0</b> (the base case, just below the diagonal). We fill <b>by interval length</b> j−i, smallest first.`
+});
+
+// length 1 (single keys): C(i,i) = W(i,i) — one frame, fill all four
+['1,1','2,2','3,3','4,4'].forEach(s=>known.add(s));
+frames.push({
+  matrix:gridFor(known), act:['0,0','1,1','2,2','3,3'], dep:[],
+  cap:`<b>Interval length 0</b> (single keys). A one-key tree is just its root, so <code>C(i,i)=W(i,i)</code>: <b>${C[1][1]}, ${C[2][2]}, ${C[3][3]}, ${C[4][4]}</b>. No sub-choice yet — there is only one possible root.`
+});
+
+// length 2: C(1,2), C(2,3), C(3,4) — show the combine for C(1,2) in detail, then fill rest
+known.add('1,2');
+frames.push({
+  matrix:gridFor(known), act:['0,1'], dep:['0,0','1,1'],
+  cap:`<b>Length 1.</b> <code>C(1,2)</code> over keys 3,7: try root 3 (left empty, right=C(2,2)) vs root 7 (left=C(1,1), right empty), each + W(1,2)=${W(1,2)}. Best = <b>${C[1][2]}</b>, root <b>${keys[R[1][2]-1]}</b>. Blue = the two subproblems it reads.`
+});
+known.add('2,3'); known.add('3,4');
+frames.push({
+  matrix:gridFor(known), act:['1,2','2,3'], dep:[],
+  cap:`Same sweep finishes <code>C(2,3)=${C[2][3]}</code> (keys 7,9) and <code>C(3,4)=${C[3][4]}</code> (keys 9,12). Every length-1 range now solved.`
+});
+
+// length 3: C(1,3), C(2,4)
+known.add('1,3');
+frames.push({
+  matrix:gridFor(known), act:['0,2'], dep:['1,2','0,0','2,2','0,1'],
+  cap:`<b>Length 2.</b> <code>C(1,3)</code> over 3,7,9: try each as root — root 3 → C(2,3); root 7 → C(1,1)+C(3,3); root 9 → C(1,2) — each + W(1,3)=${W(1,3)}. Best = <b>${C[1][3]}</b>, root <b>${keys[R[1][3]-1]}</b>.`
+});
+known.add('2,4');
+frames.push({
+  matrix:gridFor(known), act:['1,3'], dep:['2,3','1,1','3,3','1,2'],
+  cap:`<code>C(2,4)</code> over 7,9,12 the same way: best = <b>${C[2][4]}</b>, root <b>${keys[R[2][4]-1]}</b>. Notice it reuses smaller answers we already stored — that is the DP win.`
+});
+
+// length 4: C(1,4) — the full root comparison
+known.add('1,4');
+frames.push({
+  matrix:gridFor(known), act:['0,3'], dep:['1,3','0,0','2,3','0,1','3,3','0,2'],
+  cap:`<b>Length 3 — the whole tree.</b> <code>C(1,4)</code> tries all four roots (+W(1,4)=${W(1,4)} each):<br>
+  root 3 → 0+C(2,4)= ${0+C[2][4]+W(1,4)}; <b>root 7 → C(1,1)+C(3,4)= ${C[1][1]+C[3][4]+W(1,4)}</b>; root 9 → C(1,2)+C(4,4)= ${C[1][2]+C[4][4]+W(1,4)}; root 12 → C(1,3)+0= ${C[1][3]+0+W(1,4)}.<br>
+  Minimum = <b>${C[1][4]}</b> at root <b>${keys[R[1][4]-1]}</b>.`
+});
+
+// final: the tree
+frames.push({
+  tree:true,
+  cap:`Reading the stored best-roots back out gives the optimal BST: root <b>7</b>, with <b>3</b> on the left and <b>9</b> (whose right child is <b>12</b>) on the right. Expected cost <b>${C[1][4]}</b> — the heavy keys 3 and 7 sit shallow.`
+});
+
+const ascii =
+`        ( 7 )          root, level 1
+       /     \\
+    ( 3 )   ( 9 )       level 2
+                \\
+              ( 12 )    level 3`;
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption:f=>f.cap,
+  render:(f,stage)=>{
+    if(f.tree){ stage.innerHTML = `<div class="atree">${ascii}</div>`; return; }
+    const cls={};
+    (f.dep||[]).forEach(k=>cls[k]='dep');
+    (f.act||[]).forEach(k=>cls[k]='act');   // act wins over dep
+    stage.innerHTML = ZOO.grid(f.matrix,{rows,cols,cls,blank:'·'});
+  }
+});
+</script>
+</body></html>

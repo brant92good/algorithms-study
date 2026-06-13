@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breadth-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Breadth-First Search</h1>
+<div class="mission">Search the very same solution tree as DFS — but sweep it <strong>level by level</strong>, shallowest nodes first, steered by a <strong>queue</strong> instead of a stack.</div>
+
+<h2>What is it?</h2>
+<p>Lots of hard problems can be rephrased as "search a <strong>tree of partial answers</strong>." Each node is a half-built decision; its children are the ways to extend it one more step. The job of a <em>search strategy</em> is to pick the <strong>order</strong> in which you visit those nodes.</p>
+<p>We use the <strong>sum-of-subsets</strong> problem as our tree. Given a set <code>S = {7, 5, 1, 2, 10}</code> and a <strong>target</strong> of <code>9</code>, find a subset whose elements add up to 9. We build a tree by deciding, one element at a time, whether to <em>add</em> it to a running sum. Each node holds that running sum; a node equal to 9 is a <strong>goal</strong>, and a node already over 9 is a dead end (prune it).</p>
+<p><strong>Depth-first search (DFS)</strong> dives straight down one branch to the bottom, then backtracks — it is guided by a <strong>stack</strong> (last-in, first-out). <strong>Breadth-first search (BFS)</strong> is its mirror image: it explores <strong>every node at one depth before touching the next depth</strong>, so it fans out across the whole tree like a ripple. The only machinery that changes is the container: BFS uses a <strong>queue</strong> — <strong>FIFO</strong>, first-in-first-out. You take nodes off the <em>front</em> in the same order you added them, which is exactly what makes shallow nodes come out before deep ones.</p>
+<p><strong>The BFS loop:</strong> put the root in the queue; repeatedly remove the <em>front</em> node, and if it is a goal stop, otherwise add its children to the <em>back</em>. Because children always go to the back, a whole level finishes before the next begins.</p>
+
+<h2>Watch it run</h2>
+<p>Below is the solution tree for <code>S = {7, 5, 1, 2, 10}</code>, target <strong>9</strong>. Each node is a running sum; <code>+n</code> on an edge means "add that element." Highlighted nodes are the level BFS is visiting right now; the <strong>Queue</strong> strip shows the FIFO order (front on the left). Watch it finish each level top-to-bottom before descending.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Container: <b>Queue (FIFO)</b></span>
+  <span class="chip">Order: <b>by depth / level</b></span>
+  <span class="chip">Counterpart of: <b>DFS (stack)</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="BFS removes nodes from the front in the same order they were added (first-in-first-out), so children added to the back always wait behind their whole generation. That FIFO queue is exactly what produces level-by-level order. DFS instead uses a stack (LIFO), popping the most-recently-added node so it plunges deep first.">
+  <div class="q">BFS and DFS search the identical tree but in different orders. Which data structure gives BFS its level-by-level behavior, and how does it differ from DFS?</div>
+  <button class="opt">a stack — it pops the newest node, so siblings come out together</button>
+  <button class="opt">a queue (FIFO) — DFS instead uses a stack (LIFO)</button>
+  <button class="opt">a sorted priority queue ordered by node value</button>
+  <button class="opt">no container at all — BFS just recurses like DFS</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="'Breadth-first' means you completely finish one depth before descending: every node at depth d is expanded before any node at depth d+1. So with the root at depth 1 and three children at depth 2, all three children are visited before any grandchild. Picking 'best' first is best-first search; diving down one branch is DFS.">
+  <div class="q">A tree has a root (depth 1) with three children (depth 2), each child having two children (depth 3). In a breadth-first search, what is true about the visiting order?</div>
+  <button class="opt">it dives down the leftmost branch to depth 3, then backtracks</button>
+  <button class="opt">it visits whichever node has the smallest running sum next</button>
+  <button class="opt">all three depth-2 children are visited before any depth-3 node</button>
+  <button class="opt">it visits one node per depth, alternating between branches</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="search-bfs">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (searching strategies). BFS is the FIFO counterpart of the DFS in Fig. 6-11 — same sum-of-subsets tree, expanded level by level instead of depth-first. (See also CLRS, <em>Introduction to Algorithms</em>, breadth-first search.)</p>
+<div class="note"><strong>Next in this bucket:</strong> Hill Climbing — a greedy variant of DFS that always steps to the locally best-looking child.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// Sum-of-subsets solution tree (Fig. 6-11), S = {7,5,1,2,10}, target 9.
+// We build the same tree DFS uses, but walk it BREADTH-FIRST (level by level) with a FIFO queue.
+// Nodes hold the running sum. A node == 9 is a Goal; a node > 9 is a dead end (pruned, marked x).
+const T = 9;
+// Tree (hand-built to mirror the note's Fig. 6-11 shape, drawn level by level):
+//            0                 (depth 1, root)
+//        +7 / \ +5
+//          7    5              (depth 2)
+//    +1 / +2 \      \ +1
+//      8    9*       6         (depth 3)   9 = Goal
+//   +10/ \+2      \ +2
+//     18   10      8           (depth 4)   18,10 over 9 -> dead ends (x)
+// nodes keyed by id; lvl = depth.
+const nodes = {
+  r:  {sum:0,  lvl:1},
+  a:  {sum:7,  lvl:2}, b:  {sum:5,  lvl:2},
+  c:  {sum:8,  lvl:3}, d:  {sum:9,  lvl:3, goal:true}, e:{sum:6, lvl:3},
+  f:  {sum:18, lvl:4, dead:true}, g:{sum:10, lvl:4, dead:true}, h:{sum:8, lvl:4}
+};
+// queue contents (front-first) as BFS would hold them, one snapshot per frame.
+// We expand: r -> {a,b}; a -> {c,d}; b -> {e}; c -> {f,g}; e -> {h}; goal d ends it.
+const frames = [
+  {lvl:1, hot:['r'],         queue:['0'],
+   cap:`Start: put the root (sum <b>0</b>) in the <b>queue</b>. Depth 1 only.`},
+  {lvl:2, hot:['a','b'],     queue:['7','5'],
+   cap:`Pop <b>0</b> from the front; add its children to the back → queue <b>[7, 5]</b>. Now the whole of depth 2 is queued — BFS will finish this level before going deeper.`},
+  {lvl:2, hot:['a','b'],     queue:['5','8','9'],
+   cap:`Pop <b>7</b> (front). Add <b>+1→8</b> and <b>+2→9</b> to the <b>back</b>: queue <b>[5, 8, 9]</b>. Note 5 (still depth 2) stays ahead of the new depth-3 nodes.`},
+  {lvl:3, hot:['c','d','e'], queue:['8','9','6'],
+   cap:`Pop <b>5</b> (front). Add <b>+1→6</b> to the back: queue <b>[8, 9, 6]</b>. Depth 2 is now fully done; the queue holds exactly depth 3.`},
+  {lvl:3, hot:['c','d','e'], queue:['9','6','18','10'],
+   cap:`Pop <b>8</b>. Children <b>+10→18</b> and <b>+2→10</b> both exceed target 9 → dead ends (×), but they still queue at the back: <b>[9, 6, 18, 10]</b>.`},
+  {lvl:3, hot:['d'],         queue:['9','6','18','10'],
+   cap:`Pop <b>9</b> (front). It equals the target — <b>Goal node found!</b> Subset {7, 2} sums to 9. Because BFS goes shallowest-first, this is found among depth-3 nodes before the deeper 18/10 are ever expanded.`}
+];
+
+// ASCII tree, highlighting the nodes whose level == frame.lvl (or just the goal on the last frame).
+function tree(f){
+  const on = new Set(f.hot);
+  // mark(id, text) -> [text] if highlighted, text otherwise; goal gets *, dead gets x
+  const M = id => {
+    const n = nodes[id];
+    let s = String(n.sum);
+    if (n.goal) s += '*';
+    if (n.dead) s += 'x';
+    return on.has(id) ? '['+s+']' : ' '+s+' ';
+  };
+  return '<div class="atree">'+[
+    '          ' + M('r'),
+    '        +7 /   \\ +5',
+    '      ' + M('a') + '        ' + M('b'),
+    '   +1 /  \\ +2        \\ +1',
+    '   ' + M('c') + '   ' + M('d') + '        ' + M('e'),
+    ' +10 / \\ +2           \\ +2',
+    '  ' + M('f') + ' ' + M('g') + '             ' + M('h'),
+    '',
+    '  * = Goal (sum = 9)   x = over target (dead end)'
+  ].join('\n') + '</div>';
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    stage.innerHTML = tree(f) + ZOO.lane('Queue', f.queue);
+  }
+});
+</script>
+</body></html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traveling Salesperson (Held–Karp DP) — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Traveling Salesperson via DP (Held–Karp)</h1>
+<div class="mission">Visit every city exactly once and come home — for the <em>cheapest</em> total. Dynamic programming turns the factorial-many tours into a table you fill subset by subset.</div>
+
+<h2>What is it?</h2>
+<p>The <strong>Traveling Salesperson Problem (TSP)</strong>: you have a set of cities and a <strong>cost matrix</strong> giving the price <code>c(i,j)</code> to travel from city <code>i</code> to city <code>j</code> (the graph is <em>directed</em>, so going one way can cost more than coming back). Find the cheapest <strong>tour</strong> — a route that starts at city 1, visits <em>every</em> city exactly once, and returns to city 1.</p>
+<p><strong>Why not just try all tours?</strong> With <code>n</code> cities there are <code>(n−1)!</code> possible orderings — that explodes fast (10 cities ≈ 360,000; 20 cities ≈ 10¹⁷). We need to share work between tours that overlap.</p>
+<p><strong>The DP idea (Held–Karp).</strong> Notice that two half-finished tours which (a) sit at the <em>same current city</em> and (b) still have the <em>same set of cities left to visit</em> have <strong>identical futures</strong> — the cheapest way to finish is the same for both. So we don't care <em>how</em> we got here, only <em>where we are</em> and <em>what's left</em>. That pair is the <strong>DP state</strong>.</p>
+<p>Define <code>g(i, S)</code> = the length of the shortest path that <strong>starts at city i, visits every city in the set S exactly once, and ends back at city 1</strong>. The recurrence picks the next city <code>j</code> to step to:</p>
+<p style="text-align:center"><code>g(i, S) = min<sub>j∈S</sub> { c(i,j) + g(j, S − {j}) }</code>, &nbsp; with base case <code>g(i, ∅) = c(i,1)</code>.</p>
+<p>The answer is <code>g(1, {all other cities})</code>. We <strong>build the table up by subset size</strong>: first all the <code>|S|=0</code> values, then <code>|S|=1</code>, and so on — each level only needs values from the level below it.</p>
+<p><strong>Tiny example.</strong> 4 cities, cost matrix below (rows = from, cols = to, ∞ = no road). We'll watch the table fill and read off the optimal tour <code>1 → 4 → 3 → 2 → 1</code> costing <strong>17</strong>.</p>
+
+<table style="border-collapse:collapse;margin:.5rem 0;font-family:var(--mono,monospace)">
+  <tr><th style="padding:.25rem .6rem"></th><th style="padding:.25rem .6rem">→1</th><th style="padding:.25rem .6rem">→2</th><th style="padding:.25rem .6rem">→3</th><th style="padding:.25rem .6rem">→4</th></tr>
+  <tr><th style="padding:.25rem .6rem">1</th><td style="padding:.25rem .6rem;text-align:center">∞</td><td style="padding:.25rem .6rem;text-align:center">2</td><td style="padding:.25rem .6rem;text-align:center">10</td><td style="padding:.25rem .6rem;text-align:center">5</td></tr>
+  <tr><th style="padding:.25rem .6rem">2</th><td style="padding:.25rem .6rem;text-align:center">2</td><td style="padding:.25rem .6rem;text-align:center">∞</td><td style="padding:.25rem .6rem;text-align:center">9</td><td style="padding:.25rem .6rem;text-align:center">∞</td></tr>
+  <tr><th style="padding:.25rem .6rem">3</th><td style="padding:.25rem .6rem;text-align:center">4</td><td style="padding:.25rem .6rem;text-align:center">3</td><td style="padding:.25rem .6rem;text-align:center">∞</td><td style="padding:.25rem .6rem;text-align:center">4</td></tr>
+  <tr><th style="padding:.25rem .6rem">4</th><td style="padding:.25rem .6rem;text-align:center">6</td><td style="padding:.25rem .6rem;text-align:center">8</td><td style="padding:.25rem .6rem;text-align:center">7</td><td style="padding:.25rem .6rem;text-align:center">∞</td></tr>
+</table>
+
+<h2>Watch it run</h2>
+<p>Left: the 4 cities (the optimal tour's roads light up green as we lock them in). Right: the <code>g(i,S)</code> table filling by subset size — the current cell is highlighted, the cells it depends on are marked.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(n²·2ⁿ)</b></span>
+  <span class="chip">Space: <b>O(n·2ⁿ)</b></span>
+  <span class="chip"><b>exponential</b> — but far better than n!</span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="Held–Karp's insight is that two partial tours sitting at the same city with the same set of unvisited cities have identical cheapest completions — so the state is (current city, set of visited cities). Tracking the exact order taken (option 1) is exactly the wasteful brute-force view DP avoids; the cost-so-far isn't part of the state, and 'just the current city' forgets which cities still need visiting.">
+  <div class="q">In Held–Karp DP for TSP, what information defines one subproblem (the DP state)?</div>
+  <button class="opt">the exact order of cities visited so far</button>
+  <button class="opt">the current city plus the set of cities already visited</button>
+  <button class="opt">the current city plus the total cost paid so far</button>
+  <button class="opt">just the current city</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="There is one g(i,S) entry for each (city, subset-of-cities) pair — about n·2ⁿ states — and filling each one scans up to n next-cities, giving O(n²·2ⁿ). The 2ⁿ subset factor is exponential, so it's still exponential — just dramatically smaller than the (n−1)! of trying every tour. It is NOT polynomial (option 0) and NOT the same as brute force (option 3).">
+  <div class="q">Held–Karp fills a g(i,S) value for every (city, subset) pair, scanning n choices each. What is its running time, and is that exponential?</div>
+  <button class="opt">O(n³) — polynomial, so no longer exponential</button>
+  <button class="opt">O(n!) — exponential, same as brute force</button>
+  <button class="opt">O(n²·2ⁿ) — still exponential, but far better than n!</button>
+  <button class="opt">O(2ⁿ) only — no extra factor for the cities</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-tsp">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em> (dynamic programming; the Held–Karp TSP DP is a classic problem in this chapter). The <code>g(i,S)</code> recurrence and the <code>O(n²·2ⁿ)</code> bound are the Held–Karp algorithm (1962).</p>
+<div class="note"><strong>Next in this bucket:</strong> Longest Common Subsequence — fill an L<sub>i,j</sub> table to find the longest string both inputs share.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- The 4-city instance (note §10). rows=from, cols=to, Infinity = no edge ----
+const INF = Infinity;
+const C = [
+  [INF, 2, 10, 5],   // from 1
+  [2, INF, 9, INF],  // from 2
+  [4, 3, INF, 4],    // from 3
+  [6, 8, 7, INF]     // from 4
+];
+const cost = (i,j) => C[i-1][j-1];   // 1-indexed cities
+
+// ---- g(i,S) table laid out as a grid. Rows = g-states grouped by |S|, in fill order. ----
+// Each row label is "g(i, S)"; we precompute the value & dependency.
+// |S|=0 base, then |S|=1, |S|=2, then the final answer g(1,{2,3,4}).
+const setStr = s => s.length ? '{'+s.join(',')+'}' : '∅';
+
+// rows in the order they get filled (matches "build up by subset size")
+const ROWS = [
+  // |S|=0  base cases g(i,∅)=c(i,1)
+  {i:2, S:[],     size:0},
+  {i:3, S:[],     size:0},
+  {i:4, S:[],     size:0},
+  // |S|=1
+  {i:2, S:[3],    size:1},
+  {i:3, S:[2],    size:1},
+  {i:3, S:[4],    size:1},
+  {i:4, S:[2],    size:1},
+  {i:4, S:[3],    size:1},
+  // |S|=2
+  {i:2, S:[3,4],  size:2},
+  {i:3, S:[2,4],  size:2},
+  {i:4, S:[2,3],  size:2},
+  // answer
+  {i:1, S:[2,3,4],size:3}
+];
+const rowLabels = ROWS.map(r => `g(${r.i},${setStr(r.S)})`);
+const rowIndex = {};                      // "i|sortedS" -> row number
+ROWS.forEach((r,k)=> rowIndex[r.i+'|'+r.S.slice().sort().join(',')] = k);
+const keyOf = (i,S) => i+'|'+S.slice().sort().join(',');
+
+// compute g values + remember which (j) won and which dep-rows feed each row
+const g = {};            // key -> value
+const winner = {};       // key -> chosen next city j
+const deps = {};         // key -> array of dep keys (rows it reads)
+function compute(i, S){
+  const k = keyOf(i,S);
+  if (k in g) return g[k];
+  if (S.length === 0){ g[k] = cost(i,1); deps[k]=[]; winner[k]=1; return g[k]; }
+  let best = INF, bj = null, dk = [];
+  for (const j of S){
+    const sub = S.filter(x=>x!==j);
+    const v = cost(i,j) + compute(j, sub);
+    dk.push(keyOf(j, sub));
+    if (v < best){ best = v; bj = j; }
+  }
+  g[k]=best; winner[k]=bj; deps[k]=dk; return best;
+}
+compute(1,[2,3,4]);
+
+// reconstruct optimal tour from g(1,{2,3,4})
+const tour = [1]; { let i=1, S=[2,3,4];
+  while (S.length){ const j = winner[keyOf(i,S)]; tour.push(j); S = S.filter(x=>x!==j); i=j; }
+  tour.push(1);
+}  // -> [1,4,3,2,1]
+const tourEdges = [];
+for (let t=0;t<tour.length-1;t++) tourEdges.push(tour[t]+'-'+tour[t+1]);
+
+// ---- build the grid matrix: one column "g value". null until filled. ----
+function gridUpTo(n){  // matrix with first n rows filled
+  return ROWS.map((r,k)=>{
+    if (k < n){ const v = g[keyOf(r.i,r.S)]; return [v===INF?'∞':String(v)]; }
+    return [null];
+  });
+}
+
+// ---- nodes for the city graph (place by hand) ----
+const NODES = [
+  {id:1, x:18, y:20, label:'1'},
+  {id:2, x:82, y:20, label:'2'},
+  {id:3, x:82, y:80, label:'3'},
+  {id:4, x:18, y:80, label:'4'}
+];
+// directed edges of the optimal tour (1->4->3->2->1)
+const EDGES = [
+  {u:1,v:4,w:5,dir:1},
+  {u:4,v:3,w:7,dir:1},
+  {u:3,v:2,w:3,dir:1},
+  {u:2,v:1,w:2,dir:1}
+];
+
+// ---- frames ----
+const frames = [
+  { fill:0, lit:0, act:-1,
+    cap:`Goal: cheapest tour from city <b>1</b> visiting all cities, back to <b>1</b>. State <code>g(i,S)</code> = shortest path from <b>i</b>, through set <b>S</b>, ending at 1. We fill the table bottom-up by subset size.` },
+  { fill:3, lit:0, act:2,
+    cap:`<b>|S|=0 (base case).</b> <code>g(i,∅)=c(i,1)</code> — the cost to go straight home. g(2,∅)=2, g(3,∅)=4, g(4,∅)=6.` },
+  { fill:8, lit:0, act:7,
+    cap:`<b>|S|=1.</b> One city left, then home. e.g. g(4,{3}) = c(4,3)+g(3,∅) = 7+4 = 11; g(3,{2}) = 3+2 = 5. Each reads one base-case cell below.` },
+  { fill:9, lit:0, act:8,
+    cap:`<b>|S|=2.</b> g(2,{3,4}) = min{ c(2,3)+g(3,{4}), c(2,4)+g(4,{3}) } = min{9+10, ∞} = <b>19</b> (no road 2→4).` },
+  { fill:11, lit:0, act:10,
+    cap:`g(4,{2,3}) = min{ c(4,2)+g(2,{3}), c(4,3)+g(3,{2}) } = min{8+13, 7+5} = <b>12</b> — winner steps to city 3. g(3,{2,4})=14.` },
+  { fill:12, lit:1, act:11,
+    cap:`<b>The answer.</b> g(1,{2,3,4}) = min{ 2+g(2,{3,4}), 10+g(3,{2,4}), 5+g(4,{2,3}) } = min{2+19, 10+14, <b>5+12</b>} = <b>17</b>. Best first step: city 4.` },
+  { fill:12, lit:2, act:11,
+    cap:`Follow the winners back: 1→<b>4</b> (g(4,{2,3})=12, next was 3) … so 4→<b>3</b>.` },
+  { fill:12, lit:3, act:11,
+    cap:`…3→<b>2</b> (g(3,{2})=5, next was 2), then g(2,∅)=2 sends us 2→<b>1</b> home.` },
+  { fill:12, lit:4, act:-1,
+    cap:`<b>Optimal tour: 1 → 4 → 3 → 2 → 1</b> = 5 + 7 + 3 + 2 = <b>17</b>. Done — and we touched ~n·2ⁿ states, not (n−1)! tours.` }
+];
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    // -- graph: light up first `lit` tour edges as 'tree' --
+    const edgeCls = {};
+    for (let e=0;e<f.lit;e++) edgeCls[EDGES[e].u+'-'+EDGES[e].v] = 'tree';
+    const nodeCls = {};
+    if (f.lit>0){ nodeCls[1]='done'; for (let e=0;e<f.lit;e++) nodeCls[EDGES[e].v]='done'; }
+    const graphHTML = ZOO.graph(
+      { nodes: NODES, edges: EDGES },
+      { node: nodeCls, edge: edgeCls }
+    );
+    // -- grid: g-table filled up to f.fill rows, current row = act --
+    const matrix = gridUpTo(f.fill);
+    const cls = {};
+    if (f.act >= 0){
+      cls[f.act + ',0'] = 'act';
+      for (const dk of (deps[keyOf(ROWS[f.act].i, ROWS[f.act].S)]||[])){
+        const dr = rowIndex[dk]; if (dr !== undefined) cls[dr + ',0'] = 'dep';
+      }
+    }
+    if (f.lit === 4) cls[(ROWS.length-1) + ',0'] = 'path';
+    const gridHTML = ZOO.grid(matrix, { rows: rowLabels, cols: ['g(i,S)'], cls });
+
+    stage.innerHTML =
+      '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start">' +
+        '<div style="flex:1 1 18rem;min-width:16rem">' + graphHTML + '</div>' +
+        '<div style="flex:0 0 auto">' + gridHTML + '</div>' +
+      '</div>';
+  }
+});
+</script>
+</body></html>

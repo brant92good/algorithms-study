@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linear-time Selection — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Prune-and-Search</div>
+<h1>Linear-time Selection</h1>
+<div class="mission">Find the <strong>k-th smallest</strong> element of an unsorted list in <strong>O(n)</strong> time — without sorting — by choosing a provably-good pivot: the <em>median of medians</em>.</div>
+
+<h2>What is it?</h2>
+<p>The <strong>selection problem</strong>: given a bag of <code>n</code> numbers and a rank <code>k</code>, return the value that would sit in position <code>k</code> if the list were sorted (the <strong>k-th smallest</strong>). When <code>k = ⌈n/2⌉</code> this is the <strong>median</strong>. The obvious method — <em>sort the whole list, then read off position k</em> — costs <code>O(n log n)</code>. We can do better: <code>O(n)</code>, linear time.</p>
+
+<p>The idea is <strong>prune-and-search</strong>, the same trick behind binary search: each round, throw away a fixed <em>fraction</em> of the data and recurse on the rest. To do that we pick a <strong>pivot</strong> <code>p</code> and split the list into three piles:</p>
+<ul>
+  <li><b>S₁</b> — everything <em>less than</em> p,</li>
+  <li><b>S₂</b> — everything <em>equal to</em> p,</li>
+  <li><b>S₃</b> — everything <em>greater than</em> p.</li>
+</ul>
+<p>Now we only need <em>one</em> pile. Compare k to the pile sizes:</p>
+<ul>
+  <li>if <code>|S₁| ≥ k</code> → the answer is inside S₁, recurse there with the <em>same</em> k;</li>
+  <li>else if <code>|S₁| + |S₂| ≥ k</code> → p <em>is</em> the answer, done;</li>
+  <li>otherwise → the answer is in S₃; recurse there looking for rank <code>k − |S₁| − |S₂|</code>.</li>
+</ul>
+
+<p>The whole thing only works if the pivot reliably splits the list — a careless pivot (like always the first element) could shave off just one element and degrade to <code>O(n²)</code>. The fix is the <strong>median of medians</strong>: break the list into <strong>groups of 5</strong>, sort each tiny group, take each group's median, then recursively take the median <em>of those medians</em> as the pivot. This guarantees at least about <code>n/4</code> elements get pruned every round (so at most <code>3n/4</code> survive).</p>
+
+<p><strong>Tiny example.</strong> List <code>[3,5,7,12,19]</code>, find the 2nd smallest. Sorted it's <code>[3,5,7,12,19]</code>, so the answer is <code>5</code> — and selection finds it without ever fully sorting the longer lists it usually runs on.</p>
+
+<h2>Watch it run</h2>
+<p>15 numbers; we want the <strong>7th smallest</strong>. The bars are grouped into 5s; gold marks group medians, the green bar is the pivot <code>p</code>, and dimmed bars are pruned. Step through.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(n)</b></span>
+  <span class="chip">Pivot: <b>groups of 5</b></span>
+  <span class="chip">Pruned: <b>≥ n/4 each round</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The rule is |S₁| ≥ k for 'answer is in S₁' and |S₁|+|S₂| ≥ k for 'p is the answer'. Here |S₁| = 5 &lt; k = 6, so the answer is NOT in S₁. But |S₁|+|S₂| = 5+2 = 7 ≥ 6, so p itself is the 6th smallest. The trap: |S₁| = 5 is only one below k, and a strict-vs-≥ slip would push you into S₃.">
+  <div class="q">After partitioning around p you get |S₁| = 5 (elements &lt; p) and |S₂| = 2 (elements = p). You're looking for the 6th smallest. Where is it?</div>
+  <button class="opt">inside S₁, still rank 6</button>
+  <button class="opt">it is p itself</button>
+  <button class="opt">inside S₃, at rank 6 − 5 = 1</button>
+  <button class="opt">inside S₃, at rank 6 − 7 = −1</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="Each round does O(n) work, then makes two recursive calls: one on the n/5 medians (to pick the pivot) and one on the ≤ 3n/4 survivors. Because 3/4 + 1/5 = 19/20 &lt; 1, the subproblem sizes shrink geometrically and the total work sums to O(n). If the fractions summed to ≥ 1, the recursion wouldn't shrink and you'd lose the linear bound.">
+  <div class="q">The recurrence is T(n) = T(3n/4) + T(n/5) + O(n). Why does this solve to O(n) rather than O(n log n)?</div>
+  <button class="opt">the recursive sizes sum to 3/4 + 1/5 &lt; 1, so total work is a converging geometric series</button>
+  <button class="opt">there is only one recursive call, like binary search</button>
+  <button class="opt">sorting each group of 5 is free, so no work happens per level</button>
+  <button class="opt">the recursion depth is constant regardless of n</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prune-selection">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 9 "Medians and Order Statistics" (§9.3 selection in worst-case linear time), or Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, the Prune-and-Search chapter. The key guarantee — the median of medians prunes ≥ n/4 each round — is what turns three-way partitioning into a worst-case <code>O(n)</code> algorithm.</p>
+<div class="note"><strong>Next in this bucket:</strong> 2-Variable Linear Programming — minimize y subject to a stack of constraint lines, pruning ¼ of the constraints each round by pairing them up and testing the median intersection.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- the concrete instance ----
+const S  = [12,3,5,7,19, 1,14,9,11,8, 20,6,2,17,15];  // 15 elements, grouped in 5s
+const K  = 7;                                          // want the 7th smallest
+// group medians: each group sorted, take 3rd element
+// G1 [3,5,7,12,19]->7  G2 [1,8,9,11,14]->9  G3 [2,6,15,17,20]->15  -> medians [7,9,15] -> p=9
+const GROUP_MED_IDX = {3:'M', 7:'M', 14:'M'};          // indices of group medians in S (vals 7, 9, 15)
+const PIVOT_IDX = 7;                                    // S[7] = 9 is the median-of-medians
+
+const frames = [
+  { cls:'start',
+    cap:`A set of <b>15</b> numbers, broken into <b>3 groups of 5</b>. Goal: the <b>7th smallest</b> overall.` },
+  { cls:'groupmed',
+    cap:`Sort each group of 5 and take its <b>median</b> (gold): G1→<b>7</b>, G2→<b>9</b>, G3→<b>15</b>. Medians = [7, 9, 15].` },
+  { cls:'pivot',
+    cap:`The <b>median of those medians</b> is <b>9</b> → that is our pivot <b>p</b> (green). It's guaranteed "central enough".` },
+  { cls:'partition',
+    cap:`Partition around p = 9: <b>S₁</b> (&lt; 9) has 7 elements, <b>S₂</b> (= 9) has 1, <b>S₃</b> (&gt; 9) has 7.` },
+  { cls:'decide',
+    cap:`Compare k to the piles: |S₁| = <b>7</b> ≥ k = <b>7</b>, so the 7th smallest lives in <b>S₁</b>. Recurse there (same k); prune S₂ and S₃ — ≥ n/4 gone.` },
+  { cls:'recurse',
+    cap:`Survivors = S₁ = [3,5,7,1,8,6,2] (7 elements). The other 8 are dimmed away. Same algorithm runs again on this smaller set...` },
+  { cls:'answer',
+    cap:`...and the 7th smallest of these 7 is their maximum, <b>8</b>. That is the answer: the <b>7th smallest of the whole set is 8</b>.` },
+];
+
+// classify each index for a given frame
+function classify(frame){
+  const cls = {}, ptr = {};
+  const lessThanP = i => S[i] < 9, eqP = i => S[i] === 9, gtP = i => S[i] > 9;
+  switch(frame.cls){
+    case 'start':
+      // faint group separators via ptr labels at first element of each group
+      ptr[0]='G1'; ptr[5]='G2'; ptr[10]='G3';
+      break;
+    case 'groupmed':
+      ptr[0]='G1'; ptr[5]='G2'; ptr[10]='G3';
+      for (const i in GROUP_MED_IDX){ cls[i]='cmp'; ptr[i]='↑med'; }
+      break;
+    case 'pivot':
+      for (const i in GROUP_MED_IDX){ cls[i]='cmp'; }
+      cls[PIVOT_IDX]='act'; ptr[PIVOT_IDX]='↑p';
+      break;
+    case 'partition':
+      S.forEach((_,i)=>{ if(lessThanP(i)) cls[i]='done'; else if(gtP(i)) cls[i]='cmp'; });
+      cls[PIVOT_IDX]='act'; ptr[PIVOT_IDX]='↑p';
+      break;
+    case 'decide':
+      S.forEach((_,i)=>{ if(lessThanP(i)) cls[i]='done'; });
+      cls[PIVOT_IDX]='act';
+      // S3 + S2 about to be pruned
+      S.forEach((_,i)=>{ if(gtP(i)) cls[i]='dim'; });
+      break;
+    case 'recurse':
+      S.forEach((_,i)=>{ if(lessThanP(i)) cls[i]='act'; else cls[i]='dim'; });
+      break;
+    case 'answer':
+      S.forEach((_,i)=>{ if(lessThanP(i)) cls[i]=(S[i]===8?'done':'dim'); else cls[i]='dim'; });
+      // mark the max of S1 (value 8, index 9) as the answer
+      cls[9]='done'; ptr[9]='↑7th';
+      break;
+  }
+  return {cls, ptr};
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const {cls, ptr} = classify(f);
+    stage.innerHTML = ZOO.bars(S, { cls, ptr });
+  }
+});
+</script>
+</body></html>

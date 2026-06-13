@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Branch-and-Bound — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Branch-and-Bound</h1>
+<div class="mission">The master strategy for <strong>optimization</strong>: explore a tree of choices best-first, but compute a <strong>bound</strong> for every branch and throw away any branch that <em>provably can't beat</em> the best answer found so far.</div>
+
+<h2>What is it?</h2>
+<p>Plain tree searches like depth-first and breadth-first answer <strong>feasibility</strong> questions — "is there <em>a</em> solution?" — and stop at the first goal they hit. But many problems are <strong>optimization</strong> problems: we don't want <em>any</em> tour, we want the <em>cheapest</em> tour. The first goal found is rarely the best one, so those searches aren't enough.</p>
+<p><strong>Branch-and-bound</strong> fixes this with two ingredients:</p>
+<ul>
+<li><strong>Branch</strong> — split the set of all candidate solutions into smaller subsets, forming a tree. Here each split is "all tours that <em>include</em> edge X-Y" vs. "all tours that <em>exclude</em> edge X-Y".</li>
+<li><strong>Bound</strong> — for each node, compute a <strong>lower bound</strong>: a number that is <em>guaranteed</em> ≤ the cost of <em>every</em> solution in that subset. Because it's a guarantee, if a node's lower bound is <strong>≥ the best complete tour we've already found</strong>, nothing in that whole subtree can win — so we <strong>prune</strong> it (never explore it).</li>
+</ul>
+<p><strong>What is a lower bound, concretely?</strong> For the Travelling Salesperson Problem (TSP — visit every city once and return home, minimizing total cost) the trick is the <strong>reduced cost matrix</strong>. Every tour must leave each city once, so it must pay <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum from that row</strong> (every row now has a 0), then <strong>subtract each column's minimum from any column still without a 0</strong>. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — so it is a valid lower bound. For the course's 7-city instance the reductions sum to <strong>96</strong>.</p>
+<p>Then we branch on edges. Including a zero-cost edge adds nothing (bound stays). <em>Excluding</em> an edge forces a more expensive choice, raising the bound. We pick the split that raises the "exclude" bound the most, keep expanding the most promising node, and prune the rest — until one complete tour is isolated and proven optimal.</p>
+
+<h2>Watch it run</h2>
+<p>The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we branch on include/exclude decisions, carrying a bound at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best). The left spine of "include" choices reaches the optimal tour.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Solves: <b>optimization</b></span>
+  <span class="chip">Core idea: <b>bound + prune</b></span>
+  <span class="chip">TSP bound: <b>96</b></span>
+  <span class="chip">Optimal tour: <b>126</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The lower bound from a reduced cost matrix is exactly the TOTAL amount subtracted: 84 from the row reductions plus 7+1+4 = 12 from the column reductions = 96. That total is cost every tour is forced to pay, so it is a valid lower bound. 84 forgets the column step; 116 and 96+126 mix in unrelated numbers.">
+  <div class="q">In the 7-city TSP, reducing the cost matrix subtracts <strong>84</strong> total across all rows, then subtracts <strong>7</strong>, <strong>1</strong>, and <strong>4</strong> from three columns that still lacked a zero. What lower bound does this give for the whole problem?</div>
+  <button class="opt">84</button>
+  <button class="opt">96</button>
+  <button class="opt">116</button>
+  <button class="opt">222</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="A node's lower bound is the BEST its subtree could ever do. If that best is already ≥ the best complete tour found (here 126), the subtree can't strictly improve on 126, so prune it. The 'Without 4-6' node has bound 128 ≥ 126 → pruned. Using ≤ (option index 1) is the classic trap: you'd prune the very node whose bound is 126, throwing away the optimal tour itself.">
+  <div class="q">You've already found a complete tour costing <strong>126</strong>. A node's lower bound is <strong>128</strong>. What's the correct rule, and what do you do here?</div>
+  <button class="opt">prune when bound &gt; best; here 128 &gt; 126 so prune</button>
+  <button class="opt">prune when bound ≤ best; here 128 is not ≤ 126 so keep it</button>
+  <button class="opt">prune when bound ≥ best; here 128 ≥ 126 so prune it</button>
+  <button class="opt">never prune; you must expand every node to be safe</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="search-branch-and-bound">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Tables 6-3/6-4/6-5, Fig. 6-26) — the reduced-cost-matrix TSP worked here. See also CLRS, <em>Introduction to Algorithms</em>, on branch-and-bound for optimization.</p>
+<div class="note"><strong>Next in this bucket:</strong> A* — best-first search with cost <code>f(n) = g(n) + h(n)</code> where an admissible heuristic <code>h(n) ≤ h*(n)</code> acts as the lower bound, so the first goal selected is optimal.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- colored monospace spans for the ASCII decision tree ----
+const C = {
+  bound: v => `<span style="color:var(--accent);font-weight:700">${v}</span>`,      // lower-bound number, highlighted
+  best:  v => `<span style="color:var(--good);font-weight:700">${v}</span>`,         // best/optimal
+  dim:   s => `<span style="color:var(--mut);opacity:.55">${s}</span>`,              // pruned branch
+  warn:  s => `<span style="color:var(--warn)">${s}</span>`                          // note
+};
+
+// Each frame supplies a list of tree lines (HTML). We assemble the same tree
+// progressively so the learner sees the spine grow and branches get pruned.
+// Bounds come straight from Fig. 6-26 (Lee Ch.6, slide 28).
+
+function tree(lines){ return `<div class="atree">${lines.join("\n")}</div>`; }
+
+const frames = [];
+
+// Frame 0 — the matrix idea / starting bound
+frames.push({
+  cap: `<b>Start.</b> Reduce the 7×7 cost matrix: subtract each row min, then each column min. Total subtracted = <b>96</b> = the root lower bound.`,
+  html: tree([
+    `Reduced cost matrix  (7 cities, ∞ on diagonal)`,
+    ``,
+    `  row mins subtracted .......... ${C.bound("84")}`,
+    `  col mins subtracted (7+1+4) .. ${C.bound("12")}`,
+    `  ----------------------------------`,
+    `  LOWER BOUND for ALL tours .... ${C.bound("96")}`,
+    ``,
+    `┌─────────────────────────┐`,
+    `│  All solutions   LB=${C.bound("96")} │`,
+    `└─────────────────────────┘`
+  ])
+});
+
+// Frame 1 — first branch on arc 4-6
+frames.push({
+  cap: `<b>Branch on arc 4-6.</b> Including the zero-cost arc adds nothing (LB stays 96). Excluding it forces the next-cheapest exit — penalty 32 — so LB jumps to 96+32 = <b>128</b>.`,
+  html: tree([
+    `              All solutions  LB=${C.bound("96")}`,
+    `             /                       \\`,
+    `      with 4-6                     without 4-6`,
+    `      LB=${C.bound("96")}                      LB=${C.bound("128")}`,
+    ``,
+    `   ${C.warn("(pick the split whose EXCLUDE bound jumps most:")}`,
+    `   ${C.warn(" arc 4-6 → +32  beats  arc 3-5 → +18)")}`
+  ])
+});
+
+// Frame 2 — why we keep "with 4-6": 128 is worse, but no tour found yet so not pruned yet
+frames.push({
+  cap: `Re-reduce the smaller matrix for the <b>with 4-6</b> side (delete row 4 & col 6, forbid the 6→4 subtour). One more reduction of 3 → LB = 96+3 = <b>99</b>. We expand the cheaper side first.`,
+  html: tree([
+    `              All solutions  LB=${C.bound("96")}`,
+    `             /                       \\`,
+    `      with 4-6                     without 4-6`,
+    `      LB=${C.bound("99")}                      LB=${C.bound("128")}`,
+    `      /        \\`,
+    `  with 3-5   without 3-5`,
+    `  LB=${C.bound("99")}      LB=${C.bound("117")}`
+  ])
+});
+
+// Frame 3 — spine grows: 2-1
+frames.push({
+  cap: `Keep diving down the cheapest "include" branch. Each include keeps the bound low; each exclude raises it. Branch on arc <b>2-1</b>: include → LB <b>112</b>, exclude → LB <b>125</b>.`,
+  html: tree([
+    `   All solutions  LB=${C.bound("96")}`,
+    `      |`,
+    `   with 4-6  LB=${C.bound("99")} ─── without 4-6  ${C.dim("LB=128")}`,
+    `      |`,
+    `   with 3-5  LB=${C.bound("99")} ─── without 3-5  LB=${C.bound("117")}`,
+    `      |`,
+    `   with 2-1  LB=${C.bound("112")} ── without 2-1  LB=${C.bound("125")}`
+  ])
+});
+
+// Frame 4 — spine grows: 1-4 ; first big prune (153)
+frames.push({
+  cap: `Branch on arc <b>1-4</b>: include → LB <b>126</b>, exclude → LB <b>153</b>. The "without 1-4" bound 153 is huge; once we find a tour ≤153 it dies.`,
+  html: tree([
+    `   with 4-6  LB=${C.bound("99")} ─── without 4-6  ${C.dim("LB=128")}`,
+    `      |`,
+    `   with 3-5  LB=${C.bound("99")} ─── without 3-5  LB=${C.bound("117")}`,
+    `      |`,
+    `   with 2-1  LB=${C.bound("112")} ── without 2-1  LB=${C.bound("125")}`,
+    `      |`,
+    `   with 1-4  LB=${C.bound("126")} ── without 1-4  LB=${C.bound("153")}`
+  ])
+});
+
+// Frame 5 — complete a tour: best-so-far = 126
+frames.push({
+  cap: `Branch on <b>6-7</b> then <b>5-2</b>; the remaining arcs are forced, completing the tour <b>1-4-6-7-3-5-2-1</b> with cost <b>126</b>. This is our first complete solution → best-so-far = <b>126</b>.`,
+  html: tree([
+    `   with 1-4  LB=${C.bound("126")} ── without 1-4  ${C.dim("LB=153")}`,
+    `      |`,
+    `   with 6-7  LB=${C.bound("126")} ── without 6-7  LB=${C.bound("141")}`,
+    `      |`,
+    `   with 5-2  LB=${C.bound("126")} ── without 5-2  ${C.dim("(no solution)")}`,
+    `      |`,
+    `   with 7-3  ${C.best("→ TOUR 1-4-6-7-3-5-2-1  cost 126")}`
+  ])
+});
+
+// Frame 6 — the prune rule fires everywhere bound >= 126
+frames.push({
+  cap: `<b>Prune rule.</b> A node's LB is the best its subtree could reach. Any node with <b>LB ≥ 126</b> (best-so-far) can't beat it → ${C.dim("dimmed = pruned")}. 128, 153, 141 all die. (≤ would be the trap: it'd kill 126 itself!)`,
+  html: tree([
+    `              All solutions  LB=${C.bound("96")}`,
+    `             /                       \\`,
+    `      with 4-6  LB=${C.bound("99")}            ${C.dim("without 4-6  LB=128  ✗ ≥126")}`,
+    `        |`,
+    `      with 3-5  LB=${C.bound("99")}            ${C.dim("without 3-5  LB=117")}`,
+    `        |`,
+    `      with 2-1  LB=${C.bound("112")}           ${C.dim("without 2-1  LB=125")}`,
+    `        |`,
+    `      with 1-4  LB=${C.bound("126")}           ${C.dim("without 1-4  LB=153  ✗ ≥126")}`,
+    `        |`,
+    `      with 6-7  LB=${C.bound("126")}           ${C.dim("without 6-7  LB=141  ✗ ≥126")}`,
+    `        |`,
+    `      with 5-2  LB=${C.bound("126")}           ${C.dim("without 5-2  (no soln)")}`,
+    `        |`,
+    `      ${C.best("TOUR 1-4-6-7-3-5-2-1  cost 126  ✓ OPTIMAL")}`
+  ])
+});
+
+// Frame 7 — finished / proof of optimality
+frames.push({
+  cap: `<b>Done.</b> Every un-expanded branch has LB ≥ 126, so none can improve on the tour we hold. The tour <b>1-4-6-7-3-5-2-1</b>, cost <b>126</b>, is <b>proven optimal</b> — without examining all 6! orderings.`,
+  html: tree([
+    `   No live node has LB < 126.`,
+    `   ⇒ no unexplored branch can beat the best tour.`,
+    ``,
+    `   ${C.best("OPTIMAL TOUR : 1 → 4 → 6 → 7 → 3 → 5 → 2 → 1")}`,
+    `   ${C.best("OPTIMAL COST : 126")}`,
+    ``,
+    `   Lower bound 96 ........ proved no tour is cheaper than 96`,
+    `   Branch + prune ........ closed the gap to the exact 126`
+  ])
+});
+
+ZOO.stepper({
+  mount: '#viz',
+  frames,
+  caption: f => f.cap,
+  render: (f, stage) => { stage.innerHTML = f.html; }
+});
+</script>
+</body></html>

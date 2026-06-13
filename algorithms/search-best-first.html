@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Best-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+<style>
+  .puz{display:inline-grid;grid-template-columns:repeat(3,2.1rem);grid-template-rows:repeat(3,2.1rem);gap:3px;background:var(--line,#3a3f4b);padding:3px;border-radius:8px;vertical-align:middle}
+  .puz .t{display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:5px;background:var(--card,#262b36);color:var(--fg,#e8ebf0)}
+  .puz .t.b{background:transparent}
+  .puz.sel{outline:2px solid var(--acc,#5b9dff);outline-offset:2px}
+  .puz.goal{outline:2px solid #3fbf6f;outline-offset:2px}
+  .nodelabel{font:600 .8rem/1.2 var(--mono,monospace);color:var(--mut,#9aa3b2);text-align:center;margin-top:.2rem}
+  .puzrow{display:inline-flex;flex-direction:column;align-items:center;margin:.3rem .6rem .3rem 0}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Best-First Search</h1>
+<div class="mission">Keep <strong>every</strong> unexplored node in one big list, and always expand the one that looks most promising — combining the depth of DFS with the breadth of BFS, but with a <strong>global view</strong>.</div>
+
+<h2>What is it?</h2>
+<p>Many hard problems become "search a tree of partial solutions": each node is a state, its children are the states you can reach in one move, and a <strong>goal node</strong> is a solved state. The strategy decides the <em>order</em> you expand nodes.</p>
+<p><strong>Hill climbing</strong> (the strategy before this one) is greedy and <em>local</em>: it expands a node, looks only at <em>that node's own children</em>, jumps to the best-looking child, and forgets everything else. That is fast but it can <strong>stall</strong> — if every child of the current node looks bad, hill climbing is stuck even though a better node may be sitting elsewhere in the tree.</p>
+<p><strong>Best-first search</strong> fixes this. It keeps an <strong>OPEN LIST</strong> of <em>all</em> nodes discovered but not yet expanded — across the whole tree, not just the current branch. At each step it expands the single node with the best (lowest) estimated cost <em>anywhere in that list</em>. That is the <strong>global view</strong>: it can abandon a branch that went sour and jump back to a promising node it saw moves ago.</p>
+
+<p>We use the <strong>8-puzzle</strong>: a 3×3 board with tiles 1–8 and one blank; slide tiles into the blank to reach the goal
+<span class="puz" style="zoom:.8"><span class="t">1</span><span class="t">2</span><span class="t">3</span><span class="t">8</span><span class="t b"></span><span class="t">4</span><span class="t">7</span><span class="t">6</span><span class="t">5</span></span>.
+Each node is scored by</p>
+<p style="text-align:center"><code>f(n) = d(n) + w(n)</code></p>
+<p>where <code>d(n)</code> = depth (moves made so far) and <code>w(n)</code> = number of tiles not yet in their goal position. <strong>Lower <code>f</code> is better.</strong> Same scoring as hill climbing — only the <em>selection rule</em> changes (pick the global best, not the local best).</p>
+
+<p><strong>The scheme (4 steps):</strong></p>
+<ol>
+  <li><strong>Step 1.</strong> Form a one-element list containing just the root node.</li>
+  <li><strong>Step 2.</strong> Remove the <em>first</em> element from the list and expand it. If one of its descendants is a goal node, <strong>stop</strong>; otherwise add the descendants to the list.</li>
+  <li><strong>Step 3.</strong> <strong>Sort the entire list</strong> by the estimation function <code>f</code>.</li>
+  <li><strong>Step 4.</strong> If the list is empty, report failure. Otherwise go to Step 2.</li>
+</ol>
+<p>The sort in Step 3 is the whole trick: after sorting, the <em>first</em> element in Step 2 is always the globally best-looking node, no matter which branch it came from.</p>
+
+<h2>Watch it run</h2>
+<p>Same start board as hill climbing. The <strong>selected</strong> node (about to be expanded) is outlined in blue; the <strong>open list</strong> strip below shows every unexpanded node sorted by <code>f</code> — that is the global view. Watch the search recover by jumping between branches.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">View: <b>global</b></span>
+  <span class="chip">Open list: <b>sorted by f</b></span>
+  <span class="chip">Score: <b>f = d + w</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="Best-first sorts the whole open list and expands the lowest-f node anywhere in the tree. After expanding A its children might all score 6, while an un-expanded sibling C discovered earlier still sits at 4 — best-first picks C, even though C is not a child of A. That global choice is exactly what hill climbing can't make.">
+  <div class="q">The open list currently holds: node A (f=5, just expanded its children which are all f=6), node B (f=6), and node C (f=4, a sibling discovered two steps ago). Which node does best-first search expand next?</div>
+  <button class="opt">one of A's new f=6 children, since they are the most recent</button>
+  <button class="opt">node B, because it is next in discovery order</button>
+  <button class="opt">node C, the lowest f anywhere in the list</button>
+  <button class="opt">node A again, because it has the lowest f shown</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="Both use f = d + w. Hill climbing keeps only the current node's children and commits to the local best, so when all children look worse it stalls with nowhere to go. Best-first keeps ALL open nodes, so it can jump back to a better node on another branch and recover. Memory of all open nodes — not a different score — is the difference.">
+  <div class="q">Hill climbing and best-first search both score 8-puzzle nodes with f = d + w. What lets best-first keep going in a spot where hill climbing gets stuck?</div>
+  <button class="opt">it uses a smarter evaluation function that never gets stuck</button>
+  <button class="opt">it remembers all open nodes and can jump back to a better one on another branch</button>
+  <button class="opt">it expands nodes level by level like breadth-first search</button>
+  <button class="opt">it allows moves that increase f, so it can climb out of any dip</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="search-best-first">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R. C. T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Best-First Search; the explicit Step 1–4 scheme and Fig. 6-16, the 8-puzzle solved by best-first). CLRS <em>Introduction to Algorithms</em> covers the same idea as priority-queue–driven graph search.</p>
+<div class="note"><strong>Next in this bucket:</strong> Branch-and-Bound — best-first search plus a <em>bound</em> per node, so it can solve <em>optimization</em> problems (find the cheapest solution, not just any solution) by pruning subtrees that can't beat the best found so far.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- 8-puzzle states for the best-first search of Fig. 6-16 ----
+// board as 9-char string, '_' = blank.  Goal:
+// Goal board, row-major, '_' = blank:  1 2 3 / 8 _ 4 / 7 6 5
+const G = "1238_4765";
+// w(n) = misplaced-tile count (the blank doesn't count)
+function w(b){ let c=0; for(let i=0;i<9;i++){ if(b[i]!=='_' && b[i]!==G[i]) c++; } return c; }
+
+// Nodes from Fig. 6-16 (id, board, depth d). f = d + w.  '_' = blank.
+// Boards & f-values verified by running the real 8-puzzle move generator.
+const node = (id,b,d)=>({id,b,d,f:d+w(b)});
+const root = node('root',"2831_4765",0); // 2 8 3 / 1 _ 4 / 7 6 5   f=3
+const n1 = node('1',"2_3184765",1);      // 2 _ 3 / 1 8 4 / 7 6 5   f=4
+const n2 = node('2',"283_14765",1);      // 2 8 3 / _ 1 4 / 7 6 5   f=4
+const n3 = node('3',"2831647_5",1);      // 2 8 3 / 1 6 4 / 7 _ 5   f=5
+const n4 = node('4',"28314_765",1);      // 2 8 3 / 1 4 _ / 7 6 5   f=5
+const n5 = node('5',"_23184765",2);      // _ 2 3 / 1 8 4 / 7 6 5   f=4  (child of node 1)
+const n6 = node('6',"23_184765",2);      // 2 3 _ / 1 8 4 / 7 6 5   f=6  (child of node 1)
+const n9 = node('9',"123_84765",3);      // 1 2 3 / _ 8 4 / 7 6 5   f=4  (child of node 5)
+const n10= node('10',"1238_4765",4);     // 1 2 3 / 8 _ 4 / 7 6 5   f=4  GOAL (child of node 9)
+const n11= node('11',"123784_65",4);     // 1 2 3 / 7 8 4 / _ 6 5   f=6  (child of node 9)
+
+const sortf = arr => arr.slice().sort((a,b)=> a.f-b.f || (+a.id||0)-(+b.id||0));
+const tok = n => `${n.id}(${n.f})`;   // open-list token "id(f)"
+
+// frames: {boards:[nodes drawn], sel:id, open:[nodes sorted by f], goal?:id, cap}
+const frames = [];
+
+frames.push({
+  boards:[root], sel:null, open:[root],
+  cap:`<b>Step 1.</b> Put the root on the list. Root scores f = d + w = 0 + 3 = <b>3</b> (3 tiles out of place).`
+});
+
+// Step 2: expand root -> children 1,2 (f=4), 3,4 (f=5).
+frames.push({
+  boards:[n1,n2,n3,n4], sel:'root', open:[root],
+  cap:`<b>Step 2.</b> Expand the root. Score its four children — none is the goal — and add them all to the list.`
+});
+frames.push({
+  boards:[n1,n2,n3,n4], sel:null, open:sortf([n1,n2,n3,n4]),
+  cap:`<b>Step 3.</b> Sort the whole list by f. Nodes 1 and 2 tie at f=4 and move to the front; nodes 3 and 4 (f=5) sit behind. <b>Step 4:</b> list not empty, repeat.`
+});
+
+// Expand node 1 (front) -> node 5 (f=4), node 6 (f=6).
+frames.push({
+  boards:[n5,n6], sel:'1', open:sortf([n2,n3,n4,n5,n6]),
+  cap:`<b>Step 2.</b> Remove and expand the front node <b>1</b>. One child (node 5) keeps f=4; the other (node 6) jumps to f=6. Re-sort: node 5 and node 2 share the front.`
+});
+
+// Expand node 5 (front, f=4) -> node 9 (f=4). The other children of 5 are f=6 (not the goal-bearing branch).
+frames.push({
+  boards:[n9], sel:'5', open:sortf([n9,n2,n3,n4,n6]),
+  cap:`<b>Global view:</b> the lowest-f node is node <b>5</b>. Expand it; its useful child node 9 also scores f=4. (Its other children scored 6 and were dropped from the front by the Step-3 sort — best-first keeps them in the list but won't pick them while node 9 is cheaper.)`
+});
+
+// Expand node 9 -> node 10 GOAL (f=4), node 11 (f=6). Stop.
+frames.push({
+  boards:[n10,n11], sel:'9', open:sortf([n10,n11,n2,n3,n4,n6]), goal:'10',
+  cap:`<b>Step 2.</b> Expand front node <b>9</b>. A descendant — node <b>10</b> — is the <b>goal</b> 1 2 3 / 8 _ 4 / 7 6 5. <b>Stop.</b> The open list still held nodes 2, 3, 4, 6 on other branches; the global view let best-first commit to the cheapest one every step.`
+});
+
+// ---- render a 3x3 puzzle as HTML ----
+function puz(n, klass){
+  let cells='';
+  for(let i=0;i<9;i++){ const ch=n.b[i]; cells += `<span class="t${ch==='_'?' b':''}">${ch==='_'?'':ch}</span>`; }
+  return `<span class="puzrow"><span class="puz ${klass||''}">${cells}</span><span class="nodelabel">node ${n.id} · f=${n.f}</span></span>`;
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const html = f.boards.map(n=>{
+      let k = '';
+      if (f.sel && n.id===f.sel) k='sel';
+      if (f.goal && n.id===f.goal) k='goal';
+      return puz(n,k);
+    }).join('');
+    const lane = ZOO.lane('Open list (by f)', f.open.map(tok));
+    stage.innerHTML = `<div style="margin-bottom:.5rem">${html}</div>${lane}`;
+  }
+});
+</script>
+</body></html>

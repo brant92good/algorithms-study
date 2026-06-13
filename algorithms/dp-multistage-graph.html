@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multistage Graph Shortest Path — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Multistage Graph — Shortest Path</h1>
+<div class="mission">Find the cheapest route across a layered graph by reasoning <strong>backward from the goal</strong> — the cleanest first taste of dynamic programming, and a problem where being greedy gets you burned.</div>
+
+<h2>What is it?</h2>
+<p><strong>Dynamic programming (DP)</strong> is a way to solve a problem that is really a <strong>sequence of decisions</strong>. Instead of grabbing the locally cheapest option at each step (that's the <em>greedy</em> method), DP works out the best answer to small subproblems, stores it, and stitches those answers together — so the final route is guaranteed to be the best <em>overall</em>.</p>
+<p>A <strong>multistage graph</strong> is the textbook setting for this. It's a directed graph whose nodes are split into ordered groups called <strong>stages</strong>. Every edge points from one stage to the very next stage — you can never skip ahead or go back. The first stage is a single <strong>source</strong> node <code>S</code>; the last is a single <strong>sink</strong> node <code>T</code>. Each edge has a cost (a <strong>weight</strong>). The job: find the <strong>minimum-cost path</strong> from <code>S</code> to <code>T</code>.</p>
+<p><strong>Our graph has 4 stages:</strong> <code>S</code> → then <code>{A,B,C}</code> → then <code>{D,E,F}</code> → then <code>T</code>. To get from <code>S</code> to <code>T</code> you make three decisions in a row: which stage-2 node, which stage-3 node, then on to <code>T</code>.</p>
+<p><strong>Why not just be greedy?</strong> Greedy says "take the cheapest edge you can see right now." From <code>S</code> the cheapest edge is <code>S→A</code> (cost&nbsp;1), then <code>A→D</code> (cost&nbsp;4), then the only option <code>D→T</code> (cost&nbsp;18) — total <strong>23</strong>. But the real cheapest route is <code>S→C→F→T</code> = 5+2+2 = <strong>9</strong>. The first edge <code>S→C</code> <em>looks</em> expensive (cost&nbsp;5), yet it opens a dirt-cheap finish. Greedy can't see that far ahead.</p>
+<p><strong>The DP idea — backward reasoning.</strong> Let <code>d(X,T)</code> = cost of the cheapest path from node <code>X</code> to the sink <code>T</code>. Start at the nodes nearest <code>T</code> (their answer is just the single edge to <code>T</code>), then move one stage back at a time. For each node, you only need: "the cost to step to each neighbor, plus that neighbor's already-known <code>d(·,T)</code>; keep the smallest." This works because of the <strong>principle of optimality</strong>: if the whole <code>S→T</code> path is shortest, then the tail of it (from the second node onward) must itself be a shortest path. So an optimal route is built from optimal sub-routes — exactly what lets us reuse <code>d(·,T)</code> instead of re-exploring everything.</p>
+
+<h2>Watch it run</h2>
+<p>The graph is below with every edge weight shown. We fill in each node's <code>d(·,T)</code> badge working <strong>backward from <code>T</code></strong>. Green node = its <code>d(·,T)</code> is now known; amber = the node we're computing this step. At the end, the optimal path edges turn solid.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Method: <b>Dynamic Programming</b></span>
+  <span class="chip">Time: <b>O(V + E)</b></span>
+  <span class="chip">Beats: <b>greedy (23 vs 9)</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="Greedy commits to the cheapest visible edge (S→A=1) and gets locked into the expensive D→T=18 finish, totalling 23. The optimum spends 5 up front on S→C precisely because it unlocks the cheap C→F→T tail (2+2). A 'too greedy' first step ignores future cost — that's the trap DP fixes by reasoning about whole-path cost.">
+  <div class="q">From <code>S</code>, the edges are <code>S→A=1</code>, <code>S→B=2</code>, <code>S→C=5</code>. Greedy takes the cheapest (<code>S→A</code>) and ends up with total cost 23, yet the true optimum is 9 via <code>S→C→F→T</code>. Why does greedy fail here?</div>
+  <button class="opt">the graph has a negative-weight edge greedy can't handle</button>
+  <button class="opt">greedy added the edge costs in the wrong order</button>
+  <button class="opt">the cheap first edge leads only to expensive finishes; the dearer one unlocks a cheaper tail</button>
+  <button class="opt">greedy never reaches T, so its path is invalid</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The principle of optimality says any tail of an optimal path is itself optimal: since S→C→F→T is shortest S→T, the piece C→F→T must be the shortest C→T. That's exactly what lets DP store d(C,T)=4 once and reuse it, instead of re-solving. The other options describe greedy, brute force, or are simply false.">
+  <div class="q">The shortest <code>S</code>-to-<code>T</code> path is <code>S→C→F→T</code> (cost 9). The <strong>principle of optimality</strong> tells us something must be true about the sub-path <code>C→F→T</code>. What?</div>
+  <button class="opt">it uses the single cheapest edge available at C</button>
+  <button class="opt">it is itself a shortest path from C to T</button>
+  <button class="opt">it must be recomputed separately for every path through C</button>
+  <button class="opt">it is the longest path from C to T</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-multistage-graph">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming) — the multistage-graph shortest path is the canonical "shortest path in a DAG / sequence-of-decisions" warm-up, and the principle of optimality underlies every DP recurrence in the chapter.</p>
+<div class="note"><strong>Next in this bucket:</strong> 0/1 Knapsack — the same backward DP idea, but each "decision" is take-or-leave an item under a weight budget.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- The VERIFIED multistage graph (stages: S | A,B,C | D,E,F | T) ----
+const nodes = [
+  { id:'S', x:6,  y:50 },
+  { id:'A', x:34, y:18 }, { id:'B', x:34, y:50 }, { id:'C', x:34, y:82 },
+  { id:'D', x:66, y:18 }, { id:'E', x:66, y:50 }, { id:'F', x:66, y:82 },
+  { id:'T', x:94, y:50 }
+];
+const edges = [
+  {u:'S',v:'A',w:1}, {u:'S',v:'B',w:2}, {u:'S',v:'C',w:5},
+  {u:'A',v:'D',w:4}, {u:'A',v:'E',w:11},
+  {u:'B',v:'D',w:9}, {u:'B',v:'E',w:5}, {u:'B',v:'F',w:16},
+  {u:'C',v:'F',w:2},
+  {u:'D',v:'T',w:18}, {u:'E',v:'T',w:13}, {u:'F',v:'T',w:2}
+];
+const G = { nodes, edges };
+
+// computed d(X,T) values (filled progressively across frames)
+const D = { T:0, D:18, E:13, F:2, C:4, A:22, B:18, S:9 };
+// optimal path edges to mark 'tree' at the end
+const TREE = ['S-C','C-F','F-T'];
+
+const frames = [
+  { done:[], act:null, badge:{}, tree:false,
+    cap:`The graph, all weights shown. We want the cheapest <b>S→T</b> path. <b>d(X,T)</b> = cost of the cheapest path from X to T. We fill it in <b>backward from T</b>.` },
+  { done:['T'], act:null, badge:{T:0}, tree:false,
+    cap:`Base: <b>d(T,T)=0</b> — you're already at the sink, nothing to pay.` },
+  { done:['T'], act:'D,E,F', badge:{T:0,D:18,E:13,F:2}, tree:false,
+    cap:`Stage 3 nodes have only one hop to T. <b>d(D,T)=18</b>, <b>d(E,T)=13</b>, <b>d(F,T)=2</b> — just the edge to T.` },
+  { done:['T','D','E','F'], act:'C', badge:{T:0,D:18,E:13,F:2,C:4}, tree:false,
+    cap:`<b>d(C,T)</b> = min{ 2 + d(F,T) } = 2 + 2 = <b>4</b>. C's only outgoing edge is C→F.` },
+  { done:['T','D','E','F','C'], act:'A', badge:{T:0,D:18,E:13,F:2,C:4,A:22}, tree:false,
+    cap:`<b>d(A,T)</b> = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{22, 24} = <b>22</b>.` },
+  { done:['T','D','E','F','C','A'], act:'B', badge:{T:0,D:18,E:13,F:2,C:4,A:22,B:18}, tree:false,
+    cap:`<b>d(B,T)</b> = min{ 9+18, 5+13, 16+2 } = min{27, 18, 18} = <b>18</b>.` },
+  { done:['T','D','E','F','C','A','B'], act:'S', badge:{T:0,D:18,E:13,F:2,C:4,A:22,B:18,S:9}, tree:false,
+    cap:`<b>d(S,T)</b> = min{ 1+d(A,T), 2+d(B,T), 5+d(C,T) } = min{ 1+22, 2+18, 5+4 } = min{23, 20, <b>9</b>} = <b>9</b>. The winner is the C-branch!` },
+  { done:['T','D','E','F','C','A','B','S'], act:null, badge:D, tree:true,
+    cap:`Optimal path <b>S→C→F→T = 5+2+2 = 9</b> (solid edges). Greedy would have taken S→A→D→T = 1+4+18 = <b>23</b> — the cheap first edge trapped it in an expensive finish.` }
+];
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const node = {}, badge = {}, edge = {};
+    f.done.forEach(id => node[id] = 'done');
+    if (f.act) f.act.split(',').forEach(id => node[id] = 'act');
+    Object.keys(f.badge).forEach(id => badge[id] = f.badge[id]);
+    if (f.tree) TREE.forEach(k => edge[k] = 'tree');
+    stage.innerHTML = ZOO.graph(G, { node, edge, badge });
+  }
+});
+</script>
+</body></html>

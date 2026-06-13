@@ -1,0 +1,124 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1-Center Problem — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Prune-and-Search</div>
+<h1>1-Center Problem</h1>
+<div class="mission">Find the one spot that is as close as possible to the <strong>farthest</strong> point — the centre of the <strong>smallest circle that covers every point</strong>.</div>
+
+<h2>What is it?</h2>
+<p>You are given <code>n</code> points scattered on a plane. The <strong>1-center problem</strong> asks for a single <em>centre</em> position so that the distance to the point <em>farthest</em> from it is as small as possible. Equivalently: find the <strong>smallest circle that encloses all the points</strong>. The centre of that circle is the answer, and its radius is that smallest-possible farthest distance.</p>
+<p>The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. You are <strong>not</strong> minimising the total or average distance to the points — only the single worst (largest) one matters, because that worst point is what forces the circle to be big.</p>
+<p><strong>Where it's used:</strong> <em>facility location</em>. If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center. Nobody should be more than the radius away.</p>
+<p><strong>The idea (prune-and-search).</strong> Prune-and-search is the strategy behind binary search: each round throw away a fixed <em>fraction</em> of the data, then repeat on what's left. Here the slides solve a <strong>constrained</strong> version first — force the centre onto a given line, which is solvable in <code>O(n)</code> — and use it to figure out <em>which side</em> the true optimum lies. A point sitting safely deep <em>inside</em> the current circle can never be the farthest point, so it can be <strong>pruned</strong>. Each round provably discards about <strong>n/16</strong> of the points. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</p>
+
+<h2>Watch it run</h2>
+<p>Eight points (dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one. Green dots are points pruned because they sit safely inside — they can't be the farthest, so they're dropped.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(n)</b></span>
+  <span class="chip">Prunes: <b>~n/16 each round</b></span>
+  <span class="chip">Goal: <b>min-max distance</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The 1-center minimises the MAXIMUM distance to any point — the radius of the smallest enclosing circle. Moving toward the dense cluster would shrink the average distance but push the lone far point even farther, growing the worst case. Only the farthest point sets the radius.">
+  <div class="q">Seven points are tightly clustered on the left and one lone point sits far to the right. Where does the 1-center put the centre?</div>
+  <button class="opt">on top of the dense cluster, ignoring the lone point</button>
+  <button class="opt">shifted toward the lone point, so the worst (largest) distance is as small as possible</button>
+  <button class="opt">at the average (mean) position of all eight points</button>
+  <button class="opt">exactly halfway between the two closest points</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Each round provably discards a constant fraction (~n/16) of the points, so the surviving size is 15n/16, then (15/16)²n, and so on. That geometric shrinkage makes the total work T(n)=T(15n/16)+O(n) sum to O(n). Halving the radius or sorting is not what gives linearity.">
+  <div class="q">Why does the prune-and-search 1-center algorithm run in O(n) rather than O(n log n)?</div>
+  <button class="opt">it sorts the points once and then scans them</button>
+  <button class="opt">it halves the radius of the circle every step</button>
+  <button class="opt">each round throws away a constant fraction of the points, so the sizes form a shrinking geometric series</button>
+  <button class="opt">it only ever looks at the two farthest points</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prune-1-center">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search) — the 1-center problem, constrained and general versions, with the <code>n/16</code> pruning bound. See also CLRS, <em>Introduction to Algorithms</em>, on linear-time selection (median of medians), the canonical prune-and-search example.</p>
+<div class="note"><strong>Next:</strong> Dynamic Programming — instead of pruning data away, store and reuse solutions to overlapping subproblems.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- 8 points (SVG coords, viewBox 0..100) ----
+const P = [
+  {x:30, y:30}, {x:42, y:24}, {x:55, y:34}, {x:38, y:50},
+  {x:62, y:52}, {x:50, y:62}, {x:74, y:40}, {x:46, y:40}
+];
+// Frames: cx,cy,r = circle; pruned = indices shown as safely-inside (green); far = index of farthest point.
+const frames = [
+  {cx:50, cy:42, r:40, pruned:[], far:6,
+   cap:'Eight points. Start with a big circle that covers them all — far too large.'},
+  {cx:50, cy:42, r:34, pruned:[], far:6,
+   cap:'Shrink the circle until it just touches the <b>farthest</b> point (right). Its distance is the radius.'},
+  {cx:48, cy:42, r:30, pruned:[], far:6,
+   cap:'Constrained step: slide the centre along a line toward the farthest point to reduce the worst distance.'},
+  {cx:48, cy:42, r:30, pruned:[7,0,3], far:6,
+   cap:'Points sitting <b>deep inside</b> can never be the farthest — <b>prune</b> them (~n/16 each round).'},
+  {cx:50, cy:40, r:26, pruned:[7,0,3,1], far:6,
+   cap:'Re-centre using the survivors; the circle keeps tightening around the boundary points.'},
+  {cx:51, cy:41, r:24, pruned:[7,0,3,1,5], far:6,
+   cap:'Another round prunes more interior points. Only points that touch the rim still matter.'},
+  {cx:52, cy:40, r:22, pruned:[7,0,3,1,5], far:6,
+   cap:'The boundary points (left cluster + the far right point) pin the centre — it can move no further.'},
+  {cx:52, cy:40, r:22, pruned:[7,0,3,1,5], far:6, done:true,
+   cap:'<b>Smallest enclosing circle found.</b> Its radius is the minimised maximum distance — the 1-center.'}
+];
+
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const c = {x:f.cx, y:f.cy};
+    let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" style="width:100%;height:22rem;background:var(--card,transparent)">`;
+    // circle
+    const stroke = f.done ? 'var(--done,#3fb950)' : 'var(--acc,#d29922)';
+    svg += `<circle cx="${f.cx}" cy="${f.cy}" r="${f.r}" fill="none" stroke="${stroke}" stroke-width="0.9" stroke-dasharray="${f.done?'0':'2 1.4'}"/>`;
+    // radius line to farthest point
+    const fp = P[f.far];
+    svg += `<line x1="${f.cx}" y1="${f.cy}" x2="${fp.x}" y2="${fp.y}" stroke="${stroke}" stroke-width="0.5" stroke-dasharray="1.5 1"/>`;
+    // centre marker
+    svg += `<circle cx="${f.cx}" cy="${f.cy}" r="1.4" fill="${stroke}"/>`;
+    svg += `<text x="${f.cx+2}" y="${f.cy-2}" font-size="3.4" fill="${stroke}">centre</text>`;
+    // points
+    P.forEach((p,i) => {
+      const isPruned = f.pruned.includes(i);
+      const isFar = (i === f.far);
+      const fill = isPruned ? 'var(--done,#3fb950)' : (isFar ? 'var(--bad,#f85149)' : 'var(--ink,#c9d1d9)');
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="${isFar?1.9:1.6}" fill="${fill}" stroke="rgba(0,0,0,.25)" stroke-width="0.25"/>`;
+    });
+    // farthest label
+    svg += `<text x="${fp.x+2}" y="${fp.y+1}" font-size="3.2" fill="var(--bad,#f85149)">farthest</text>`;
+    svg += `</svg>`;
+    stage.innerHTML = svg;
+  }
+});
+</script>
+</body></html>

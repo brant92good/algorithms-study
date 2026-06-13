@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource Allocation (DP) — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Resource Allocation (DP)</h1>
+<div class="mission">You have a fixed pile of resources and several projects competing for them. Hand them out to <strong>maximize total profit</strong> — and let dynamic programming try every split for you.</div>
+
+<h2>What is it?</h2>
+<p>You have <strong>m</strong> identical units of some resource (money, machines, staff — anything divisible into whole units) and <strong>n</strong> projects. Giving a project more units earns more profit, but the units are limited, so you must choose <em>how many to give each project</em>. The goal: pick an allocation that maximizes the <strong>sum of profits</strong> across all projects.</p>
+<p>The profit of each choice is given by a table <code>p(i, j)</code> = the profit you get when you allocate <strong>j units to project i</strong>. (Giving 0 units to a project earns 0.) Here is the deck's instance — <strong>m = 3</strong> units, <strong>n = 4</strong> projects:</p>
+
+<table class="dp" style="margin:.6rem 0">
+<tr><th>p(i,j)</th><th>j=1</th><th>j=2</th><th>j=3</th></tr>
+<tr><th>1</th><td>2</td><td>8</td><td>9</td></tr>
+<tr><th>2</th><td>5</td><td>6</td><td>7</td></tr>
+<tr><th>3</th><td>4</td><td>4</td><td>4</td></tr>
+<tr><th>4</th><td>2</td><td>4</td><td>5</td></tr>
+</table>
+
+<p>So <code>p(1,2) = 8</code> means "2 units to project 1 earns 8 profit." Brute force would try every way to split 3 units among 4 projects — wasteful. DP instead asks a smaller question, project by project: <em>"using only the first i projects and q units of budget, what is the best profit?"</em> Call that <code>f(i, q)</code>. The key insight (the <strong>decision</strong>): when we add project i, we decide <strong>how many units k to hand it</strong> (0, 1, … up to q), spend the rest on the earlier projects, and keep the best:</p>
+<div class="atree">f(i, q) = max over k = 0..q  of   p(i, k) + f(i-1, q - k)</div>
+<p>with base row <code>f(1, q) = p(1, q)</code>. The answer is <code>f(n, m) = f(4, 3)</code>. (The deck draws the same thing as a <strong>multistage graph</strong>: a node <code>(i, j)</code> = "i units used by the first j projects", edges weighted by profit increments, and the answer is the <strong>longest / max-profit path</strong> from S to T.)</p>
+
+<h2>Watch it run</h2>
+<p>We fill the DP table <code>f(i, q)</code> row by row. Row 1 just copies project 1's profits. Each later cell is the <strong>max</strong> over "how many units k to give project i" — gold is the cell being filled, blue cells are the earlier-row values it depends on. Total budget m = 3, so the answer lives in the bottom-right cell.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Type: <b>DP</b></span>
+  <span class="chip">Time: <b>O(n · m²)</b></span>
+  <span class="chip">Answer: <b>profit 13</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The optimal allocation is 2 units to project 1 (profit 8) and 1 unit to project 2 (profit 5), 0 to projects 3 and 4 — total 8 + 5 = 13. That is exactly the deck's winning path S→C→H→L→T. Tempting traps: 9 (give all 3 units to project 1 alone, p(1,3)=9 — but splitting beats it), and 15/16 are sums that ignore the 3-unit budget cap.">
+  <div class="q">With m = 3 units, projects 1–4 and the profit table above (p(1,·)=2,8,9; p(2,·)=5,6,7; p(3,·)=4,4,4; p(4,·)=2,4,5), what is the maximum total profit?</div>
+  <button class="opt">9</button>
+  <button class="opt">13</button>
+  <button class="opt">15</button>
+  <button class="opt">21</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="f(2,3) considers every split of 3 units between projects 1 and 2: give 0 to project 2 → 0 + f(1,3)=9; give 1 → 5 + f(1,2)=5+8=13; give 2 → 6 + f(1,1)=6+2=8; give 3 → 7 + f(1,0)=7. The max is 13, from giving project 2 exactly 1 unit. Picking 9 forgets project 2 can help; picking 8 or 7 picks a worse split.">
+  <div class="q">Filling f(2,3) — best profit using projects 1 and 2 with 3 units — you try each amount k for project 2: p(2,k) + f(1, 3−k). The options come out to 9, 13, 8, 7. Which value goes in the cell, and how many units did project 2 get?</div>
+  <button class="opt">9, project 2 gets 0 units</button>
+  <button class="opt">7, project 2 gets 3 units</button>
+  <button class="opt">13, project 2 gets 1 unit</button>
+  <button class="opt">8, project 2 gets 2 units</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-resource-allocation">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming) — the "best split over a decision" pattern here is the same one behind rod-cutting and matrix-chain ordering. The multistage-graph framing follows Horowitz &amp; Sahni, <em>Fundamentals of Computer Algorithms</em>, Ch. 7.</p>
+<div class="note"><strong>Next in this bucket:</strong> Traveling Salesperson (DP) — the Held–Karp recurrence g(i, S) = min over j of c(i,j) + g(j, S−{j}), turning an n! tour search into O(n²·2ⁿ).</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- The deck's resource-allocation instance (§9, verified slides 19-21) ----
+// p[i][j] = profit of giving j units to project i (1-indexed projects, j = 0..3).
+const m = 3;                       // total resource units
+const projects = [
+  [0, 2, 8, 9],   // project 1
+  [0, 5, 6, 7],   // project 2
+  [0, 4, 4, 4],   // project 3
+  [0, 2, 4, 5],   // project 4
+];
+const n = projects.length;
+
+// DP: f[i][q] = best profit using first i projects (1..i) with q units. f[0][*] = 0.
+const f = Array.from({length: n + 1}, () => Array(m + 1).fill(0));
+for (let q = 0; q <= m; q++) f[1][q] = projects[0][q];   // base row = project 1
+for (let i = 2; i <= n; i++)
+  for (let q = 0; q <= m; q++) {
+    let best = 0;
+    for (let k = 0; k <= q; k++) best = Math.max(best, projects[i-1][k] + f[i-1][q-k]);
+    f[i][q] = best;
+  }
+
+// ---- Build frames. Matrix shown to ZOO.grid has rows i = 1..n, cols q = 0..m. ----
+// We reveal cells progressively; cur = the cell being filled, deps = the f(i-1, q-k) it reads.
+const rows = ['proj 1','proj 2','proj 3','proj 4'];
+const cols = ['q=0','q=1','q=2','q=3'];
+
+// snapshot helper: matrix of values revealed up to (and including) the listed filled cells
+function snap(filled) {
+  const M = Array.from({length: n}, () => Array(m + 1).fill(null));
+  filled.forEach(([i,q]) => { M[i-1][q] = f[i][q]; });
+  return M;
+}
+
+const frames = [];
+// running list of filled cells (in display coords i=1..n, q=0..m)
+const done = [];
+
+// Frame 0: base row fully filled (project 1 = copy its profits)
+for (let q = 0; q <= m; q++) done.push([1, q]);
+frames.push({
+  filled: done.slice(), cur: null, deps: [],
+  cap: `<b>Base row.</b> f(1,q) = p(1,q): with only project 1, just take its profit for q units → 0, 2, 8, 9.`
+});
+
+// helper to compute best k for a cell (for caption + the chosen dep)
+function bestK(i, q) {
+  let best = -1, bk = 0;
+  for (let k = 0; k <= q; k++) {
+    const v = projects[i-1][k] + f[i-1][q-k];
+    if (v > best) { best = v; bk = k; }
+  }
+  return {best, bk};
+}
+
+// Fill rows 2..n, cell by cell (q = 0..m). One frame per cell for q>=2; bundle q=0,1 lightly.
+for (let i = 2; i <= n; i++) {
+  for (let q = 0; q <= m; q++) {
+    done.push([i, q]);
+    const {best, bk} = bestK(i, q);
+    // dependency cell it ultimately used: f(i-1, q-bk)
+    const deps = [[i-1, q - bk]];
+    const optsTxt = [];
+    for (let k = 0; k <= q; k++) optsTxt.push(`p(${i},${k})+f(${i-1},${q-k}) = ${projects[i-1][k]}+${f[i-1][q-k]} = ${projects[i-1][k]+f[i-1][q-k]}`);
+    frames.push({
+      filled: done.slice(), cur: [i, q], deps,
+      cap: `<b>f(${i},${q})</b> — best profit, projects 1–${i}, ${q} unit${q===1?'':'s'}. Try every k for project ${i}: ` +
+           (q === 0 ? `nothing to give → 0.` :
+            `${optsTxt.join('; ')}. <b>Max = ${best}</b> (give project ${i} ${bk} unit${bk===1?'':'s'}).`)
+    });
+  }
+}
+
+// Final frame: highlight the answer cell + the optimal-allocation path (reconstruction).
+// Optimal: f(4,3)=13 via give 0 to proj4 → f(3,3); 0 to proj3 → f(2,3); 1 to proj2 → f(1,2)=8.
+const pathCells = [[4,3],[3,3],[2,3],[1,2]];
+frames.push({
+  filled: done.slice(), cur: null, deps: [], path: pathCells,
+  cap: `<b>Answer: f(4,3) = 13.</b> Trace back the choices: project 4 gets 0, project 3 gets 0, project 2 gets 1 (profit 5), project 1 gets 2 (profit 8) → <b>8 + 5 = 13</b>. Same as the deck's max-profit path S→C→H→L→T.`
+});
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (fr, stage) => {
+    const M = snap(fr.filled);
+    const cls = {};
+    (fr.deps || []).forEach(([i,q]) => { cls[`${i-1},${q}`] = 'dep'; });
+    (fr.path || []).forEach(([i,q]) => { cls[`${i-1},${q}`] = 'path'; });
+    if (fr.cur) cls[`${fr.cur[0]-1},${fr.cur[1]}`] = 'act';
+    stage.innerHTML = ZOO.grid(M, { rows, cols, cls });
+  }
+});
+</script>
+</body></html>

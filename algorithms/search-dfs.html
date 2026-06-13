@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Depth-First Search</h1>
+<div class="mission">Hunt for a solution by diving deep down one branch of a decision tree, then <strong>backtracking</strong> the moment a branch goes bad — guided by a <strong>stack</strong>.</div>
+
+<h2>What is it?</h2>
+<p>Many problems can be solved by building a <strong>solution tree</strong> (also called a state-space tree): a tree where each <em>node</em> is a <strong>partial solution</strong> and each <em>edge</em> is one decision you make. A root-to-leaf path is one complete candidate answer. To solve the problem you <strong>search</strong> this tree for a node that is a <strong>goal</strong> (it satisfies what you wanted).</p>
+<p><strong>Depth-first search (DFS)</strong> is one way to explore that tree. The idea is in the name: go as <em>deep</em> as you can down one branch before trying any sibling branch. When the current branch is a dead end, you <strong>backtrack</strong> — undo the last decision and try the next option. DFS is driven by a <strong>stack</strong>, a "last-in, first-out" (<strong>LIFO</strong>) container: the node you pushed most recently is the next one you pop and explore. Pushing children and always popping the newest is exactly what makes the search dive deep first. (Contrast: a <em>queue</em>, first-in-first-out, would explore level by level — that is breadth-first search.)</p>
+<p><strong>Tiny concrete example — the sum-of-subsets problem.</strong> Given a set <code>S = {7, 5, 1, 2, 10}</code>, find a subset whose elements add up to a <strong>target of 9</strong>. We build a binary tree: at level <em>i</em> we decide whether element <em>i</em> is <strong>in</strong> the subset or <strong>out</strong>. Each node holds the running sum of the "in" choices so far. If a running sum ever <strong>exceeds 9</strong>, that whole branch is hopeless (all numbers are positive, so it can only grow) — so we backtrack. DFS dives down the "include" edges, overshoots, backs up, and lands on the subset <strong>{7, 2} = 9</strong>.</p>
+
+<h2>Watch it run</h2>
+<p>The decision tree for <code>S = {7, 5, 1, 2, 10}</code>, <strong>target = 9</strong>. Each node shows the running sum; <code>×</code> marks a sum that overshot 9 (a dead end we backtrack from). The <b>Stack</b> strip below shows the in/out decisions currently on the path. Watch the gold node move <em>down</em> (dive) and the stack <em>pop</em> when we backtrack.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Data structure: <b>Stack (LIFO)</b></span>
+  <span class="chip">Strategy: <b>backtracking</b></span>
+  <span class="chip">Time: <b>O(2ⁿ) worst case</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="DFS pushes children and always pops the most recently added node — last-in, first-out — which is exactly what drives it deep down one branch before trying siblings. A queue (first-in, first-out) would empty each level before the next, giving breadth-first search instead. Recall and priority queues belong to other strategies.">
+  <div class="q">In the search above, after expanding a node DFS always explores the child it just added next, before any older sibling. Which data structure produces that order?</div>
+  <button class="opt">a queue, taking the oldest waiting node first</button>
+  <button class="opt">a stack, taking the most recently added node first</button>
+  <button class="opt">a priority queue ordered by smallest running sum</button>
+  <button class="opt">a plain list scanned from the front each time</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Every element is a positive number, so once the running sum passes the target of 9 it can never come back down — the whole subtree is hopeless, so DFS backtracks immediately (e.g. 7+5=12 and 8+2=10). Reaching a leaf or running out of elements is not what triggers the backtrack here; and a sum still below 9 is still promising, so we keep diving.">
+  <div class="q">Diving down the tree, DFS reaches a node whose running sum is 12 while the target is 9. What makes it pop the stack and back up right here?</div>
+  <button class="opt">it has reached a leaf at the bottom of the tree</button>
+  <button class="opt">the running sum is still below the target</button>
+  <button class="opt">the running sum exceeded the target, so the branch is hopeless</button>
+  <button class="opt">it has run out of elements to decide on</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="search-dfs">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies; sum-of-subsets via depth-first search, Fig. 6-11) — or CLRS, <em>Introduction to Algorithms</em>, §20.3 (Depth-First Search) for the graph-traversal form.</p>
+<div class="note"><strong>Next in this bucket:</strong> Breadth-First Search — same solution tree, but a <em>queue</em> (FIFO) explores it level by level instead of diving deep.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// Sum-of-subsets: S = {7,5,1,2,10}, target 9.  Decision tree, DFS guided by a stack.
+// Each frame names the "current" node by a path key into a fixed tree layout, plus the stack of in/out decisions.
+// Tree nodes we visit (matches Fig. 6-11): root 0 -> +7 ->{ +5=12(x), +1=8 ->{ +2=10(x), +10=18(x) }, +2=9(GOAL) }
+const T = 9;
+
+// Build the ASCII tree. We render the full visited tree each frame and decorate the "current" node + mark dead/goal.
+// Node ids: r(root)=0, a=7, b=12(x), c=8, d=10(x), e=18(x), g=9(GOAL)
+function tree(cur, dead, goalLit){
+  const M = (lit, id) => {           // mark helper: gold if current, brackets if dead, [[ ]] if goal
+    if (id === goalLit) return '«'+lit+'»';     // goal node
+    if (dead.includes(id)) return lit+' ×';     // overshot dead end
+    if (id === cur)        return '▶'+lit+'◀';  // current (gold) node
+    return lit;
+  };
+  return [
+'                  '+M('0','r')+'   (empty subset, sum 0)',
+'                  │',
+'            in 7  │',
+'                  ▼',
+'                 '+M('7','a')+'   (sum 7)',
+'         ┌────────┼────────┐',
+'   in 5  │  in 1  │  in 2  │',
+'         ▼        ▼        ▼',
+'        '+M('12','b')+'       '+M('8','c')+'       '+M('9','g'),
+'               ┌──┴──┐',
+'         in 2  │     │  in 10',
+'               ▼     ▼',
+'              '+M('10','d')+'    '+M('18','e')
+  ].join('\n');
+}
+
+const frames = [
+  { cur:'r', dead:[], goal:null, st:[],
+    cap:`Solution tree for <b>S={7,5,1,2,10}</b>, target <b>9</b>. Root = empty subset, running sum <b>0</b>. Push the root; DFS begins.` },
+  { cur:'a', dead:[], goal:null, st:['in 7'],
+    cap:`Dive deepest first. Decide element <b>7</b> → <b>in</b>. Push it. Running sum = <b>7</b> (≤ 9, still promising).` },
+  { cur:'b', dead:['b'], goal:null, st:['in 7','in 5'],
+    cap:`Keep diving: <b>5</b> → in. Sum = 7+5 = <b>12</b> &gt; 9. Overshot! Positive numbers only grow, so this branch is hopeless — mark <b>×</b>.` },
+  { cur:'a', dead:['b'], goal:null, st:['in 7'],
+    cap:`<b>Backtrack.</b> Pop "in 5" off the stack — undo that decision and return to node 7.` },
+  { cur:'c', dead:['b'], goal:null, st:['in 7','in 1'],
+    cap:`Try the next option at node 7: <b>1</b> → in. Sum = 7+1 = <b>8</b> (≤ 9). Promising — dive deeper.` },
+  { cur:'d', dead:['b','d'], goal:null, st:['in 7','in 1','in 2'],
+    cap:`From 8: <b>2</b> → in. Sum = 8+2 = <b>10</b> &gt; 9. Dead end — mark <b>×</b> and prepare to backtrack.` },
+  { cur:'e', dead:['b','d','e'], goal:null, st:['in 7','in 1','in 10'],
+    cap:`Pop "in 2"; try <b>10</b> → in. Sum = 8+10 = <b>18</b> &gt; 9. Also dead. Node 8 has no good children — backtrack out of it.` },
+  { cur:'g', dead:['b','d','e'], goal:null, st:['in 7','in 2'],
+    cap:`Back at node 7, pop down to its last option: <b>2</b> → in. Sum = 7+2 = <b>9</b>.` },
+  { cur:'g', dead:['b','d','e'], goal:'g', st:['in 7','in 2'],
+    cap:`Sum = <b>9 = target</b>. <b>Goal node found!</b> The subset on the stack is <b>{7, 2}</b>. DFS stops.` }
+];
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const ascii = tree(f.cur, f.dead, f.goal);
+    stage.innerHTML =
+      '<div class="atree">' + ascii + '</div>' +
+      ZOO.lane('Stack', f.st);
+  }
+});
+</script>
+</body></html>

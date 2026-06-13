@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Common Subsequence — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Longest Common Subsequence</h1>
+<div class="mission">Find the longest string that hides inside <strong>both</strong> of two sequences — without rearranging anything — by filling one little table.</div>
+
+<h2>What is it?</h2>
+<p>A <strong>subsequence</strong> is what you get by deleting zero or more symbols from a string while keeping the rest <em>in their original order</em>. From <code>bacad</code> you can pull out <code>bcd</code>, <code>aca</code>, or <code>acad</code> — you may skip letters, but you may never reorder them.</p>
+<p>Watch the difference from a <strong>substring</strong>: a substring must be <em>contiguous</em> (a solid run, like <code>aca</code> taken from positions 2–4 of <code>bacad</code>). A subsequence is <em>skip-but-keep-order</em>, so it is more permissive — every substring is a subsequence, but not the reverse.</p>
+<p>The <strong>Longest Common Subsequence (LCS)</strong> problem: given two strings <code>A</code> and <code>B</code>, find the longest sequence that is a subsequence of <em>both</em>. For <code>A = bacad</code> and <code>B = accbadcb</code> the answer is <code>acad</code> (length 4).</p>
+<p><strong>The idea.</strong> Build a table <code>L</code> where <code>L[i,j]</code> = length of the LCS of the first <code>i</code> letters of A and the first <code>j</code> letters of B. Row 0 and column 0 are all <code>0</code> (an empty prefix shares nothing). Then for every interior cell, compare the two current letters <code>aᵢ</code> and <code>bⱼ</code>:</p>
+<ul>
+  <li><strong>Match</strong> (<code>aᵢ = bⱼ</code>): take the <em>diagonal</em> neighbour and add one — <code>L[i,j] = L[i-1,j-1] + 1</code>. The matched letter extends the best LCS of the two shorter prefixes.</li>
+  <li><strong>Mismatch</strong> (<code>aᵢ ≠ bⱼ</code>): you can't use both letters, so keep the better of dropping one — <code>L[i,j] = max(L[i-1,j], L[i,j-1])</code>. <em>No +1 here</em> — nothing new was matched.</li>
+</ul>
+<p>The bottom-right cell is the LCS length. To recover the actual string, <strong>trace back</strong> from that corner: step diagonally on each match (recording the letter), otherwise step toward the larger neighbour.</p>
+
+<h2>Watch it run</h2>
+<p>Below is the table for <strong>A = bacad</strong> (rows) and <strong>B = accbadcb</strong> (columns). The <span style="color:var(--acc)">gold</span> cell is the one being computed; <span style="color:#e0a72e">amber</span> marks the dependency it reads (diagonal on a match, left/up on a mismatch). The final frames light the <span style="color:#2ea043">green</span> trace-back that spells <code>acad</code>.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(mn)</b></span>
+  <span class="chip">Space: <b>O(mn)</b></span>
+  <span class="chip">Answer: <b>acad (4)</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="On a match the new letter extends the LCS of the two strictly-shorter prefixes, which lives in the diagonal cell L[i-1,j-1] — so you add 1 to the diagonal. The 'max of left and up, plus 1' option is the classic trap: you only add 1 when letters match (and then from the diagonal), and you never add 1 on a mismatch.">
+  <div class="q">Filling the LCS table, you reach a cell where the row letter and column letter are <strong>both <code>c</code></strong> (a match). The neighbours read: diagonal (up-left) = 2, up = 3, left = 3. What value goes in this cell?</div>
+  <button class="opt">4, because it is max(up, left) + 1</button>
+  <button class="opt">3, because it is diagonal + 1</button>
+  <button class="opt">3, because it is max(up, left)</button>
+  <button class="opt">2, because it is just the diagonal</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="A and B share a, c, a, d in order (skipping the extra letters of each), and the bottom-right table cell is 4. 'accb' and 'bacad' are substrings/whole strings, not common subsequences of both; 'aca' is common but not the longest.">
+  <div class="q">For <code>A = bacad</code> and <code>B = accbadcb</code>, which string is the longest common subsequence, and what is its length?</div>
+  <button class="opt">aca, length 3</button>
+  <button class="opt">accb, length 4</button>
+  <button class="opt">acad, length 4</button>
+  <button class="opt">bacad, length 5</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-lcs">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming), §15.4 "Longest common subsequence" — the same <code>L[i,j]</code> recurrence and trace-back.</p>
+<div class="note"><strong>Next in this bucket:</strong> Optimal Binary Search Trees — pick a root for each key range to minimise expected search cost, again by combining optimal subproblems.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+const A = "bacad", B = "accbadcb";
+const m = A.length, n = B.length;
+// build the (m+1) x (n+1) DP table
+const L = Array.from({length:m+1}, ()=>Array(n+1).fill(0));
+for (let i=1;i<=m;i++) for (let j=1;j<=n;j++){
+  if (A[i-1]===B[j-1]) L[i][j]=L[i-1][j-1]+1;
+  else L[i][j]=Math.max(L[i-1][j], L[i][j-1]);
+}
+// column labels (B) and row labels (A), with a leading blank for the 0-row/col
+const cols = ['', ...B.split('')];
+const rows = ['', ...A.split('')];
+
+// helper: a frame shows the table filled up to (and including) cell (ri,rj),
+// highlights act=(ri,rj) and its dependency cell(s).
+function partial(uptoI, uptoJ){
+  // matrix of values filled in row-major order up to (uptoI,uptoJ); else null
+  const M = Array.from({length:m+1}, ()=>Array(n+1).fill(null));
+  // row 0 and col 0 are always shown as 0
+  for (let j=0;j<=n;j++) M[0][j]=0;
+  for (let i=0;i<=m;i++) M[i][0]=0;
+  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++){
+    if (i<uptoI || (i===uptoI && j<=uptoJ)) M[i][j]=L[i][j];
+  }
+  return M;
+}
+
+const frames = [];
+
+// Frame 1: empty interior, boundary zeros
+frames.push({
+  M: (()=>{const M=Array.from({length:m+1},()=>Array(n+1).fill(null));
+        for(let j=0;j<=n;j++)M[0][j]=0; for(let i=0;i<=m;i++)M[i][0]=0; return M;})(),
+  cls:{}, cap:`Set up the table for <b>A=bacad</b> (rows) and <b>B=accbadcb</b> (cols). Row 0 and column 0 are all <b>0</b> — an empty prefix shares nothing.`
+});
+
+// pick a few illustrative interior cells: 2 matches and 2 mismatches, then fill-to-end
+// cell coords are (i,j) 1-based into A/B
+const steps = [
+  {i:1,j:1}, // a1=b ? b1=a  -> mismatch, both 0 -> 0
+  {i:2,j:1}, // a2=a vs b1=a -> MATCH, diag(L[1][0]=0)+1 = 1
+  {i:3,j:2}, // a3=c vs b2=c -> MATCH, diag(L[2][1]=1)+1 = 2
+  {i:4,j:5}, // a4=a vs b5=a -> MATCH, diag(L[3][4]=2)+1 = 3
+  {i:5,j:1}, // a5=d vs b1=a -> mismatch, max(up L[4][1]=1, left L[5][0]=0)=1
+];
+steps.forEach(s=>{
+  const {i,j}=s; const match = A[i-1]===B[j-1];
+  const M = partial(i,j);
+  const cls = {}; cls[`${i},${j}`]='act';
+  let cap;
+  if (match){
+    cls[`${i-1},${j-1}`]='dep';
+    cap = `<b>a${i}=${A[i-1]}</b> = <b>b${j}=${B[j-1]}</b> → <b>match</b>. Take the diagonal ${L[i-1][j-1]} and add 1 → <b>${L[i][j]}</b>.`;
+  } else {
+    cls[`${i-1},${j}`]='dep'; cls[`${i},${j-1}`]='dep';
+    cap = `a${i}=${A[i-1]} ≠ b${j}=${B[j-1]} → <b>mismatch</b>. Take max(up ${L[i-1][j]}, left ${L[i][j-1]}) = <b>${L[i][j]}</b> — no +1.`;
+  }
+  frames.push({M, cls, cap});
+});
+
+// Frame: fully filled table, no highlight
+frames.push({
+  M: L.map(r=>r.slice()), cls:{},
+  cap:`The whole table is filled the same way, row by row. The <b>bottom-right cell = ${L[m][n]}</b> is the LCS length.`
+});
+
+// trace-back: from (m,n) walk to (0,0)
+const path = []; const letters = [];
+{
+  let i=m, j=n;
+  while (i>0 && j>0){
+    if (A[i-1]===B[j-1]){ path.push([i,j]); letters.push(A[i-1]); i--; j--; }
+    else if (L[i-1][j] >= L[i][j-1]) i--; else j--;
+  }
+}
+letters.reverse();
+const lcsStr = letters.join('');
+
+frames.push({
+  M: L.map(r=>r.slice()), cls:(()=>{const c={}; path.forEach(([i,j])=>c[`${i},${j}`]='path'); return c;})(),
+  cap:`<b>Trace back</b> from the corner: step diagonally on each match, recording its letter. The match cells spell <b>${lcsStr}</b> (read top-to-bottom) — LCS length <b>${L[m][n]}</b>. ✅`
+});
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    stage.innerHTML = ZOO.grid(f.M, { rows, cols, cls: f.cls });
+  }
+});
+</script>
+</body></html>
