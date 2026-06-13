@@ -14,29 +14,35 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>Multistage Graph — Shortest Path</h1>
-<div class="mission">Find the cheapest route across a layered graph by reasoning <strong>backward from the goal</strong> — the cleanest first taste of dynamic programming, and a problem where being greedy gets you burned.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §2–5 (Multistage Graph; backward &amp; forward reasoning; principle of optimality), slide 5.</p>
+<h1>Multistage Graph Shortest Path</h1>
+<div class="mission">Find the <strong>cheapest route</strong> across a graph whose nodes come in ordered stages — a problem where grabbing the cheapest first edge gets you burned, and the clean first taste of dynamic programming.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §1–5 (Multistage Graph; backward &amp; forward reasoning; principle of optimality), slide 5.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
 
-<h2>What is it?</h2>
-<p><strong>Dynamic programming (DP)</strong> is a way to solve a problem that is really a <strong>sequence of decisions</strong>. Instead of grabbing the locally cheapest option at each step (that's the <em>greedy</em> method), DP works out the best answer to small subproblems, stores it, and stitches those answers together — so the final route is guaranteed to be the best <em>overall</em>.</p>
-<p>A <strong>multistage graph</strong> is the textbook setting for this. It's a directed graph whose nodes are split into ordered groups called <strong>stages</strong>. Every edge points from one stage to the very next stage — you can never skip ahead or go back. The first stage is a single <strong>source</strong> node <code>S</code>; the last is a single <strong>sink</strong> node <code>T</code>. Each edge has a cost (a <strong>weight</strong>). The job: find the <strong>minimum-cost path</strong> from <code>S</code> to <code>T</code>.</p>
-<p><strong>Our graph has 4 stages:</strong> <code>S</code> → then <code>{A,B,C}</code> → then <code>{D,E,F}</code> → then <code>T</code>. To get from <code>S</code> to <code>T</code> you make three decisions in a row: which stage-2 node, which stage-3 node, then on to <code>T</code>.</p>
-<p><strong>Why not just be greedy?</strong> Greedy says "take the cheapest edge you can see right now." From <code>S</code> the cheapest edge is <code>S→A</code> (cost&nbsp;1), then <code>A→D</code> (cost&nbsp;4), then the only option <code>D→T</code> (cost&nbsp;18) — total <strong>23</strong>. But the real cheapest route is <code>S→C→F→T</code> = 5+2+2 = <strong>9</strong>. The first edge <code>S→C</code> <em>looks</em> expensive (cost&nbsp;5), yet it opens a dirt-cheap finish. Greedy can't see that far ahead.</p>
-<p><strong>The DP idea — backward reasoning.</strong> Let <code>d(X,T)</code> = cost of the cheapest path from node <code>X</code> to the sink <code>T</code>. Start at the nodes nearest <code>T</code> (their answer is just the single edge to <code>T</code>), then move one stage back at a time. For each node, you only need: "the cost to step to each neighbor, plus that neighbor's already-known <code>d(·,T)</code>; keep the smallest." This works because of the <strong>principle of optimality</strong>: if the whole <code>S→T</code> path is shortest, then the tail of it (from the second node onward) must itself be a shortest path. So an optimal route is built from optimal sub-routes — exactly what lets us reuse <code>d(·,T)</code> instead of re-exploring everything.</p>
+<h2>The problem</h2>
+<p>A <strong>multistage graph</strong> is a <strong>directed</strong> graph whose nodes are partitioned into ordered groups called <strong>stages</strong>. Every edge points from one stage to the very <em>next</em> stage — you can never skip a stage or go backward. The first stage is a single <strong>source</strong> node <code>S</code>; the last stage is a single <strong>sink</strong> node <code>T</code>. Each edge carries a cost (its <strong>weight</strong>).</p>
+<p><strong>What's asked:</strong> find the <strong>minimum-cost path</strong> from <code>S</code> to <code>T</code> — the sequence of edges, one per stage transition, whose weights add up to the smallest total.</p>
+<p><strong>The concrete instance (our running example).</strong> The graph has <strong>4 stages</strong>: <code>S</code> → then <code>{A, B, C}</code> → then <code>{D, E, F}</code> → then <code>T</code>. So a path is three decisions in a row: which stage-2 node, which stage-3 node, then on to <code>T</code>. Every edge weight:</p>
+<ul>
+  <li><b>Stage 1→2:</b> <code>S→A=1</code>, <code>S→B=2</code>, <code>S→C=5</code></li>
+  <li><b>Stage 2→3:</b> <code>A→D=4</code>, <code>A→E=11</code>, <code>B→D=9</code>, <code>B→E=5</code>, <code>B→F=16</code>, <code>C→F=2</code></li>
+  <li><b>Stage 3→4:</b> <code>D→T=18</code>, <code>E→T=13</code>, <code>F→T=2</code></li>
+</ul>
+<p><strong>Why is this hard? Why not just be greedy?</strong> The greedy method takes the cheapest edge visible right now. From <code>S</code> that's <code>S→A</code> (cost&nbsp;1), then <code>A→D</code> (cost&nbsp;4), then the forced <code>D→T</code> (cost&nbsp;18) — total <strong>23</strong>. But the true cheapest route is <code>S→C→F→T</code> = 5+2+2 = <strong>9</strong>. The first edge <code>S→C</code> <em>looks</em> expensive (cost&nbsp;5), yet it unlocks a dirt-cheap finish. A locally cheap choice can trap you in an expensive future — greedy can't see that far ahead, so we need a method that reasons about the whole path.</p>
 
-<h2>Watch it run</h2>
-<p>The graph is below with every edge weight shown. We fill in each node's <code>d(·,T)</code> badge working <strong>backward from <code>T</code></strong>. Green node = its <code>d(·,T)</code> is now known; amber = the node we're computing this step. At the end, the optimal path edges turn solid.</p>
+<h2>Watch it solved</h2>
+<p>The solving idea is <strong>backward reasoning</strong>. Let <code>d(X,T)</code> = the cost of the cheapest path from node <code>X</code> to the sink <code>T</code>. Start at the nodes nearest <code>T</code> (their answer is just the single edge to <code>T</code>), then step one stage back at a time: for each node take "edge to a neighbor + that neighbor's already-known <code>d(·,T)</code>, keep the smallest." The graph is below with every weight shown; we fill each node's <code>d(·,T)</code> badge working <strong>backward from <code>T</code></strong>. Green = its <code>d(·,T)</code> is known; amber = the node being computed this step. At the end the optimal path edges turn solid.</p>
 <div id="viz"></div>
 
 <div class="chips">
   <span class="chip">Method: <b>Dynamic Programming</b></span>
   <span class="chip">Time: <b>O(V + E)</b></span>
-  <span class="chip">Beats: <b>greedy (23 vs 9)</b></span>
+  <span class="chip">Answer: <b>d(S,T) = 9</b></span>
+  <span class="chip">Beats greedy: <b>9 vs 23</b></span>
 </div>
 
 <h2>The other direction — forward reasoning</h2>
-<p>The animation above used <strong>backward reasoning</strong>: define <code>d(X,T)</code> = cheapest cost from <code>X</code> to the sink, and fill it in from <code>T</code> back toward <code>S</code> — giving <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, and finally <code>d(S,T)=9</code>. But you can solve the very same graph the opposite way. In <strong>forward reasoning</strong> you define <code>d(S,X)</code> = cheapest cost from the source <code>S</code> down to node <code>X</code>, and fill it in from <code>S</code> forward toward <code>T</code>. The stage-2 nodes are just their single edge from <code>S</code> (<code>d(S,A)=1</code>, <code>d(S,B)=2</code>, <code>d(S,C)=5</code>); then for each later node you take "each incoming neighbor's <code>d(S,·)</code> plus the edge into this node, keep the smallest." That gives <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>, and finally <code>d(S,T)=min{5+18, 7+13, 7+2}=9</code> — the <em>same</em> optimum of <strong>9</strong>, reached from the front instead of the back.</p>
+<p>The animation used <strong>backward reasoning</strong>: <code>d(X,T)</code> = cheapest cost from <code>X</code> to the sink, filled in from <code>T</code> back toward <code>S</code> — giving <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, and finally <code>d(S,T)=9</code>. The very same graph can be solved the opposite way. In <strong>forward reasoning</strong> you define <code>d(S,X)</code> = cheapest cost from the source <code>S</code> down to node <code>X</code>, and fill it in from <code>S</code> forward toward <code>T</code>. The stage-2 nodes are just their single edge from <code>S</code> (<code>d(S,A)=1</code>, <code>d(S,B)=2</code>, <code>d(S,C)=5</code>); then for each later node you take "each incoming neighbor's <code>d(S,·)</code> plus the edge into this node, keep the smallest." That gives <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>, and finally <code>d(S,T)=min{5+18, 7+13, 7+2}=9</code> — the <em>same</em> optimum of <strong>9</strong>, reached from the front instead of the back.</p>
 <p><strong>Principle of optimality.</strong> Both directions work for the same reason: if a sequence of decisions is optimal overall, then any tail (or head) of that sequence must itself be optimal — so an optimal path is built from optimal sub-paths, which is exactly what lets us reuse the stored <code>d(·)</code> values instead of re-exploring.</p>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
@@ -60,13 +66,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-multistage-graph">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-multistage-graph">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
 <p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming) — the multistage-graph shortest path is the canonical "shortest path in a DAG / sequence-of-decisions" warm-up, and the principle of optimality underlies every DP recurrence in the chapter.</p>
-<div class="note"><strong>Next in this bucket:</strong> 0/1 Knapsack — the same backward DP idea, but each "decision" is take-or-leave an item under a weight budget.</div>
+<div class="note"><strong>Solved by:</strong> <a href="algo-dynamic-programming.html">Dynamic Programming</a> — the strategy that records subproblem optima and stitches them together. <strong>Sibling problem in this bucket:</strong> 0/1 Knapsack — the same backward DP idea, but each "decision" is take-or-leave an item under a weight budget.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

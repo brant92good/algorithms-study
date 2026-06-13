@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamic Programming — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming · Ch7</div>
+<h1>Dynamic Programming</h1>
+<div class="mission">Solve a problem as a <strong>sequence of decisions</strong>, then beat the brute-force blow-up by <strong>storing and reusing</strong> the optima of subproblems you'd otherwise recompute. The <em>principle of optimality</em> is what licenses the recurrence.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A07 · <em>Dynamic Programming</em> (sequence of decisions → overlapping subproblems → principle of optimality → multistage graphs, knapsack, TSP, LCS, OBST).</p>
+
+<h2>The idea</h2>
+<p><strong>Dynamic programming (DP)</strong> applies when the answer to a problem can be seen as the outcome of a <strong>sequence of decisions</strong> D₁, D₂, …, Dₙ — pick the first vertex of a path, decide whether to take the first object, choose the root of a tree, and so on. A brute-force search over all decision sequences is exponential. DP cuts that down by exploiting one fact: the same <strong>subproblems</strong> reappear over and over inside that search. Solve each subproblem <em>once</em>, write its optimal value into a table, and <strong>reuse</strong> it instead of recomputing it. Overlapping subproblems are exactly where the savings come from.</p>
+
+<div class="note"><strong>Key intuition — the Principle of Optimality.</strong> If a sequence of decisions D₁…Dₙ is optimal, then for any <code>k</code> the <em>last k decisions</em> must themselves be optimal (for the subproblem they face). If a suffix weren't optimal, swap in a better one and the whole solution improves — contradicting that it was optimal. This is the license to write a <strong>recurrence</strong>: an optimum is built out of the optima of smaller subproblems.</p></div>
+
+<p>So the whole method reduces to one of two equivalent moves:</p>
+<ol>
+  <li><strong>Find the recurrence relation</strong> — express a subproblem's optimum in terms of smaller ones (e.g. the knapsack <code>gᵢ(y) = max{ g_{i+1}(y), g_{i+1}(y−w_{i+1}) + p_{i+1} }</code>), or</li>
+  <li><strong>Model it as a multistage graph</strong> — lay the decisions out in stages and ask for the cheapest (or most profitable) path through it.</li>
+</ol>
+<p>The textbook shows these two routes are the same thing. A recurrence can be set up <strong>forward</strong> (a vertex's cost defined via vertices nearer the source) or <strong>backward</strong> (via vertices nearer the sink) — and, subtly, a forward <em>formulation</em> is <em>solved</em> back-to-front, and vice versa.</p>
+
+<p><strong>Contrast with greedy.</strong> The greedy method commits to the locally cheapest choice at each step and never reconsiders. That can fail: in the graph below greedy grabs the cheap first edge <code>S→A=1</code> and is forced into a total of <strong>23</strong>, while the true optimum is <strong>9</strong> — reached only by paying an expensive-looking <code>S→C=5</code> up front. DP avoids the trap by evaluating each decision against the <em>optimal future</em> it leads to, not its immediate cost.</p>
+
+<h2>A small illustration: shortest path in a multistage graph</h2>
+<p>A <strong>multistage graph</strong> is a directed graph whose vertices split into ordered stages, where every edge goes from one stage to the next, and the first and last stages each hold a single vertex (source <code>S</code>, sink <code>T</code>). We want the <strong>min-cost S→T path</strong>. We solve it by <strong>backward reasoning</strong>: let <code>d(X,T)</code> be the cheapest cost from <code>X</code> to <code>T</code>, computed from the sink backward. Notice <code>d(D,T)</code>, <code>d(E,T)</code>, <code>d(F,T)</code> each get <em>reused</em> by several stage-2 vertices — that reuse is DP at work.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Decisions: <b>sequence D₁…Dₙ</b></span>
+  <span class="chip">Reuse: <b>overlapping subproblems</b></span>
+  <span class="chip">License: <b>principle of optimality</b></span>
+  <span class="chip">Setup: <b>recurrence ⇔ multistage graph</b></span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<p>Every problem below is a sequence of decisions whose optima overlap — so each gets a DP recurrence (often drawn as a multistage graph):</p>
+<ul>
+  <li><a href="prob-multistage-graph.html">Multistage graph</a> — find the <strong>minimum-cost staged path</strong> from source to sink (the motivating example; <code>d(S,T)=9</code>).</li>
+  <li><a href="prob-knapsack-dp.html">0/1 Knapsack (DP)</a> — pick a 0/1 subset of objects to <strong>maximize profit</strong> within a weight capacity, via <code>gᵢ(y)</code>.</li>
+  <li><a href="prob-resource-allocation.html">Resource allocation</a> — distribute <strong>m units across n projects for maximum total profit</strong> (longest path through a staged graph).</li>
+  <li><a href="prob-tsp-dp.html">Traveling salesperson (DP)</a> — find the <strong>cheapest tour</strong> visiting every city once, using the Held–Karp recurrence <code>g(i,S)</code>.</li>
+  <li><a href="prob-lcs.html">Longest common subsequence</a> — find the <strong>longest subsequence shared by two strings</strong>, filling the table <code>L_{i,j}</code>.</li>
+  <li><a href="prob-obst.html">Optimal binary search tree</a> — build the <strong>BST of least expected search cost</strong> by choosing each subtree's root, via <code>C(i,j)</code>.</li>
+</ul>
+
+<div class="quiz" data-correct="2" data-explain="The principle of optimality says the optimal suffix of an optimal solution must itself be optimal — that's precisely what lets you express a problem's optimum as a function of smaller subproblems' optima (a recurrence). It is NOT a greedy claim (greedy picks the locally cheapest step and can be wrong, e.g. the 23-vs-9 graph). It does not require unique optima, and it doesn't promise polynomial time — TSP's DP is still exponential, O(n²·2ⁿ).">
+  <div class="q">What does the Principle of Optimality actually let you do?</div>
+  <button class="opt">Prove the greedy choice is always optimal in any staged problem</button>
+  <button class="opt">Guarantee the resulting DP runs in polynomial time</button>
+  <button class="opt">Write a recurrence: an optimum's optimal suffix solves the smaller subproblem it faces</button>
+  <button class="opt">Conclude every subproblem has exactly one optimal solution</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-dynamic-programming">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> A07 · <em>Dynamic Programming</em> (Ch. 7) — the chapter develops DP from "a solution is a sequence of decisions," through the multistage-graph model and forward/backward reasoning, the principle of optimality, and the 0/1 knapsack recurrence, then applies the same machinery to resource allocation, TSP (Held–Karp), LCS, and optimal binary search trees. Compare with CLRS Ch. 15 "Dynamic Programming."</p>
+<div class="note"><strong>The DP recipe:</strong> (1) describe the answer as a sequence of decisions; (2) confirm the principle of optimality holds; (3) write the recurrence <em>or</em> draw the multistage graph; (4) solve the table once, reusing each subproblem; (5) trace back to recover the actual decisions. Contrast it with the <a href="index.html">greedy</a> bucket, which commits without reconsidering — fast when it's correct, wrong when the optimum needs an expensive early step.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- the concrete multistage-graph instance (note §2, verified slide 5) ----
+const NODES = [
+  {id:'S', x:6,  y:50, label:'S'},
+  {id:'A', x:34, y:18, label:'A'},
+  {id:'B', x:34, y:50, label:'B'},
+  {id:'C', x:34, y:82, label:'C'},
+  {id:'D', x:64, y:18, label:'D'},
+  {id:'E', x:64, y:50, label:'E'},
+  {id:'F', x:64, y:82, label:'F'},
+  {id:'T', x:92, y:50, label:'T'},
+];
+const EDGES = [
+  {u:'S',v:'A',w:1,dir:1},{u:'S',v:'B',w:2,dir:1},{u:'S',v:'C',w:5,dir:1},
+  {u:'A',v:'D',w:4,dir:1},{u:'A',v:'E',w:11,dir:1},
+  {u:'B',v:'D',w:9,dir:1},{u:'B',v:'E',w:5,dir:1},{u:'B',v:'F',w:16,dir:1},
+  {u:'C',v:'F',w:2,dir:1},
+  {u:'D',v:'T',w:18,dir:1},{u:'E',v:'T',w:13,dir:1},{u:'F',v:'T',w:2,dir:1},
+];
+
+const frames = [
+  { node:{}, edge:{}, badge:{},
+    cap:`A <b>4-stage</b> graph: stages <b>{S} | {A,B,C} | {D,E,F} | {T}</b>. Every edge jumps one stage forward. Goal: the <b>minimum-cost S→T path</b>.` },
+  { node:{D:'done',E:'done',F:'done'}, badge:{D:'18',E:'13',F:'2'},
+    edge:{'D-T':'tree','E-T':'tree','F-T':'tree'},
+    cap:`<b>Base cases</b> (stage just before T): d(D,T)=<b>18</b>, d(E,T)=<b>13</b>, d(F,T)=<b>2</b>. These optima get stored — and reused.` },
+  { node:{C:'act',F:'done',D:'done',E:'done'}, badge:{D:'18',E:'13',F:'2',C:'4'},
+    edge:{'C-F':'act','F-T':'tree'},
+    cap:`d(C,T) = min{ 2 + d(F,T) } = 2 + 2 = <b>4</b>. C reuses the stored d(F,T).` },
+  { node:{A:'act',D:'done',E:'done',F:'done',C:'done'}, badge:{D:'18',E:'13',F:'2',C:'4',A:'22'},
+    edge:{'A-D':'act','A-E':'act'},
+    cap:`d(A,T) = min{ 4+18, 11+13 } = min{22, 24} = <b>22</b>. Again d(D,T), d(E,T) are reused, not recomputed.` },
+  { node:{B:'act',D:'done',E:'done',F:'done',C:'done',A:'done'}, badge:{D:'18',E:'13',F:'2',C:'4',A:'22',B:'18'},
+    edge:{'B-D':'act','B-E':'act','B-F':'act'},
+    cap:`d(B,T) = min{ 9+18, 5+13, 16+2 } = min{27, 18, 18} = <b>18</b>. The same three stored values, reused a third time.` },
+  { node:{S:'act',A:'done',B:'done',C:'done',D:'done',E:'done',F:'done'},
+    badge:{A:'22',B:'18',C:'4',S:'9'},
+    edge:{'S-A':'act','S-B':'act','S-C':'act'},
+    cap:`d(S,T) = min{ 1+22, 2+18, 5+4 } = min{<b>23</b>, 20, <b>9</b>} = <b>9</b>. Greedy's cheap S→A=1 leads to 23; the optimum pays S→C=5.` },
+  { node:{S:'done',C:'done',F:'done',T:'done',A:'dim',B:'dim',D:'dim',E:'dim'},
+    badge:{S:'9'},
+    edge:{'S-C':'tree','C-F':'tree','F-T':'tree'},
+    cap:`Trace back the choices: <b>S → C → F → T = 5 + 2 + 2 = 9</b>. The expensive early edge was the right decision all along.` },
+];
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    stage.innerHTML = ZOO.graph(
+      {nodes:NODES, edges:EDGES},
+      {node:f.node, edge:f.edge, badge:f.badge}
+    );
+  }
+});
+</script>
+</body></html>

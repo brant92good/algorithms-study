@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>0/1 Knapsack (DP) — Algorithm Zoo</title>
+<title>0/1 Knapsack — Dynamic Programming — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -14,21 +14,25 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>0/1 Knapsack (DP)</h1>
-<div class="mission">Pack the most valuable load into a fixed-capacity bag when each item is <strong>all-or-nothing</strong> — by building a table of answers to smaller bags.</div>
+<h1>0/1 Knapsack — Dynamic Programming</h1>
+<div class="mission">Pack the most valuable load into a fixed-capacity bag when each item is <strong>all-or-nothing</strong> — solved by building a table of answers to smaller bags.</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §6–7, §12 (0/1 Knapsack by DP), slide 30.</p>
-<div class="note"><strong>Three views of this problem:</strong> 0/1 Knapsack appears <strong>three</strong> ways in this course: (1) <strong>Branch-and-Bound</strong> (Ch 6, Fig 6-28) — see the <em>Branch-and-Bound</em> card; (2) this <strong>DP recurrence</strong>, which can be formulated <strong>forward</strong> (decide x₁ first) or <strong>backward</strong> (xₙ first) — equivalent, just solved in opposite directions; (3) as a <strong>multistage graph</strong> (Ch 7 §12), where each stage is one item and each path is a packing.</div>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a> (also by <a href="prob-knapsack-bnb.html">Branch-and-Bound</a>)</p>
 
-<h2>What is it?</h2>
-<p>You have a knapsack (a bag) that can carry at most <strong>M</strong> units of weight. There are <strong>n</strong> items; item <em>i</em> has weight <code>wᵢ</code> and profit (value) <code>pᵢ</code>. You want to choose a set of items whose total weight fits in the bag and whose total profit is as large as possible.</p>
-<p>The <strong>"0/1"</strong> means each item is taken <em>whole or not at all</em> — you can't slice an item to take half of it. So for every item the decision is a single yes/no: <code>xᵢ = 1</code> (take it) or <code>xᵢ = 0</code> (skip it).</p>
-<p><strong>The core idea.</strong> Look at the items one at a time and split on the <em>first decision</em>. For the very first item you either skip it (the bag is unchanged) or take it (the bag now has <code>wᵢ</code> less room, and you've banked <code>pᵢ</code> profit). Either way, what's left is the <em>same kind of problem</em> on the remaining items — a <strong>subproblem</strong>. Dynamic programming solves every subproblem once and stores the answers in a table so they're never recomputed.</p>
+<h2>The problem</h2>
+<p>You have a <strong>knapsack</strong> (a bag) that can carry at most <strong>M</strong> units of weight. There are <strong>n</strong> items; item <em>i</em> has a <strong>weight</strong> <code>wᵢ</code> and a <strong>profit</strong> (value) <code>pᵢ</code>. You must choose a set of items whose total weight fits in the bag and whose total profit is <em>as large as possible</em>.</p>
+<p>The <strong>"0/1"</strong> means each item is taken <em>whole or not at all</em> — you can't slice an item to take half of it. So for every item the decision is a single yes/no: <code>xᵢ = 1</code> (take it) or <code>xᵢ = 0</code> (skip it). Formally, maximize <code>Σ pᵢxᵢ</code> subject to <code>Σ wᵢxᵢ ≤ M</code> with each <code>xᵢ ∈ {0,1}</code>.</p>
+<p><strong>A tiny concrete instance.</strong> Four items, written as <code>(weight, profit)</code> pairs: (1,1), (3,4), (4,5), (5,7), and a bag of capacity <code>M = 7</code>. By hand you can check that taking items 2 and 3 — weights 3+4 = 7 (exactly fills the bag) for profit 4+5 = <b>9</b> — beats every other feasible choice. That 9 is the answer we want a method to find <em>without</em> trying all 2ⁿ subsets.</p>
+
+<p><strong>The method (dynamic programming).</strong> Look at the items one at a time and split on the <em>next decision</em>. For the next item you either skip it (the bag is unchanged) or take it (the bag now has <code>wᵢ</code> less room, and you've banked <code>pᵢ</code> profit). Either way, what's left is the <em>same kind of problem</em> on the remaining items — a <strong>subproblem</strong>. DP solves every subproblem once and stores the answers in a table so they're never recomputed.</p>
 <p>Write <code>gᵢ(y)</code> for the best profit obtainable using only items <em>after</em> index <code>i</code> (that is, items <code>i+1 … n</code>) with a bag of capacity <code>y</code>. Splitting on the next item gives the recurrence:</p>
 <p style="text-align:center"><code>gᵢ(y) = max{ <b>g<sub>i+1</sub>(y)</b> ,&nbsp; <b>g<sub>i+1</sub>(y − w<sub>i+1</sub>) + p<sub>i+1</sub></b> }</code></p>
 <p>The left term is <strong>skip</strong> item <code>i+1</code>; the right term is <strong>take</strong> it (only allowed when <code>y ≥ w<sub>i+1</sub></code>). The base case is <code>gₙ(y) = 0</code> for every <code>y</code> (no items left ⇒ no profit), and the final answer is <code>g₀(M)</code>.</p>
-<p><strong>Tiny example.</strong> Items <code>(w,p)</code> = (1,1), (3,4), (4,5), (5,7) and capacity <code>M = 7</code>. We build a table of <code>gᵢ(y)</code>, one row per <code>i</code> (from the empty base row <code>g₄</code> up to <code>g₀</code>) and one column per capacity <code>y = 0…7</code>.</p>
+<p>For our instance we build a table of <code>gᵢ(y)</code>, one row per <code>i</code> (from the empty base row <code>g₄</code> up to <code>g₀</code>) and one column per capacity <code>y = 0…7</code>.</p>
 
-<h2>Watch it run</h2>
+<div class="note"><strong>Three views of this problem:</strong> 0/1 Knapsack appears <strong>three</strong> ways in this course: (1) <strong><a href="prob-knapsack-bnb.html">Branch-and-Bound</a></strong> (Ch 6, Fig 6-28) — search the decision tree, pruning with bounds; (2) this <strong>DP recurrence</strong>, which can be formulated <strong>forward</strong> (decide x₁ first) or <strong>backward</strong> (xₙ first) — equivalent, just solved in opposite directions; (3) as a <strong>multistage graph</strong> (Ch 7 §12), where each stage is one item and each path is a packing.</div>
+
+<h2>Watch it solved</h2>
 <p>Each row is computed from the row <em>below</em> it. The <span style="color:var(--acc)"><strong>gold</strong></span> cell is the one being filled; the <span style="color:var(--amber,#d49a00)"><strong>amber</strong></span> cells are its two sources — <em>skip</em> = same column one row down, <em>take</em> = column <code>y−w</code> one row down, plus <code>p</code>.</p>
 <div id="viz"></div>
 
@@ -59,13 +63,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-knapsack">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-knapsack-dp">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em> (dynamic programming; the 0/1 knapsack table). This page uses the course's forward-formulation recurrence <code>gᵢ(y) = max{ g<sub>i+1</sub>(y), g<sub>i+1</sub>(y−w<sub>i+1</sub>) + p<sub>i+1</sub> }</code> with base <code>gₙ(y)=0</code>, solved backward through the index to reach <code>g₀(M)</code>.</p>
-<div class="note"><strong>Next in this bucket:</strong> Resource Allocation — distribute <em>m</em> resources across <em>n</em> projects to maximize profit, modeled as a longest path through a multistage graph.</div>
+<p><strong>Primary source:</strong> Alg07 · Ch 7 §6–7 (0/1 Knapsack by DP); CLRS, <em>Introduction to Algorithms</em> (dynamic programming; the 0/1 knapsack table). This page uses the course's forward-formulation recurrence <code>gᵢ(y) = max{ g<sub>i+1</sub>(y), g<sub>i+1</sub>(y−w<sub>i+1</sub>) + p<sub>i+1</sub> }</code> with base <code>gₙ(y)=0</code>, solved backward through the index to reach <code>g₀(M)</code>.</p>
+<div class="note"><strong>See also:</strong> the strategy page <a href="algo-dynamic-programming.html">Dynamic Programming</a>, and the same problem solved a different way on <a href="prob-knapsack-bnb.html">0/1 Knapsack — Branch-and-Bound</a> (search the decision tree, prune with an optimistic bound, instead of filling a table).</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

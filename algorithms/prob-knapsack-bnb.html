@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0/1 Knapsack — Branch &amp; Bound — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Branch-and-Bound · Ch6</div>
+<h1>0/1 Knapsack — Branch &amp; Bound</h1>
+<div class="mission">Pack a knapsack of capacity <strong>M</strong> with whole items (take it or leave it) to <strong>maximize profit</strong> — searching a tree of "in / out" decisions, but using <strong>bounds to prune</strong> most of it away.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §10 (0/1 Knapsack via Branch-and-Bound), Fig. 6-27 (branching) &amp; Fig. 6-28 (the solved tree); example n = 6, M = 34.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> (also by <a href="prob-knapsack-dp.html">Dynamic Programming</a>)</p>
+
+<h2>The problem</h2>
+<p>You have <code>n</code> items. Each item <code>i</code> has a <strong>weight</strong> <code>Wᵢ</code> and a <strong>profit</strong> <code>Pᵢ</code> (both positive integers). You have a knapsack that can carry a total weight of at most <code>M</code> (the <strong>capacity</strong>). For every item you make one yes/no choice — a decision variable <code>Xᵢ ∈ {0, 1}</code>: <code>Xᵢ = 1</code> means "put item <code>i</code> in the bag," <code>Xᵢ = 0</code> means "leave it out." You cannot take a fraction of an item — it is <strong>whole-or-nothing</strong> (that is the "0/1" in the name).</p>
+<p>The goal is to pick the subset of items that <strong>maximizes total profit</strong> without overloading the bag:</p>
+<div class="note" style="font-family:ui-monospace,monospace">maximize&nbsp;&nbsp; P₁X₁ + P₂X₂ + … + PₙXₙ &nbsp;&nbsp;(total profit)<br>subject to&nbsp; W₁X₁ + W₂X₂ + … + WₙXₙ ≤ M &nbsp;&nbsp;(fits in the bag)<br>with each &nbsp; Xᵢ = 0 or 1</div>
+
+<p><strong>The concrete instance (Fig. 6-28).</strong> <code>n = 6</code> items, capacity <code>M = 34</code>. The items are listed in <em>non-increasing profit density</em> (<code>Pᵢ / Wᵢ</code>), which the bounding step relies on:</p>
+<div class="atree" style="margin:.6rem 0">  item i  │   1     2     3     4     5     6
+  ────────┼──────────────────────────────────
+  profit P│   6    10     4     5     6     4
+  weight W│  10    19     8    10    12     8
+  P / W   │ 0.60  0.53  0.50  0.50  0.50  0.50</div>
+
+<p><strong>One quirk of these slides:</strong> branch-and-bound is naturally a <em>minimization</em> machine (it prunes nodes whose bound is too <em>high</em>). So the deck <strong>negates the profit</strong> and minimizes <code>−Σ PᵢXᵢ</code>. A profit of 17 becomes the objective value <code>−17</code>; "more profit" means "more negative," and the best (optimal) value is the <em>smallest</em> (most negative) one. Keep that sign flip in mind — every bound below is a negative number.</p>
+
+<h2>Watch it solved</h2>
+<p>Branch-and-bound builds a binary tree (Fig. 6-27): at level <code>i</code> the left edge is <code>Xᵢ = 1</code> (take item <code>i</code>), the right edge is <code>Xᵢ = 0</code> (skip it). At each node it computes two numbers, then prunes:</p>
+<ul style="font-size:.92rem">
+  <li><b>U.B.</b> (upper bound) = the value of some <em>feasible whole-item</em> packing — a solution we could actually accept. The best U.B. seen so far is our "best yet."</li>
+  <li><b>L.B.</b> (lower bound) = the value of the <em>fractional relaxation</em> (allow <code>0 ≤ Xᵢ ≤ 1</code>, fill greedily by density, take a fraction of the last item). Because fractions can only help, this L.B. is the <em>best the subtree could ever reach</em> — no integer packing under this node can beat it.</li>
+</ul>
+<p>Step through. The viz shows where the root bounds come from, how the tree branches, where the winning packing is found, and how the bounds prove it optimal.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Items: <b>n = 6</b></span>
+  <span class="chip">Capacity: <b>M = 34</b></span>
+  <span class="chip">Root bounds: <b>−18 ≤ opt ≤ −16</b></span>
+  <span class="chip">Optimum: <b>−17</b> = {1,4,5}</span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="The fractional relaxation fills greedily by density: X1=1 (w=10), X2=1 (w=10+19=29), then only 34−29=5 of capacity is left. Item 3 weighs 8, so we take the fraction 5/8 of it. Profit = P1+P2+(5/8)P3 = 6+10+(5/8)·4 = 6+10+2.5 = 18.5, i.e. objective −18.5. Since real 0/1 profit is an integer, this rounds INWARD to −18 — a valid lower bound. The traps: −16 is the feasible UPPER bound (take items 1,2 wholly); −18.5 is the raw fractional value before rounding to an integer bound; −24 is the profit of grabbing every item, which ignores the capacity limit.">
+  <div class="q">For the Fig. 6-28 instance (M = 34; densities already sorted high→low), what lower bound (L.B.) does the fractional relaxation give at the root?</div>
+  <button class="opt">−16, by taking items 1 and 2 only</button>
+  <button class="opt">−18.5, exactly the fractional value, used as-is</button>
+  <button class="opt">−18, the fractional value −18.5 rounded inward to an integer</button>
+  <button class="opt">−24, the total profit of all six items</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="L.B. is the fractional relaxation — the BEST any integer packing in that subtree could possibly do (fractions only help). So if a node's L.B. is already no better than the best feasible solution we hold, nothing under it can win, and we prune. Concretely: once a feasible −17 packing is found (node 14, 'a good upper bound is found here'), any live node with L.B. ≥ −17 (i.e. −16, −15, −14 …) is hopeless and gets cut. The distractors invert the logic: pruning on U.B., or on a single node's weight/feasibility, would discard branches that might still contain the optimum.">
+  <div class="q">We are minimizing −profit. A node should be pruned exactly when…</div>
+  <button class="opt">its L.B. is no better (≥) than the best feasible value found so far — its subtree can't beat what we already have</button>
+  <button class="opt">its U.B. is worse than the best L.B. anywhere in the tree</button>
+  <button class="opt">the single packing at that node happens to overflow the capacity M</button>
+  <button class="opt">its L.B. equals its U.B., since then the node is fully decided</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-knapsack-bnb">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §10 (0/1 Knapsack), <strong>Fig. 6-27</strong> (the X<sub>i</sub>=1/0 branching mechanism) and <strong>Fig. 6-28</strong> (the full solved tree with per-node U.B./L.B. and pruning). The fractional-relaxation lower bound is the same greedy idea that solves the <em>continuous</em> knapsack optimally.</p>
+<div class="note"><strong>The strategy:</strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — branch the solution space into a tree, bound each subtree, prune the hopeless ones.<br><strong>Same problem, other method:</strong> <a href="prob-knapsack-dp.html">0/1 Knapsack by Dynamic Programming</a> (Ch7) — instead of bounding a search tree, it fills a profit/weight table and reads the answer off the bottom-right.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- the concrete Fig. 6-28 instance (Alg05 §10) ----
+const P = [6,10,4,5,6,4];      // profits  P1..P6
+const W = [10,19,8,10,12,8];   // weights  W1..W6
+const M = 34;
+
+// little colour helpers for the monospace tree
+const C = {
+  lb:   v => `<span style="color:var(--accent);font-weight:700">${v}</span>`,   // lower bound (relaxation)
+  ub:   v => `<span style="color:var(--warn);font-weight:700">${v}</span>`,     // upper bound (feasible)
+  best: s => `<span style="color:var(--good);font-weight:700">${s}</span>`,     // optimal / winner
+  dim:  s => `<span style="color:var(--mut);opacity:.55">${s}</span>`,          // pruned / infeasible
+  hi:   s => `<span style="color:var(--good)">${s}</span>`
+};
+function tree(lines){ return `<div class="atree">${lines.join("\n")}</div>`; }
+
+const frames = [];
+
+// Frame 0 — the data + the upper bound (a feasible packing)
+frames.push({
+  cap: `<b>Upper bound — a feasible packing.</b> Greedily take whole items 1 and 2: weight 10+19 = <b>29 ≤ 34</b> ✓. Profit 6+10 = 16, objective <b>U.B. = −16</b>. "Any solution higher than −16 cannot be optimal" — it is our best-yet.`,
+  html: tree([
+    `n = 6 items,  capacity M = 34   (densities sorted high → low)`,
+    ``,
+    `  i  │  1    2    3    4    5    6`,
+    `  ───┼──────────────────────────────`,
+    `  P  │  6   10    4    5    6    4`,
+    `  W  │ 10   19    8   10   12    8`,
+    ``,
+    `  Feasible packing  X1=X2=1, rest 0`,
+    `    weight = 10 + 19 = 29 ≤ 34  ✓`,
+    `    profit = 6 + 10 = 16   →   ${C.ub("U.B. = −16")}`
+  ])
+});
+
+// Frame 1 — the lower bound (fractional relaxation)
+frames.push({
+  cap: `<b>Lower bound — relax to fractions.</b> Allow 0 ≤ Xᵢ ≤ 1 and fill greedily by density: X1=1, X2=1 (weight 29), then only 5 capacity left, so take 5/8 of item 3. Value −18.5; rounded inward to an integer → <b>L.B. = −18</b>.`,
+  html: tree([
+    `Relaxation: allow fractional Xᵢ  (0 ≤ Xᵢ ≤ 1)`,
+    `Fill by decreasing density until the bag is full:`,
+    ``,
+    `   X1 = 1     weight 10   (used 10)`,
+    `   X2 = 1     weight 19   (used 29)`,
+    `   34 − 29 = 5 left,  item 3 weighs 8  →  X3 = 5/8`,
+    `   weight 10 + 19 + (5/8)·8 = 34 = M  ✓ (bag exactly full)`,
+    ``,
+    `   value = −(6 + 10 + (5/8)·4) = −18.5`,
+    `   integer profit ⇒ round inward → ${C.lb("L.B. = −18")}`,
+    ``,
+    `   So at the root:  ${C.lb("−18")}  ≤  optimum  ≤  ${C.ub("−16")}`
+  ])
+});
+
+// Frame 2 — branching mechanism (Fig. 6-27)
+frames.push({
+  cap: `<b>Branch (Fig. 6-27).</b> At level i, split on item i: left edge <b>Xᵢ = 1</b> (take it), right edge <b>Xᵢ = 0</b> (skip it). The root holds the bounds we just computed. We dive down the most promising side.`,
+  html: tree([
+    `                 node 0  (root)`,
+    `              ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
+    `                /              \\`,
+    `          X1 = 1            X1 = 0`,
+    `             /                  \\`,
+    `         node 1               node 2`,
+    `     ${C.ub("U.B. −16")} ${C.lb("L.B. −18")}     ${C.ub("U.B. −14")} ${C.lb("L.B. −17")}`,
+    ``,
+    `   ${C.hi("each node re-computes a feasible U.B. and a")}`,
+    `   ${C.hi("fractional L.B. for the items still undecided")}`
+  ])
+});
+
+// Frame 3 — the X1=0 side finds a good upper bound (node 14)
+frames.push({
+  cap: `<b>A good upper bound appears.</b> Following the X1 = 0 sub-branch, node <b>14</b> (X1=0, X2=0, X3=0) finds a feasible packing worth <b>−17</b> — better than −16. The slide labels it "a good upper bound is found here." Best-yet is now −17.`,
+  html: tree([
+    `   node 0   ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
+    `      |  X1 = 0`,
+    `   node 2   ${C.ub("U.B. −14")}  ${C.lb("L.B. −17")}`,
+    `      |  X2 = 0`,
+    `   node 4   ${C.ub("U.B. −15")}  ${C.lb("L.B. −18")}`,
+    `      |  X3 = 0`,
+    `   node 14  ${C.ub("U.B. −17")}  ${C.lb("L.B. −18")}   ${C.best("← good U.B. found")}`,
+    ``,
+    `   best feasible so far  =  ${C.best("−17")}`
+  ])
+});
+
+// Frame 4 — confirm the optimal packing on this branch
+frames.push({
+  cap: `<b>The winning packing.</b> Below node 14 the search closes on <b>X1=1, X4=1, X5=1</b> (rest 0). Weight 10+10+12 = <b>32 ≤ 34</b> ✓, profit 6+5+6 = 17 → objective <b>−17</b>. Nodes 15·17·18·20 carry this −17.`,
+  html: tree([
+    `   node 14  ${C.ub("−17")}`,
+    `      |  X4 = 1`,
+    `   node 15  ${C.ub("−17")}  ${C.lb("−17")}`,
+    `      |  X5 = 1`,
+    `   node 17  ${C.ub("−17")}  ${C.lb("−17")}  ⋯ node 20  ${C.ub("−17")}`,
+    ``,
+    `   OPTIMAL SET   X1=1, X4=1, X5=1   (X2=X3=X6=0)`,
+    `      weight = 10 + 10 + 12 = ${C.hi("32 ≤ 34")}  ✓`,
+    `      profit = 6 + 5 + 6 = 17   →   ${C.best("objective −17")}`
+  ])
+});
+
+// Frame 5 — pruning: nodes whose L.B. cannot beat −17 are cut
+frames.push({
+  cap: `<b>Prune with the bounds.</b> We hold −17. Any live node whose <b>L.B. ≥ −17</b> can never do better, so its whole subtree is cut — e.g. nodes 12 (−16), 24 (−14), 26 (−16), 30 (−15). Many "infeasible" nodes (weight &gt; 34) die too.`,
+  html: tree([
+    `   best feasible held  =  ${C.best("−17")}`,
+    ``,
+    `   prune rule:  cut any node with  ${C.lb("L.B.")} ≥ ${C.best("−17")}`,
+    ``,
+    `   ${C.dim("node 12  L.B. −16  ✗  ≥ −17")}`,
+    `   ${C.dim("node 24  L.B. −14  ✗  ≥ −17")}`,
+    `   ${C.dim("node 26  L.B. −16  ✗  ≥ −17")}`,
+    `   ${C.dim("node 30  L.B. −15  ✗  ≥ −17")}`,
+    `   ${C.dim("nodes 5,7,9,11,19,25,27,29 … infeasible (weight > 34)")}`,
+    ``,
+    `   (use ≥ , not > : a node tying −17 still can't IMPROVE it)`
+  ])
+});
+
+// Frame 6 — done / proof of optimality
+frames.push({
+  cap: `<b>Done.</b> Every un-pruned branch has L.B. ≥ −17, so none can beat the packing we hold. Optimum is <b>−17</b> = items <b>{1, 4, 5}</b>, comfortably inside the root window <b>[−18, −16]</b> — found without enumerating all 2⁶ = 64 subsets.`,
+  html: tree([
+    `   No live node has L.B. < −17.`,
+    `   ⇒ no unexplored subtree can beat the best packing.`,
+    ``,
+    `   ${C.best("OPTIMAL SET   : X1 = 1, X4 = 1, X5 = 1")}`,
+    `   ${C.best("OPTIMAL PROFIT: 17     (objective −17)")}`,
+    ``,
+    `   root window ....... ${C.lb("−18")} ≤ opt ≤ ${C.ub("−16")}`,
+    `   branch + bound .... closed it to the exact ${C.best("−17")}`
+  ])
+});
+
+ZOO.stepper({
+  mount: '#viz',
+  frames,
+  caption: f => f.cap,
+  render: (f, stage) => { stage.innerHTML = f.html; }
+});
+</script>
+</body></html>

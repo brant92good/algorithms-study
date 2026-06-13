@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channel Routing — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">A* · Ch6</div>
+<h1>Channel Routing</h1>
+<div class="mission">A chip has pins lined up on the top and bottom of a corridor; wires connecting same-labelled pins must run along horizontal rows. <strong>Use as few rows as possible</strong> — and A* finds the minimum.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §12 (Channel Routing via A*; Fig. 6-40 / 6-46 / 6-48).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-astar.html">A* Algorithm</a></p>
+
+<h2>The problem</h2>
+<p>In VLSI chip layout, a <strong>channel</strong> is a rectangular corridor between two rows of components. Along its <strong>top edge</strong> and its <strong>bottom edge</strong> sit <strong>terminals</strong> (pins). Each terminal carries a label, a small integer — pins that share a label belong to the same <strong>net</strong> and must all be electrically connected by wire.</p>
+<ul>
+  <li>A <strong>net</strong> = the group of all terminals (top and bottom) bearing the same label. Every net must be wired up.</li>
+  <li>A <strong>track</strong> = one horizontal row inside the channel along which a wire can run. A net's wire runs mostly along a single track, with short vertical "drops" up to its top/bottom pins.</li>
+  <li>Two nets may share a track <strong>only if their horizontal spans don't overlap</strong> — otherwise their wires would short together. That is an <em>illegal</em> wiring.</li>
+</ul>
+<p><strong>Goal:</strong> assign every net to a track so that no two overlapping nets land on the same track, and <strong>minimize the total number of tracks</strong>. Fewer tracks means a shorter channel and a smaller chip. <strong>This problem is NP-complete.</strong></p>
+
+<p><strong>The concrete instance (Fig. 6-40).</strong> A channel with <strong>13 columns</strong>. Each column lists its top pin and bottom pin (<code>0</code> = no pin):</p>
+<div class="grid-wrap" id="spec"></div>
+<p style="font-size:.9rem;color:var(--mut)">So net&nbsp;1 spans from column&nbsp;11 (top) to column&nbsp;13 (bottom); net&nbsp;7 from column&nbsp;4 (top) to column&nbsp;3 (bottom); net&nbsp;8 from column&nbsp;2 (top) to column&nbsp;8 (bottom); and so on. A naïve feasible routing needs <strong>7 tracks</strong> (one net each); the <strong>optimal</strong> routing fits everything into just <strong>4 tracks</strong>.</p>
+
+<p><strong>Two helper graphs capture the constraints.</strong></p>
+<ul>
+  <li>The <strong>Horizontal Constraint Graph (HCG)</strong>: a node per net; a directed edge <code>u → v</code> means "if nets <code>u</code> and <code>v</code> ever share a track, <code>u</code> must sit to the <em>left</em> of <code>v</code>" — i.e. their spans conflict. Two nets joined in the HCG cannot freely overlap. A set of nets that <em>mutually</em> conflict is a <strong>clique</strong>; the <strong>maximal cliques</strong> here are <code>{1,8}</code>, <code>{1,3,7}</code>, and <code>{5,7}</code>. Each maximal clique is a bundle of nets that can be packed onto one track.</li>
+  <li>The <strong>Vertical Constraint Graph (VCG)</strong>: an edge <code>top-net → bottom-net</code> wherever a column has one net on top and another on the bottom, forcing the top net into a track <em>above</em> the bottom net. Here the VCG is just <code>1→2</code>, <code>3→4</code>, <code>5→6</code> (e.g. "net&nbsp;3 must be wired before net&nbsp;4"); nets&nbsp;7 and&nbsp;8 are unconstrained vertically.</li>
+</ul>
+
+<h2>Watch it solved</h2>
+<p>First the <strong>HCG</strong> of this channel (nodes = nets, arrows = "must be left of"); the three <strong>maximal cliques</strong> are the candidate first tracks. Then A* searches the tree of track assignments with <code>f = g + h</code>, where <code>g</code> = the tree level (tracks committed so far) and <code>h</code> = the <strong>maximal local density</strong> (a lower bound on tracks still needed, so it never overestimates → A* is optimal). Step through.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Objective: <b>min #tracks</b></span>
+  <span class="chip">Hardness: <b>NP-complete</b></span>
+  <span class="chip">A*: <b>f = g + h</b></span>
+  <span class="chip">g = <b>tree level</b></span>
+  <span class="chip">h = <b>max local density</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="In this A* the cost is f(n) = g(n) + h(n) with g(n) = the tree level = the number of tracks already committed, and h(n) = the maximal local density = a lower bound on how many more tracks the remaining nets must occupy. It is NOT the wire length (this routing model counts tracks, not centimetres), and h is a heuristic estimate, not the exact remaining count. Because h never overestimates the true remaining cost (density is a genuine lower bound), the first goal node selected for expansion is guaranteed optimal.">
+  <div class="q">In the A* solver for channel routing, <code>f(n) = g(n) + h(n)</code>. What do g and h stand for here?</div>
+  <button class="opt">g = total wire length so far, h = remaining wire length</button>
+  <button class="opt">g = number of nets routed, h = number of nets left</button>
+  <button class="opt">g = tree level (tracks used so far), h = maximal local density (lower bound on tracks still needed)</button>
+  <button class="opt">g = maximal local density, h = the tree level</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The maximal cliques of the HCG are {1,8}, {1,3,7}, {5,7}. {1,3,7} has THREE mutually-conflicting nets, so at the column where all three spans pile up the local density is 3 — meaning at least 3 tracks are unavoidable there. That is why h = maximal local density is an admissible lower bound: you can never route below the densest column. {1,8} and {5,7} only show density 2. The point of a maximal clique is exactly a maximal set of nets that all overlap at once.">
+  <div class="q">The HCG's maximal cliques are <code>{1,8}</code>, <code>{1,3,7}</code>, <code>{5,7}</code>. Which clique forces the largest <em>local density</em> (most wires stacked at one column), and what lower bound does that give on the number of tracks?</div>
+  <button class="opt">{1,8} → density 2 → at least 2 tracks</button>
+  <button class="opt">{1,3,7} → density 3 → at least 3 tracks</button>
+  <button class="opt">{5,7} → density 2 → at least 5 tracks</button>
+  <button class="opt">all cliques have density 1 → the bound is always 1 track</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-channel-routing">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch.&nbsp;6 §12 (deck <code>Alg05</code>, slides 43–49). Fig.&nbsp;6-40 gives the channel spec; Fig.&nbsp;6-41 the HCG; the VCG and the three maximal cliques <code>{1,8},{1,3,7},{5,7}</code> are on slide&nbsp;48; Fig.&nbsp;6-46 is the first level of the A* tree (root → the three cliques) and Fig.&nbsp;6-48 the full partial solution tree, with the goal reached at node&nbsp;I.</p>
+<div class="note"><strong>The strategy that solves it:</strong> <a href="algo-astar.html">A* Algorithm</a> — best-first search with <code>f(n) = g(n) + h(n)</code> and an admissible heuristic <code>h ≤ h*</code>, so the first goal selected for expansion is provably optimal. Here <code>g</code> = tracks committed (tree level) and <code>h</code> = maximal local density, an honest lower bound on tracks still required.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---------- the concrete instance (Fig. 6-40) ----------
+// 13 columns; top/bottom terminal per column (0 = no pin)
+const TOP = [4,8,0,7,0,3,6,0,0,2,1,5,0];
+const BOT = [0,0,7,0,5,4,0,8,3,0,2,6,1];
+// render the channel specification table
+(function(){
+  const cols = TOP.map((_,i)=>String(i+1));
+  const m = [ TOP.map(v=>v===0?'·':v), BOT.map(v=>v===0?'·':v) ];
+  document.getElementById('spec').innerHTML =
+    ZOO.grid(m, { rows:['top','bot'], cols });
+})();
+
+// ---------- HCG (Fig. 6-41): directed "must be left of" edges ----------
+// node layout 0..100; sources 7,8,4 left, sinks 1,2 right, 3,5,6 middle
+const HCG = {
+  nodes:[
+    {id:'7', x:10, y:20, label:'7'},
+    {id:'8', x:10, y:50, label:'8'},
+    {id:'4', x:10, y:80, label:'4'},
+    {id:'3', x:50, y:25, label:'3'},
+    {id:'5', x:50, y:55, label:'5'},
+    {id:'6', x:50, y:85, label:'6'},
+    {id:'1', x:90, y:35, label:'1'},
+    {id:'2', x:90, y:70, label:'2'},
+  ],
+  edges:[
+    {u:'7',v:'5',dir:1},{u:'7',v:'6',dir:1},{u:'7',v:'3',dir:1},{u:'7',v:'1',dir:1},{u:'7',v:'2',dir:1},
+    {u:'8',v:'1',dir:1},{u:'8',v:'2',dir:1},
+    {u:'4',v:'6',dir:1},{u:'4',v:'1',dir:1},{u:'4',v:'2',dir:1},
+    {u:'3',v:'1',dir:1},{u:'3',v:'2',dir:1},
+  ]
+};
+
+// ---------- A* search tree (Fig. 6-48) as a monospace atree ----------
+// each node: net-set on its track, with f = g + h
+const HOT  = 'color:var(--accent);font-weight:700';
+const GOAL = 'color:var(--good);font-weight:700';
+function aTree(active){
+  // active: set of node ids to highlight (the expansion frontier / path)
+  const on = (id, base) => `style="${active && active.has(id) ? (base||HOT) : 'color:var(--mut)'}"`;
+  return `<div class="atree">
+<span ${on('root')}>root</span>
+├─[1+3]→ <span ${on('A')}>A {8,1}      f=4</span>
+├─[1+3]→ <span ${on('B')}>B {7,3,1}    f=4</span>
+│         ├─[2+3]→ <span ${on('D')}>D {4,2}   f=5</span>
+│         ├─[2+2]→ <span ${on('E')}>E {8,2}   f=4</span>
+│         │         ├─[3+2]→ <span ${on('G')}>G {4}    f=5</span>
+│         │         └─[3+1]→ <span ${on('H')}>H {5}    f=4</span>
+│         │                    └─[4+0]→ <span ${on('I', GOAL)}>I {4,6}  f=4  ✓ GOAL</span>
+│         └─[2+2]→ <span ${on('F')}>F {5}     f=4</span>
+└─[1+3]→ <span ${on('C')}>C {7,5}      f=4</span>
+</div>`;
+}
+
+const frames = [
+  { kind:'hcg', set:new Set(),
+    cap:`The <b>Horizontal Constraint Graph</b>: a node per net, an arrow <b>u → v</b> meaning "net u must lie left of net v if they share a track" (their spans conflict). Sinks <b>1, 2</b> collect the most arrows.` },
+  { kind:'hcg', set:new Set(['1','8']),
+    cap:`First maximal clique: <b>{1, 8}</b> — nets 1 and 8 mutually conflict (net 8 must be left of net 1). They can be packed onto one track together.` },
+  { kind:'hcg', set:new Set(['1','3','7']),
+    cap:`Second maximal clique: <b>{1, 3, 7}</b> — three nets all conflicting at once. Their local density is <b>3</b>, the densest spot in the channel → at least 3 tracks are unavoidable.` },
+  { kind:'hcg', set:new Set(['5','7']),
+    cap:`Third maximal clique: <b>{5, 7}</b>. These three cliques <b>{1,8}, {1,3,7}, {5,7}</b> are the candidate first tracks — the root's three children in the A* tree (Fig. 6-46).` },
+  { kind:'tree', set:new Set(['root','A','B','C']),
+    cap:`A* tree (Fig. 6-48). Root branches into the three cliques A <b>{8,1}</b>, B <b>{7,3,1}</b>, C <b>{7,5}</b>. Cost <b>f = g + h</b>: g = tree level (tracks so far), h = maximal local density. All three start at <b>f = 4</b>.` },
+  { kind:'tree', set:new Set(['B','D','E','F']),
+    cap:`Expand <b>B {7,3,1}</b> (track 1 = clique {1,3,7}). Its children assign the next track: D <b>{4,2}</b> f=5, E <b>{8,2}</b> f=4, F <b>{5}</b> f=4. A* will pick a smallest-f node next.` },
+  { kind:'tree', set:new Set(['E','G','H']),
+    cap:`Expand <b>E {8,2}</b> (f=4). Children: G <b>{4}</b> f=5, and H <b>{5}</b> f=4. The frontier keeps the globally smallest f — best-first, with the admissible h guaranteeing no overestimate.` },
+  { kind:'tree', set:new Set(['H','I']),
+    cap:`Expand <b>H {5}</b> (f=4) → child <b>I {4,6}</b>, f = 4. <b>I is a goal node</b> and it is the node selected for expansion (smallest f) → A* stops: this routing is <b>optimal</b>, using just <b>4 tracks</b>.` },
+];
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    if (f.kind === 'hcg'){
+      const node = {};
+      f.set.forEach(id => node[id] = 'act');
+      stage.innerHTML = ZOO.graph(HCG, { node });
+    } else {
+      stage.innerHTML = aTree(f.set);
+    }
+  }
+});
+</script>
+</body></html>

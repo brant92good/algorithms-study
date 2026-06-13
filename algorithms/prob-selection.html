@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Linear-time Selection — Algorithm Zoo</title>
+<title>Selection — k-th Smallest — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -13,47 +13,39 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Prune-and-Search</div>
-<h1>Linear-time Selection</h1>
-<div class="mission">Find the <strong>k-th smallest</strong> element of an unsorted list in <strong>O(n)</strong> time — without sorting — by choosing a provably-good pivot: the <em>median of medians</em>.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · <em>Prune-and-Search</em> §1–5 (general method → selection → median-of-medians → O(n) proof).</p>
+<div class="kicker">Prune-and-Search · Alg06</div>
+<h1>Selection — k-th Smallest</h1>
+<div class="mission">Given <strong>n</strong> unsorted numbers and a rank <strong>k</strong>, find the value that would land in position <strong>k</strong> if the list were sorted — <em>without</em> ever fully sorting it.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · <em>Prune-and-Search</em> §2–5 (selection problem → three-way partition → median-of-medians → O(n)).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>What is it?</h2>
-<p>The <strong>selection problem</strong>: given a bag of <code>n</code> numbers and a rank <code>k</code>, return the value that would sit in position <code>k</code> if the list were sorted (the <strong>k-th smallest</strong>). When <code>k = ⌈n/2⌉</code> this is the <strong>median</strong>. The obvious method — <em>sort the whole list, then read off position k</em> — costs <code>O(n log n)</code>. We can do better: <code>O(n)</code>, linear time.</p>
-
-<p>The idea is <strong>prune-and-search</strong>, the same trick behind binary search: each round, throw away a fixed <em>fraction</em> of the data and recurse on the rest. To do that we pick a <strong>pivot</strong> <code>p</code> and split the list into three piles:</p>
+<h2>The problem</h2>
+<p>You are handed a set <code>S</code> of <code>n</code> numbers in no particular order, and an integer <code>k</code> between 1 and n. The <strong>selection problem</strong> asks for the <strong>k-th smallest</strong> element of <code>S</code>: the value that <em>would</em> occupy position <code>k</code> if you sorted <code>S</code> into non-decreasing order — but you must return it without relying on a full sort.</p>
 <ul>
-  <li><b>S₁</b> — everything <em>less than</em> p,</li>
-  <li><b>S₂</b> — everything <em>equal to</em> p,</li>
-  <li><b>S₃</b> — everything <em>greater than</em> p.</li>
+  <li><b>Given:</b> a bag of <code>n</code> numbers <code>S = {a₁, …, aₙ}</code> and a rank <code>k</code>.</li>
+  <li><b>Asked:</b> the element <code>x ∈ S</code> such that exactly <code>k−1</code> elements of <code>S</code> are smaller than <code>x</code>.</li>
+  <li><b>Median:</b> the special case <code>k = ⌈n/2⌉</code> — the "middle" value, the one with as many elements below it as above.</li>
 </ul>
-<p>Now we only need <em>one</em> pile. Compare k to the pile sizes:</p>
-<ul>
-  <li>if <code>|S₁| ≥ k</code> → the answer is inside S₁, recurse there with the <em>same</em> k;</li>
-  <li>else if <code>|S₁| + |S₂| ≥ k</code> → p <em>is</em> the answer, done;</li>
-  <li>otherwise → the answer is in S₃; recurse there looking for rank <code>k − |S₁| − |S₂|</code>.</li>
-</ul>
+<p><b>Tiny concrete instance.</b> Take <code>S = [3, 5, 7, 12, 19]</code> and <code>k = 2</code>. Sorted, that's <code>[3, 5, 7, 12, 19]</code>, so the 2nd smallest is <code>5</code>. Here <code>k = ⌈5/2⌉ = 3</code> would give the median, <code>7</code>. The trick is doing this on much larger lists <em>without</em> paying for a sort.</p>
+<p><b>Why not just sort?</b> Sorting <code>S</code> and reading off position <code>k</code> is correct but costs <code>O(n log n)</code>. We can do strictly better — <code>O(n)</code>, linear time — by throwing away a guaranteed fraction of the data each round instead of ordering all of it.</p>
 
-<p>The whole thing only works if the pivot reliably splits the list — a careless pivot (like always the first element) could shave off just one element and degrade to <code>O(n²)</code>. The fix is the <strong>median of medians</strong>: break the list into <strong>groups of 5</strong>, sort each tiny group, take each group's median, then recursively take the median <em>of those medians</em> as the pivot. This guarantees at least about <code>n/4</code> elements get pruned every round (so at most <code>3n/4</code> survive).</p>
+<div class="note">The idea is <strong>prune-and-search</strong>: pick a pivot <code>p</code>, split <code>S</code> into <b>S₁</b> (&lt; p), <b>S₂</b> (= p), <b>S₃</b> (&gt; p), then recurse into <em>only one</em> pile. If <code>|S₁| ≥ k</code> the answer is in S₁ (same k); else if <code>|S₁|+|S₂| ≥ k</code> then <code>p</code> itself is the answer; else recurse into S₃ for rank <code>k − |S₁| − |S₂|</code>. The whole thing only stays linear if the pivot reliably splits the list — which is why we pick the <strong>median of medians</strong> (groups of 5), guaranteeing ≥ n/4 elements pruned every round.</p>
 
-<div class="note">The <strong>general prune-and-search method</strong> (§1) is the parent idea here — binary search is its simplest instance (prune half each step). Selection generalises it: prune a guaranteed fraction (≥ n/4) each round.</div>
-
-<p><strong>Tiny example.</strong> List <code>[3,5,7,12,19]</code>, find the 2nd smallest. Sorted it's <code>[3,5,7,12,19]</code>, so the answer is <code>5</code> — and selection finds it without ever fully sorting the longer lists it usually runs on.</p>
-
-<h2>Watch it run</h2>
-<p>15 numbers; we want the <strong>7th smallest</strong>. The bars are grouped into 5s; gold marks group medians, the green bar is the pivot <code>p</code>, and dimmed bars are pruned. Step through.</p>
+<h2>Watch it solved</h2>
+<p>A self-contained instance: <strong>15 numbers</strong>, and we want the <strong>7th smallest</strong>. The bars below are grouped into 5s; gold marks the group medians, the green bar is the chosen pivot <code>p</code>, and dimmed bars are pruned away. Step through.</p>
 <div id="viz"></div>
 
 <div class="chips">
   <span class="chip">Time: <b>O(n)</b></span>
-  <span class="chip">Pivot: <b>groups of 5</b></span>
+  <span class="chip">Naive (sort): <b>O(n log n)</b></span>
+  <span class="chip">Pivot: <b>median of medians (groups of 5)</b></span>
   <span class="chip">Pruned: <b>≥ n/4 each round</b></span>
 </div>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
 
 <div class="quiz" data-correct="1" data-explain="The rule is |S₁| ≥ k for 'answer is in S₁' and |S₁|+|S₂| ≥ k for 'p is the answer'. Here |S₁| = 5 &lt; k = 6, so the answer is NOT in S₁. But |S₁|+|S₂| = 5+2 = 7 ≥ 6, so p itself is the 6th smallest. The trap: |S₁| = 5 is only one below k, and a strict-vs-≥ slip would push you into S₃.">
-  <div class="q">After partitioning around p you get |S₁| = 5 (elements &lt; p) and |S₂| = 2 (elements = p). You're looking for the 6th smallest. Where is it?</div>
+  <div class="q">You're finding the 6th smallest. After partitioning around p you get |S₁| = 5 (elements &lt; p) and |S₂| = 2 (elements = p). Where is the answer?</div>
   <button class="opt">inside S₁, still rank 6</button>
   <button class="opt">it is p itself</button>
   <button class="opt">inside S₃, at rank 6 − 5 = 1</button>
@@ -61,7 +53,7 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="Each round does O(n) work, then makes two recursive calls: one on the n/5 medians (to pick the pivot) and one on the ≤ 3n/4 survivors. Because 3/4 + 1/5 = 19/20 &lt; 1, the subproblem sizes shrink geometrically and the total work sums to O(n). If the fractions summed to ≥ 1, the recursion wouldn't shrink and you'd lose the linear bound.">
+<div class="quiz" data-correct="0" data-explain="Each round does O(n) work, then makes two recursive calls: one on the n/5 medians (to pick the pivot) and one on the ≤ 3n/4 survivors. Because 3/4 + 1/5 = 19/20 &lt; 1, the subproblem sizes shrink geometrically and the total work sums to O(n). If the fractions summed to ≥ 1, the recursion wouldn't shrink and you'd lose the linear bound — that is exactly why a careless first-element pivot can degrade to O(n²).">
   <div class="q">The recurrence is T(n) = T(3n/4) + T(n/5) + O(n). Why does this solve to O(n) rather than O(n log n)?</div>
   <button class="opt">the recursive sizes sum to 3/4 + 1/5 &lt; 1, so total work is a converging geometric series</button>
   <button class="opt">there is only one recursive call, like binary search</button>
@@ -71,13 +63,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prune-selection">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-selection">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 9 "Medians and Order Statistics" (§9.3 selection in worst-case linear time), or Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, the Prune-and-Search chapter. The key guarantee — the median of medians prunes ≥ n/4 each round — is what turns three-way partitioning into a worst-case <code>O(n)</code> algorithm.</p>
-<div class="note"><strong>Next in this bucket:</strong> 2-Variable Linear Programming — minimize y subject to a stack of constraint lines, pruning ¼ of the constraints each round by pairing them up and testing the median intersection.</div>
+<p><strong>Primary source:</strong> Alg06 <em>Prune-and-Search</em> §2–5; or CLRS, <em>Introduction to Algorithms</em>, Ch. 9 "Medians and Order Statistics" (§9.3 selection in worst-case linear time). The key guarantee — the median of medians prunes ≥ n/4 each round — is what turns three-way partitioning into a worst-case <code>O(n)</code> algorithm.</p>
+<div class="note"><strong>The strategy:</strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> — the general method (binary search is its simplest instance) that also solves 2-variable linear programming and the 1-center problem in linear time.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

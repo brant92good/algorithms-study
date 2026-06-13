@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resource Allocation (DP) — Algorithm Zoo</title>
+<title>Resource Allocation — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -14,13 +14,15 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>Resource Allocation (DP)</h1>
-<div class="mission">You have a fixed pile of resources and several projects competing for them. Hand them out to <strong>maximize total profit</strong> — and let dynamic programming try every split for you.</div>
+<h1>Resource Allocation</h1>
+<div class="mission">You have a fixed pile of resource units and several projects competing for them. Split the pile so the <strong>total profit</strong> across all projects is as large as possible.</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §9 (Resource Allocation), slides 19–21.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
 
-<h2>What is it?</h2>
-<p>You have <strong>m</strong> identical units of some resource (money, machines, staff — anything divisible into whole units) and <strong>n</strong> projects. Giving a project more units earns more profit, but the units are limited, so you must choose <em>how many to give each project</em>. The goal: pick an allocation that maximizes the <strong>sum of profits</strong> across all projects.</p>
-<p>The profit of each choice is given by a table <code>p(i, j)</code> = the profit you get when you allocate <strong>j units to project i</strong>. (Giving 0 units to a project earns 0.) Here is the deck's instance — <strong>m = 3</strong> units, <strong>n = 4</strong> projects:</p>
+<h2>The problem</h2>
+<p>You are given <strong>m</strong> identical <em>units</em> of some resource — money, machines, staff, anything that comes in whole, interchangeable chunks — and <strong>n</strong> <em>projects</em> that all want some. Handing a project more units earns more profit, but you only have <code>m</code> units total, so you cannot fully fund everyone. You must decide <strong>how many units to give each project</strong>. The thing you are asked to find: the allocation that <strong>maximizes the sum of profits</strong> over all <code>n</code> projects.</p>
+
+<p>How profitable each choice is comes from a table <code>p(i, j)</code> = the profit earned when project <strong>i</strong> receives <strong>j</strong> units. Giving a project 0 units earns 0. Here is the deck's concrete instance — <strong>m = 3</strong> units to distribute among <strong>n = 4</strong> projects:</p>
 
 <table class="dp" style="margin:.6rem 0">
 <tr><th>p(i,j)</th><th>j=1</th><th>j=2</th><th>j=3</th></tr>
@@ -30,11 +32,13 @@
 <tr><th>4</th><td>2</td><td>4</td><td>5</td></tr>
 </table>
 
-<p>So <code>p(1,2) = 8</code> means "2 units to project 1 earns 8 profit." Brute force would try every way to split 3 units among 4 projects — wasteful. DP instead asks a smaller question, project by project: <em>"using only the first i projects and q units of budget, what is the best profit?"</em> Call that <code>f(i, q)</code>. The key insight (the <strong>decision</strong>): when we add project i, we decide <strong>how many units k to hand it</strong> (0, 1, … up to q), spend the rest on the earlier projects, and keep the best:</p>
-<div class="atree">f(i, q) = max over k = 0..q  of   p(i, k) + f(i-1, q - k)</div>
-<p>with base row <code>f(1, q) = p(1, q)</code>. The answer is <code>f(n, m) = f(4, 3)</code>. (The deck draws the same thing as a <strong>multistage graph</strong>: a node <code>(i, j)</code> = "i units used by the first j projects", edges weighted by profit increments, and the answer is the <strong>longest / max-profit path</strong> from S to T.)</p>
+<p>Read it cell by cell: <code>p(1,2) = 8</code> means "2 units to project 1 earns 8 profit"; <code>p(2,1) = 5</code> means "1 unit to project 2 earns 5." A <strong>valid allocation</strong> hands out at most 3 units in total. For example, "2 units to project 1, 1 unit to project 2, 0 to projects 3 and 4" uses all 3 units and earns <code>8 + 5 = 13</code>. "All 3 units to project 1 alone" uses 3 units and earns <code>p(1,3) = 9</code>. The question is: <em>over every way to split 3 units among the 4 projects, which gives the highest total?</em></p>
 
-<h2>Watch it run</h2>
+<p>Brute force would enumerate every split — wasteful as <code>m</code> and <code>n</code> grow. The smarter route asks a smaller question, one project at a time: <em>"using only the first i projects and q units of budget, what is the best profit?"</em> Call that <code>f(i, q)</code>. The key <strong>decision</strong> when we bring in project i is <strong>how many units k to give it</strong> (0, 1, … up to q); whatever is left goes to the earlier projects, and we keep whichever k wins:</p>
+<div class="atree">f(i, q) = max over k = 0..q  of   p(i, k) + f(i-1, q - k)</div>
+<p>with base row <code>f(1, q) = p(1, q)</code> (only project 1 available, so just take its profit). The answer is <code>f(n, m) = f(4, 3)</code>. The deck draws the very same computation as a <strong>multistage graph</strong>: a node <code>(i, j)</code> means "i units used by the first j projects", edges are weighted by profit increments, and the answer is the <strong>longest / max-profit path</strong> from S to T.</p>
+
+<h2>Watch it solved</h2>
 <p>We fill the DP table <code>f(i, q)</code> row by row. Row 1 just copies project 1's profits. Each later cell is the <strong>max</strong> over "how many units k to give project i" — gold is the cell being filled, blue cells are the earlier-row values it depends on. Total budget m = 3, so the answer lives in the bottom-right cell.</p>
 <div id="viz"></div>
 
@@ -65,13 +69,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-resource-allocation">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-resource-allocation">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming) — the "best split over a decision" pattern here is the same one behind rod-cutting and matrix-chain ordering. The multistage-graph framing follows Horowitz &amp; Sahni, <em>Fundamentals of Computer Algorithms</em>, Ch. 7.</p>
-<div class="note"><strong>Next in this bucket:</strong> Traveling Salesperson (DP) — the Held–Karp recurrence g(i, S) = min over j of c(i,j) + g(j, S−{j}), turning an n! tour search into O(n²·2ⁿ).</div>
+<p><strong>Primary source:</strong> Alg07 · Ch 7 §9 (Resource Allocation), slides 19–21 — profit table, the multistage-graph model, and the winning path <code>S→C→H→L→T = 8 + 5 = 13</code>. The "best split over a decision" pattern here is the same one CLRS develops for rod-cutting and matrix-chain ordering (Ch. 15); the multistage-graph framing follows Horowitz &amp; Sahni, <em>Fundamentals of Computer Algorithms</em>, Ch. 7.</p>
+<div class="note"><strong>The method:</strong> this is one instance of <a href="algo-dynamic-programming.html">Dynamic Programming</a> — define a subproblem, write a recurrence over one decision, fill a table. <strong>Sibling problems in this bucket:</strong> <a href="prob-tsp-dp.html">Traveling Salesperson (DP / Held–Karp)</a>, <a href="prob-knapsack-dp.html">0/1 Knapsack</a>, and <a href="prob-lcs.html">Longest Common Subsequence</a>.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

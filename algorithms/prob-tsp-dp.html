@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Traveling Salesperson (Held–Karp DP) — Algorithm Zoo</title>
+<title>Travelling Salesperson (Held–Karp DP) — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -14,19 +14,19 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>Traveling Salesperson via DP (Held–Karp)</h1>
+<h1>Travelling Salesperson — Held–Karp DP</h1>
 <div class="mission">Visit every city exactly once and come home — for the <em>cheapest</em> total. Dynamic programming turns the factorial-many tours into a table you fill subset by subset.</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §10 (TSP by DP / Held–Karp), slides 22–25.</p>
-<div class="note">Contrast the <strong>branch-and-bound</strong> TSP in Ch 6 (see that card): same problem, different method — B&amp;B prunes a search tree; this DP fills a g(i,S) table.</div>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a> (contrast <a href="prob-tsp-bnb.html">Branch-and-Bound</a>)</p>
 
-<h2>What is it?</h2>
-<p>The <strong>Traveling Salesperson Problem (TSP)</strong>: you have a set of cities and a <strong>cost matrix</strong> giving the price <code>c(i,j)</code> to travel from city <code>i</code> to city <code>j</code> (the graph is <em>directed</em>, so going one way can cost more than coming back). Find the cheapest <strong>tour</strong> — a route that starts at city 1, visits <em>every</em> city exactly once, and returns to city 1.</p>
-<p><strong>Why not just try all tours?</strong> With <code>n</code> cities there are <code>(n−1)!</code> possible orderings — that explodes fast (10 cities ≈ 360,000; 20 cities ≈ 10¹⁷). We need to share work between tours that overlap.</p>
-<p><strong>The DP idea (Held–Karp).</strong> Notice that two half-finished tours which (a) sit at the <em>same current city</em> and (b) still have the <em>same set of cities left to visit</em> have <strong>identical futures</strong> — the cheapest way to finish is the same for both. So we don't care <em>how</em> we got here, only <em>where we are</em> and <em>what's left</em>. That pair is the <strong>DP state</strong>.</p>
+<h2>The problem</h2>
+<p>You are given a set of <strong>cities</strong> and a <strong>cost matrix</strong> <code>c(i,j)</code> = the price to travel <em>from</em> city <code>i</code> <em>to</em> city <code>j</code>. The graph is <strong>directed</strong>, so going one way can cost more than coming back (and <code>∞</code> means there is no road that direction). You must find the cheapest <strong>tour</strong>: a route that <strong>starts at city 1, visits every other city exactly once, and returns to city 1</strong>. "Cheapest" means the sum of the edge costs along the route is as small as possible.</p>
+<p><strong>Why is this hard?</strong> With <code>n</code> cities there are <code>(n−1)!</code> possible orderings of the cities you could visit — that explodes fast (10 cities ≈ 360,000 tours; 20 cities ≈ 10¹⁷). Checking every tour separately is hopeless. We need to <em>share work</em> between tours that overlap.</p>
+<p><strong>The DP idea (Held–Karp).</strong> Two half-finished tours that (a) sit at the <em>same current city</em> and (b) still have the <em>same set of cities left to visit</em> have <strong>identical futures</strong> — the cheapest way to finish is the same for both. So we don't care <em>how</em> we arrived, only <em>where we are</em> and <em>what's left</em>. That pair is the <strong>DP state</strong>.</p>
 <p>Define <code>g(i, S)</code> = the length of the shortest path that <strong>starts at city i, visits every city in the set S exactly once, and ends back at city 1</strong>. The recurrence picks the next city <code>j</code> to step to:</p>
 <p style="text-align:center"><code>g(i, S) = min<sub>j∈S</sub> { c(i,j) + g(j, S − {j}) }</code>, &nbsp; with base case <code>g(i, ∅) = c(i,1)</code>.</p>
 <p>The answer is <code>g(1, {all other cities})</code>. We <strong>build the table up by subset size</strong>: first all the <code>|S|=0</code> values, then <code>|S|=1</code>, and so on — each level only needs values from the level below it.</p>
-<p><strong>Tiny example.</strong> 4 cities, cost matrix below (rows = from, cols = to, ∞ = no road). We'll watch the table fill and read off the optimal tour <code>1 → 4 → 3 → 2 → 1</code> costing <strong>17</strong>.</p>
+<p><strong>A tiny concrete instance.</strong> 4 cities, with the cost matrix below (rows = from, cols = to, <code>∞</code> = no road). We'll watch the table fill and read off the optimal tour <code>1 → 4 → 3 → 2 → 1</code> costing <strong>17</strong>.</p>
 
 <table style="border-collapse:collapse;margin:.5rem 0;font-family:var(--mono,monospace)">
   <tr><th style="padding:.25rem .6rem"></th><th style="padding:.25rem .6rem">→1</th><th style="padding:.25rem .6rem">→2</th><th style="padding:.25rem .6rem">→3</th><th style="padding:.25rem .6rem">→4</th></tr>
@@ -36,7 +36,7 @@
   <tr><th style="padding:.25rem .6rem">4</th><td style="padding:.25rem .6rem;text-align:center">6</td><td style="padding:.25rem .6rem;text-align:center">8</td><td style="padding:.25rem .6rem;text-align:center">7</td><td style="padding:.25rem .6rem;text-align:center">∞</td></tr>
 </table>
 
-<h2>Watch it run</h2>
+<h2>Watch it solved</h2>
 <p>Left: the 4 cities (the optimal tour's roads light up green as we lock them in). Right: the <code>g(i,S)</code> table filling by subset size — the current cell is highlighted, the cells it depends on are marked.</p>
 <div id="viz"></div>
 
@@ -67,13 +67,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-tsp">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-tsp-dp">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em> (dynamic programming; the Held–Karp TSP DP is a classic problem in this chapter). The <code>g(i,S)</code> recurrence and the <code>O(n²·2ⁿ)</code> bound are the Held–Karp algorithm (1962).</p>
-<div class="note"><strong>Next in this bucket:</strong> Longest Common Subsequence — fill an L<sub>i,j</sub> table to find the longest string both inputs share.</div>
+<p><strong>Primary source:</strong> Alg07 · Ch 7 §10, slides 22–25 (cost matrix, the tour multistage graph, both Held–Karp recurrences, and the explicit <code>O(n²·2ⁿ)</code> complexity sum). The <code>g(i,S)</code> recurrence and the <code>O(n²·2ⁿ)</code> bound are the Held–Karp algorithm (1962).</p>
+<div class="note"><strong>Same problem, different method:</strong> the <a href="prob-tsp-bnb.html">Branch-and-Bound TSP</a> in Ch 6 solves this <em>same</em> instance by pruning a search tree with a reduced-cost lower bound, instead of filling a g(i,S) table — see <a href="algo-dynamic-programming.html">Dynamic Programming</a> for the method behind this page.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

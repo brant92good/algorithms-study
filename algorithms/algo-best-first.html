@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Best-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Best-First Search</h1>
+<div class="mission">Keep <strong>one global list of all open nodes</strong> and always expand the single most promising one — anywhere in the tree. This <em>global view</em> recovers exactly where greedy hill climbing gets stuck.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A05 · <em>The Searching Strategies</em> §6 (Best-First Search), Fig. 6-16.</p>
+
+<h2>The idea</h2>
+<p>A tree-search strategy decides <em>which open node to expand next</em>. An <strong>open node</strong> is one that has been generated but not yet expanded (its children not yet produced). Different strategies pick differently:</p>
+<ul>
+  <li><strong>Depth-first (DFS)</strong> always dives into the most-recently-generated node (a stack).</li>
+  <li><strong>Breadth-first (BFS)</strong> expands strictly level by level (a queue).</li>
+  <li><strong>Hill climbing</strong> is greedy DFS: it expands the locally best child of the node it is currently at — and <em>commits</em>. If every child looks worse than where it just was, it stalls; it cannot reconsider a promising node it left behind on another branch.</li>
+</ul>
+<p><strong>Best-first search</strong> combines DFS and BFS. It keeps <em>one list holding every open node from the whole tree</em>, scores each with an estimation function <code>f</code>, and always expands the best-<code>f</code> node <strong>among all of them</strong> — no matter how deep or which branch it sits on. Because it can jump back to a promising node it generated earlier anywhere in the tree, best-first has a <strong>global view</strong>, whereas hill climbing only ever sees the children of its current node.</p>
+
+<div class="note"><strong>Key intuition:</strong> hill climbing asks "which of <em>my children</em> is best?" and can dead-end. Best-first asks "which open node <em>in the entire frontier</em> is best?" — so a branch hill climbing abandoned is still in the list, ready to be picked up the moment it becomes the global best.</div>
+
+<p>The estimation (lower-is-better) function in the slides is the same one hill climbing uses on the 8-puzzle:</p>
+<ul>
+  <li><code>f(n) = d(n) + w(n)</code></li>
+  <li><code>d(n)</code> = depth of node <code>n</code> (moves made so far),</li>
+  <li><code>w(n)</code> = number of misplaced tiles in node <code>n</code>.</li>
+</ul>
+
+<h3>The scheme (Step 1–Step 4)</h3>
+<ol>
+  <li><strong>Step 1.</strong> Form a one-element list consisting of the root node.</li>
+  <li><strong>Step 2.</strong> Remove the first element from the list. Expand it. If one of its descendants is a <strong>goal node</strong>, <strong>stop</strong>; otherwise add the descendants into the list.</li>
+  <li><strong>Step 3.</strong> Sort the <em>entire</em> list by the values of the estimation function.</li>
+  <li><strong>Step 4.</strong> If the list is empty, <strong>failure</strong>. Otherwise go to Step 2.</li>
+</ol>
+<p>The sort in Step&nbsp;3 over the <em>whole</em> list is the global view in action: it guarantees the "first element" pulled in Step&nbsp;2 is always the globally best-looking open node. <strong>Complexity:</strong> like BFS, the list can grow to hold the whole frontier, so worst-case time and space are exponential in the depth — best-first trades memory for the ability to recover from a bad-looking branch.</p>
+
+<h2>A small illustration</h2>
+<p>The same 8-puzzle Fig. 6-16 the slides use. Start board <code>2 8 3 / 1 _ 4 / 7 6 5</code>, goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>; the number under each board is its <code>f = d + w</code>. We track the global open list across expansions; dimmed nodes stay in the list, the green node is the global best we expand next.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">f(n) = <b>d(n) + w(n)</b></span>
+  <span class="chip">Picks: <b>global best-f</b></span>
+  <span class="chip">List: <b>all open nodes</b></span>
+  <span class="chip">Worst case: <b>exponential</b></span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<ul>
+  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> — slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal. The <em>same</em> instance where hill climbing stalls: best-first keeps every generated board in one list and recovers by jumping to the globally best-<code>f</code> board, reaching the goal at node 10 via root→2→7→9→10.</li>
+</ul>
+
+<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares the CHILDREN of the node it is currently at; if none improves on the current node it stalls, with no way to return to a promising node on a branch it already left. Best-first keeps ALL open nodes in one sorted list, so that abandoned-but-promising node is still there and gets expanded the moment it becomes the global minimum. It is not about a better heuristic (both use f = d + w here), nor about exploring level-by-level (that is BFS), nor about never revisiting nodes.">
+  <div class="q">Hill climbing stalls on a board where every child has a worse <code>f</code> than the current node. Why does best-first search escape this on the same instance, with the same <code>f = d + w</code>?</div>
+  <button class="opt">it uses a smarter heuristic that never produces a worse child</button>
+  <button class="opt">it expands strictly level by level, so it cannot get stuck on one branch</button>
+  <button class="opt">it keeps all open nodes in one global list and can jump back to the best one anywhere in the tree</button>
+  <button class="opt">it forbids revisiting any board, so it always finds a downhill move</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-best-first">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6 "The Searching Strategies" §6 (Best-First Search), Fig. 6-16. Best-first is also the engine behind the optimization searches later in the chapter: <strong>branch-and-bound</strong> and <strong>A\*</strong> (<code>f(n) = g(n) + h(n)</code> with <code>h(n) ≤ h*(n)</code>) both expand the globally best-bounded open node, adding a bound so the <em>first goal reached is optimal</em>.</p>
+<div class="note"><strong>Contrast with:</strong> <a href="prob-8-puzzle.html">the 8-puzzle problem page</a> shows the same instance solved by both hill climbing (which stalls / takes a longer committed path) and best-first (global recovery) side by side.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- Fig. 6-16: best-first on the 8-puzzle, tracked as a global open list ----
+// Boards stored as 9-char strings, '_' = blank. f = d + w shown beneath each.
+// Node ids & f-values from the verified note (Fig. 6-16):
+//   root(3); under root: 1(4),2(4),3(5),4(5); under 1: 5(5),6(6);
+//   under 2: 7(4),8(6); under 7: 9(4); under 9: 10(4 = GOAL),11(6).
+const B = {
+  root:'283 1_4 765', n1:'2_3 184 765', n2:'283 _14 765', n3:'283 14_ 765',
+  n4:'283 164 7_5', n5:'_23 184 765', n6:'2_3 184 765', n7:'23_ 184 765',
+  n8:'23_ 184 765', n9:'123 _84 765', n10:'123 8_4 765', n11:'123 784 _65'
+};
+const F = {root:3,n1:4,n2:4,n3:5,n4:5,n5:5,n6:6,n7:4,n8:6,n9:4,n10:4,n11:6};
+
+// a tile board as a small 3x3 grid + its f label
+function board(id, state){
+  const s = B[id], f = F[id];
+  let cells='';
+  s.replace(/ /g,'').split('').forEach(ch=>{
+    cells += `<div class="cell${ch==='_'?' blank':''}">${ch==='_'?'':ch}</div>`;
+  });
+  return `<div class="pz ${state}"><div class="pzgrid">${cells}</div><div class="pzf">f=${f}</div></div>`;
+}
+
+// each frame: which node we EXPAND ('act'), the open list after that step ('open'),
+// expanded/closed nodes ('done'), and a caption.
+const frames = [
+  { exp:'root', open:['n1','n2','n3','n4'], done:[],
+    cap:`<b>Step 1–2.</b> List = {root}. Expand root, generate children 1–4. None is the goal. Open list now holds all four; sort by f: 1(4), 2(4), 3(5), 4(5).` },
+  { exp:'n1', open:['n2','n3','n4','n5','n6'], done:['n1'],
+    cap:`<b>Best so far is node 1 (f=4).</b> Expand it → children 5(5), 6(6). They go into the same list. After sorting, node 2 (f=4) is now the global best — note 1's children did NOT beat node 2 on another branch.` },
+  { exp:'n2', open:['n3','n4','n5','n6','n7','n8'], done:['n1','n2'],
+    cap:`<b>Global best is node 2 (f=4)</b>, sitting on a different branch from where we just were. A hill climber committed to node 1 could not come back here — best-first simply picks it from the list. Expand → 7(4), 8(6).` },
+  { exp:'n7', open:['n3','n4','n5','n6','n8','n9'], done:['n1','n2','n7'],
+    cap:`<b>Node 7 (f=4) is the new global minimum.</b> Expand it → child 9(4). The frontier keeps every other open board available, but none beats f=4.` },
+  { exp:'n9', open:['n3','n4','n5','n6','n8','n11'], done:['n1','n2','n7','n9'],
+    cap:`<b>Expand node 9 (f=4).</b> Its children are 10(4) and 11(6). Node 10 is a <b>goal node</b> (1 2 3 / 8 _ 4 / 7 6 5) → <b>STOP</b>. Solved via root→2→7→9→10, recovering on a branch hill climbing would have abandoned.` },
+];
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const goal = (f.exp==='n9');
+    let html = `<div class="bfrow"><div class="bflabel">expanding</div>${board(f.exp, goal?'done':'act')}</div>`;
+    html += `<div class="bflabel" style="margin-top:.6rem">open list (sorted by f — the whole frontier)</div>`;
+    html += `<div class="bfrow">`;
+    // sort open list by f ascending for the global-view display
+    const open = [...f.open].sort((a,b)=>F[a]-F[b]);
+    if(goal){
+      html += board('n10','goal');
+      open.filter(id=>id!=='n11').forEach(id=> html += board(id,'open'));
+      html += board('n11','open');
+    } else {
+      open.forEach(id=> html += board(id,'open'));
+    }
+    html += `</div>`;
+    stage.innerHTML = html;
+  }
+});
+</script>
+<style>
+.pz{display:inline-flex;flex-direction:column;align-items:center;margin:.3rem;vertical-align:top}
+.pzgrid{display:grid;grid-template-columns:repeat(3,1.5rem);grid-template-rows:repeat(3,1.5rem);
+  gap:2px;background:var(--line,#445);padding:2px;border-radius:5px;border:2px solid transparent}
+.pz .cell{display:flex;align-items:center;justify-content:center;background:var(--card,#1b2030);
+  font:600 .85rem/1 monospace;color:var(--fg,#dfe6f2);border-radius:3px}
+.pz .cell.blank{background:transparent}
+.pzf{font:600 .72rem/1 monospace;color:var(--mut,#8b97ad);margin-top:.25rem}
+.pz.act .pzgrid{border-color:#4ec9b0}
+.pz.act .pzf{color:#4ec9b0}
+.pz.done .pzgrid{border-color:#4ec9b0;opacity:.85}
+.pz.goal .pzgrid{border-color:#ffd24a;box-shadow:0 0 0 2px rgba(255,210,74,.35)}
+.pz.goal .pzf{color:#ffd24a}
+.pz.open{opacity:.6}
+.bfrow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.2rem}
+.bflabel{font:600 .7rem/1 sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--mut,#8b97ad)}
+</style>
+</body></html>

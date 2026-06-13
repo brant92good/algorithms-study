@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 8-Puzzle — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+<style>
+  .puz{display:inline-grid;grid-template-columns:repeat(3,2.1rem);grid-template-rows:repeat(3,2.1rem);gap:3px;background:var(--line,#3a3f4b);padding:3px;border-radius:8px;vertical-align:middle}
+  .puz .t{display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:5px;background:var(--card,#262b36);color:var(--fg,#e8ebf0)}
+  .puz .t.b{background:transparent}
+  .puz.sel{outline:2px solid var(--acc,#5b9dff);outline-offset:2px}
+  .puz.goal{outline:2px solid #3fbf6f;outline-offset:2px}
+  .nodelabel{font:600 .8rem/1.2 var(--mono,monospace);color:var(--mut,#9aa3b2);text-align:center;margin-top:.2rem}
+  .puzrow{display:inline-flex;flex-direction:column;align-items:center;margin:.3rem .6rem .3rem 0}
+  .way{border:1px solid var(--bd,#ddd);border-radius:12px;padding:.4rem 1rem 1rem;margin:1.1rem 0}
+  .way > h3{margin:.6rem 0 .3rem;font-size:1.15rem}
+  .way .tagline{color:var(--mut);font-size:.9rem;margin:.1rem 0 .8rem}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Heuristic Search · Ch6</div>
+<h1>The 8-Puzzle</h1>
+<div class="mission">Slide numbered tiles around a 3×3 board to reach a goal arrangement — and watch the <strong>same</strong> scoring function get solved two ways: a greedy climber that can <strong>freeze</strong>, and a global searcher that <strong>recovers</strong>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §5–6 (Hill Climbing &amp; Best-First Search), the 8-puzzle, Fig. 6-15 and Fig. 6-16.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-hill-climbing.html">Hill Climbing</a> and <a href="algo-best-first.html">Best-First Search</a></p>
+
+<h2>The problem</h2>
+<p>The <strong>8-puzzle</strong> is a 3×3 board holding eight numbered tiles (<code>1</code>–<code>8</code>) and one empty square called the <strong>blank</strong>. The only legal move is to slide a tile that sits next to the blank into it — which is the same as moving the blank <em>up, down, left,</em> or <em>right</em>. Each slide produces a new board. The task: starting from a given <strong>start board</strong>, find a sequence of slides that reaches a fixed <strong>goal board</strong>.</p>
+
+<div style="display:flex;gap:2.5rem;flex-wrap:wrap;align-items:center;margin:1rem 0">
+  <div class="puzrow" style="margin:0">
+    <span class="puz"><span class="t">2</span><span class="t">8</span><span class="t">3</span><span class="t">1</span><span class="t b"></span><span class="t">4</span><span class="t">7</span><span class="t">6</span><span class="t">5</span></span>
+    <span class="nodelabel">START</span>
+  </div>
+  <div style="font-size:1.6rem;color:var(--mut)">→ … →</div>
+  <div class="puzrow" style="margin:0">
+    <span class="puz goal"><span class="t">1</span><span class="t">2</span><span class="t">3</span><span class="t">8</span><span class="t b"></span><span class="t">4</span><span class="t">7</span><span class="t">6</span><span class="t">5</span></span>
+    <span class="nodelabel">GOAL</span>
+  </div>
+</div>
+
+<p>Searching for the right slides is a <strong>tree problem</strong>: each board is a node, and its children are the boards reachable in one slide. To decide <em>which</em> board to try next, we score every node with an <strong>evaluation function</strong>:</p>
+<div class="atree">f(n) = d(n) + w(n)
+   d(n) = depth  — how many slides you have already made to reach n
+   w(n) = misplaced tiles — numbered tiles not yet on their goal square (the blank doesn't count)</div>
+<p><strong>Lower <code>f</code> is better.</strong> For the START board above: no slides made yet so <code>d = 0</code>; the tiles <code>2</code>, <code>8</code> and <code>1</code> are off their goal squares so <code>w = 3</code>; hence <code>f = 0 + 3 = 3</code>. The whole question is just: <em>in what order do we expand nodes of this tree?</em> Two strategies below answer it differently — and that single difference decides whether the search gets stuck.</p>
+
+<h2>Watch it solved</h2>
+<p>Both runs start from the same board and aim at the same goal. Misplaced tiles are tinted; each frame shows that board's <code>f = d + w</code>. The two strategies share the scoring — only the <strong>selection rule</strong> changes.</p>
+
+<div class="way">
+  <h3>① Hill Climbing — greedy, local view</h3>
+  <p class="tagline">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. Fast — until every child looks worse and it has nothing saved to fall back on.</p>
+  <div id="viz-hc"></div>
+</div>
+
+<div class="way">
+  <h3>② Best-First Search — global open list, recovers</h3>
+  <p class="tagline">Keep an <strong>open list</strong> of every discovered-but-unexpanded node across the <em>whole</em> tree, sort it by <code>f</code>, and always expand the globally cheapest node — so a sour branch is no trap: just jump back to a better node seen earlier.</p>
+  <div id="viz-bf"></div>
+</div>
+
+<div class="chips">
+  <span class="chip">Score: <b>f = d + w</b></span>
+  <span class="chip">Hill climbing: <b>local · can stall</b></span>
+  <span class="chip">Best-first: <b>global · recovers</b></span>
+  <span class="chip">Goal: <b>1 2 3 / 8 _ 4 / 7 6 5</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="f(n) = d(n) + w(n): d(n) is the depth — how many slides you have already made to reach this board — and w(n) is how many numbered tiles are not yet on their goal square. It does NOT estimate moves still remaining, and it ignores the blank (the blank is not a tile that can be 'misplaced').">
+  <div class="q">A board is reached after 3 slides, and 4 of its numbered tiles sit on the wrong square. Using f(n) = d(n) + w(n), what is f for this board?</div>
+  <button class="opt">4, the misplaced tiles only</button>
+  <button class="opt">7, the slides made plus the misplaced tiles</button>
+  <button class="opt">3, the slides made so far only</button>
+  <button class="opt">5, the misplaced tiles plus the blank</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="Both score nodes with the SAME f = d + w. Hill climbing keeps only the current node's children and commits to the local best, so when every child looks no better it stalls — a local optimum with nothing saved to back up to. Best-first keeps ALL open nodes in one list and can jump back to a cheaper node on another branch, so it recovers. Memory of every open node — not a cleverer score — is the difference.">
+  <div class="q">Hill climbing and best-first search both score 8-puzzle boards with f = d + w. So what lets best-first reach the goal in a spot where hill climbing gets stuck?</div>
+  <button class="opt">it uses a smarter evaluation function that never traps the search</button>
+  <button class="opt">it remembers all open nodes and can jump back to a better one on another branch</button>
+  <button class="opt">it allows slides that increase f, so it can climb out of any dip</button>
+  <button class="opt">it expands the board level by level like breadth-first search</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-8-puzzle">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R. C. T. Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 — the 8-puzzle solved by hill climbing (Fig. 6-15) and by best-first search (Fig. 6-16), both using <code>f(n) = d(n) + w(n)</code>. The lesson is that the puzzle is one fixed problem; the <em>search strategy</em> is what differs.</p>
+<div class="note"><strong>The two strategies, on their own pages:</strong> <a href="algo-hill-climbing.html">Hill Climbing</a> (greedy depth-first, only the local best child) and <a href="algo-best-first.html">Best-First Search</a> (a global open list, always the globally best node). Next in the bucket: <em>Branch-and-Bound</em> — best-first plus a bound per node, to solve <em>optimization</em> problems, not just reach any goal.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ======================================================================
+//  Shared 8-puzzle scoring.  Goal: 1 2 3 / 8 _ 4 / 7 6 5  (0 = blank)
+// ======================================================================
+const GOAL = [1,2,3, 8,0,4, 7,6,5];
+function misplaced(b){ let c=0; for(let i=0;i<9;i++){ if(b[i]!==0 && b[i]!==GOAL[i]) c++; } return c; }
+
+// ----------------------------------------------------------------------
+//  ① HILL CLIMBING  (Fig. 6-15): initial -> 1 -> 5 -> 7 -> 8(goal),
+//     then the STUCK lesson at a local optimum.
+// ----------------------------------------------------------------------
+const hcFrames = [
+  { board:[2,8,3, 1,0,4, 7,6,5], d:0,
+    cap:`<b>Start.</b> d=0 slides, w=3 misplaced (the 2, 8 and 1) → <b>f = 0 + 3 = 3</b>. Generate every neighbour and greedily pick the lowest f.` },
+  { board:[2,0,3, 1,8,4, 7,6,5], d:1, pick:true,
+    cap:`Slide the blank <b>up</b>. Best neighbour by f: d=1, w=3 → <b>f = 1 + 3 = 4</b>. Commit here and dive — no list of the rejected siblings is kept.` },
+  { board:[0,2,3, 1,8,4, 7,6,5], d:2, pick:true,
+    cap:`Slide the blank <b>left</b>. d=2, w=2 → <b>f = 2 + 2 = 4</b>. Lowest-f child again — keep descending.` },
+  { board:[1,2,3, 0,8,4, 7,6,5], d:3, pick:true,
+    cap:`Slide the blank <b>down</b>. d=3, w=1 (only the 8) → <b>f = 3 + 1 = 4</b>. One tile from done — take the best child.` },
+  { board:[1,2,3, 8,0,4, 7,6,5], d:4, goal:true,
+    cap:`Slide the 8 <b>right</b>. d=4, w=0 → <b>f = 4 + 0 = 4</b>. 🎉 <b>Goal reached.</b> This run was lucky: each greedy step happened to keep improving.` },
+  { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true,
+    cap:`<b>The lesson.</b> Suppose an early step had instead landed here (d=1, w=4 → <b>f = 5</b>). Now look at every neighbour's f…` },
+  { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true, showNbr:true,
+    cap:`Every legal slide gives a board with f = 5 or <b>worse</b> — no neighbour beats the current 5. This is a <b>local optimum</b>.` },
+  { board:[2,8,3, 1,6,4, 7,0,5], d:1, dead:true,
+    cap:`<b>STUCK.</b> Greedy + local view = no improving child, and hill climbing kept <b>no other open nodes</b> to back up to. It cannot reach the goal, even though a better path existed earlier. That global view is exactly what Best-First Search adds below.` },
+];
+
+ZOO.stepper({
+  mount:'#viz-hc', frames:hcFrames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const b = f.board, w = misplaced(b), fval = f.d + w;
+    let tag, tagColor;
+    if (f.goal)      { tag='GOAL';  tagColor='var(--ok,#3aa564)'; }
+    else if (f.dead) { tag='STUCK'; tagColor='var(--bad,#d9534f)'; }
+    else if (f.pick) { tag='chosen child'; tagColor='var(--acc,#c98a2b)'; }
+    else             { tag='current'; tagColor='var(--mut,#888)'; }
+
+    const cells = b.map((v,i) => {
+      const blank = (v===0);
+      const bad = (!blank && v!==GOAL[i]);
+      const bg = blank ? 'transparent'
+               : bad   ? 'color-mix(in srgb, var(--acc,#c98a2b) 28%, transparent)'
+                       : 'color-mix(in srgb, var(--ok,#3aa564) 22%, transparent)';
+      const border = blank ? '2px dashed var(--mut,#999)' : '1px solid var(--bd,#ccc)';
+      return `<div style="display:flex;align-items:center;justify-content:center;
+        width:3rem;height:3rem;border-radius:8px;font-size:1.3rem;font-weight:700;
+        background:${bg};border:${border};color:var(--fg,#222)">${blank?'':v}</div>`;
+    }).join('');
+
+    const grid = `<div style="display:grid;grid-template-columns:repeat(3,3rem);
+      gap:.35rem;padding:.6rem;border-radius:12px;background:var(--card,#f6f6f6);
+      border:1px solid var(--bd,#ddd)">${cells}</div>`;
+
+    const fbox = `<div style="text-align:center;margin-top:.6rem;font-size:1.05rem">
+      <span style="font-family:ui-monospace,monospace">f = d(${f.d}) + w(${w}) =
+      <b style="font-size:1.25rem">${fval}</b></span>
+      <span style="margin-left:.6rem;padding:.1rem .5rem;border-radius:999px;
+      font-size:.78rem;font-weight:700;color:#fff;background:${tagColor}">${tag}</span></div>`;
+
+    let nbr = '';
+    if (f.showNbr) {
+      nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--mut,#777)">
+        neighbour f-values: <b>5</b> · <b>7</b> · <b>7</b>  → none below the current 5</div>`;
+    }
+    if (f.dead) {
+      nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--bad,#d9534f);font-weight:600">
+        ✗ no child with smaller f &nbsp;·&nbsp; ✗ no saved open nodes &nbsp;·&nbsp; ✗ no backtrack list</div>`;
+    }
+
+    stage.innerHTML =
+      `<div style="display:flex;flex-direction:column;align-items:center">${grid}${fbox}${nbr}</div>`;
+  }
+});
+
+// ----------------------------------------------------------------------
+//  ② BEST-FIRST SEARCH  (Fig. 6-16): root -> 2 -> 7 -> 9 -> 10(goal),
+//     keeping a global OPEN LIST sorted by f.
+// ----------------------------------------------------------------------
+// board as 9-char string, '_' = blank.  Goal "1238_4765".
+const G = "1238_4765";
+function w(b){ let c=0; for(let i=0;i<9;i++){ if(b[i]!=='_' && b[i]!==G[i]) c++; } return c; }
+const node = (id,b,d)=>({id,b,d,f:d+w(b)});
+const root = node('root',"2831_4765",0); // 2 8 3 / 1 _ 4 / 7 6 5   f=0+3=3
+const n1 = node('1',"283_14765",1);      // 2 8 3 / _ 1 4 / 7 6 5   f=1+3=4
+const n2 = node('2',"2_3184765",1);      // 2 _ 3 / 1 8 4 / 7 6 5   f=1+3=4
+const n3 = node('3',"28314_765",1);      // 2 8 3 / 1 4 _ / 7 6 5   f=1+4=5
+const n4 = node('4',"2831647_5",1);      // 2 8 3 / 1 6 4 / 7 _ 5   f=1+4=5
+const n5 = node('5',"_83214765",2);      // _ 8 3 / 2 1 4 / 7 6 5   f=2+3=5  (child of 1)
+const n6 = node('6',"283714_65",2);      // 2 8 3 / 7 1 4 / _ 6 5   f=2+4=6  (child of 1)
+const n7 = node('7',"_23184765",2);      // _ 2 3 / 1 8 4 / 7 6 5   f=2+2=4  (child of 2)
+const n8 = node('8',"23_184765",2);      // 2 3 _ / 1 8 4 / 7 6 5   f=2+4=6  (child of 2)
+const n9 = node('9',"123_84765",3);      // 1 2 3 / _ 8 4 / 7 6 5   f=3+1=4  (child of 7)
+const n10= node('10',"1238_4765",4);     // 1 2 3 / 8 _ 4 / 7 6 5   f=4+0=4  GOAL (child of 9)
+const n11= node('11',"123784_65",4);     // 1 2 3 / 7 8 4 / _ 6 5   f=4+2=6  (child of 9)
+
+const sortf = arr => arr.slice().sort((a,b)=> a.f-b.f || (+a.id||0)-(+b.id||0));
+const tok = n => `${n.id}(${n.f})`;
+
+const bfFrames = [];
+bfFrames.push({
+  boards:[root], sel:null, open:[root],
+  cap:`<b>Step 1.</b> Put the root on the open list. Root scores f = d + w = 0 + 3 = <b>3</b> (3 tiles out of place) — the same scoring hill climbing used.`
+});
+bfFrames.push({
+  boards:[n1,n2,n3,n4], sel:'root', open:[root],
+  cap:`<b>Step 2.</b> Expand the root. Score its four children — none is the goal — and add them all to the list.`
+});
+bfFrames.push({
+  boards:[n1,n2,n3,n4], sel:null, open:sortf([n1,n2,n3,n4]),
+  cap:`<b>Step 3.</b> Sort the whole list by f. Nodes 1 and 2 tie at f=4 and move to the front; nodes 3, 4 (f=5) sit behind. <b>Step 4:</b> list not empty, repeat.`
+});
+bfFrames.push({
+  boards:[n5,n6], sel:'1', open:sortf([n2,n3,n4,n5,n6]),
+  cap:`<b>Global view.</b> Tied at the front, node <b>1</b> is removed and expanded first. Both its children climb: node 5 → f=5, node 6 → f=6. Re-sort and node <b>2</b> (still f=4) is now alone at the front.`
+});
+bfFrames.push({
+  boards:[n7,n8], sel:'2', open:sortf([n3,n4,n5,n6,n7,n8]),
+  cap:`<b>Step 2.</b> Remove and expand the front node <b>2</b>. Its child node <b>7</b> keeps f=4; the other (node 8) jumps to f=6. Re-sort: node 7 is the lone cheapest at f=4.`
+});
+bfFrames.push({
+  boards:[n9], sel:'7', open:sortf([n3,n4,n5,n6,n8,n9]),
+  cap:`<b>Global view.</b> The lowest-f node is node <b>7</b>. Expand it; its useful child node 9 also scores f=4. (Worse siblings scored 5 and 6 and sank in the sort — kept in the list, just not picked while node 9 is cheaper.)`
+});
+bfFrames.push({
+  boards:[n10,n11], sel:'9', open:sortf([n3,n4,n5,n6,n8,n10,n11]), goal:'10',
+  cap:`<b>Step 2.</b> Expand front node <b>9</b>. A child — node <b>10</b> — is the <b>goal</b> 1 2 3 / 8 _ 4 / 7 6 5. <b>Stop.</b> The open list still held nodes 3, 4, 5, 6, 8 on other branches: the global view let best-first commit to the cheapest node every step, so no local optimum could trap it.`
+});
+
+function puz(n, klass){
+  let cells='';
+  for(let i=0;i<9;i++){ const ch=n.b[i]; cells += `<span class="t${ch==='_'?' b':''}">${ch==='_'?'':ch}</span>`; }
+  return `<span class="puzrow"><span class="puz ${klass||''}">${cells}</span><span class="nodelabel">node ${n.id} · f=${n.f}</span></span>`;
+}
+
+ZOO.stepper({
+  mount:'#viz-bf', frames:bfFrames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const html = f.boards.map(n=>{
+      let k = '';
+      if (f.sel && n.id===f.sel) k='sel';
+      if (f.goal && n.id===f.goal) k='goal';
+      return puz(n,k);
+    }).join('');
+    const lane = ZOO.lane('Open list (by f)', f.open.map(tok));
+    stage.innerHTML = `<div style="margin-bottom:.5rem">${html}</div>${lane}`;
+  }
+});
+</script>
+</body></html>

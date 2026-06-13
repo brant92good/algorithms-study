@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breadth-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Breadth-First Search</h1>
+<div class="mission">Explore a solution tree <strong>level by level</strong> — all the shallowest nodes first — using a <strong>FIFO queue</strong>. It is the queue-driven twin of depth-first search.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> <em>A05 — Searching Strategies</em> §4 (Breadth-First Search), with the sum-of-subsets tree of §3 (Fig. 6-11) as the shared illustration.</p>
+
+<h2>The idea</h2>
+<p>Many problems are solved by laying out their candidate (partial) solutions as a <strong>solution tree</strong> (a.k.a. state-space tree): the root is "nothing decided yet," and each level commits one more choice. A <strong>searching strategy</strong> only decides the <em>order</em> in which we expand nodes of that tree. <strong>Breadth-first search (BFS)</strong> expands the tree <strong>level by level</strong>: every node at depth <code>d</code> is visited before <em>any</em> node at depth <code>d+1</code>. It always works on the <strong>shallowest unexpanded node</strong> next.</p>
+
+<p>The mechanism is a <strong>queue (FIFO — first in, first out)</strong>:</p>
+<ol>
+  <li>Put the root in the queue.</li>
+  <li>Remove the node at the <em>front</em>. If it is a goal, stop.</li>
+  <li>Otherwise append all its children to the <em>back</em> of the queue.</li>
+  <li>Repeat from step 2 until the queue is empty (failure) or a goal is found.</li>
+</ol>
+<p>Because children go to the back and we always serve from the front, a node's children only get expanded after every node already waiting (all of which are at the same or shallower depth). That is exactly what produces the level-by-level order.</p>
+
+<div class="note"><strong>BFS vs DFS — same tree, one data structure apart.</strong> DFS uses a <strong>stack (LIFO)</strong>: it pushes children on top and pops the newest, so it dives down one branch as deep as possible, then backtracks. BFS swaps the stack for a <strong>queue (FIFO)</strong> and so fans out across each level instead of plunging. DFS finds <em>a</em> deep goal fast with little memory (one root-to-frontier path); BFS finds the <strong>shallowest</strong> goal first but must store a whole frontier (which grows wide). Neither, on its own, guarantees an <em>optimal</em>-cost goal — they stop at the first goal reached; that is what branch-and-bound and A* add later in the chapter.</p>
+
+<h2>A tiny illustration</h2>
+<p>Take the sum-of-subsets tree (Fig. 6-11): the set is <code>S = {7, 5, 1, 2, 10}</code> and we want a subset summing to <strong>9</strong>. The root is the empty sum <code>0</code>; at level <code>i</code> we branch on whether element <code>i</code> is <em>in</em> (left, value added) or <em>out</em>. Below, each node is annotated <code>①②③…</code> with the order BFS would expand it — strictly increasing with depth. Read it top band, then next band, never jumping down a branch early.</p>
+
+<div class="atree" style="line-height:1.7">
+<pre style="margin:0;font-family:var(--mono,monospace)">depth 0:                <b>0</b> ①
+                       / +7 \ skip
+depth 1:        <b>7</b> ②          <b>0</b> ③
+              / +5 \ skip      ( … )
+depth 2:   <b>12</b>✗ ④   <b>7</b> ⑤
+                    / +1 \ skip
+depth 3:        <b>8</b> ⑥    <b>7</b> ⑦
+                   / +2 \ skip
+depth 4:      <b>9</b> ★ ⑧   <b>8</b> ⑨</pre>
+</div>
+<p style="font-size:.9rem;color:var(--mut)">BFS expansion order ①→⑨ sweeps each depth band fully before descending. The goal <code>9 ★</code> (the subset <code>{7, 2}</code>) sits at depth 4 and is reached at step ⑧. A DFS on the same tree would instead drive straight down the <code>+7, +5</code> branch first, hit the dead end <code>12 ✗</code> (exceeds 9), backtrack, and only then try the next branch — same nodes, different visiting order.</p>
+
+<div class="chips">
+  <span class="chip">Data structure: <b>queue (FIFO)</b></span>
+  <span class="chip">Order: <b>level by level</b></span>
+  <span class="chip">Finds: <b>shallowest goal first</b></span>
+  <span class="chip">Memory: <b>whole frontier</b></span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<ul>
+  <li><a href="prob-subset-sum.html">Sum of Subsets</a> — given a set and a target, find a subset that sums to the target. The same solution tree DFS uses, explored level by level instead of deepest-first.</li>
+</ul>
+
+<div class="quiz" data-correct="2" data-explain="DFS uses a stack (LIFO): it pushes children and pops the newest, plunging down one branch. BFS swaps in a queue (FIFO): children go to the back, the front is served first, so every node at depth d is expanded before any at depth d+1 — level by level. It is NOT about which finds the optimal-cost goal (neither does on its own), nor about pruning, nor about the tree being different — the tree is identical; only the data structure (and thus the order) changes.">
+  <div class="q">DFS and BFS run on the very same solution tree. What single change turns one into the other?</div>
+  <button class="opt">BFS prunes branches that exceed the target; DFS never prunes</button>
+  <button class="opt">BFS guarantees the lowest-cost goal; DFS guarantees the deepest goal</button>
+  <button class="opt">DFS uses a stack (LIFO, dive deep); BFS uses a queue (FIFO, fan out level by level)</button>
+  <button class="opt">BFS explores a binary tree; DFS explores a general tree</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-bfs">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 "The Searching Strategies," §4 (Breadth-First Search). In the deck the BFS slide actually reuses the sum-of-subsets DFS figure (Fig. 6-11), underlining the point: BFS is the <strong>FIFO counterpart of DFS on the identical tree</strong>.</p>
+<div class="note"><strong>Neighbours in this bucket:</strong> <a href="prob-subset-sum.html">Sum of Subsets</a> shows the depth-first walk of this same tree; hill climbing and best-first search are smarter, evaluation-guided cousins, and branch-and-bound / A* add bounding so the <em>optimal</em> goal (not just the first) is found.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+</body></html>

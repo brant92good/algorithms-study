@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Depth-First Search — Algorithm Zoo</title>
+<title>Sum of Subsets — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -13,31 +13,32 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
-<h1>Depth-First Search</h1>
-<div class="mission">Hunt for a solution by diving deep down one branch of a decision tree, then <strong>backtracking</strong> the moment a branch goes bad — guided by a <strong>stack</strong>.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 <em>Searching Strategies</em> §3–4 (Sum-of-Subsets / DFS), Fig 6-11.</p>
+<div class="kicker">Tree Search · Ch6</div>
+<h1>Sum of Subsets</h1>
+<div class="mission">Given a set of numbers and a target, decide whether some <strong>subset</strong> of them adds up to <em>exactly</em> the target — and find it.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 <em>Searching Strategies</em> §3 (Sum-of-Subsets), Fig. 6-11.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a> (also <a href="algo-bfs.html">BFS</a>, same tree)</p>
 
-<h2>What is it?</h2>
-<p>Many problems can be solved by building a <strong>solution tree</strong> (also called a state-space tree): a tree where each <em>node</em> is a <strong>partial solution</strong> and each <em>edge</em> is one decision you make. A root-to-leaf path is one complete candidate answer. To solve the problem you <strong>search</strong> this tree for a node that is a <strong>goal</strong> (it satisfies what you wanted).</p>
-<p><strong>Depth-first search (DFS)</strong> is one way to explore that tree. The idea is in the name: go as <em>deep</em> as you can down one branch before trying any sibling branch. When the current branch is a dead end, you <strong>backtrack</strong> — undo the last decision and try the next option. DFS is driven by a <strong>stack</strong>, a "last-in, first-out" (<strong>LIFO</strong>) container: the node you pushed most recently is the next one you pop and explore. Pushing children and always popping the newest is exactly what makes the search dive deep first. (Contrast: a <em>queue</em>, first-in-first-out, would explore level by level — that is breadth-first search.)</p>
-<p><strong>Tiny concrete example — the sum-of-subsets problem.</strong> Given a set <code>S = {7, 5, 1, 2, 10}</code>, find a subset whose elements add up to a <strong>target of 9</strong>. We build a binary tree: at level <em>i</em> we decide whether element <em>i</em> is <strong>in</strong> the subset or <strong>out</strong>. Each node holds the running sum of the "in" choices so far. If a running sum ever <strong>exceeds 9</strong>, that whole branch is hopeless (all numbers are positive, so it can only grow) — so we backtrack. DFS dives down the "include" edges, overshoots, backs up, and lands on the subset <strong>{7, 2} = 9</strong>.</p>
-<div class="note">DFS searches the solution tree of any "does a valid choice exist?" problem. The slides run it on three — here is what each one actually <em>asks</em>:
-<ul style="margin:.5rem 0 0;padding-left:1.2rem">
-<li><strong>Satisfiability (SAT)</strong> — given a Boolean formula (an AND of clauses, each clause an OR of variables or their negations), is there a true/false assignment of the variables that makes the whole formula true?</li>
-<li><strong>Hamiltonian circuit</strong> — given a graph, is there a cycle that visits every vertex exactly once and returns to its start?</li>
-<li><strong>Sum-of-subsets</strong> (shown here) — given a set of numbers and a target, is there a subset that sums to exactly the target?</li>
+<h2>The problem</h2>
+<p>You are given a <strong>set of numbers</strong> <code>S</code> and a single number called the <strong>target</strong>. A <strong>subset</strong> of <code>S</code> is any selection of its elements — you take some of them and leave the rest (the empty selection and the whole set both count). The <strong>sum of a subset</strong> is just its elements added together.</p>
+<p>The question: <strong>is there a subset of <code>S</code> whose sum is exactly the target?</strong> If yes, name it. This is a <em>decision / feasibility</em> problem — we want <em>a</em> subset that works, not the biggest or cheapest one.</p>
+<p><strong>The concrete instance we'll solve.</strong> Let</p>
+<ul>
+  <li><code>S = {7, 5, 1, 2, 10}</code></li>
+  <li><strong>target = 9</strong></li>
 </ul>
-Same strategy, different trees.</div>
+<p>We need a subset of <code>{7, 5, 1, 2, 10}</code> that sums to <strong>9</strong>. Some attempts: <code>{7}</code> sums to 7 (too small), <code>{7, 5}</code> sums to 12 (too big), <code>{10}</code> already overshoots. The subset that works is <strong>{7, 2}</strong>, because <code>7 + 2 = 9</code>. The rest of this page shows how a search <em>finds</em> that subset systematically instead of by guessing.</p>
+<div class="note">How do we search without trying all <code>2ⁿ</code> subsets blindly? Lay the choices out as a <strong>binary decision tree</strong>: at level <em>i</em> we decide whether element <em>i</em> is <strong>in</strong> the subset or <strong>out</strong>. Each node holds the running sum of the "in" choices so far; a root-to-leaf path is one complete subset. Because every number is <em>positive</em>, the moment a running sum <strong>exceeds 9</strong> that whole branch is hopeless (sums only grow) — so we can abandon it early. A tree-search strategy walks this tree until it lands on a node whose sum equals the target.</div>
 
-<h2>Watch it run</h2>
-<p>The decision tree for <code>S = {7, 5, 1, 2, 10}</code>, <strong>target = 9</strong>. Each node shows the running sum; <code>×</code> marks a sum that overshot 9 (a dead end we backtrack from). The <b>Stack</b> strip below shows the in/out decisions currently on the path. Watch the gold node move <em>down</em> (dive) and the stack <em>pop</em> when we backtrack.</p>
+<h2>Watch it solved</h2>
+<p>Here is <a href="algo-dfs.html">depth-first search</a> walking that tree for <code>S = {7, 5, 1, 2, 10}</code>, <strong>target = 9</strong>. Each node shows the running sum; <code>×</code> marks a sum that overshot 9 (a dead end we backtrack from). The <b>Stack</b> strip below shows the in/out decisions currently on the path. Watch the gold node move <em>down</em> (dive) and the stack <em>pop</em> when we backtrack. <a href="algo-bfs.html">BFS</a> would explore this <em>same tree</em>, just level by level (a queue) instead of diving deep (a stack).</p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Data structure: <b>Stack (LIFO)</b></span>
-  <span class="chip">Strategy: <b>backtracking</b></span>
-  <span class="chip">Time: <b>O(2ⁿ) worst case</b></span>
+  <span class="chip">Type: <b>decision / feasibility</b></span>
+  <span class="chip">Tree: <b>2ⁿ subsets</b></span>
+  <span class="chip">Prune when: <b>sum &gt; target</b></span>
+  <span class="chip">Answer here: <b>{7, 2} = 9</b></span>
 </div>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
@@ -61,13 +62,13 @@ Same strategy, different trees.</div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="search-dfs">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-subset-sum">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies; sum-of-subsets via depth-first search, Fig. 6-11) — or CLRS, <em>Introduction to Algorithms</em>, §20.3 (Depth-First Search) for the graph-traversal form.</p>
-<div class="note"><strong>Next in this bucket:</strong> Breadth-First Search — same solution tree, but a <em>queue</em> (FIFO) explores it level by level instead of diving deep.</div>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies; the sum-of-subsets problem solved by depth-first search, Fig. 6-11). The same tree appears under "breadth-first search" in the deck — BFS is the FIFO counterpart of the DFS shown here (same tree, different expansion order).</p>
+<div class="note"><strong>The strategies that solve this:</strong> <a href="algo-dfs.html">Depth-First Search</a> dives deep with a <em>stack</em> and backtracks on overshoot (shown above); <a href="algo-bfs.html">Breadth-First Search</a> walks the identical decision tree level by level with a <em>queue</em>. Both halt at the first goal node found.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

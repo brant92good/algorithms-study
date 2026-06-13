@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth-First Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Depth-First Search</h1>
+<div class="mission">Search a tree of candidate solutions by <strong>diving as deep as possible</strong> down one branch, then <strong>backtracking</strong> the moment you hit a dead end — driven by a single <strong>stack</strong>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1–3 (solution-space trees → DFS guided by a stack).</p>
+
+<h2>The idea</h2>
+<p>Many hard yes/no problems share one shape: <em>"can I build a complete object by making a sequence of choices?"</em> Lay those choices out as a <strong>solution tree</strong> (also called a state-space tree). The <strong>root</strong> is the empty partial solution; each <strong>edge</strong> fixes one more decision; each <strong>node</strong> is the partial solution so far; a <strong>leaf</strong> is a complete candidate. A node we are happy with is a <strong>goal node</strong>. The whole job is to find a goal node somewhere in this tree.</p>
+
+<p><strong>Depth-first search</strong> is one order for visiting that tree. The rule is simple: from the current node, walk down to its first child, then <em>that</em> node's first child, and keep going <strong>as deep as you can</strong>. When you reach a node that is a dead end — it violates a constraint, or it has no unexplored children — you <strong>backtrack</strong>: step back up to the most recent node that still has an untried child, and dive again. You only ever back up the minimum needed.</p>
+
+<p>The bookkeeping is a <strong>stack</strong> (LIFO — last in, first out):</p>
+<ol>
+  <li>Push the <strong>root</strong> onto the stack.</li>
+  <li><strong>Pop</strong> a node. If it is a goal node, stop — success.</li>
+  <li>Otherwise push its children, and repeat from step 2 until the stack is empty (failure).</li>
+</ol>
+<p>Because the stack hands back the <em>most recently pushed</em> node first, the children you just added are explored before their cousins — that LIFO ordering <em>is</em> what produces the deep-first exploration order. (Swap the stack for a FIFO queue and the very same loop becomes <a href="algo-bfs.html">breadth-first search</a>, which sweeps level by level instead.)</p>
+
+<div class="note"><strong>Why it is cheap.</strong> DFS does not need the whole tree in memory — only the current root-to-node path sits on the stack. And it can <strong>prune</strong>: the instant a partial solution already breaks a rule (a clause is false, a running sum overshoots the target), the entire subtree below it is abandoned without ever being built. That is why search beats brute-forcing all 2ⁿ candidates.</p>
+
+<h2>A tiny illustration</h2>
+<p>Here is the deck's sum-of-subsets tree (Fig. 6-11): from <code>S = {7, 5, 1, 2, 10}</code>, is there a subset summing to <strong>9</strong>? Each node holds the running sum; going down the left edge of level <code>i</code> means "include element <code>i</code>". DFS starts at <code>0</code>, includes 7, then dives. <code>×</code> marks a pruned dead end (sum already &gt; 9).</p>
+<div class="atree">
+0  (root, take nothing yet)
+└─ +7 ──▶ <b>7</b>
+          ├─ +5 ──▶ 12  <span style="color:var(--bad)">× overshoot, backtrack</span>
+          ├─ +1 ──▶ 8
+          │         ├─ +2 ──▶ 10  <span style="color:var(--bad)">× overshoot</span>
+          │         └─ +10 ─▶ 18  <span style="color:var(--bad)">× overshoot</span>
+          └─ +2 ──▶ <b style="color:var(--good)">9  ◀ GOAL: {7, 2}</b>
+</div>
+<p>DFS dives <code>0 → 7 → 12</code>, finds 12 &gt; 9, <strong>backtracks</strong> to 7, tries <code>+1 → 8</code>, dives again to 10 and 18 (both overshoot, backtrack), pops back to 7, tries <code>+2 → 9</code> — a goal. Answer: <strong>{7, 2}</strong>. The same machine never had to look at element 10 on the winning path.</p>
+
+<div class="note"><strong>One strategy, many trees.</strong> DFS itself is problem-agnostic — change only what the tree's nodes and "dead end" mean, and the identical dive-and-backtrack stack solves a whole family: SAT (branch on each variable true/false), Hamiltonian circuits (branch on the next vertex), sum-of-subsets (branch on in/out of each element). Same search, different solution trees.</p>
+
+<h2>Problems it solves (in the slides)</h2>
+<ul>
+  <li><a href="prob-sat.html"><strong>Satisfiability (SAT)</strong></a> — given a Boolean formula in <code>n</code> variables, is there a true/false assignment making it true? (binary tree of 2ⁿ assignments)</li>
+  <li><a href="prob-hamiltonian.html"><strong>Hamiltonian Circuit</strong></a> — does a graph contain a cycle that visits every vertex exactly once and returns to the start?</li>
+  <li><a href="prob-subset-sum.html"><strong>Sum-of-Subsets</strong></a> — given a set of numbers and a target, is there a subset that sums exactly to the target?</li>
+</ul>
+
+<div class="chips">
+  <span class="chip">Data structure: <b>stack (LIFO)</b></span>
+  <span class="chip">Memory: <b>O(tree depth)</b></span>
+  <span class="chip">Stops at: <b>first goal node</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 1 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="DFS is driven by a stack (LIFO): pushing children and always popping the most-recently-pushed node forces the search to commit to one branch and follow it all the way down before considering siblings — that is exactly 'dive deep, backtrack on a dead end'. A FIFO queue would instead pop the oldest node first, giving breadth-first (level-by-level) order. A priority queue gives best-first; recursion depth alone isn't the mechanism — the LIFO discipline is.">
+  <div class="q">What makes the generic push-children / pop-a-node loop explore <em>depth-first</em> rather than level-by-level?</div>
+  <button class="opt">it uses a FIFO queue, so the oldest node comes out first</button>
+  <button class="opt">it sorts open nodes by an estimate and expands the best one</button>
+  <button class="opt">it uses a stack (LIFO), so the just-pushed children come out first</button>
+  <button class="opt">it visits all nodes at one depth before going deeper</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-dfs">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 "The Searching Strategies", §§1–3 (Fig. 6-11, sum-of-subsets by DFS). The chapter frames every node as a partial solution in a state-space tree and uses a stack to guide the deep-first order.</p>
+<div class="note"><strong>Siblings in this bucket:</strong> <a href="algo-bfs.html">Breadth-First Search</a> swaps the stack for a queue (same tree, level order); <a href="algo-hill-climbing.html">Hill Climbing</a> is a greedy DFS that always dives into the locally best child; <a href="algo-best-first.html">Best-First Search</a> keeps a global view by expanding the most promising open node anywhere in the tree.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+</body></html>

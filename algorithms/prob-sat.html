@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satisfiability (SAT) — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Tree Search · Ch6</div>
+<h1>Satisfiability (SAT)</h1>
+<div class="mission">Given a Boolean formula, is there <em>any</em> true/false assignment to its variables that makes the whole thing true? Search the tree of <strong>2ⁿ</strong> assignments — and prune the instant a clause is broken.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1 (the SAT problem; tree of 2ⁿ assignments; partial tree with early pruning).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a> (and <a href="algo-bfs.html">BFS</a>)</p>
+
+<h2>The problem</h2>
+<p>A <strong>Boolean variable</strong> is one that is either <code>true</code> or <code>false</code>. A <strong>literal</strong> is a variable or its negation — e.g. <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). A <strong>clause</strong> is an OR of literals, e.g. <code>(x₂ ∨ x₅)</code>; it is satisfied if <em>at least one</em> of its literals is true. A formula is in <strong>conjunctive normal form (CNF)</strong> when it is an <strong>AND of clauses</strong> — so it is true only when <em>every</em> clause is satisfied at once.</p>
+<p>The <strong>satisfiability problem</strong> asks: given such a CNF formula in <code>n</code> variables <code>x₁ … xₙ</code>, does there exist a truth assignment that makes the formula <code>true</code>? If yes, the formula is <strong>satisfiable</strong>; if no assignment works, it is <strong>unsatisfiable</strong>.</p>
+
+<p><strong>The tiny instance (from the slide).</strong> Five clauses over variables <code>x₁ … x₅</code>, all of which must hold simultaneously:</p>
+<div class="atree">  (1)  ¬x₁          ← x₁ must be false
+  (2)   x₁          ← x₁ must be true
+  (3)   x₂ ∨ x₅
+  (4)   x₃
+  (5)  ¬x₂</div>
+<p>Look at clauses <b>(1)</b> and <b>(2)</b>: one demands <code>x₁ = false</code>, the other demands <code>x₁ = true</code>. They flatly contradict, so <em>no</em> assignment can satisfy both — this instance is <strong>unsatisfiable</strong>. The whole point of §1 is that we can <em>discover</em> this without enumerating all assignments: the very first variable we branch on already breaks a clause on both sides.</p>
+
+<p>With <code>n</code> variables there are <strong>2ⁿ</strong> possible assignments. We lay them out as a <strong>binary tree of depth n</strong>: at level <code>i</code> we branch on <code>xᵢ = T</code> (left) versus <code>xᵢ = F</code> (right). Every root-to-leaf path is one complete assignment; the leaves are the 2ⁿ rows of the truth table.</p>
+
+<h2>Watch it solved</h2>
+<p>We run <strong>depth-first search</strong> down the 2ⁿ-assignment tree, checking after each choice whether any clause is <em>already</em> falsified by the partial assignment. The moment one is, that whole subtree is dead — prune it and back up. Step through.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Assignments: <b>2ⁿ</b> leaves</span>
+  <span class="chip">Search: <b>DFS</b> (a stack)</span>
+  <span class="chip">Prune when: <b>a clause is falsified</b></span>
+  <span class="chip">This instance: <b>UNSAT</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="A CNF formula is an AND of clauses, so it is true only if EVERY clause is true; and a clause is an OR of literals, so a clause is true if AT LEAST ONE literal is true. Mixing these up is the classic trap. 'Every literal in every clause true' is far too strong (that's not OR), and 'at least one clause true' is far too weak (that's not AND).">
+  <div class="q">A formula in CNF is an AND of clauses, each clause an OR of literals. For the whole formula to evaluate to <code>true</code>, what exactly must hold?</div>
+  <button class="opt">at least one clause is true</button>
+  <button class="opt">every literal in every clause is true</button>
+  <button class="opt">every clause is true, and each clause needs at least one true literal</button>
+  <button class="opt">exactly one literal per clause is true</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The branch on x₁ pins x₁'s value, and clauses (1) ¬x₁ and (2) x₁ each involve ONLY x₁. So setting x₁ resolves both: x₁=T satisfies (2) but falsifies (1); x₁=F satisfies (1) but falsifies (2). Either way one clause is dead, so DFS prunes both children of the root and reports UNSATISFIABLE — without ever touching x₂…x₅. It is NOT that we must reach a leaf (the power of pruning is stopping early), and a falsified clause is fatal, not something you 'fix later'.">
+  <div class="q">DFS branches on <code>x₁</code> first. Clause (1) is <code>¬x₁</code> and clause (2) is <code>x₁</code>. What happens as soon as <code>x₁</code> is assigned, and why does that settle the instance?</div>
+  <button class="opt">nothing yet — a clause can only be judged once we reach a full leaf assignment</button>
+  <button class="opt">one of (1)/(2) is falsified on each branch, so both subtrees are pruned → UNSAT, never assigning x₂…x₅</button>
+  <button class="opt">we set x₁=T to satisfy (2) and just remember to revisit (1) later</button>
+  <button class="opt">the formula is satisfiable because x₁=T makes clause (2) true</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-sat">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> Alg05 · <em>The Searching Strategies</em> §1 — the SAT problem, the "Tree Representation of Eight Assignments" (the full 2³ truth-table tree), and "A Partial Tree to Determine the Satisfiability Problem," whose message is: <em>we may not need to examine all 2ⁿ assignments</em> — a partial assignment that violates a clause kills its whole subtree. SAT is the historical seed of NP-completeness (Cook–Levin).</p>
+<div class="note"><strong>The method:</strong> this tree is explored by <a href="algo-dfs.html">Depth-First Search</a> (stack / dive-and-backtrack) or <a href="algo-bfs.html">Breadth-First Search</a> (queue / level-by-level) — same tree, different visiting order. <strong>Sibling problems in this chapter:</strong> <a href="prob-hamiltonian.html">Hamiltonian Circuit</a> and <a href="prob-subset-sum.html">Sum of Subsets</a> — both also cast as searching a solution-space tree with early pruning of dead branches.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- the concrete CNF instance (Alg05 §1, slide 3) ----
+// Clauses:  (1) ¬x1   (2) x1   (3) x2 ∨ x5   (4) x3   (5) ¬x2
+// (1) and (2) contradict on x1 → UNSATISFIABLE; both children of the root are falsified.
+
+const frames = [
+  { stage:'root',
+    cap:`We build the tree of <b>2ⁿ</b> assignments and search it depth-first. At the <b>root</b> nothing is assigned yet; clauses (1)–(5) are all still "open." The first variable to branch on is <b>x₁</b>.` },
+  { stage:'left',
+    cap:`<b>Go left: x₁ = T.</b> Now clause <b>(2) x₁</b> is satisfied ✓ — but clause <b>(1) ¬x₁</b> needs x₁ false, so it is <b>falsified ✗</b>. A broken clause cannot be repaired by later variables, so this <b>entire subtree is pruned</b>. Back up.` },
+  { stage:'right',
+    cap:`<b>Go right: x₁ = F.</b> Symmetric: clause <b>(1) ¬x₁</b> is satisfied ✓ — but clause <b>(2) x₁</b> is now <b>falsified ✗</b>. Prune this subtree too. We never had to assign x₂…x₅.` },
+  { stage:'done',
+    cap:`<b>Both children of the root are dead.</b> Every assignment lives under one of those two branches, so <b>no assignment satisfies the formula</b> → the instance is <b>UNSATISFIABLE</b>. DFS pruned 2ⁿ leaves after touching just one variable.` },
+];
+
+function tree(stage){
+  // build the partial 2^n tree, shading the two branches as we visit/prune them
+  const L = stage==='left'||stage==='right'||stage==='done';   // left branch evaluated
+  const R = stage==='right'||stage==='done';                   // right branch evaluated
+
+  const root = (stage==='root') ? '[ root ]' : '  root  ';
+  // left subtree marker
+  const leftLine  = L
+    ? `x₁=T  →  (2) x₁ ✓   but (1) ¬x₁ ✗   ✗ PRUNED`
+    : `x₁=T  →  …`;
+  const rightLine = R
+    ? `x₁=F  →  (1) ¬x₁ ✓   but (2) x₁ ✗   ✗ PRUNED`
+    : (L ? `x₁=F  →  …  (next)` : `x₁=F  →  …`);
+
+  const verdict = (stage==='done')
+    ? `\n             ┌──────────────────────────────┐\n             │  every branch falsified → UNSAT │\n             └──────────────────────────────┘`
+    : ``;
+
+  return (
+`                       ${root}
+                      /        \\
+                 x₁=T /          \\ x₁=F
+                    /              \\
+        ${pad(leftLine)}
+        ${pad(rightLine)}${verdict}
+
+  formula (CNF, all must hold):
+    (1) ¬x₁   (2) x₁   (3) x₂ ∨ x₅   (4) x₃   (5) ¬x₂`
+  );
+}
+function pad(s){ return s; }
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    stage.innerHTML = '<div class="atree">'+tree(f.stage)+'</div>';
+  }
+});
+</script>
+</body></html>

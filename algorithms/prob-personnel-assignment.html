@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personnel Assignment — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Branch-and-Bound · Ch6</div>
+<h1>Personnel Assignment</h1>
+<div class="mission">Hand <strong>n jobs to n people</strong> at minimum total cost — but the jobs come with a <strong>precedence order</strong>, so not every assignment is legal. Search the legal ones cleverly with a cost <em>lower bound</em> that prunes whole subtrees.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §8 (Personnel Assignment by Branch-and-Bound; Tables 6-1 / 6-2, Fig. 6-21).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
+
+<h2>The problem</h2>
+<p>You have <strong>n people</strong> and <strong>n jobs</strong>, and you must give each person exactly one job and each job exactly one person (a one-to-one <em>assignment</em>). Assigning <strong>person Pᵢ to job Jⱼ costs Cᵢⱼ</strong> — these costs are given in a table. The naive goal would be "pick the cheapest one-to-one assignment," but here there is a twist.</p>
+
+<p>The <strong>jobs carry a partial order</strong> — a precedence relation. Some jobs <em>must come before</em> others; some pairs of jobs are unrelated (incomparable). The people, by contrast, are <strong>linearly ordered</strong>: P₁ &lt; P₂ &lt; … &lt; Pₙ. The rule that makes an assignment <strong>feasible</strong> is that it must <em>respect</em> the job order:</p>
+
+<div class="note">If person Pᵢ comes before person Pⱼ (i.e. Pᵢ &lt; Pⱼ), then the job given to Pᵢ must come <strong>before-or-equal</strong> to the job given to Pⱼ in the job order. In short: a feasible assignment lists the jobs in a <strong>topological order</strong> of the precedence relation as you read down the person list P₁, P₂, …, Pₙ.</p></div>
+
+<p><strong>Objective:</strong> minimize the total cost <code>Σᵢ Σⱼ Cᵢⱼ·Xᵢⱼ</code>, where <code>Xᵢⱼ = 1</code> if Pᵢ is assigned to Jⱼ and <code>0</code> otherwise, subject to each person/job used once <em>and</em> the feasibility (precedence) rule.</p>
+
+<h3>The concrete instance (n = 4)</h3>
+<p>Four people P₁…P₄, four jobs J₁…J₄. The cost matrix <strong>(Table 6-1)</strong> — rows are people, columns are jobs:</p>
+
+<div class="atree">Person \ Job    J1   J2   J3   J4
+   P1           29   19   17   12
+   P2           32   30   26   28
+   P3            3   21    7    9
+   P4           18   13   10   15</div>
+
+<p>The job precedence <strong>(Fig. 6-21)</strong> is two simple chains — <strong>J1 must precede J3</strong>, and <strong>J2 must precede J4</strong>:</p>
+
+<div class="atree">   J1        J2
+   |         |
+   v         v
+   J3        J4</div>
+
+<p>J1 and J2 are incomparable; so are J3 and J4. The legal (topologically sorted) job sequences are therefore:</p>
+<div class="atree">J1, J2, J3, J4      J1, J2, J4, J3      J1, J3, J2, J4
+J2, J1, J3, J4      J2, J1, J4, J3</div>
+<p>An assignment is feasible iff the jobs handed to P₁, P₂, P₃, P₄ (in that order) form one of these sequences. For example <code>P1→J1, P2→J2, P3→J3, P4→J4</code> is feasible (sequence J1,J2,J3,J4). The question: among all feasible assignments, which is cheapest?</p>
+
+<h2>Watch it solved</h2>
+<p>Two stages. First we <strong>reduce the cost matrix</strong> (subtract a constant from every row and every column so each has a zero) — the total subtracted is a guaranteed <strong>lower bound</strong> on any assignment. Then we <strong>branch</strong>: a decision tree picks P₁'s job, then P₂'s, and so on, carrying a running cost and using the bound to <strong>prune</strong>. Step through.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">People: <b>linear order</b></span>
+  <span class="chip">Jobs: <b>partial order</b></span>
+  <span class="chip">Bound: <b>row+col reduction = 54</b></span>
+  <span class="chip">Optimal cost: <b>70</b></span>
+  <span class="chip">Strategy: <b>best-first B&amp;B</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="The reduction lower bound (54) comes from subtracting a constant from each row and column so every row and column owns a zero: 12+26+3+10 across the four rows, plus 3 for column 2 that still lacked a zero, = 54. It is a LOWER bound because every feasible assignment must still pay at least those subtracted amounts (one cell per row, one per column). It is NOT the optimal cost — the actual cheapest feasible assignment here costs 70. And it is not the cheapest single cell (that would be C₃₁ = 3), nor the sum of row minimums alone (that ignores the column-2 reduction).">
+  <div class="q">After row+column reduction of the cost matrix, the total amount subtracted is 54. What does that 54 tell you?</div>
+  <button class="opt">it is the optimal assignment cost</button>
+  <button class="opt">it is the cost of the single cheapest cell in the matrix</button>
+  <button class="opt">it is a lower bound — no feasible assignment can cost less than 54</button>
+  <button class="opt">it is the cost of assigning each person their own row-minimum job</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The feasibility rule says the jobs given to P1,P2,P3,P4 (in person order) must form a topological order of the precedence J1→J3, J2→J4. The optimal here is P1→J2, P2→J1, P3→J4, P4→J3, whose job sequence is J2,J1,J4,J3 — one of the five legal orders, and J1 still precedes J3, J2 still precedes J4. The trap answers each break a precedence: e.g. giving J3 before J1 (J3 ahead of J1 in the sequence) violates J1→J3. The minimum-cost cell in each row (P1→J4=12, P2→J3=26, P3→J1=3, P4→J3=10) is NOT even a valid assignment — J3 is used twice — which is exactly why you cannot just grab row minimums.">
+  <div class="q">The optimal feasible assignment costs 70. Which assignment is it (recall J1 must precede J3, and J2 must precede J4)?</div>
+  <button class="opt">P1→J1, P2→J3, P3→J1, P4→J3 (each person's cheapest job)</button>
+  <button class="opt">P1→J2, P2→J1, P3→J4, P4→J3</button>
+  <button class="opt">P1→J3, P2→J1, P3→J2, P4→J4</button>
+  <button class="opt">P1→J4, P2→J2, P3→J3, P4→J1</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-personnel-assignment">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> Alg05 · <em>The Searching Strategies</em> §8 — R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6. Table 6-1 (cost matrix), Table 6-2 (reduced matrix → lower bound 54), Fig. 6-21 (partial order of jobs), and the best-first / bounding solution trees (slides 19–21, optimal cost 70).</p>
+<div class="note"><strong>Strategy:</strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — branch the solution space into subtrees, compute a lower bound for each, and prune any subtree whose bound is no better than the best feasible solution found.<br>
+<strong>Sibling problems (same strategy, same chapter):</strong> <a href="prob-tsp-dp.html">Travelling Salesperson</a> (reduced cost matrices, lower bounds, decision tree over arcs) and <a href="prob-knapsack-dp.html">0/1 Knapsack</a> (upper/lower bounds via fractional relaxation).</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ===== Personnel Assignment data (Table 6-1) =====
+const COST = [
+  [29,19,17,12],   // P1
+  [32,30,26,28],   // P2
+  [ 3,21, 7, 9],   // P3
+  [18,13,10,15],   // P4
+];
+const PEOPLE = ['P1','P2','P3','P4'];
+const JOBS   = ['J1','J2','J3','J4'];
+
+// Reduced matrix (Table 6-2): row reductions 12,26,3,10 ; column-2 reduction 3
+const ROWRED = [12,26,3,10];
+const REDUCED = [
+  [17, 4, 5, 0],   // P1  (-12)  then col2 -3 applied below
+  [ 6, 1, 0, 2],   // P2  (-26)
+  [ 0,15, 4, 6],   // P3  (-3)
+  [ 8, 0, 0, 5],   // P4  (-10)
+];
+// note: column 2 already has its -3 baked into REDUCED (P1 col2 = 4 after both)
+
+// ===== the decision-tree frames (best-first B&B, slide 20) =====
+// running partial cost = sum of chosen Cij so far. Optimal path bolded at the end.
+const TREE = (hl) => {
+  // hl: object of {key:'cls'} where key is a line marker; we render a fixed monospace tree
+  // markers: a=root, P1J1, P1J2, and descendants. We highlight by wrapping in [ ].
+  const m = (k,txt) => hl[k] ? `[${txt}]` : txt;
+  return `Person\\level   choose P1 → P2 → P3 → P4        running cost
+${m('root','0 (0)')}
+├─ ${m('p1j1','P1→J1 (29)')}
+│    ├─ ${m('a','P2→J2 (59)')} ─┬─ P3→J3 (66) ── P4→J4 (81)
+│    │              └─ P3→J4 (68) ── P4→J3 (78)
+│    └─ ${m('b','P2→J3 (55)')} ── P3→J2 (76)   ✗ pruned
+└─ ${m('p1j2','P1→J2 (19)')}
+     ├─ ${m('c','P2→J1 (51)')} ─┬─ ${m('opt1','P3→J3 (58)')} ── ${m('opt2','P4→J4 (73)')}
+     │              └─ ${m('opt3','P3→J4 (60)')} ── ${m('optZ','P4→J3 (70)')}  ★ OPTIMAL
+     └─ P2→J4 (60) ── …`;
+};
+
+const frames = [
+  { stage:'cost',
+    cap:`<b>Table 6-1.</b> Cost Cᵢⱼ of giving person Pᵢ the job Jⱼ. Cheapest single cell is C₃₁ = <b>3</b> (P3→J1), but we cannot just grab cheap cells — each person and each job is used exactly once, and the J1→J3, J2→J4 order must hold.` },
+  { stage:'rowred',
+    cap:`<b>Row reduction.</b> Subtract each row's minimum so every <b>row</b> owns a 0: P1 −12, P2 −26, P3 −3, P4 −10. Any assignment uses one cell per row, so it must still pay these amounts. Subtotal so far: <b>12+26+3+10 = 51</b>.` },
+  { stage:'colred',
+    cap:`<b>Column reduction.</b> Column J2 still has no 0, so subtract its minimum <b>−3</b>. Now every row AND every column owns a 0. Total subtracted = <b>51 + 3 = 54</b> — a guaranteed <b>lower bound</b>: no feasible assignment costs less than 54.` },
+  { stage:'tree-root',
+    cap:`<b>Branch.</b> Now search the feasible assignments as a tree: level 1 picks <b>P1's job</b>, level 2 picks P2's, etc. — only choices that keep a legal (topological) job order survive. Each node carries the <b>running cost</b> of the choices above it.` },
+  { stage:'tree-p1',
+    cap:`Two feasible first moves for P1: <b>P1→J1</b> (cost 29) or <b>P1→J2</b> (cost 19). Best-first expands the cheaper-looking branches first. (P1→J3 would put J3 before J1 — illegal; P1→J4 puts J4 before J2 — illegal — so both are cut at the root.)` },
+  { stage:'tree-prune',
+    cap:`Down the P1→J1 branch, the node <b>P2→J3 (55) → P3→J2 (76)</b> blows past better feasible costs — its subtree is <b>pruned</b>. The deck notes "only one node is pruned away": bounding does the rest by guiding the search, not by mass elimination.` },
+  { stage:'tree-opt',
+    cap:`The winning spine is <b>P1→J2 (19) → P2→J1 (51) → P3→J4 (60) → P4→J3 (70)</b>. Job sequence J2,J1,J4,J3 is a legal topological order. <b>Optimal cost = 70</b> (the bounding tree confirms it: 0(54)→…→70).` },
+];
+
+function reducedCls(stage){
+  const cls = {};
+  if (stage === 'rowred' || stage === 'colred'){
+    // mark the zeros each row owns
+    REDUCED.forEach((row,r)=> row.forEach((v,c)=>{ if(v===0) cls[r+','+c]='path'; }));
+  }
+  if (stage === 'colred'){
+    // emphasise column 2 (index 1) reduction
+    REDUCED.forEach((_,r)=>{ cls[r+',1'] = (REDUCED[r][1]===0?'path':'act'); });
+  }
+  return cls;
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    if (f.stage === 'cost'){
+      const cls = {'2,0':'act'}; // cheapest cell C31=3
+      stage.innerHTML =
+        `<div style="font-weight:600;margin-bottom:.5rem">Table 6-1 — cost matrix Cᵢⱼ</div>` +
+        ZOO.grid(COST, {rows:PEOPLE, cols:JOBS, cls});
+      return;
+    }
+    if (f.stage === 'rowred' || f.stage === 'colred'){
+      const tag = f.stage==='rowred'
+        ? `rows reduced by −12, −26, −3, −10 → subtotal 51`
+        : `column J2 reduced by −3 → <b>total subtracted = 54 (lower bound)</b>`;
+      stage.innerHTML =
+        `<div style="font-weight:600;margin-bottom:.5rem">Table 6-2 — reduced cost matrix</div>` +
+        ZOO.grid(REDUCED, {rows:PEOPLE, cols:JOBS, cls:reducedCls(f.stage)}) +
+        `<div style="margin-top:.6rem;font-size:.9rem;color:var(--mut)">${tag}</div>`;
+      return;
+    }
+    // ---- decision-tree stages ----
+    let hl = {};
+    if (f.stage === 'tree-root')  hl = {root:1};
+    if (f.stage === 'tree-p1')    hl = {p1j1:1, p1j2:1};
+    if (f.stage === 'tree-prune') hl = {p1j1:1, b:1};
+    if (f.stage === 'tree-opt')   hl = {p1j2:1, c:1, opt3:1, optZ:1};
+    stage.innerHTML =
+      `<div style="font-weight:600;margin-bottom:.5rem">Best-first branch-and-bound tree (running cost in parentheses)</div>` +
+      `<div class="atree">${TREE(hl)}</div>`;
+  }
+});
+</script>
+</body></html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hamiltonian Circuit — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Tree Search · Ch6</div>
+<h1>Hamiltonian Circuit</h1>
+<div class="mission">Given an undirected graph, does it contain a <strong>cycle that visits every vertex exactly once</strong> and returns to where it started? Search for one by growing a path and <strong>backtracking</strong> at dead ends.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 <em>Searching Strategies</em> §2, Fig. 6-6 (the graph) &amp; Fig. 6-8 (the search tree).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a></p>
+
+<h2>The problem</h2>
+<p>You are given an <strong>undirected graph</strong> — a set of <em>vertices</em> (dots) joined by <em>edges</em> (lines). A <strong>Hamiltonian circuit</strong> is a closed tour that:</p>
+<ul>
+  <li>starts at some vertex,</li>
+  <li>walks along edges of the graph,</li>
+  <li>visits <strong>every vertex exactly once</strong> (no repeats, none skipped), and</li>
+  <li><strong>returns to the starting vertex</strong> at the end.</li>
+</ul>
+<p>The <strong>Hamiltonian circuit problem</strong> asks a yes/no question: <em>does the given graph contain such a circuit at all?</em> It is a <strong>feasibility</strong> problem (find one valid tour, or prove none exists) — not an optimization problem, so the edges carry no weights and there is no "cheapest" tour to compute.</p>
+
+<div class="note"><strong>Do not confuse it with an Euler circuit.</strong> An <strong>Euler</strong> circuit must use every <em>edge</em> exactly once (vertices may repeat); a <strong>Hamiltonian</strong> circuit must visit every <em>vertex</em> exactly once (edges may be left unused). They sound similar but are very different problems — Euler circuits have an easy rule (all vertices even degree), while deciding Hamiltonicity is NP-complete.</div>
+
+<p><strong>The concrete instance (Fig. 6-6).</strong> A graph on <strong>7 vertices</strong> numbered 1–7, with these <strong>9 edges</strong>:</p>
+<p style="font-family:ui-monospace,monospace;font-size:.9rem">1–2, 1–6, 1–3, 2–3, 6–5, 7–5, 7–4, 3–4, 4–5</p>
+<p>Question: is there a circuit through all 7 vertices? We will search for one below — and find that <strong>1 → 6 → 5 → 7 → 4 → 3 → 2 → 1</strong> works (check: every neighbour pair is a real edge, all 7 vertices appear once, and it closes back to 1).</p>
+
+<h2>Watch it solved</h2>
+<p>We grow a path from the root vertex <strong>1</strong>, choosing the next vertex one step at a time (this is the tree of Fig. 6-8). The <b>graph</b> shows the partial path so far — green nodes are visited, the gold node is current, green edges are the chosen tour. The <b>tree</b> on the right shows the same search: <code>×</code> marks a dead end (no unvisited neighbour, or can't close the loop) where DFS <strong>backtracks</strong>. Step through to the found circuit.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Type: <b>feasibility (yes/no)</b></span>
+  <span class="chip">Search: <b>DFS + backtracking</b></span>
+  <span class="chip">Worst case: <b>O(n!) paths</b></span>
+  <span class="chip">Decision: <b>NP-complete</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="A Hamiltonian circuit constrains the VERTICES: each must be visited exactly once, and the tour closes back to the start. It does NOT require using every edge — that is an Euler circuit. Allowing a vertex to repeat, or not returning to the start, would break the definition (the second is merely a Hamiltonian path, not a circuit).">
+  <div class="q">Which condition must a tour satisfy to be a <b>Hamiltonian circuit</b> of a graph?</div>
+  <button class="opt">it uses every edge of the graph exactly once</button>
+  <button class="opt">it visits every vertex, repeats allowed, and need not return to start</button>
+  <button class="opt">it visits every vertex exactly once and returns to the starting vertex</button>
+  <button class="opt">it is the shortest closed tour through all the vertices</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="From the partial path 1-2-3-4-5, the next vertex must be an unvisited neighbour of 5. The neighbours of 5 are 6, 7, and 4 — vertex 4 is already used, so only 6 and 7 remain. But choosing either cannot reach the still-unvisited vertex 7 (or 6) AND close back to 1 afterward, so both extensions dead-end. That is exactly why DFS backtracks here: the partial path painted itself into a corner. (It is not that 5 has no neighbours, nor that the path is already complete — vertices 6 and 7 are still missing.)">
+  <div class="q">Searching the graph 1–2,1–6,1–3,2–3,6–5,7–5,7–4,3–4,4–5, DFS has built the partial path <b>1 → 2 → 3 → 4 → 5</b>. Why does this branch fail and force a backtrack?</div>
+  <button class="opt">vertex 5 has no neighbours left in the graph at all</button>
+  <button class="opt">its only unvisited extensions (6, 7) can't both be reached and still close back to 1</button>
+  <button class="opt">the path already visits all 7 vertices, so it is finished</button>
+  <button class="opt">vertex 1 is not adjacent to vertex 5, so no circuit can exist</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="prob-hamiltonian">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies), §2 "The Hamiltonian Circuit Problem", Fig. 6-6 (graph) and Fig. 6-8 (search tree). For the complexity classification see CLRS, <em>Introduction to Algorithms</em>, Ch. 34 (HAM-CYCLE is NP-complete).</p>
+<div class="note"><strong>Solved by:</strong> <a href="algo-dfs.html">Depth-First Search</a> — it dives down one path of vertices, marks dead ends with <code>×</code>, and backtracks via its stack. Sibling problem in the same DFS chapter: <a href="prob-subset-sum.html">Sum-of-Subsets</a> (does a subset hit a target sum?).</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- Fig. 6-6 graph: 7 vertices, edges 1-2,1-6,1-3,2-3,6-5,7-5,7-4,3-4,4-5 ----
+// Laid out roughly as on the slide: 1 top-left, fanning out to a ring.
+const NODES = [
+  { id:'1', x:18,  y:18 },
+  { id:'2', x:18,  y:62 },
+  { id:'3', x:46,  y:40 },
+  { id:'4', x:74,  y:40 },
+  { id:'6', x:46,  y:84 },
+  { id:'5', x:74,  y:84 },
+  { id:'7', x:90,  y:62 }
+];
+const EDGES = [
+  {u:'1',v:'2'},{u:'1',v:'6'},{u:'1',v:'3'},{u:'2',v:'3'},
+  {u:'6',v:'5'},{u:'7',v:'5'},{u:'7',v:'4'},{u:'3',v:'4'},{u:'4',v:'5'}
+];
+
+// ---- the DFS search of Fig. 6-8 (one dead-end branch, then the winning circuit) ----
+// We narrate: try 1-2-3-4-5 (dead end, backtrack), then find 1-6-5-7-4-3-2-1.
+// path = vertices visited in order; closed = circuit closes back to 1.
+const frames = [
+  { path:['1'], dead:false, closed:false, branch:'a',
+    cap:`Start the tour at vertex <b>1</b> (the root of the search tree). Goal: visit all 7 vertices once and return to 1.` },
+  { path:['1','2','3','4','5'], dead:true, closed:false, branch:'a',
+    cap:`<b>Dive down one branch:</b> 1 → 2 → 3 → 4 → 5. Now at 5, the only unvisited neighbours can't reach the rest <em>and</em> close back to 1 — <b>dead end ×</b>.` },
+  { path:['1'], dead:false, closed:false, branch:'back',
+    cap:`<b>Backtrack</b> all the way: undo 5, 4, 3, 2. Return to the root and try a different first step out of vertex 1.` },
+  { path:['1','6'], dead:false, closed:false, branch:'b',
+    cap:`This time take edge <b>1 → 6</b>. Path so far: 1, 6. Keep extending to unvisited neighbours.` },
+  { path:['1','6','5'], dead:false, closed:false, branch:'b',
+    cap:`<b>6 → 5</b> (5 is a neighbour of 6, unvisited). Path: 1, 6, 5.` },
+  { path:['1','6','5','7'], dead:false, closed:false, branch:'b',
+    cap:`<b>5 → 7</b>. Path: 1, 6, 5, 7. Four vertices down, three to go (2, 3, 4).` },
+  { path:['1','6','5','7','4'], dead:false, closed:false, branch:'b',
+    cap:`<b>7 → 4</b>. Path: 1, 6, 5, 7, 4. Still no repeats — promising.` },
+  { path:['1','6','5','7','4','3'], dead:false, closed:false, branch:'b',
+    cap:`<b>4 → 3</b>. Path: 1, 6, 5, 7, 4, 3. Only vertex <b>2</b> remains unvisited.` },
+  { path:['1','6','5','7','4','3','2'], dead:false, closed:false, branch:'b',
+    cap:`<b>3 → 2</b>. All <b>7 vertices</b> are now visited exactly once. One thing left: can we close the loop back to <b>1</b>?` },
+  { path:['1','6','5','7','4','3','2'], dead:false, closed:true, branch:'b',
+    cap:`Edge <b>2 → 1</b> exists! The tour closes. <b>Hamiltonian circuit found:</b> 1 → 6 → 5 → 7 → 4 → 3 → 2 → 1. Answer: <b>yes</b>.` }
+];
+
+function inPath(p, id){ return p.indexOf(id) >= 0; }
+
+// build node/edge styling for the graph from a frame's path
+function styleGraph(f){
+  const node = {}, edge = {};
+  const p = f.path, cur = p[p.length-1];
+  p.forEach(id => { node[id] = 'done'; });
+  if (!f.closed) node[cur] = 'act';      // current head of the path is gold (unless we just closed)
+  // tree edges along the path
+  for (let i=0; i<p.length-1; i++){ edge[p[i]+'-'+p[i+1]] = f.dead ? 'act' : 'tree'; }
+  if (f.closed){ edge['2-1'] = 'tree'; node['1'] = 'done'; }
+  return { node, edge };
+}
+
+// ASCII search tree (Fig. 6-8 spirit): the dead branch and the winning branch.
+function tree(f){
+  const A = (f.branch === 'a' || f.branch === 'back');  // dead-end branch active/just-failed
+  const B = (f.branch === 'b');
+  const deadA = f.dead;                                   // 1-2-3-4-5 marked x
+  const depth = f.path.length;                           // how far down branch b we are
+  const closed = f.closed;
+  // helper: highlight a vertex on branch b if it's within current depth
+  const bMark = (lit, idx) => {
+    if (!B) return lit;
+    if (closed && idx === 0) return '«'+lit+'»';          // back at 1, closed
+    if (idx < depth-1) return lit;                        // visited, plain
+    if (idx === depth-1) return '▶'+lit+'◀';              // current head
+    return lit;                                           // not yet reached
+  };
+  const aMark = (lit) => {
+    if (deadA) return lit+' ×';
+    if (A && f.branch==='a') return '▶'+lit+'◀';
+    return lit;
+  };
+  return [
+'                 '+(closed?'«1»':( (A||f.branch==='back') && depth===1 && !B ? '▶1◀':'1'))+'   ← start',
+'        ┌─────────┴─────────┐',
+'   1→2  │                   │  1→6',
+'        ▼                   ▼',
+'    '+ ( f.branch==='a' && depth>=2 ? (deadA?'2':'▶2◀') : '2') +'  ── 3 ── 4 ── '+aMark('5')+'      '+bMark('6',1),
+'    (1-2-3-4-5: dead end)            │  6→5',
+'                                     ▼',
+'                                    '+bMark('5',2),
+'                                     │  5→7',
+'                                     ▼',
+'                                    '+bMark('7',3),
+'                                     │  7→4',
+'                                     ▼',
+'                                    '+bMark('4',4),
+'                                     │  4→3',
+'                                     ▼',
+'                                    '+bMark('3',5),
+'                                     │  3→2',
+'                                     ▼',
+'                                    '+bMark('2',6),
+'                                     │  2→1 '+(closed?'✓ close':''),
+'                                     ▼',
+'                                    '+(closed?'«1»  GOAL':'1  ?')
+  ].join('\n');
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const gs = styleGraph(f);
+    const g = ZOO.graph({ nodes: NODES, edges: EDGES }, { node: gs.node, edge: gs.edge });
+    stage.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr;gap:.8rem">' +
+        g +
+        '<div class="atree">' + tree(f) + '</div>' +
+      '</div>' +
+      ZOO.lane('Path', f.path.concat(f.closed ? ['1'] : []));
+  }
+});
+</script>
+</body></html>

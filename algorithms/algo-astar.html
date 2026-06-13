@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A* Algorithm — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>A* Algorithm</h1>
+<div class="mission">Best-first search that is guaranteed to return the <strong>optimal</strong> solution — by ranking nodes with <strong>f(n) = g(n) + h(n)</strong> and using a heuristic that <strong>never overestimates</strong>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (A\*) and §12 (channel routing).</p>
+
+<h2>The idea</h2>
+<p>Many optimization problems can be drawn as a <strong>search tree</strong>: the root is the empty/start state, and each path down to a goal node is one candidate solution. We want the <em>cheapest</em> goal. Plain searches — depth-first, breadth-first, hill-climbing, best-first — all stop at the <em>first</em> goal they reach, and the first goal is not necessarily the cheapest one. A* fixes this.</p>
+
+<p>A* is <strong>best-first search</strong> (keep a list of all open nodes, always expand the most promising one) with a carefully chosen cost estimate. For every node <code>n</code> it computes</p>
+<ul>
+  <li><b>g(n)</b> — the <em>actual</em> cost already spent getting from the root to <code>n</code> (cost so far);</li>
+  <li><b>h(n)</b> — an <em>estimate</em> of the cost from <code>n</code> onward to a goal;</li>
+  <li><b>f(n) = g(n) + h(n)</b> — the estimated cost of the cheapest full solution that passes through <code>n</code>.</li>
+</ul>
+<p>The list of open nodes is sorted by <code>f</code>, and each step <strong>expands the open node with the smallest f</strong>, adding its children back into the list.</p>
+
+<p><strong>The admissibility condition.</strong> Let <code>h*(n)</code> be the <em>true</em> minimum remaining cost from <code>n</code> to a goal. The heuristic <code>h</code> is <strong>admissible</strong> when it <em>never overestimates</em>:</p>
+<p style="text-align:center"><code>h(n) ≤ h*(n)&nbsp;&nbsp;⟹&nbsp;&nbsp;f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code></p>
+<p>So an admissible <code>h</code> makes <code>f(n)</code> a genuine <strong>lower bound</strong> on the best total cost of any solution through <code>n</code>. That is the whole trick: because no node is ever rated <em>better</em> than it really is, the <strong>first goal node selected for expansion (the one with smallest f) is guaranteed optimal</strong> — and A* stops there.</p>
+
+<div class="note"><strong>Key intuition:</strong> A* is best-first search where the ranking is a lower bound (<code>g</code> known cost + <code>h</code> optimistic estimate). The instant a goal node becomes the cheapest node in the list, every other open node has <code>f ≥</code> that goal's cost, so none of them can lead anywhere cheaper — the goal must be optimal. <em>(Caution: reaching a goal isn't enough; it must be the node actually selected, i.e. the smallest-f node.)</em></p>
+
+<h2>A tiny illustration</h2>
+<p>This is the worked example from the slides (Fig. 6-36): a search tree rooted at <b>R</b>. Each edge carries a cost added to <code>g</code>; each node shows its <code>g + h = f</code>. The heuristic here is admissible. We always pop the smallest-<code>f</code> open node. Step through; the badge on each node is its <code>f</code>, green = expanded, gold = currently selected, blue = open in the list.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Rank by: <b>f = g + h</b></span>
+  <span class="chip">Admissible: <b>h ≤ h*</b></span>
+  <span class="chip">Stop: <b>smallest-f node is a goal</b></span>
+  <span class="chip">Guarantee: <b>optimal</b></span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<ul>
+  <li><a href="prob-astar-graph.html">A* on a graph (Fig. 6-36)</a> — find the <strong>least-cost path</strong> from a source to a goal node, expanding nodes by <code>f = g + h</code> until the goal is popped.</li>
+  <li><a href="prob-channel-routing.html">Channel routing</a> — wire all the nets in a VLSI channel using the <strong>fewest horizontal tracks</strong>, with <code>g</code> = tracks used so far and <code>h</code> = maximal local density (a lower bound on tracks still needed).</li>
+</ul>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 1 answered</span></h2>
+
+<div class="quiz" data-correct="2" data-explain="Admissibility means h(n) ≤ h*(n): the heuristic never overestimates the true remaining cost. That makes f(n) = g(n)+h(n) a lower bound on the cheapest solution through n, which is exactly what guarantees the first goal popped is optimal. If h could overestimate, A* might expand a goal whose f is inflated past a cheaper alternative, losing optimality. Note h does NOT have to equal h* (that would require already solving the problem), and being a tighter under-estimate only makes A* faster, not more correct.">
+  <div class="q">A* is guaranteed to return the optimal goal as long as the heuristic h(n) satisfies which condition?</div>
+  <button class="opt">h(n) = h*(n) exactly — the estimate must equal the true remaining cost</button>
+  <button class="opt">h(n) ≥ h*(n) — the estimate must never underestimate</button>
+  <button class="opt">h(n) ≤ h*(n) — the estimate must never overestimate</button>
+  <button class="opt">h(n) = 0 for every node — no estimate is allowed</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-astar">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (the A* algorithm, Fig. 6-36) and §12 (the channel-routing problem, Figs. 6-40/6-46/6-48). A* is the special case of <strong>branch-and-bound</strong> in which the bound is <code>f = g + h</code> with an admissible <code>h</code>; CLRS / Russell &amp; Norvig (<em>AIMA</em>, Ch. 3) develop the optimality proof in full.</p>
+<div class="note"><strong>Related in this bucket:</strong> A* sharpens the generic <a href="index.html">best-first search</a> with a provable bound. Try it on <a href="prob-astar-graph.html">the graph example</a> first, then see the same machinery minimize wiring tracks in <a href="prob-channel-routing.html">channel routing</a>.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- Fig. 6-36 A* search tree (g/h/f read from the slides) ----
+// nodes laid out as a tree; positions are x,y in 0..100
+const NODES = [
+  {id:'R', x:50, y:6,  label:'R'},
+  {id:'A', x:20, y:30, label:'A'},
+  {id:'B', x:50, y:30, label:'B'},
+  {id:'C', x:80, y:30, label:'C'},
+  {id:'D', x:12, y:58, label:'D'},
+  {id:'E', x:30, y:58, label:'E'},
+  {id:'J', x:50, y:58, label:'J'},
+  {id:'F', x:70, y:58, label:'F'},
+  {id:'G', x:90, y:58, label:'G'},
+  {id:'H', x:6,  y:86, label:'H'},
+  {id:'I', x:24, y:86, label:'I'},
+  {id:'K', x:64, y:86, label:'K'},
+  {id:'L', x:82, y:86, label:'L'},
+];
+const EDGES = [
+  {u:'R', v:'A', w:2}, {u:'R', v:'B', w:4}, {u:'R', v:'C', w:3},
+  {u:'A', v:'D', w:2}, {u:'A', v:'E', w:3},
+  {u:'B', v:'J', w:2},
+  {u:'C', v:'F', w:2}, {u:'C', v:'G', w:2},
+  {u:'D', v:'H', w:1}, {u:'D', v:'I', w:3},
+  {u:'F', v:'K', w:1}, {u:'F', v:'L', w:3},
+];
+// g/h/f per node exactly as transcribed from slides 37-42
+const FVAL = { A:4, B:6, C:5, D:5, E:7, F:6, G:10, H:10, I:7, J:11, K:11, L:8 };
+const PARENT = { A:'R',B:'R',C:'R', D:'A',E:'A', J:'B', F:'C',G:'C', H:'D',I:'D', K:'F',L:'F' };
+
+const frames = [
+  { open:['A','B','C'], expanded:[], pick:null,
+    cap:`Put the root <b>R</b>'s children in the list. Each node is rated <b>f = g + h</b>: <b>A</b> f=4, <b>B</b> f=6, <b>C</b> f=5. Always pop the smallest f.` },
+  { open:['B','C'], expanded:['A'], pick:'A',
+    cap:`Smallest f is <b>A (f=4)</b> → <b>expand A</b>. Its children: <b>D</b> (g4,h1,f5), <b>E</b> (g5,h2,f7) join the list.` },
+  { open:['B','D','E'], expanded:['A'], pick:null,
+    cap:`The list is now {D f=5, C f=5, B f=6, E f=7}. The two cheapest tie at f=5.` },
+  { open:['B','D','E'], expanded:['A','C'], pick:'C',
+    cap:`Pop <b>C (f=5)</b> → <b>expand C</b>. Children: <b>F</b> (g5,h1,f6), <b>G</b> (g5,h5,f10). G looks hopeless (f=10).` },
+  { open:['B','D','E','F','G'], expanded:['A','C','D'], pick:'D',
+    cap:`Pop the other f=5, <b>D</b> → <b>expand D</b>. Children: <b>H</b> (g5,h5,f10) and <b>I</b> (g7,h0,f7). I has h=0 — it is a goal candidate, but f=7 is not yet smallest.` },
+  { open:['B','E','F','G','H','I'], expanded:['A','C','D','B'], pick:'B',
+    cap:`Smallest open is now <b>B (f=6)</b> → <b>expand B</b>. Child <b>J</b> (g6,h5,f11) joins. Still nothing beats f=6.` },
+  { open:['E','F','G','H','I','J'], expanded:['A','C','D','B','F'], pick:'F',
+    cap:`Pop <b>F (f=6)</b> → <b>expand F</b>. Children <b>K</b> (f=11), <b>L</b> (g8,h0,f8). Now the cheapest open node is <b>I (f=7)</b>...` },
+  { open:[], expanded:['A','C','D','B','F'], pick:'I', goal:true,
+    cap:`...and <b>I is a goal node</b>! It is the smallest-f node in the list, so by admissibility no cheaper solution exists. <b>Stop — optimal path R→A→D→I, cost 7</b>.` },
+];
+
+function render(f, stage){
+  const node = {}, badge = {}, edge = {};
+  // badges: f-value on every node already discovered
+  const seen = new Set(['R']);
+  f.expanded.forEach(id=>seen.add(id));
+  f.open.forEach(id=>seen.add(id));
+  if (f.pick) seen.add(f.pick);
+  // also include children that were just added (in open/expanded chains)
+  Object.keys(FVAL).forEach(id=>{ if(seen.has(id)) badge[id]=FVAL[id]; });
+
+  // node classes
+  f.expanded.forEach(id=>{ node[id]='done'; });
+  f.open.forEach(id=>{ node[id]='frontier'; });
+  if (f.pick){ node[f.pick] = f.goal ? 'done' : 'act'; }
+
+  // highlight tree edges leading to expanded / picked nodes
+  const lit = new Set([...f.expanded]);
+  if (f.pick) lit.add(f.pick);
+  lit.forEach(id=>{ if(PARENT[id]) edge[PARENT[id]+'-'+id]='tree'; });
+
+  stage.innerHTML = ZOO.graph({nodes:NODES, edges:EDGES}, {node, edge, badge});
+}
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render
+});
+</script>
+</body></html>

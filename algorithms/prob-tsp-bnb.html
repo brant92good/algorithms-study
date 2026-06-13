@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Branch-and-Bound — Algorithm Zoo</title>
+<title>Travelling Salesperson — Branch & Bound — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -13,42 +13,45 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
-<h1>Branch-and-Bound</h1>
-<div class="mission">The master strategy for <strong>optimization</strong>: explore a tree of choices best-first, but compute a <strong>bound</strong> for every branch and throw away any branch that <em>provably can't beat</em> the best answer found so far.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §7–10 (Branch-and-Bound), TSP Fig 6-25/6-26.</p>
+<div class="kicker">Branch-and-Bound · Ch6</div>
+<h1>Travelling Salesperson — Branch &amp; Bound</h1>
+<div class="mission">Given a table of city-to-city travel costs, find the <strong>cheapest round trip</strong> that visits <em>every</em> city exactly once and returns home — proven optimal without trying all the orderings.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §9 (TSP via Branch-and-Bound), Tables 6-3/6-4/6-5, Fig. 6-25/6-26.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
 
-<h2>What is it?</h2>
-<p>Plain tree searches like depth-first and breadth-first answer <strong>feasibility</strong> questions — "is there <em>a</em> solution?" — and stop at the first goal they hit. But many problems are <strong>optimization</strong> problems: we don't want <em>any</em> tour, we want the <em>cheapest</em> tour. The first goal found is rarely the best one, so those searches aren't enough.</p>
-<p><strong>Branch-and-bound</strong> fixes this with two ingredients:</p>
-<ul>
-<li><strong>Branch</strong> — split the set of all candidate solutions into smaller subsets, forming a tree. Here each split is "all tours that <em>include</em> edge X-Y" vs. "all tours that <em>exclude</em> edge X-Y".</li>
-<li><strong>Bound</strong> — for each node, compute a <strong>lower bound</strong>: a number that is <em>guaranteed</em> ≤ the cost of <em>every</em> solution in that subset. Because it's a guarantee, if a node's lower bound is <strong>≥ the best complete tour we've already found</strong>, nothing in that whole subtree can win — so we <strong>prune</strong> it (never explore it).</li>
-</ul>
-<p><strong>What is a lower bound, concretely?</strong> For the Travelling Salesperson Problem (TSP — visit every city once and return home, minimizing total cost) the trick is the <strong>reduced cost matrix</strong>. Every tour must leave each city once, so it must pay <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum from that row</strong> (every row now has a 0), then <strong>subtract each column's minimum from any column still without a 0</strong>. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — so it is a valid lower bound. For the course's 7-city instance the reductions sum to <strong>96</strong>.</p>
-<p>Then we branch on edges. Including a zero-cost edge adds nothing (bound stays). <em>Excluding</em> an edge forces a more expensive choice, raising the bound. We pick the split that raises the "exclude" bound the most, keep expanding the most promising node, and prune the rest — until one complete tour is isolated and proven optimal.</p>
-<div class="note">The slides apply branch-and-bound to <strong>three</strong> problems — here is what each one actually <em>asks</em>:
-<ul style="margin:.5rem 0 0;padding-left:1.2rem">
-<li><strong>Personnel Assignment</strong> — assign <em>n</em> people to <em>n</em> jobs where the jobs carry a precedence order (some jobs must be done before others); putting person <em>i</em> on job <em>j</em> costs C<sub>ij</sub>. Find the cheapest assignment that respects the order. (cost matrix Table 6-1)</li>
-<li><strong>Travelling Salesperson</strong> (shown here) — visit every city exactly once and return to the start, at minimum total cost (optimal tour cost 126).</li>
-<li><strong>0/1 Knapsack</strong> — given items each with a weight and a profit, and a bag of fixed capacity, pick a subset (each item taken whole or not at all) that maximises profit without exceeding the capacity. (Fig 6-28: upper bound from a feasible packing, lower bound from the fractional relaxation.)</li>
-</ul>
-0/1 knapsack is <strong>also</strong> solved by dynamic programming in Ch 7 — see the <a href="dp-knapsack.html">0/1 Knapsack</a> card for that different approach.</div>
+<h2>The problem</h2>
+<p>A salesperson must visit <strong>n cities</strong> and come back to where they started. We're given an <code>n×n</code> <strong>cost matrix</strong> where entry <code>(i, j)</code> is the cost of travelling from city <code>i</code> directly to city <code>j</code> (the diagonal is <code>∞</code> — you can't go from a city to itself). A <strong>tour</strong> is an order in which you visit all the cities, ending back at the start; its cost is the sum of the arc costs along the way.</p>
+<p><strong>The task:</strong> find the tour of <em>minimum</em> total cost. This is the <strong>Travelling Salesperson Problem (TSP)</strong>, and it is <strong>NP-complete</strong> — there are <code>(n−1)!</code> possible tours, so brute force is hopeless even for modest n.</p>
+<p><strong>The concrete instance (Table 6-3).</strong> Seven cities, with this cost matrix (rows = "from", columns = "to", <code>∞</code> on the diagonal):</p>
+<div class="atree" style="line-height:1.5">
+       to:   1    2    3    4    5    6    7
+  from 1:    ∞    3   93   13   33    9   57
+  from 2:    4    ∞   77   42   21   16   34
+  from 3:   45   17    ∞   36   16   28   25
+  from 4:   39   90   80    ∞   56    7   91
+  from 5:   28   46   88   33    ∞   25   57
+  from 6:    3   88   18   46   92    ∞    7
+  from 7:   44   26   33   27   84   39    ∞
+</div>
+<p>We want the cheapest tour through all 7 cities. The answer turns out to be the tour <strong>1→4→6→7→3→5→2→1</strong> at cost <strong>126</strong> — but the interesting part is <em>how</em> Branch-and-Bound proves no cheaper tour exists without enumerating all <code>6! = 720</code> orderings.</p>
 
-<h2>Watch it run</h2>
-<p>The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we branch on include/exclude decisions, carrying a bound at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best). The left spine of "include" choices reaches the optimal tour.</p>
+<div class="note"><strong>The key tool — a lower bound from the reduced cost matrix.</strong> Every tour must <em>leave</em> each city once, so it pays <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum</strong> from that row (now every row has a zero), then <strong>subtract each column's minimum</strong> from any column still without a zero. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — a valid <strong>lower bound</strong>. For this instance the row reductions sum to <strong>84</strong> and the column reductions add <strong>7+1+4 = 12</strong>, for a root lower bound of <strong>96</strong>.</p></div>
+
+<h2>Watch it solved</h2>
+<p>The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we <strong>branch</strong> on include/exclude decisions for arcs, carrying a lower <strong>bound</strong> at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best tour found). The left spine of "include" choices reaches the optimal tour. Step through.</p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Solves: <b>optimization</b></span>
-  <span class="chip">Core idea: <b>bound + prune</b></span>
-  <span class="chip">TSP bound: <b>96</b></span>
-  <span class="chip">Optimal tour: <b>126</b></span>
+  <span class="chip">Cities: <b>7</b></span>
+  <span class="chip">Root lower bound: <b>96</b></span>
+  <span class="chip">Optimal tour: <b>1-4-6-7-3-5-2-1</b></span>
+  <span class="chip">Optimal cost: <b>126</b></span>
+  <span class="chip">Hardness: <b>NP-complete</b></span>
 </div>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="The lower bound from a reduced cost matrix is exactly the TOTAL amount subtracted: 84 from the row reductions plus 7+1+4 = 12 from the column reductions = 96. That total is cost every tour is forced to pay, so it is a valid lower bound. 84 forgets the column step; 116 and 96+126 mix in unrelated numbers.">
+<div class="quiz" data-correct="1" data-explain="The lower bound from a reduced cost matrix is exactly the TOTAL amount subtracted: 84 from the row reductions plus 7+1+4 = 12 from the column reductions = 96. That total is cost every tour is forced to pay, so it is a valid lower bound. 84 forgets the column step; 116 and 222 mix in unrelated numbers.">
   <div class="q">In the 7-city TSP, reducing the cost matrix subtracts <strong>84</strong> total across all rows, then subtracts <strong>7</strong>, <strong>1</strong>, and <strong>4</strong> from three columns that still lacked a zero. What lower bound does this give for the whole problem?</div>
   <button class="opt">84</button>
   <button class="opt">96</button>
@@ -67,13 +70,18 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="search-branch-and-bound">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-tsp-bnb">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Tables 6-3/6-4/6-5, Fig. 6-26) — the reduced-cost-matrix TSP worked here. See also CLRS, <em>Introduction to Algorithms</em>, on branch-and-bound for optimization.</p>
-<div class="note"><strong>Next in this bucket:</strong> A* — best-first search with cost <code>f(n) = g(n) + h(n)</code> where an admissible heuristic <code>h(n) ≤ h*(n)</code> acts as the lower bound, so the first goal selected is optimal.</div>
+<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §9 (Tables 6-3/6-4/6-5, Fig. 6-25/6-26) — the reduced-cost-matrix TSP worked here. See also CLRS, <em>Introduction to Algorithms</em>, on branch-and-bound for optimization.</p>
+<div class="note"><strong>See also — the other problems Branch-and-Bound solves in the slides:</strong>
+<ul style="margin:.5rem 0 0;padding-left:1.2rem">
+<li><a href="prob-personnel-assignment.html">Personnel Assignment</a> — assign <em>n</em> people to <em>n</em> jobs (with a precedence order on jobs) at minimum total cost; same reduce-the-matrix lower bound, optimal cost 70.</li>
+<li><a href="prob-knapsack-bnb.html">0/1 Knapsack (B&amp;B)</a> — pick a subset of items (each whole or not) to maximise profit within a weight cap; bounds come from a feasible packing and the fractional relaxation.</li>
+</ul>
+The method itself lives on the <a href="algo-branch-and-bound.html">Branch-and-Bound</a> card.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>
@@ -88,7 +96,7 @@ const C = {
 
 // Each frame supplies a list of tree lines (HTML). We assemble the same tree
 // progressively so the learner sees the spine grow and branches get pruned.
-// Bounds come straight from Fig. 6-26 (Lee Ch.6, slide 28).
+// Bounds come straight from Fig. 6-26 (Lee Ch.6 §9, slide 28).
 
 function tree(lines){ return `<div class="atree">${lines.join("\n")}</div>`; }
 

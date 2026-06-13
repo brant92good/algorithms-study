@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Two-Variable Linear Programming — Algorithm Zoo</title>
+<title>2-Variable Linear Programming — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -13,21 +13,32 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Prune-and-Search</div>
-<h1>Two-Variable Linear Programming</h1>
-<div class="mission">Find the lowest point of a "valley" formed by a stack of straight lines — and throw away a quarter of the lines every round to reach the answer in <strong>linear time</strong>.</div>
+<div class="kicker">Prune-and-Search · Alg06 §6</div>
+<h1>2-Variable Linear Programming</h1>
+<div class="mission">Given a list of straight-line constraints, find the single point <code>(x, y)</code> that makes a linear objective as small as possible — the lowest point of a convex "valley".</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §6 (Two-Variable Linear Programming), Fig 7-2 (the F(x) envelope), Fig 7-6 (slope cases).</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>What is it?</h2>
-<p><strong>Linear programming</strong> means: find the best (smallest or largest) value of some quantity, when your choices are limited by a list of straight-line rules. "Two-variable" means the choice is a point <code>(x, y)</code> in the plane. Here the goal is simple — <strong>make <code>y</code> as small as possible</strong>.</p>
-<p>Each rule has the form <code>y ≥ aᵢx + bᵢ</code>. A single rule like that says: the point must sit <strong>on or above</strong> the line <code>aᵢx + bᵢ</code> — it carves the plane into a <strong>half-plane</strong> (everything above the line is allowed). With <code>n</code> rules, the allowed (<em>feasible</em>) region is everything above <em>all</em> the lines at once.</p>
-<p>The floor of that region — the lowest <code>y</code> you're allowed to have at each <code>x</code> — is the <strong>pointwise maximum</strong> of the lines:</p>
+<h2>The problem</h2>
+<p>You have two unknowns, <code>x</code> and <code>y</code> — together they pick a single <strong>point in the plane</strong>. You want to make a <strong>linear objective</strong> as small as possible. "Linear" means the objective is just a weighted sum like <code>a·x + b·y</code>; you minimize it. That choice isn't free: it's fenced in by a list of <code>n</code> <strong>linear constraints</strong>, each an inequality of the form <code>aᵢ·x + bᵢ·y ≤ cᵢ</code>. The general statement is:</p>
+<p style="text-align:center"><code>Minimize&nbsp; a·x + b·y &nbsp;&nbsp; subject to &nbsp; aᵢ·x + bᵢ·y ≤ cᵢ , &nbsp; i = 1 … n</code></p>
+<p>Some vocabulary, defined from zero:</p>
+<ul>
+  <li>A constraint <code>aᵢx + bᵢy ≤ cᵢ</code> is a <strong>half-plane</strong> — it splits the plane with a straight line and keeps everything on one side.</li>
+  <li>The <strong>feasible region</strong> is the set of points satisfying <em>all</em> <code>n</code> constraints at once: the intersection of all the half-planes. It is a convex polygon (possibly unbounded).</li>
+  <li>The <strong>optimum</strong> is the feasible point with the smallest objective value. We call it <code>(x₀, y₀)</code>.</li>
+</ul>
+
+<p><strong>The canonical, easy-to-picture version.</strong> The slides reduce the general problem to a tidy special case (substituting <code>y' = a·x + b·y</code>), where you simply <strong>minimize <code>y</code></strong> and every constraint is a "must lie on or above this line":</p>
+<p style="text-align:center"><code>Minimize&nbsp; y &nbsp;&nbsp; subject to &nbsp; y ≥ aᵢ·x + bᵢ , &nbsp; i = 1 … n</code></p>
+<p>Each rule <code>y ≥ aᵢx + bᵢ</code> says the point must sit <strong>on or above</strong> that line. With <code>n</code> rules, the floor you must stay above at each <code>x</code> is the <strong>highest</strong> of all the lines there — the <strong>pointwise maximum</strong>, called the <strong>upper envelope</strong>:</p>
 <p style="text-align:center"><code>F(x) = max { a₁x+b₁, a₂x+b₂, …, aₙx+bₙ }</code></p>
-<p>This <code>F(x)</code> is the <strong>upper envelope</strong> of the lines (you always take whichever line is highest). Because it is the max of straight lines, it is a <strong>convex</strong> "valley" shape: it comes down, hits a single bottom, and goes back up — it can <em>never</em> dip twice. So the answer <code>x₀</code> is just the one <strong>lowest point of <code>F</code></strong>, and <code>y₀ = F(x₀)</code>.</p>
-<p><strong>The prune-and-search trick.</strong> Don't build all of <code>F</code> — that is wasteful. Instead pair the lines up, intersect each pair, and pick the <strong>median</strong> intersection <code>xₘ</code> as a test point. Look at the slope of <code>F</code> right at <code>xₘ</code>: if it slopes <em>up</em>, the bottom is to the left (<code>x₀ &lt; xₘ</code>); if it slopes <em>down</em>, the bottom is to the right; if it is flat there, you're standing on the answer. Knowing the side lets you <strong>delete the loser of each pair</strong> on the wrong side — about <strong><code>n/4</code> lines vanish every round</strong>. Repeat on what's left. Since each round does <code>O(n)</code> work and shrinks the input by a constant fraction, the total is <code>O(n)</code>.</p>
+<p>Because it is the max of straight lines, <code>F</code> is a <strong>convex</strong> "valley": it descends, reaches one bottom, and climbs again — it can never dip twice. So the whole problem collapses to: <strong>find the lowest point of <code>F</code></strong>. The answer is that <code>x₀</code>, with <code>y₀ = F(x₀)</code>.</p>
 
-<h2>Watch it run</h2>
-<p>Four constraint lines below. Step through: first they stack up, then the gold curve traces the <strong>upper envelope <code>F(x)</code></strong>, then a slope test at <code>xₘ</code> tells us which way the bottom is, and we land on the lowest point <code>(x₀, y₀)</code>.</p>
+<p><strong>Tiny concrete instance.</strong> Three constraints <code>y ≥ 2</code>, <code>y ≥ x</code>, <code>y ≥ −x + 4</code>. At <code>x = 1</code> the three lines give <code>2</code>, <code>1</code>, <code>3</code>, so <code>F(1) = max{2,1,3} = 3</code>. Sweeping <code>x</code>, the valley bottoms out at <code>x = 2</code> where lines <code>y = x</code> and <code>y = −x + 4</code> cross at height <code>2</code> — there the optimum is <code>(x₀, y₀) = (2, 2)</code>.</p>
+
+<h2>Watch it solved</h2>
+<p>Four constraint lines below. Step through: first they stack up, then the gold curve traces the <strong>upper envelope <code>F(x)</code></strong>, then a slope test at a median test point <code>xₘ</code> tells us which way the bottom lies (so the losing line of each pair on the wrong side can be <strong>pruned</strong>), and we land on the lowest point <code>(x₀, y₀)</code>.</p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -47,7 +58,7 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="F is a convex valley: max of straight lines. Its slope goes from negative (coming down) through the bottom to positive (going up). A test point where F still slopes downward (negative) is still on the left wall, so the true bottom x₀ lies to its RIGHT. Positive slope ⇒ left; flat ⇒ you're at it.">
+<div class="quiz" data-correct="2" data-explain="F is a convex valley: max of straight lines. Its slope goes from negative (coming down) through the bottom to positive (going up). A test point where F still slopes downward (negative) is still on the left wall, so the true bottom x₀ lies to its RIGHT. Positive slope ⇒ left; flat (slopes of opposite sign meet) ⇒ you're at it.">
   <div class="q">You evaluate the upper envelope <code>F</code> at a test point <code>xₘ</code> and find <code>F</code> is sloping <strong>downward</strong> (negative slope) there. Where is the optimum <code>x₀</code>?</div>
   <button class="opt">exactly at <code>xₘ</code></button>
   <button class="opt">to the <em>left</em> of <code>xₘ</code></button>
@@ -57,13 +68,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prune-linear-programming">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-linear-programming">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search), §"Linear Programming with Two Variables" (Fig. 7-2). Megiddo's linear-time 2-variable LP is the classic result; CLRS, <em>Introduction to Algorithms</em>, covers the prune-and-search / median selection machinery it relies on.</p>
-<div class="note"><strong>Next in this bucket:</strong> the 1-Center problem — find the smallest circle enclosing <code>n</code> points, again by pairing, taking medians, and pruning down to <code>O(n)</code>.</div>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search), §"Linear Programming with Two Variables" (Fig. 7-2, F(x) envelope; Fig. 7-6, slope cases). Megiddo's linear-time 2-variable LP is the classic result; the prune-and-search / median-selection machinery it relies on is covered in CLRS, <em>Introduction to Algorithms</em>.</p>
+<div class="note"><strong>Strategy:</strong> this problem is solved by <a href="algo-prune-and-search.html">Prune-and-Search</a> — pair the lines, take the median intersection as <code>xₘ</code>, read the slope of <code>F</code> there, and delete ~n/4 constraints each round for <code>O(n)</code> total. <strong>Sibling problem in this bucket:</strong> <a href="prob-selection.html">Linear-time Selection</a> — find the k-th smallest of an unsorted list in <code>O(n)</code> by the same prune-a-fraction idea (median of medians).</div>
 
 </div>
 <script src="../assets/zoo.js"></script>
@@ -92,8 +103,8 @@ const frames = [
   {show:[0,1],          cap:`Add a second rule. Now you must be above <b>both</b> lines at once.`},
   {show:[0,1,2,3],      cap:`All four constraint lines drawn. The feasible region is everything above <b>every</b> line.`},
   {show:[0,1,2,3], env:true, cap:`The gold curve is <b>F(x) = max of the lines</b> — the <b>upper envelope</b>. It is the floor of the feasible region.`},
-  {show:[0,1,2,3], env:true, test:true, cap:`Pick a test point <code>xₘ</code>. Read the slope of F there: it is <b>${slopeAt<0?'negative (going down)':'positive (going up)'}</b>.`},
-  {show:[0,1,2,3], env:true, test:true, side:true, cap:`Slope is <b>${slopeAt<0?'down ⇒ optimum is to the RIGHT':'up ⇒ optimum is to the LEFT'}</b> of xₘ. Lines that lose on that side get <b>pruned</b>.`},
+  {show:[0,1,2,3], env:true, test:true, cap:`Pick the median pair-intersection as a test point <code>xₘ</code>. Read the slope of F there: it is <b>${slopeAt<0?'negative (going down)':'positive (going up)'}</b>.`},
+  {show:[0,1,2,3], env:true, test:true, side:true, cap:`Slope is <b>${slopeAt<0?'down ⇒ optimum is to the RIGHT':'up ⇒ optimum is to the LEFT'}</b> of xₘ. Lines that lose on that side get <b>pruned</b> (~n/4 per round).`},
   {show:[0,1,2,3], env:true, opt:true, cap:`Convex valley ⇒ a single lowest point. Optimum <b>(x₀, y₀) ≈ (${x0.toFixed(1)}, ${y0.toFixed(1)})</b> — the minimum of F.`}
 ];
 

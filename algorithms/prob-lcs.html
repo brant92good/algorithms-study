@@ -15,21 +15,19 @@
 
 <div class="kicker">Dynamic Programming · Ch7</div>
 <h1>Longest Common Subsequence</h1>
-<div class="mission">Find the longest string that hides inside <strong>both</strong> of two sequences — without rearranging anything — by filling one little table.</div>
+<div class="mission">Given two strings, find the longest sequence of letters that hides inside <strong>both</strong> — in order, but not necessarily side by side.</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §11 (Longest Common Subsequence), slides 28–29.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
 
-<h2>What is it?</h2>
-<p>A <strong>subsequence</strong> is what you get by deleting zero or more symbols from a string while keeping the rest <em>in their original order</em>. From <code>bacad</code> you can pull out <code>bcd</code>, <code>aca</code>, or <code>acad</code> — you may skip letters, but you may never reorder them.</p>
-<p>Watch the difference from a <strong>substring</strong>: a substring must be <em>contiguous</em> (a solid run, like <code>aca</code> taken from positions 2–4 of <code>bacad</code>). A subsequence is <em>skip-but-keep-order</em>, so it is more permissive — every substring is a subsequence, but not the reverse.</p>
-<p>The <strong>Longest Common Subsequence (LCS)</strong> problem: given two strings <code>A</code> and <code>B</code>, find the longest sequence that is a subsequence of <em>both</em>. For <code>A = bacad</code> and <code>B = accbadcb</code> the answer is <code>acad</code> (length 4).</p>
-<p><strong>The idea.</strong> Build a table <code>L</code> where <code>L[i,j]</code> = length of the LCS of the first <code>i</code> letters of A and the first <code>j</code> letters of B. Row 0 and column 0 are all <code>0</code> (an empty prefix shares nothing). Then for every interior cell, compare the two current letters <code>aᵢ</code> and <code>bⱼ</code>:</p>
-<ul>
-  <li><strong>Match</strong> (<code>aᵢ = bⱼ</code>): take the <em>diagonal</em> neighbour and add one — <code>L[i,j] = L[i-1,j-1] + 1</code>. The matched letter extends the best LCS of the two shorter prefixes.</li>
-  <li><strong>Mismatch</strong> (<code>aᵢ ≠ bⱼ</code>): you can't use both letters, so keep the better of dropping one — <code>L[i,j] = max(L[i-1,j], L[i,j-1])</code>. <em>No +1 here</em> — nothing new was matched.</li>
-</ul>
-<p>The bottom-right cell is the LCS length. To recover the actual string, <strong>trace back</strong> from that corner: step diagonally on each match (recording the letter), otherwise step toward the larger neighbour.</p>
+<h2>The problem</h2>
+<p>Start with the one word you must understand first: <strong>subsequence</strong>. A subsequence of a string is what is left after you <em>delete zero or more letters</em> while keeping the survivors <em>in their original order</em>. You may skip letters, but you may never reorder them. From <code>bacad</code> you can pull out <code>bcd</code>, <code>aca</code>, or <code>acad</code> — but not <code>dab</code>, because that reshuffles the order.</p>
+<p>Do not confuse this with a <strong>substring</strong>. A substring must be <em>contiguous</em> — a solid uninterrupted run, like <code>aca</code> taken from positions 2–4 of <code>bacad</code>. A subsequence is <em>skip-but-keep-order</em>, so it is strictly more permissive: every substring is a subsequence, but not the reverse. <code>acad</code> is a subsequence of <code>bacad</code> (drop the <code>b</code>), yet it is <em>not</em> a substring of it (its letters aren't consecutive).</p>
+<p>A <strong>common subsequence</strong> of two strings <code>A</code> and <code>B</code> is a string that is a subsequence of <em>both</em> at once. The <strong>Longest Common Subsequence (LCS)</strong> problem asks:</p>
+<div class="note"><strong>Given:</strong> two strings <code>A = a₁a₂…a_m</code> and <code>B = b₁b₂…b_n</code>.<br><strong>Find:</strong> the longest string that is a subsequence of <code>A</code> <em>and</em> a subsequence of <code>B</code> (return both the string and its length).</div>
+<p><strong>A tiny concrete instance.</strong> Take <code>A = bacad</code> and <code>B = accbadcb</code>. Both contain the letters <code>a, c, a, d</code> in that order (skip the rest of each string), and you cannot do better — so the answer is <code>acad</code>, length <strong>4</strong>. That is the exact instance we solve below.</p>
 
-<h2>Watch it run</h2>
+<h2>Watch it solved</h2>
+<p>The algorithm fills a table <code>L</code> where <code>L[i,j]</code> = the LCS length of the first <code>i</code> letters of A and the first <code>j</code> letters of B. Row 0 and column 0 are all <code>0</code> (an empty prefix shares nothing). For each interior cell it compares the current letters <code>aᵢ</code> and <code>bⱼ</code>: on a <strong>match</strong> it takes the <em>diagonal</em> neighbour <code>+1</code>; on a <strong>mismatch</strong> it keeps the larger of the up/left neighbours (no <code>+1</code>). The bottom-right cell is the answer length; a <strong>trace-back</strong> from that corner spells the string.</p>
 <p>Below is the table for <strong>A = bacad</strong> (rows) and <strong>B = accbadcb</strong> (columns). The <span style="color:var(--acc)">gold</span> cell is the one being computed; <span style="color:#e0a72e">amber</span> marks the dependency it reads (diagonal on a match, left/up on a mismatch). The final frames light the <span style="color:#2ea043">green</span> trace-back that spells <code>acad</code>.</p>
 <div id="viz"></div>
 
@@ -60,13 +58,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-lcs">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-lcs">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Ch. 15 (Dynamic Programming), §15.4 "Longest common subsequence" — the same <code>L[i,j]</code> recurrence and trace-back.</p>
-<div class="note"><strong>Next in this bucket:</strong> Optimal Binary Search Trees — pick a root for each key range to minimise expected search cost, again by combining optimal subproblems.</div>
+<p><strong>Primary source:</strong> Alg07 · Ch 7 §11 (slides 28–29), the <code>L[i,j]</code> recurrence and trace-back. Also CLRS, <em>Introduction to Algorithms</em>, §15.4 "Longest common subsequence" — the same table and recovery.</p>
+<div class="note"><strong>Solved by:</strong> <a href="algo-dynamic-programming.html">Dynamic Programming</a> — the table is built bottom-up because each cell's answer combines the answers to strictly smaller prefix-subproblems (the principle of optimality). <strong>Sibling problems in this bucket:</strong> <a href="prob-knapsack-dp.html">0/1 Knapsack (DP)</a>, <a href="prob-multistage-graph.html">Multistage Graph shortest path</a>, and <a href="prob-resource-allocation.html">Resource Allocation</a> — same machinery, different recurrence.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

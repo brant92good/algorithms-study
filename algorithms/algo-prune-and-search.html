@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prune-and-Search — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Prune-and-Search</div>
+<h1>Prune-and-Search</h1>
+<div class="mission">A design strategy: each round <strong>throw away a guaranteed fraction</strong> of the input, then recurse on what's left. Because the work shrinks geometrically, the <strong>first round dominates</strong> — and many problems that look like <code>O(n log n)</code> collapse to <code>O(n)</code>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A06 · <em>Prune-and-Search</em> §1 (general method) → §2–5 (selection), §6 (linear programming), §7 (1-center).</p>
+
+<h2>The idea</h2>
+<p>Think about how <strong>binary search</strong> works. To find a target in a sorted array, you look at the middle, decide the target is in the left half or the right half, and <strong>discard the other half forever</strong>. Each step <em>prunes</em> half the data and <em>searches</em> what remains. That is the whole strategy, abstracted:</p>
+<ul>
+  <li><b>Prune.</b> In each iteration, do some <code>O(nᵏ)</code> work that lets you <strong>guarantee</strong> a fixed fraction <code>f</code> (with <code>0 &lt; f &lt; 1</code>) of the current input can never contain the answer. Throw it away.</li>
+  <li><b>Search.</b> Recurse on the surviving <code>(1−f)·n</code> elements with the same algorithm.</li>
+  <li><b>Stop.</b> Once the survivors shrink to a constant size, solve directly in <code>O(1)</code>.</li>
+</ul>
+
+<p>The key requirement — and the hard part of every prune-and-search algorithm — is choosing the pruning step so that the fraction <code>f</code> is <strong>guaranteed every round, on any input</strong>. A pruning rule that only <em>sometimes</em> discards a fraction (e.g. always pivoting on the first element) can degrade to removing one element at a time, blowing the bound to <code>O(n²)</code>.</p>
+
+<h3>Why it's linear (the headline result)</h3>
+<p>Let <code>T(n)</code> be the running time and suppose one iteration costs <code>O(nᵏ)</code>. Then:</p>
+<p style="text-align:center;font-size:1.05rem"><code>T(n) = T((1−f)·n) + O(nᵏ)</code></p>
+<p>Unrolling, the per-round cost forms a <strong>geometric series</strong> with ratio <code>(1−f)ᵏ &lt; 1</code>:</p>
+<p style="text-align:center"><code>c·nᵏ · ( 1 + (1−f)ᵏ + (1−f)²ᵏ + … ) = c·nᵏ · (a constant)</code></p>
+<p>The series converges, so the sum is just a constant times the first term:</p>
+<p style="text-align:center;font-size:1.05rem"><code>T(n) = O(nᵏ)</code></p>
+
+<div class="note"><strong>The punchline:</strong> the whole multi-round process costs the <em>same order</em> as a single round. The <strong>first iteration dominates</strong> — every later round works on an exponentially smaller input, so all of them together add only a constant factor. This is why selection, 2-variable LP, and the 1-center problem all come out <code>O(n)</code> even though each does <code>O(n)</code> work per round.</p></div>
+
+<h2>See the shrinkage</h2>
+<p>This is the engine of the whole strategy, made concrete. Take <code>n = 100</code> and a pruning fraction <code>f = ¼</code> (the rate the real algorithms achieve). Each bar is the input size at the start of a round; <strong>gold</strong> is the work that round does, <strong>dim</strong> is what gets pruned away. Watch the input — and so the work — collapse geometrically.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Per round: <b>O(nᵏ)</b></span>
+  <span class="chip">Prunes: <b>fraction f each round</b></span>
+  <span class="chip">Total: <b>O(nᵏ)</b> — first round dominates</span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<p>All three pick a clever pivot/median so a constant fraction (≈¼) is provably pruned each round, turning an <code>O(n log n)</code>-or-worse problem into <strong>linear time</strong>:</p>
+<ul class="problem-list">
+  <li>🎯 <a href="prob-selection.html"><b>Selection — k-th smallest</b></a> — given <code>n</code> unsorted numbers and a rank <code>k</code>, return the value that would sit at position <code>k</code> if sorted (the median when <code>k = ⌈n/2⌉</code>). Solved in <code>O(n)</code> via the median-of-medians pivot.</li>
+  <li>📐 <a href="prob-linear-programming.html"><b>2-variable linear programming</b></a> — minimize <code>y</code> subject to <code>n</code> half-plane constraints <code>y ≥ aᵢx + bᵢ</code>; find the lowest point of their upper envelope in <code>O(n)</code> by pairing constraints and testing the median intersection.</li>
+  <li>⭕ <a href="prob-one-center.html"><b>1-center — smallest enclosing circle</b></a> — given <code>n</code> planar points, find the smallest circle that covers them all, in <code>O(n)</code> by pairing points and pruning on median bisector slopes.</li>
+</ul>
+
+<div class="quiz" data-correct="2" data-explain="The defining move of prune-and-search is discarding a GUARANTEED constant fraction of the input each round, then recursing on the rest. Because the per-round work forms a geometric series, the total is the same order as one round — the first iteration dominates. It is NOT about dividing into equal halves and combining (that's divide-and-conquer like mergesort, where both halves are kept and recombined). It does not require sorting, and it keeps only one piece — never merges results back together.">
+  <div class="q">What single property makes an algorithm a <em>prune-and-search</em> algorithm (and gives it its complexity)?</div>
+  <button class="opt">it splits the input into two equal halves and recursively solves both, then merges</button>
+  <button class="opt">it sorts the input first, then scans it once</button>
+  <button class="opt">each round discards a guaranteed constant fraction of the input and recurses on the rest</button>
+  <button class="opt">it tries every candidate and keeps the best, pruning none</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-prune-and-search">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, the Prune-and-Search chapter (general method §1; selection §2–5; two-variable LP §6; 1-center §7). For worst-case linear selection specifically, see also CLRS Ch. 9 "Medians and Order Statistics."</p>
+<div class="note"><strong>Contrast it with divide-and-conquer.</strong> Divide-and-conquer (mergesort, etc.) keeps <em>both</em> halves and recombines their results — that recombination is why it lands at <code>O(n log n)</code>. Prune-and-search keeps <em>only one</em> piece and never recombines, so the work decays geometrically to <code>O(n)</code>. The three problems above — <a href="prob-selection.html">selection</a>, <a href="prob-linear-programming.html">2-variable LP</a>, and <a href="prob-one-center.html">1-center</a> — are the canonical instances.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- the general-method illustration: input size collapsing by f = 1/4 each round ----
+const N0 = 100, F = 0.25;
+const sizes = [];                         // size at start of each round
+let s = N0;
+while (s > 1){ sizes.push(Math.round(s)); s = s * (1 - F); }
+sizes.push(1);                            // base case
+
+const frames = sizes.map((_, r) => ({ round: r }));
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => {
+    const r = f.round, cur = sizes[r];
+    if (r === sizes.length - 1)
+      return `Round <b>${r}</b>: survivors are down to a <b>constant</b> size — solve directly in O(1). The earlier rounds did O(n), O(¾n), O((¾)²n)… work; summed, that is still <b>O(n)</b>.`;
+    const pruned = Math.round(cur * F), next = cur - pruned;
+    return `Round <b>${r}</b>: input size <b>${cur}</b>. Do O(${cur}) work, prune <b>${pruned}</b> (¼), recurse on <b>${next}</b>. Each round's work is ¾ of the last — a geometric decay.`;
+  },
+  render: (f, stage) => {
+    const r = f.round;
+    // one bar per round: gold = this round's work; bars before it are 'done', after it 'dim'
+    const cls = {}, ptr = {};
+    sizes.forEach((_, i) => {
+      if (i < r)      cls[i] = 'done';   // already-completed rounds
+      else if (i === r) cls[i] = 'cmp';  // current round's work (gold)
+      else            cls[i] = 'dim';    // future / pruned-away
+    });
+    ptr[r] = '↑now';
+    stage.innerHTML = ZOO.bars(sizes, { cls, ptr, max: N0 });
+  }
+});
+</script>
+</body></html>

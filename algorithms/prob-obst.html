@@ -15,19 +15,26 @@
 
 <div class="kicker">Dynamic Programming · Ch7</div>
 <h1>Optimal Binary Search Tree</h1>
-<div class="mission">Given keys you look up at different rates, build the binary search tree where the <strong>average</strong> lookup is as cheap as possible — by trying every key as the root and remembering the best subtrees.</div>
+<div class="mission">You know how often each key gets looked up. Arrange them into the binary search tree where the <strong>average</strong> lookup is as cheap as possible.</div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §13 (Optimal Binary Search Tree), slides 33–38.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
 
-<h2>What is it?</h2>
-<p>A <strong>binary search tree (BST)</strong> stores sorted keys so you can find one by comparing: start at the <strong>root</strong> (the top node), go left if your target is smaller, right if larger, and repeat. The number of comparisons to reach a key equals its <strong>level</strong> — the root is level 1, its children level 2, and so on. So the <strong>search cost</strong> of a key is just how deep it sits.</p>
-<p>Now suppose some keys are searched far more often than others. The <strong>expected cost</strong> of the whole tree is each key's level weighted by how often it is searched (its probability/weight). The same set of keys can be arranged into many valid BSTs, and they are <em>not</em> equally good: putting a <strong>frequently-searched key near the root</strong> makes most lookups short, while burying a popular key deep makes the average lookup expensive.</p>
-<p>The <strong>optimal BST</strong> problem: given sorted keys <code>a₁ &lt; a₂ &lt; … &lt; aₙ</code> with weights, find the arrangement with the smallest expected cost. We solve it with dynamic programming.</p>
-<p><strong>The core idea — "try every key as the root."</strong> Whatever the optimal tree looks like, <em>some</em> key <code>aₖ</code> sits at its root. Everything smaller than <code>aₖ</code> forms its left subtree; everything larger forms its right subtree — and by the principle of optimality, <em>those subtrees must themselves be optimal</em>. So if we write <code>C(i,j)</code> for the cost of the best tree over keys <code>aᵢ…aⱼ</code>:</p>
+<h2>The problem</h2>
+<p>A <strong>binary search tree (BST)</strong> stores sorted keys so you can find one by comparing as you descend: start at the <strong>root</strong> (the top node), go left if your target is smaller, right if it is larger, and repeat. The number of comparisons to reach a key equals its <strong>level</strong> — the root is level 1, its children level 2, their children level 3, and so on. So the <strong>search cost</strong> of a key is exactly how deep it sits in the tree.</p>
+<p>Now suppose some keys are looked up far more often than others. Each key <code>aᵢ</code> comes with a <strong>weight</strong> <code>Pᵢ</code> — how often it is searched. The <strong>expected cost</strong> of the whole tree is each key's level weighted by how often it is searched:</p>
+<p style="text-align:center"><code>Cost = Σᵢ Pᵢ · level(aᵢ)</code> &nbsp;(plus the failed-search weights <code>Qᵢ</code>, see below).</p>
+<p>The same set of keys can be arranged into <em>many</em> valid BSTs, and they are <strong>not</strong> equally good. Putting a <strong>frequently-searched key near the root</strong> makes most lookups short; burying a popular key deep makes the average lookup expensive. For keys <code>3, 7, 9, 12</code> alone there are several shapes — a right-leaning chain <code>3→7→9→12</code>, a balanced-ish tree rooted at <code>7</code>, and more — each with a different expected cost.</p>
+<p><strong>What's given.</strong> Sorted keys <code>a₁ &lt; a₂ &lt; … &lt; aₙ</code>, each with a search weight <code>Pᵢ</code> (probability/frequency that <code>aᵢ</code> is the target — a <em>successful</em> search). Also gap weights <code>Qᵢ</code> (probability a target falls <em>between</em> two stored keys, <code>aᵢ &lt; x &lt; a_{i+1}</code> — an <em>unsuccessful</em> search, ending at an external "failure" node). A failure node at level <code>L</code> costs <code>L−1</code> comparisons.</p>
+<p><strong>What's asked.</strong> Among all BSTs on these keys, find the one with the <strong>smallest expected cost</strong> — the <strong>optimal binary search tree</strong>.</p>
+
+<div class="note"><strong>Why this is not obvious.</strong> You cannot just put the highest-weight key at the root: that fixes the root but the two halves it creates must <em>also</em> be arranged optimally, and the best root for the whole tree may not be the heaviest key once the subtree costs are counted. You need to compare every possible root, and every possible root <em>of every subtree</em>. That is what dynamic programming does efficiently.</p></div>
+
+<p><strong>The recurrence.</strong> Whatever the optimal tree looks like, <em>some</em> key <code>aₖ</code> sits at its root. Everything smaller than <code>aₖ</code> forms its left subtree; everything larger forms its right subtree — and by the principle of optimality, <em>those subtrees must themselves be optimal</em>. Writing <code>C(i,j)</code> for the cost of the best tree over keys <code>aᵢ…aⱼ</code>:</p>
 <p style="text-align:center"><code>C(i,j) = min<sub>i≤k≤j</sub> [ C(i, k−1) + C(k+1, j) + W(i,j) ]</code></p>
 <p>Picking root <code>aₖ</code> costs the best left subtree <code>C(i,k−1)</code> plus the best right subtree <code>C(k+1,j)</code> plus <code>W(i,j)</code>, the total weight of every node in this range. Why add <code>W(i,j)</code>? Because giving the subtree a root pushes <em>every</em> node in it one level deeper, so the whole range pays one extra comparison each. We try every <code>k</code> and keep the cheapest.</p>
-<p><strong>Tiny concrete example</strong> (the set used below): keys <code>3, 7, 9, 12</code>. We fill a table of <code>C(i,j)</code> values, smallest ranges first, so that by the time we ask "what is the best tree over all four keys?", every sub-answer it needs is already sitting in the table.</p>
+<p><strong>Tiny concrete instance</strong> (the one solved below): keys <code>3, 7, 9, 12</code>, search weights <code>P = (3, 3, 1, 1)</code>, gap weights <code>Q = (2, 3, 1, 1, 1)</code>. We fill a table of <code>C(i,j)</code> values, smallest ranges first, so that by the time we ask "what is the best tree over all four keys?", every sub-answer it needs is already in the table.</p>
 
-<h2>Watch it run</h2>
+<h2>Watch it solved</h2>
 <p>Keys <code>a₁..a₄ = 3, 7, 9, 12</code>. Weights: search-weights <code>P = (3, 3, 1, 1)</code> and gap-weights <code>Q = (2, 3, 1, 1, 1)</code>, so <code>W(i,j)</code> = the sum of all P's and Q's covered by range <code>i…j</code>. The grid is the cost table <code>C(i,j)</code> (row <code>i</code>, column <code>j</code>). The diagonal is the empty base case <code>0</code>. We fill by <strong>increasing interval length</strong> <code>j−i</code> — each diagonal sweep. Gold = the cell being computed (<code>act</code>); blue = the two subproblem cells it combines (<code>dep</code>).</p>
 <div id="viz"></div>
 
@@ -58,13 +65,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="dp-obst">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-obst">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
 <p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, §15.5 "Optimal binary search trees" (dynamic-programming chapter) — the same root-splitting recurrence and the <code>O(n³)</code> table fill. The recurrence <code>C(i,j)=min_k[C(i,k−1)+C(k+1,j)+W(i,j)]</code>, filled by increasing interval length, and the <code>O(n³)</code> bound (for each of the <code>n−m</code> cells at interval length <code>m</code>, trying <code>m+1</code> roots) come straight from this chapter.</p>
-<div class="note"><strong>Last in this bucket.</strong> That wraps the Dynamic Programming cards. Head back to the <a href="index.html">🧬 Algorithm Zoo map</a> to see your progress, or jump to the finals DP lessons to drill the recurrences end-to-end.</div>
+<div class="note"><strong>The method:</strong> this problem is solved by <a href="algo-dynamic-programming.html">Dynamic Programming</a> — record the optimum of every subproblem (each key range) and combine them, instead of greedily fixing a root. Head back to the <a href="index.html">🧬 Algorithm Zoo map</a> to see your progress.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

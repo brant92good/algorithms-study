@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hill Climbing — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+<style>
+  .pz{display:inline-grid;grid-template-columns:repeat(3,1.7rem);grid-template-rows:repeat(3,1.7rem);gap:2px;background:var(--bd,#888);padding:2px;border-radius:5px}
+  .pz b{display:flex;align-items:center;justify-content:center;background:var(--card,#1c1c1c);font-weight:600;font-size:.95rem;border-radius:3px}
+  .pz b.bl{background:transparent}
+  .pz b.wr{color:#e0795b}
+  .pzrow{display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap;justify-content:center;margin:.4rem 0}
+  .pzcol{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+  .pzcap{font-size:.78rem;color:var(--mut)}
+  .pzcap b{color:var(--fg)}
+  .arrow{font-size:1.3rem;color:var(--mut)}
+  .chosen .pz{outline:2px solid #4caf50;outline-offset:2px}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Searching Strategies · Ch6</div>
+<h1>Hill Climbing</h1>
+<div class="mission">A <strong>greedy variant of depth-first search</strong>: at every step, expand only the <em>locally best-looking</em> child by an evaluation function <code>f(n)</code> — fast, but it sees only one step ahead and can stall at a local optimum.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A05 · <em>Searching Strategies</em> §5 (Hill Climbing, the 8-puzzle, Fig. 6-15).</p>
+
+<h2>The idea</h2>
+<p>Many problems are solved by exploring a <strong>solution-space tree</strong>: the root is the start state, each child is a state you can reach in one move, and somewhere down the tree sits a <strong>goal</strong> state. The searching <em>strategy</em> just decides the <strong>order</strong> in which you expand nodes.</p>
+
+<p>Plain <strong>depth-first search (DFS)</strong> dives down one branch, expanding children in a fixed arbitrary order, and backtracks on dead ends. <strong>Hill climbing</strong> keeps the dive-deep spirit of DFS but adds <em>judgement</em>: instead of taking children in arbitrary order, it scores each child with an <strong>evaluation function</strong> <code>f(n)</code> and always expands the <strong>locally best one</strong> (lowest <code>f</code>). It is the search equivalent of always walking uphill toward higher ground.</p>
+
+<div class="note"><strong>Key intuition — and its trap.</strong> Hill climbing has only a <em>local view</em>: it compares a node's children to each other and commits to the best of <em>those</em>, never reconsidering. If the best child still leads nowhere good, hill climbing is stuck — it has climbed a small hill (a <strong>local optimum</strong>) with no way to see that a taller peak lies across the valley. (Best-first search fixes exactly this by keeping a <em>global</em> view of all open nodes.)</p>
+
+<p><strong>When to use it.</strong> When you want a quick, low-memory guided search and a decent (not necessarily optimal) solution is acceptable. It expands one node per level along a single path, so it is cheap — but it gives <em>no optimality guarantee</em> and can fail to reach a goal at all. For guaranteed-optimal search you need bounding (branch-and-bound, A*).</p>
+
+<h2>The evaluation function (8-puzzle)</h2>
+<p>The <strong>8-puzzle</strong> is a 3×3 board holding tiles <code>1</code>–<code>8</code> and one blank; you slide a tile into the blank to reach a goal arrangement. The slides score each board with:</p>
+<p style="text-align:center;font-size:1.05rem"><code>f(n) = d(n) + w(n)</code></p>
+<ul>
+  <li><code>d(n)</code> — the <strong>depth</strong> of node <code>n</code> (how many moves made so far),</li>
+  <li><code>w(n)</code> — the number of <strong>misplaced tiles</strong> in <code>n</code> (tiles not yet in their goal cell).</li>
+</ul>
+<p>Lower <code>f</code> is better. At each step hill climbing generates the children, computes <code>f</code> for each, and descends into the child with the smallest <code>f</code> — never looking at any other node again.</p>
+
+<h2>Watch it climb</h2>
+<p>The goal is <span style="white-space:nowrap"><code>1 2 3 / 8 _ 4 / 7 6 5</code></span>. Starting from the board below, hill climbing expands the locally best child at each step. The number under each board is <code>f(n)=d(n)+w(n)</code>; the green-outlined board is the one it commits to. Step through.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Type: <b>greedy DFS</b></span>
+  <span class="chip">Picks: <b>min f(n) child</b></span>
+  <span class="chip">View: <b>local only</b></span>
+  <span class="chip">Optimal? <b>no — can stall</b></span>
+</div>
+
+<h2>Problems it solves (in the slides)</h2>
+<ul>
+  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> — slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal, with each board scored by <code>f(n)=d(n)+w(n)</code> (depth plus misplaced tiles); hill climbing always descends into the lowest-<code>f</code> child, here solving it via initial→1→5→7→8.</li>
+</ul>
+
+<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares a node's own children and commits to the best of THOSE, with no memory of other open nodes elsewhere in the tree. So if the locally best child leads into a dead-end region, it cannot back out to a better node it passed earlier — it is trapped at a local optimum. It is NOT that f is computed wrong (a is false), nor that it explores breadth-first (b — that's BFS), nor that ties are the issue (d — a local optimum can occur with no ties at all). Best-first search avoids this precisely by keeping a global list of all open nodes.">
+  <div class="q">Hill climbing's defining weakness is that it can get stuck at a local optimum. Why does that happen?</div>
+  <button class="opt">it computes f(n) = d(n) + w(n) incorrectly near the goal</button>
+  <button class="opt">it expands the whole tree level by level and runs out of memory</button>
+  <button class="opt">it only compares a node's own children and never reconsiders nodes elsewhere in the tree</button>
+  <button class="opt">it cannot break ties when two children have equal f(n)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="algo-hill-climbing">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §5 (Hill Climbing) and Fig. 6-15 (the 8-puzzle solved by hill climbing). The evaluation rule <code>f(n) = d(n) + w(n)</code> and the "expand the locally best child" mechanic are stated there.</p>
+<div class="note"><strong>Compare:</strong> <a href="algo-best-first.html">Best-First Search</a> uses the <em>same</em> <code>f(n) = d(n) + w(n)</code> but keeps a sorted list of <strong>all</strong> open nodes and expands the globally best one — a global view that escapes the local optima that trap hill climbing. See it on the same puzzle: <a href="prob-8-puzzle.html">The 8-Puzzle</a>.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- boards along the hill-climbing path (Fig. 6-15, slide 8) ----
+// goal: 1 2 3 / 8 _ 4 / 7 6 5  (blank = 0)
+const GOAL = [1,2,3, 8,0,4, 7,6,5];
+
+// each entry: {b: board, f: evaluation value, chosen: is this the locally best child taken}
+// path: initial(3) -> 1(4) -> 5(4) -> 7(4) -> 8 (Goal)
+function board(arr,f,chosen){ return {b:arr, f, chosen:!!chosen}; }
+
+const STEPS = [
+  { lead: board([2,8,3, 1,0,4, 7,6,5], 3, true),
+    kids: [], // shown alone as the start
+    cap: `<b>Start.</b> f = d+w = 0 + 3 = <b>3</b> (tiles 1, 8 and the 2/8 swap are misplaced). We expand its children next.` },
+  { lead: board([2,8,3, 1,0,4, 7,6,5], 3),
+    kids: [ board([2,0,3, 1,8,4, 7,6,5], 4, true),   // node 1 (blank up)
+            board([2,8,3, 0,1,4, 7,6,5], 4),          // node 2
+            board([2,8,3, 1,4,0, 7,6,5], 5),          // node 3
+            board([2,8,3, 1,6,4, 7,0,5], 5) ],        // node 4
+    cap: `<b>Step 1.</b> Four children. Their f-values: <b>4, 4, 5, 5</b>. Hill climbing takes the smallest — the first <b>f = 4</b> (blank slides up). Ties broken by order; the other three are abandoned, never reconsidered.` },
+  { lead: board([2,0,3, 1,8,4, 7,6,5], 4),
+    kids: [ board([0,2,3, 1,8,4, 7,6,5], 4, true),   // node 5
+            board([2,3,0, 1,8,4, 7,6,5], 6) ],        // node 6
+    cap: `<b>Step 2.</b> From that board, two children: <b>f = 4</b> and <b>f = 6</b>. Descend into the <b>f = 4</b> child (blank slides left).` },
+  { lead: board([0,2,3, 1,8,4, 7,6,5], 4),
+    kids: [ board([1,2,3, 0,8,4, 7,6,5], 4, true) ],  // node 7
+    cap: `<b>Step 3.</b> Its best child has <b>f = 4</b> (blank slides down; tile 1 lands home). Take it.` },
+  { lead: board([1,2,3, 0,8,4, 7,6,5], 4),
+    kids: [ board([1,2,3, 8,0,4, 7,6,5], 0, true),   // node 8 GOAL
+            board([1,2,3, 7,8,4, 0,6,5], 6) ],        // node 9
+    cap: `<b>Step 4.</b> The best child is the <b>GOAL</b>: <code>1 2 3 / 8 _ 4 / 7 6 5</code>, f = 0. Solved in a single greedy descent: initial → 1 → 5 → 7 → 8.` },
+];
+
+function pzHTML(cell){
+  const {b,f,chosen} = cell;
+  let cells = '';
+  for(let i=0;i<9;i++){
+    const v = b[i];
+    if(v===0){ cells += `<b class="bl"></b>`; }
+    else { const wrong = (v !== GOAL[i]); cells += `<b class="${wrong?'wr':''}">${v}</b>`; }
+  }
+  return `<div class="pzcol${chosen?' chosen':''}"><div class="pz">${cells}</div>`+
+         `<div class="pzcap">f = <b>${f}</b>${chosen?' ◀ taken':''}</div></div>`;
+}
+
+ZOO.stepper({
+  mount:'#viz',
+  frames: STEPS,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    let html = `<div class="pzrow">${pzHTML(f.lead)}`;
+    if(f.kids.length){
+      html += `<span class="arrow">→</span>`;
+      html += f.kids.map(pzHTML).join('');
+    }
+    html += `</div>`;
+    stage.innerHTML = html;
+  }
+});
+</script>
+</body></html>

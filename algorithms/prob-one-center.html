@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>1-Center Problem — Algorithm Zoo</title>
+<title>1-Center — Smallest Enclosing Circle — Algorithm Zoo</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
@@ -13,27 +13,38 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Prune-and-Search</div>
-<h1>1-Center Problem</h1>
-<div class="mission">Find the one spot that is as close as possible to the <strong>farthest</strong> point — the centre of the <strong>smallest circle that covers every point</strong>.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §7 (1-Center / smallest enclosing circle), Fig 7-18, Fig 7-23.</p>
+<div class="kicker">Prune-and-Search · Alg06 §7</div>
+<h1>1-Center — Smallest Enclosing Circle</h1>
+<div class="mission">Where do you stand so that the <strong>farthest</strong> person is as close as possible? Find the centre of the <strong>smallest circle that covers every point</strong>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §7 (1-Center / smallest enclosing circle), Fig 7-16, Fig 7-18, Fig 7-23.</p>
+<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>What is it?</h2>
-<p>You are given <code>n</code> points scattered on a plane. The <strong>1-center problem</strong> asks for a single <em>centre</em> position so that the distance to the point <em>farthest</em> from it is as small as possible. Equivalently: find the <strong>smallest circle that encloses all the points</strong>. The centre of that circle is the answer, and its radius is that smallest-possible farthest distance.</p>
-<p>The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. You are <strong>not</strong> minimising the total or average distance to the points — only the single worst (largest) one matters, because that worst point is what forces the circle to be big.</p>
-<p><strong>Where it's used:</strong> <em>facility location</em>. If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center. Nobody should be more than the radius away.</p>
-<p><strong>The idea (prune-and-search).</strong> Prune-and-search is the strategy behind binary search: each round throw away a fixed <em>fraction</em> of the data, then repeat on what's left. Here the slides solve a <strong>constrained</strong> version first — force the centre onto a given line, which is solvable in <code>O(n)</code> — and use it to figure out <em>which side</em> the true optimum lies. A point sitting safely deep <em>inside</em> the current circle can never be the farthest point, so it can be <strong>pruned</strong>. Each round provably discards about <strong>n/16</strong> of the points. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</p>
+<h2>The problem</h2>
+<p>You are given <code>n</code> points scattered on a flat plane — think of them as houses on a map. You must choose <strong>one</strong> location, the <em>centre</em>, and the cost of that choice is the distance to the point <em>farthest</em> from it. The <strong>1-center problem</strong> asks: pick the centre that makes this farthest distance as <strong>small as possible</strong>.</p>
+<p>Equivalently — and this is the picture to hold onto — find the <strong>smallest circle that encloses all <code>n</code> points</strong>. The circle's centre is the answer; its radius is exactly that smallest-possible farthest distance. Every point lies inside or on the circle, and you can't make the circle any smaller without leaving a point out.</p>
 
-<div class="note"><strong>Two versions.</strong> The slides solve 1-center in <strong>two stages</strong>: first the <strong>constrained</strong> problem — centre forced onto a given line — in O(n) (§7.1); then the <strong>general</strong> problem (§7.2–7.3), which uses a sign-determination test to decide which side the optimum lies on and prunes ~n/16 of the points each round, also O(n).</div>
+<p>The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. Define the terms carefully:</p>
+<ul>
+  <li><b>Centre</b> — the single point you get to place anywhere on the plane.</li>
+  <li><b>Radius</b> — the distance from your centre to the <em>farthest</em> of the <code>n</code> points. This, and only this, is what you pay.</li>
+  <li><b>min-max</b> — you are <em>not</em> minimising the total or the average distance. Only the single worst (largest) distance counts, because that worst point is what forces the circle to be big.</li>
+</ul>
 
-<h2>Watch it run</h2>
-<p>Eight points (dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one. Green dots are points pruned because they sit safely inside — they can't be the farthest, so they're dropped.</p>
+<p><strong>Where it's used — facility location.</strong> If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center: nobody should be more than the radius away.</p>
+
+<div class="note"><strong>A tiny concrete instance.</strong> Three points: <code>A=(0,0)</code>, <code>B=(4,0)</code>, <code>C=(2,1)</code>. Standing at <code>A</code> makes the farthest point <code>B</code>, distance 4. Standing at the midpoint <code>(2,0)</code> drops the farthest distance to 2 (both <code>A</code> and <code>B</code> are exactly 2 away, and <code>C</code> is only ≈1.4 away). No spot does better — the smallest enclosing circle is centred at <code>(2,0)</code> with radius 2. Notice the answer is pinned by the two <em>extreme</em> points, not the middle one.</p></div>
+
+<h2>Watch it solved</h2>
+<p>Eight points (the dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one that still covers everything. The red dot is the current <b>farthest</b> point (it sets the radius). Green dots are points <b>pruned</b> because they sit safely deep inside — they can never be the farthest, so the algorithm drops them. Step through.</p>
 <div id="viz"></div>
+
+<p><strong>How the solver works (prune-and-search).</strong> The slides solve 1-center in two stages. First the <strong>constrained</strong> version (§7.1): force the centre onto a given line, which is solvable in <code>O(n)</code> by pairing points, taking a median, and discarding the closer point of each pair. Then the <strong>general</strong> version (§7.2–7.3) uses that constrained solver plus a sign-determination test — "should the centre move up or down? left or right?" — to decide which side the true optimum lies on, and <strong>prunes ~n/16 of the points each round</strong>. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</p>
 
 <div class="chips">
   <span class="chip">Time: <b>O(n)</b></span>
   <span class="chip">Prunes: <b>~n/16 each round</b></span>
   <span class="chip">Goal: <b>min-max distance</b></span>
+  <span class="chip">Brute base: <b>≤ 16 points</b></span>
 </div>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
@@ -57,13 +68,13 @@
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prune-1-center">Mark as learned</button>
+  <button class="learnbtn" data-learn="prob-one-center">Mark as learned</button>
   <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
 </div>
 
 <h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search) — the 1-center problem, constrained and general versions, with the <code>n/16</code> pruning bound. See also CLRS, <em>Introduction to Algorithms</em>, on linear-time selection (median of medians), the canonical prune-and-search example.</p>
-<div class="note"><strong>Next:</strong> Dynamic Programming — instead of pruning data away, store and reuse solutions to overlapping subproblems.</div>
+<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search) — the 1-center problem, constrained (§7.1) and general (§7.2–7.3) versions, with the <code>n/16</code> pruning bound and the <code>T(n)=T(15n/16)+O(n)=O(n)</code> result. See also CLRS on linear-time selection (median of medians), the canonical prune-and-search example.</p>
+<div class="note"><strong>The method:</strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> — discard a guaranteed fraction of the data each round so the work sums to a geometric series. <strong>Sibling problem:</strong> <a href="prob-selection.html">Linear-time Selection</a> (k-th smallest in O(n)) and 2-variable Linear Programming both use the same pruning idea on different data.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

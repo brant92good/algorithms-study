@@ -14,89 +14,74 @@
 <div class="wrap">
 
   <div class="hero">
-    <div class="kicker">One algorithm per session · step through each one</div>
+    <div class="kicker">Learn by problem · grouped by the algorithm that solves it</div>
     <h1>🧬 Algorithm Zoo</h1>
-    <p class="lede">Every algorithm the course slides teach (Ch 6 – 7), one bite-size interactive session each: see what it does, watch it run step by step on the slide's own example, answer two questions, mark it learned. <strong>Cards are ordered exactly as the slides present them</strong> (Alg05 → Alg06 → Alg07). These complement the deeper <a href="../index.html#lessons">finals lessons</a> — the Zoo is for breadth, the lessons for depth. Full coverage map is at the bottom ↓.</p>
+    <p class="lede">Every <strong>problem</strong> the course slides work, each its own interactive page — stated from zero, then solved step by step. They're grouped by the <strong>algorithm</strong> that solves them; each group links a short <em>method</em> page explaining the technique. Order follows the slides (Alg05 → Alg06 → Alg07). Pair this breadth with the deeper <a href="../index.html#lessons">finals lessons</a>.</p>
     <div class="progwrap"><div class="bar"></div></div>
     <div class="countdown" id="prog-count">0 / 0 learned</div>
   </div>
 
   <div class="bucket">
-    <h2>🔎 Searching Strategies <span class="tagline">— Chapter 6: explore a solution tree</span></h2>
+    <h2>🔎 Solution-Tree Search <span class="tagline">— explore a tree of candidate solutions</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Methods: <a href="algo-dfs.html">Depth-First Search</a> (stack, dive deep) · <a href="algo-bfs.html">Breadth-First Search</a> (queue, level by level)</p>
     <div class="zgrid">
-      <a class="algo" data-id="search-dfs" href="search-dfs.html"><span class="tick">✓</span><div class="t">Depth-First Search</div><div class="d">Dive deep with a stack; backtrack on a dead end.</div></a>
-      <a class="algo" data-id="search-bfs" href="search-bfs.html"><span class="tick">✓</span><div class="t">Breadth-First Search</div><div class="d">Same tree, a queue, level by level.</div></a>
-      <a class="algo" data-id="search-hill-climbing" href="search-hill-climbing.html"><span class="tick">✓</span><div class="t">Hill Climbing</div><div class="d">Greedy local choice via f(n)=d(n)+w(n) — can get stuck.</div></a>
-      <a class="algo" data-id="search-best-first" href="search-best-first.html"><span class="tick">✓</span><div class="t">Best-First Search</div><div class="d">Pick the best node among ALL open ones — global view.</div></a>
-      <a class="algo" data-id="search-branch-and-bound" href="search-branch-and-bound.html"><span class="tick">✓</span><div class="t">Branch-and-Bound</div><div class="d">Add a bound that prunes losing branches → optimization (TSP).</div></a>
-      <a class="algo" data-id="search-astar" href="search-astar.html"><span class="tick">✓</span><div class="t">A* Algorithm</div><div class="d">f=g+h with admissible h≤h* → first goal popped is optimal.</div></a>
+      <a class="algo" data-id="prob-sat" href="prob-sat.html"><span class="tick">✓</span><div class="t">Satisfiability (SAT)</div><div class="d">Is there a true/false assignment that makes a Boolean formula true?</div></a>
+      <a class="algo" data-id="prob-hamiltonian" href="prob-hamiltonian.html"><span class="tick">✓</span><div class="t">Hamiltonian Circuit</div><div class="d">A cycle visiting every vertex exactly once and returning to start?</div></a>
+      <a class="algo" data-id="prob-subset-sum" href="prob-subset-sum.html"><span class="tick">✓</span><div class="t">Sum of Subsets</div><div class="d">A subset summing to exactly the target?</div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>✂️ Prune-and-Search <span class="tagline">— discard a constant fraction each round → O(n)</span></h2>
+    <h2>⛰️ Heuristic Search <span class="tagline">— follow an evaluation function f(n)</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Methods: <a href="algo-hill-climbing.html">Hill Climbing</a> (greedy, local — can stall) · <a href="algo-best-first.html">Best-First Search</a> (global open list — recovers)</p>
     <div class="zgrid">
-      <a class="algo" data-id="prune-selection" href="prune-selection.html"><span class="tick">✓</span><div class="t">Selection (Median of Medians)</div><div class="d">k-th smallest in linear time; groups of 5, ≥n/4 pruned.</div></a>
-      <a class="algo" data-id="prune-linear-programming" href="prune-linear-programming.html"><span class="tick">✓</span><div class="t">2-Variable Linear Programming</div><div class="d">The F(x) upper envelope; slope test prunes constraints.</div></a>
-      <a class="algo" data-id="prune-1-center" href="prune-1-center.html"><span class="tick">✓</span><div class="t">1-Center Problem</div><div class="d">Smallest enclosing circle; prune ~n/16 each round.</div></a>
+      <a class="algo" data-id="prob-8-puzzle" href="prob-8-puzzle.html"><span class="tick">✓</span><div class="t">The 8-Puzzle</div><div class="d">Slide tiles to the goal, scored by f = d + w — solved both ways, hill-climbing vs best-first.</div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>🧩 Dynamic Programming <span class="tagline">— Chapter 7: solve subproblems once, reuse them</span></h2>
+    <h2>✂️ Branch-and-Bound <span class="tagline">— best-first + a bound that prunes losing branches → optimization</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
     <div class="zgrid">
-      <a class="algo" data-id="dp-multistage-graph" href="dp-multistage-graph.html"><span class="tick">✓</span><div class="t">Multistage Graph</div><div class="d">Shortest path by forward/backward reasoning; d(S,T)=9.</div></a>
-      <a class="algo" data-id="dp-knapsack" href="dp-knapsack.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Fill gᵢ(y) = max{ skip, take }.</div></a>
-      <a class="algo" data-id="dp-resource-allocation" href="dp-resource-allocation.html"><span class="tick">✓</span><div class="t">Resource Allocation</div><div class="d">Split units across projects to maximize profit.</div></a>
-      <a class="algo" data-id="dp-tsp" href="dp-tsp.html"><span class="tick">✓</span><div class="t">TSP (Held–Karp)</div><div class="d">State = (current city, visited set); O(n²·2ⁿ).</div></a>
-      <a class="algo" data-id="dp-lcs" href="dp-lcs.html"><span class="tick">✓</span><div class="t">Longest Common Subsequence</div><div class="d">Match → diag+1, else max(up,left); "acad".</div></a>
-      <a class="algo" data-id="dp-obst" href="dp-obst.html"><span class="tick">✓</span><div class="t">Optimal Binary Search Tree</div><div class="d">Try each key as root; frequent keys sit shallow.</div></a>
+      <a class="algo" data-id="prob-personnel-assignment" href="prob-personnel-assignment.html"><span class="tick">✓</span><div class="t">Personnel Assignment</div><div class="d">Assign people to precedence-ordered jobs at minimum total cost.</div></a>
+      <a class="algo" data-id="prob-tsp-bnb" href="prob-tsp-bnb.html"><span class="tick">✓</span><div class="t">Travelling Salesperson</div><div class="d">Cheapest tour visiting every city once (reduced-matrix bound → cost 126).</div></a>
+      <a class="algo" data-id="prob-knapsack-bnb" href="prob-knapsack-bnb.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Max-profit packing within capacity — bounded &amp; pruned.</div></a>
     </div>
   </div>
 
-  <details style="margin-top:2.2rem">
-    <summary style="cursor:pointer;font-weight:600;color:var(--accent);font-size:1.05rem">📚 Full slide coverage — every topic, in slide order, with its source</summary>
-    <p style="color:var(--mut);font-size:.9rem">Each row is a topic the decks introduce, in the order they appear. Application problems (personnel assignment, channel routing, SAT/Hamiltonian) and alternate approaches are covered inside the relevant card — noted below.</p>
-    <div class="tablewrap"><table>
-      <tr><th>#</th><th>Slide topic</th><th>Source</th><th>Covered in</th></tr>
-      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg05 · Ch 6 — Searching Strategies</td></tr>
-      <tr><td>1</td><td>Satisfiability (SAT) problem</td><td>§1</td><td><a href="search-dfs.html">DFS</a> (example)</td></tr>
-      <tr><td>2</td><td>Hamiltonian circuit problem</td><td>§2, Fig 6-8</td><td><a href="search-dfs.html">DFS</a> (example)</td></tr>
-      <tr><td>3</td><td>Sum-of-subsets problem</td><td>§3, Fig 6-11</td><td><a href="search-dfs.html">DFS</a></td></tr>
-      <tr><td>4</td><td>Depth-First Search</td><td>§3</td><td><a href="search-dfs.html">DFS</a></td></tr>
-      <tr><td>5</td><td>Breadth-First Search</td><td>§4</td><td><a href="search-bfs.html">BFS</a></td></tr>
-      <tr><td>6</td><td>Hill Climbing (8-puzzle)</td><td>§5, Fig 6-15</td><td><a href="search-hill-climbing.html">Hill Climbing</a></td></tr>
-      <tr><td>7</td><td>Best-First Search (8-puzzle)</td><td>§6, Fig 6-16</td><td><a href="search-best-first.html">Best-First</a></td></tr>
-      <tr><td>8</td><td>Branch-and-Bound strategy</td><td>§7</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a></td></tr>
-      <tr><td>9</td><td>Personnel Assignment (B&amp;B)</td><td>§8, Table 6-1</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a> (note)</td></tr>
-      <tr><td>10</td><td>Travelling Salesperson (B&amp;B)</td><td>§9, Fig 6-26</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a></td></tr>
-      <tr><td>11</td><td>0/1 Knapsack (B&amp;B)</td><td>§10, Fig 6-28</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a> (note) + <a href="dp-knapsack.html">Knapsack</a></td></tr>
-      <tr><td>12</td><td>A* Algorithm</td><td>§11, Fig 6-36</td><td><a href="search-astar.html">A*</a></td></tr>
-      <tr><td>13</td><td>Channel Routing (A*)</td><td>§12, Fig 6-40/6-48</td><td><a href="search-astar.html">A*</a> (note)</td></tr>
-      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg06 · Prune-and-Search</td></tr>
-      <tr><td>14</td><td>General prune-and-search method</td><td>§1</td><td><a href="prune-selection.html">Selection</a> (note)</td></tr>
-      <tr><td>15</td><td>Selection / median of medians</td><td>§2–5</td><td><a href="prune-selection.html">Selection</a></td></tr>
-      <tr><td>16</td><td>Two-variable Linear Programming</td><td>§6, Fig 7-2</td><td><a href="prune-linear-programming.html">2-var LP</a></td></tr>
-      <tr><td>17</td><td>Constrained 1-Center</td><td>§7.1</td><td><a href="prune-1-center.html">1-Center</a></td></tr>
-      <tr><td>18</td><td>General 1-Center</td><td>§7.2–7.3, Fig 7-23</td><td><a href="prune-1-center.html">1-Center</a></td></tr>
-      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg07 · Ch 7 — Dynamic Programming</td></tr>
-      <tr><td>19</td><td>Multistage graph</td><td>§2, slide 5</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
-      <tr><td>20</td><td>Backward reasoning</td><td>§3</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
-      <tr><td>21</td><td>Forward reasoning</td><td>§4</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
-      <tr><td>22</td><td>Principle of optimality</td><td>§5</td><td><a href="dp-multistage-graph.html">Multistage Graph</a> (note)</td></tr>
-      <tr><td>23</td><td>0/1 Knapsack (DP)</td><td>§6</td><td><a href="dp-knapsack.html">0/1 Knapsack</a></td></tr>
-      <tr><td>24</td><td>Forward vs backward approach</td><td>§7</td><td><a href="dp-knapsack.html">0/1 Knapsack</a> (note)</td></tr>
-      <tr><td>25</td><td>Resource Allocation</td><td>§9, slides 19–21</td><td><a href="dp-resource-allocation.html">Resource Allocation</a></td></tr>
-      <tr><td>26</td><td>Travelling Salesperson (DP)</td><td>§10, slides 22–25</td><td><a href="dp-tsp.html">TSP (Held–Karp)</a></td></tr>
-      <tr><td>27</td><td>Longest Common Subsequence</td><td>§11, slides 28–29</td><td><a href="dp-lcs.html">LCS</a></td></tr>
-      <tr><td>28</td><td>0/1 Knapsack as a multistage graph</td><td>§12, slide 31</td><td><a href="dp-knapsack.html">0/1 Knapsack</a> (note)</td></tr>
-      <tr><td>29</td><td>Optimal Binary Search Tree</td><td>§13, slides 33–38</td><td><a href="dp-obst.html">Optimal BST</a></td></tr>
-      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg08 · Ch 8 — NP-Completeness</td></tr>
-      <tr><td>30</td><td>P/NP/NP-hard/NPC, reductions, Cook, the reduction chain</td><td>whole deck</td><td><a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> + <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a> (theory, not a step-through)</td></tr>
-    </table></div>
-  </details>
+  <div class="bucket">
+    <h2>⭐ A* Search <span class="tagline">— f(n) = g(n) + h(n) with an admissible heuristic</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-astar.html">A* Algorithm</a></p>
+    <div class="zgrid">
+      <a class="algo" data-id="prob-astar-graph" href="prob-astar-graph.html"><span class="tick">✓</span><div class="t">Shortest Path with A*</div><div class="d">Least-cost path to a goal; admissible h ≤ h* ⇒ first goal popped is optimal.</div></a>
+      <a class="algo" data-id="prob-channel-routing" href="prob-channel-routing.html"><span class="tick">✓</span><div class="t">Channel Routing</div><div class="d">Wire all nets across a channel using the fewest tracks (NP-complete).</div></a>
+    </div>
+  </div>
 
-  <div class="note" style="margin-top:1.5rem"><strong>Scope:</strong> the cards above are exactly the algorithms in the course decks (Ch 6 Searching Strategies, Prune-and-Search, Ch 7 Dynamic Programming), in slide order. Application problems and alternate approaches are folded into the relevant card (see the coverage map). <strong>NP-Completeness (Ch 8)</strong> is hardness theory rather than a step-through algorithm — it lives in <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device and fill the bar above.</div>
+  <div class="bucket">
+    <h2>🪓 Prune-and-Search <span class="tagline">— discard a constant fraction each round → O(n)</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
+    <div class="zgrid">
+      <a class="algo" data-id="prob-selection" href="prob-selection.html"><span class="tick">✓</span><div class="t">Selection (k-th Smallest)</div><div class="d">The k-th smallest element in linear time (median of medians).</div></a>
+      <a class="algo" data-id="prob-linear-programming" href="prob-linear-programming.html"><span class="tick">✓</span><div class="t">2-Variable Linear Programming</div><div class="d">Minimize a linear objective under linear constraints — the F(x) envelope.</div></a>
+      <a class="algo" data-id="prob-one-center" href="prob-one-center.html"><span class="tick">✓</span><div class="t">1-Center</div><div class="d">The smallest circle enclosing all the points.</div></a>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <h2>🧩 Dynamic Programming <span class="tagline">— solve overlapping subproblems once, reuse them</span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
+    <div class="zgrid">
+      <a class="algo" data-id="prob-multistage-graph" href="prob-multistage-graph.html"><span class="tick">✓</span><div class="t">Multistage Graph</div><div class="d">Min-cost path through a staged graph (forward &amp; backward).</div></a>
+      <a class="algo" data-id="prob-knapsack-dp" href="prob-knapsack-dp.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Max-profit packing via a value table — gᵢ(y)=max{skip,take}.</div></a>
+      <a class="algo" data-id="prob-resource-allocation" href="prob-resource-allocation.html"><span class="tick">✓</span><div class="t">Resource Allocation</div><div class="d">Split units across projects to maximize total profit.</div></a>
+      <a class="algo" data-id="prob-tsp-dp" href="prob-tsp-dp.html"><span class="tick">✓</span><div class="t">Travelling Salesperson (DP)</div><div class="d">Cheapest tour via Held–Karp g(i,S); O(n²·2ⁿ).</div></a>
+      <a class="algo" data-id="prob-lcs" href="prob-lcs.html"><span class="tick">✓</span><div class="t">Longest Common Subsequence</div><div class="d">Longest subsequence shared by two strings.</div></a>
+      <a class="algo" data-id="prob-obst" href="prob-obst.html"><span class="tick">✓</span><div class="t">Optimal Binary Search Tree</div><div class="d">The BST with the lowest expected search cost.</div></a>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:2rem"><strong>How this maps to the slides:</strong> 18 problems across the three decks (Alg05 Searching Strategies, Alg06 Prune-and-Search, Alg07 Dynamic Programming), each grouped under the algorithm that solves it. 0/1 Knapsack appears twice on purpose — once under Branch-and-Bound (Ch6) and once under Dynamic Programming (Ch7), the two approaches the course teaches. <strong>NP-Completeness (Ch8)</strong> is hardness theory, not a step-through algorithm — see <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>
