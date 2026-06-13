@@ -125,7 +125,7 @@ BOUND:   for each node compute a lower bound LB
 <tr><td><strong>3</strong></td><td>4</td><td>0</td><td>∞</td></tr>
 <tr><td><strong>col min</strong></td><td>(0)</td><td>(0)</td><td>(0)</td></tr>
 </table>
-<p>Every column already has a 0, so no column reduction is needed. Total subtracted = <code>3 + 4 + 2 = 9</code> &rarr; <strong>lower bound 9</strong>. (The same trick gives the personnel-assignment bound of 54 in the chapter, and the TSP bound of 96 below.)</p>
+<p>Every column already has a 0, so no column reduction is needed. Total subtracted = <code>3 + 4 + 2 = 9</code> &rarr; <strong>lower bound 9</strong>. (The same trick gives a lower bound of 54 for the chapter's <strong>personnel-assignment</strong> problem — assign <em>n</em> people to <em>n</em> precedence-ordered jobs, cost C<sub>ij</sub> for person <em>i</em> on job <em>j</em>, minimize total cost — and the TSP bound of 96 below.)</p>
 
 <h2>3 · The TSP trace (the marquee exam item)</h2>
 <p>Seven cities. Here is the full instance — <strong>Table 6-3</strong>, the 7×7 cost matrix. Entry <code>(i, j)</code> is the cost of arc <code>i → j</code>; the diagonal is <code>∞</code> (no self-loop). This is the same kind of grid as the 3-city toy above, just larger:</p>
