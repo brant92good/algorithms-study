@@ -16,6 +16,7 @@
 <div class="kicker">Prune-and-Search</div>
 <h1>Linear-time Selection</h1>
 <div class="mission">Find the <strong>k-th smallest</strong> element of an unsorted list in <strong>O(n)</strong> time — without sorting — by choosing a provably-good pivot: the <em>median of medians</em>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · <em>Prune-and-Search</em> §1–5 (general method → selection → median-of-medians → O(n) proof).</p>
 
 <h2>What is it?</h2>
 <p>The <strong>selection problem</strong>: given a bag of <code>n</code> numbers and a rank <code>k</code>, return the value that would sit in position <code>k</code> if the list were sorted (the <strong>k-th smallest</strong>). When <code>k = ⌈n/2⌉</code> this is the <strong>median</strong>. The obvious method — <em>sort the whole list, then read off position k</em> — costs <code>O(n log n)</code>. We can do better: <code>O(n)</code>, linear time.</p>
@@ -34,6 +35,8 @@
 </ul>
 
 <p>The whole thing only works if the pivot reliably splits the list — a careless pivot (like always the first element) could shave off just one element and degrade to <code>O(n²)</code>. The fix is the <strong>median of medians</strong>: break the list into <strong>groups of 5</strong>, sort each tiny group, take each group's median, then recursively take the median <em>of those medians</em> as the pivot. This guarantees at least about <code>n/4</code> elements get pruned every round (so at most <code>3n/4</code> survive).</p>
+
+<div class="note">The <strong>general prune-and-search method</strong> (§1) is the parent idea here — binary search is its simplest instance (prune half each step). Selection generalises it: prune a guaranteed fraction (≥ n/4) each round.</div>
 
 <p><strong>Tiny example.</strong> List <code>[3,5,7,12,19]</code>, find the 2nd smallest. Sorted it's <code>[3,5,7,12,19]</code>, so the answer is <code>5</code> — and selection finds it without ever fully sorting the longer lists it usually runs on.</p>
 

@@ -16,6 +16,7 @@
 <div class="kicker">Searching Strategies · Ch6</div>
 <h1>Branch-and-Bound</h1>
 <div class="mission">The master strategy for <strong>optimization</strong>: explore a tree of choices best-first, but compute a <strong>bound</strong> for every branch and throw away any branch that <em>provably can't beat</em> the best answer found so far.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §7–10 (Branch-and-Bound), TSP Fig 6-25/6-26.</p>
 
 <h2>What is it?</h2>
 <p>Plain tree searches like depth-first and breadth-first answer <strong>feasibility</strong> questions — "is there <em>a</em> solution?" — and stop at the first goal they hit. But many problems are <strong>optimization</strong> problems: we don't want <em>any</em> tour, we want the <em>cheapest</em> tour. The first goal found is rarely the best one, so those searches aren't enough.</p>
@@ -26,6 +27,7 @@
 </ul>
 <p><strong>What is a lower bound, concretely?</strong> For the Travelling Salesperson Problem (TSP — visit every city once and return home, minimizing total cost) the trick is the <strong>reduced cost matrix</strong>. Every tour must leave each city once, so it must pay <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum from that row</strong> (every row now has a 0), then <strong>subtract each column's minimum from any column still without a 0</strong>. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — so it is a valid lower bound. For the course's 7-city instance the reductions sum to <strong>96</strong>.</p>
 <p>Then we branch on edges. Including a zero-cost edge adds nothing (bound stays). <em>Excluding</em> an edge forces a more expensive choice, raising the bound. We pick the split that raises the "exclude" bound the most, keep expanding the most promising node, and prune the rest — until one complete tour is isolated and proven optimal.</p>
+<div class="note">In the slides, branch-and-bound is applied to <strong>three</strong> problems: the <strong>Personnel Assignment</strong> problem (cost matrix Table 6-1, jobs in a topological order), the <strong>Travelling Salesperson</strong> problem (shown here, optimal tour cost 126), and the <strong>0/1 Knapsack</strong> problem (Fig 6-28: upper bound from a feasible packing, lower bound from the fractional relaxation). Note 0/1 knapsack is <strong>also</strong> solved by dynamic programming in Ch 7 — see the <em>0/1 Knapsack</em> card for that different approach.</div>
 
 <h2>Watch it run</h2>
 <p>The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we branch on include/exclude decisions, carrying a bound at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best). The left spine of "include" choices reaches the optimal tour.</p>

@@ -16,6 +16,8 @@
 <div class="kicker">Dynamic Programming · Ch7</div>
 <h1>0/1 Knapsack (DP)</h1>
 <div class="mission">Pack the most valuable load into a fixed-capacity bag when each item is <strong>all-or-nothing</strong> — by building a table of answers to smaller bags.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §6–7, §12 (0/1 Knapsack by DP), slide 30.</p>
+<div class="note"><strong>Three views of this problem:</strong> 0/1 Knapsack appears <strong>three</strong> ways in this course: (1) <strong>Branch-and-Bound</strong> (Ch 6, Fig 6-28) — see the <em>Branch-and-Bound</em> card; (2) this <strong>DP recurrence</strong>, which can be formulated <strong>forward</strong> (decide x₁ first) or <strong>backward</strong> (xₙ first) — equivalent, just solved in opposite directions; (3) as a <strong>multistage graph</strong> (Ch 7 §12), where each stage is one item and each path is a packing.</div>
 
 <h2>What is it?</h2>
 <p>You have a knapsack (a bag) that can carry at most <strong>M</strong> units of weight. There are <strong>n</strong> items; item <em>i</em> has weight <code>wᵢ</code> and profit (value) <code>pᵢ</code>. You want to choose a set of items whose total weight fits in the bag and whose total profit is as large as possible.</p>

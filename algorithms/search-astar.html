@@ -16,6 +16,7 @@
 <div class="kicker">Searching Strategies · Ch6</div>
 <h1>A* Search</h1>
 <div class="mission">Best-first search that finds the <strong>cheapest</strong> path to a goal — by always expanding the node whose <em>guessed total cost</em> <code>f = g + h</code> is smallest, with a guess that never overestimates.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §11–12 (A*), Fig 6-36.</p>
 
 <h2>What is it?</h2>
 <p>You are searching a tree of partial solutions, starting at the <strong>root</strong> and trying to reach a <strong>goal node</strong> as cheaply as possible. Plain best-first search expands whichever open node looks best and stops at the first goal it reaches — but that goal need not be the cheapest one. <strong>A*</strong> fixes this with a careful cost estimate.</p>
@@ -29,6 +30,7 @@
 <p><strong>Admissibility.</strong> A* is guaranteed to find the optimal goal as long as the heuristic <strong>never overestimates</strong>: <code>h(n) ≤ h*(n)</code> for every node. When that holds, <code>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code>, so <code>f(n)</code> is a <em>lower bound</em> on the true best total cost through <code>n</code>. That lower bound is the key to optimality.</p>
 <p><strong>Why optimality follows.</strong> A* stops only when the node it <em>selects for expansion</em> (the smallest-f open node) is itself a goal. Say that goal is reached with cost <code>f = g</code> (a goal has <code>h = 0</code>). Every other open node <code>n</code> has <code>f(n) ≥</code> that value, and since <code>f(n)</code> is a lower bound, no path through any other open node could finish more cheaply. So the first goal A* <em>selects</em> is optimal. (Just <em>seeing</em> a goal in the open list isn't enough — it has to be the one picked next.)</p>
 <p><strong>Tiny example.</strong> If a node has <code>g = 4</code> (already spent 4) and <code>h = 1</code> (guessing 1 more), then <code>f = 5</code>. A sibling with <code>g = 3, h = 2</code> also has <code>f = 5</code> — A* treats them as equally promising and breaks the tie arbitrarily.</p>
+<div class="note">The slides also apply A* to the <strong>Channel Routing</strong> problem (Fig 6-40/6-48): nodes are routing tracks, g(n)=tree level, h(n)=maximal local density; it's NP-complete and A* minimises the number of tracks.</div>
 
 <h2>Watch it run</h2>
 <p>This is the search tree of <strong>Fig. 6-36</strong>. Edge labels are step costs (added to <code>g</code>); the small <strong>badge</strong> on each generated node is its <code>f = g + h</code>. Green = the node selected/expanded this step; gold = open nodes on the frontier. We seek the cheapest root→goal path. Watch A* always pick the smallest f.</p>

@@ -16,6 +16,8 @@
 <div class="kicker">Dynamic Programming · Ch7</div>
 <h1>Traveling Salesperson via DP (Held–Karp)</h1>
 <div class="mission">Visit every city exactly once and come home — for the <em>cheapest</em> total. Dynamic programming turns the factorial-many tours into a table you fill subset by subset.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §10 (TSP by DP / Held–Karp), slides 22–25.</p>
+<div class="note">Contrast the <strong>branch-and-bound</strong> TSP in Ch 6 (see that card): same problem, different method — B&amp;B prunes a search tree; this DP fills a g(i,S) table.</div>
 
 <h2>What is it?</h2>
 <p>The <strong>Traveling Salesperson Problem (TSP)</strong>: you have a set of cities and a <strong>cost matrix</strong> giving the price <code>c(i,j)</code> to travel from city <code>i</code> to city <code>j</code> (the graph is <em>directed</em>, so going one way can cost more than coming back). Find the cheapest <strong>tour</strong> — a route that starts at city 1, visits <em>every</em> city exactly once, and returns to city 1.</p>

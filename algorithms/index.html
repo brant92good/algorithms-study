@@ -16,7 +16,7 @@
   <div class="hero">
     <div class="kicker">One algorithm per session · step through each one</div>
     <h1>🧬 Algorithm Zoo</h1>
-    <p class="lede">Every algorithm the course slides teach (Ch 6 – 7), one bite-size interactive session each: see what it does, watch it run step by step on the slide's own example, answer two questions, mark it learned. These complement the deeper <a href="../index.html#lessons">finals lessons</a> — the Zoo is for breadth, the lessons for depth.</p>
+    <p class="lede">Every algorithm the course slides teach (Ch 6 – 7), one bite-size interactive session each: see what it does, watch it run step by step on the slide's own example, answer two questions, mark it learned. <strong>Cards are ordered exactly as the slides present them</strong> (Alg05 → Alg06 → Alg07). These complement the deeper <a href="../index.html#lessons">finals lessons</a> — the Zoo is for breadth, the lessons for depth. Full coverage map is at the bottom ↓.</p>
     <div class="progwrap"><div class="bar"></div></div>
     <div class="countdown" id="prog-count">0 / 0 learned</div>
   </div>
@@ -54,7 +54,49 @@
     </div>
   </div>
 
-  <div class="note" style="margin-top:2rem"><strong>Scope:</strong> these are exactly the algorithms introduced in the course decks (Ch 6 Searching Strategies, Prune-and-Search, Ch 7 Dynamic Programming). <strong>NP-Completeness (Ch 8)</strong> is theory rather than an algorithm to step through — it's covered in <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device and fill the bar above.</div>
+  <details style="margin-top:2.2rem">
+    <summary style="cursor:pointer;font-weight:600;color:var(--accent);font-size:1.05rem">📚 Full slide coverage — every topic, in slide order, with its source</summary>
+    <p style="color:var(--mut);font-size:.9rem">Each row is a topic the decks introduce, in the order they appear. Application problems (personnel assignment, channel routing, SAT/Hamiltonian) and alternate approaches are covered inside the relevant card — noted below.</p>
+    <div class="tablewrap"><table>
+      <tr><th>#</th><th>Slide topic</th><th>Source</th><th>Covered in</th></tr>
+      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg05 · Ch 6 — Searching Strategies</td></tr>
+      <tr><td>1</td><td>Satisfiability (SAT) problem</td><td>§1</td><td><a href="search-dfs.html">DFS</a> (example)</td></tr>
+      <tr><td>2</td><td>Hamiltonian circuit problem</td><td>§2, Fig 6-8</td><td><a href="search-dfs.html">DFS</a> (example)</td></tr>
+      <tr><td>3</td><td>Sum-of-subsets problem</td><td>§3, Fig 6-11</td><td><a href="search-dfs.html">DFS</a></td></tr>
+      <tr><td>4</td><td>Depth-First Search</td><td>§3</td><td><a href="search-dfs.html">DFS</a></td></tr>
+      <tr><td>5</td><td>Breadth-First Search</td><td>§4</td><td><a href="search-bfs.html">BFS</a></td></tr>
+      <tr><td>6</td><td>Hill Climbing (8-puzzle)</td><td>§5, Fig 6-15</td><td><a href="search-hill-climbing.html">Hill Climbing</a></td></tr>
+      <tr><td>7</td><td>Best-First Search (8-puzzle)</td><td>§6, Fig 6-16</td><td><a href="search-best-first.html">Best-First</a></td></tr>
+      <tr><td>8</td><td>Branch-and-Bound strategy</td><td>§7</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a></td></tr>
+      <tr><td>9</td><td>Personnel Assignment (B&amp;B)</td><td>§8, Table 6-1</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a> (note)</td></tr>
+      <tr><td>10</td><td>Travelling Salesperson (B&amp;B)</td><td>§9, Fig 6-26</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a></td></tr>
+      <tr><td>11</td><td>0/1 Knapsack (B&amp;B)</td><td>§10, Fig 6-28</td><td><a href="search-branch-and-bound.html">Branch-and-Bound</a> (note) + <a href="dp-knapsack.html">Knapsack</a></td></tr>
+      <tr><td>12</td><td>A* Algorithm</td><td>§11, Fig 6-36</td><td><a href="search-astar.html">A*</a></td></tr>
+      <tr><td>13</td><td>Channel Routing (A*)</td><td>§12, Fig 6-40/6-48</td><td><a href="search-astar.html">A*</a> (note)</td></tr>
+      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg06 · Prune-and-Search</td></tr>
+      <tr><td>14</td><td>General prune-and-search method</td><td>§1</td><td><a href="prune-selection.html">Selection</a> (note)</td></tr>
+      <tr><td>15</td><td>Selection / median of medians</td><td>§2–5</td><td><a href="prune-selection.html">Selection</a></td></tr>
+      <tr><td>16</td><td>Two-variable Linear Programming</td><td>§6, Fig 7-2</td><td><a href="prune-linear-programming.html">2-var LP</a></td></tr>
+      <tr><td>17</td><td>Constrained 1-Center</td><td>§7.1</td><td><a href="prune-1-center.html">1-Center</a></td></tr>
+      <tr><td>18</td><td>General 1-Center</td><td>§7.2–7.3, Fig 7-23</td><td><a href="prune-1-center.html">1-Center</a></td></tr>
+      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg07 · Ch 7 — Dynamic Programming</td></tr>
+      <tr><td>19</td><td>Multistage graph</td><td>§2, slide 5</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
+      <tr><td>20</td><td>Backward reasoning</td><td>§3</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
+      <tr><td>21</td><td>Forward reasoning</td><td>§4</td><td><a href="dp-multistage-graph.html">Multistage Graph</a></td></tr>
+      <tr><td>22</td><td>Principle of optimality</td><td>§5</td><td><a href="dp-multistage-graph.html">Multistage Graph</a> (note)</td></tr>
+      <tr><td>23</td><td>0/1 Knapsack (DP)</td><td>§6</td><td><a href="dp-knapsack.html">0/1 Knapsack</a></td></tr>
+      <tr><td>24</td><td>Forward vs backward approach</td><td>§7</td><td><a href="dp-knapsack.html">0/1 Knapsack</a> (note)</td></tr>
+      <tr><td>25</td><td>Resource Allocation</td><td>§9, slides 19–21</td><td><a href="dp-resource-allocation.html">Resource Allocation</a></td></tr>
+      <tr><td>26</td><td>Travelling Salesperson (DP)</td><td>§10, slides 22–25</td><td><a href="dp-tsp.html">TSP (Held–Karp)</a></td></tr>
+      <tr><td>27</td><td>Longest Common Subsequence</td><td>§11, slides 28–29</td><td><a href="dp-lcs.html">LCS</a></td></tr>
+      <tr><td>28</td><td>0/1 Knapsack as a multistage graph</td><td>§12, slide 31</td><td><a href="dp-knapsack.html">0/1 Knapsack</a> (note)</td></tr>
+      <tr><td>29</td><td>Optimal Binary Search Tree</td><td>§13, slides 33–38</td><td><a href="dp-obst.html">Optimal BST</a></td></tr>
+      <tr><td colspan="4" style="background:var(--bg);font-weight:700;color:var(--accent2)">Alg08 · Ch 8 — NP-Completeness</td></tr>
+      <tr><td>30</td><td>P/NP/NP-hard/NPC, reductions, Cook, the reduction chain</td><td>whole deck</td><td><a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> + <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a> (theory, not a step-through)</td></tr>
+    </table></div>
+  </details>
+
+  <div class="note" style="margin-top:1.5rem"><strong>Scope:</strong> the cards above are exactly the algorithms in the course decks (Ch 6 Searching Strategies, Prune-and-Search, Ch 7 Dynamic Programming), in slide order. Application problems and alternate approaches are folded into the relevant card (see the coverage map). <strong>NP-Completeness (Ch 8)</strong> is hardness theory rather than a step-through algorithm — it lives in <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device and fill the bar above.</div>
 
 </div>
 <script src="../assets/zoo.js"></script>

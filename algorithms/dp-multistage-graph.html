@@ -16,6 +16,7 @@
 <div class="kicker">Dynamic Programming · Ch7</div>
 <h1>Multistage Graph — Shortest Path</h1>
 <div class="mission">Find the cheapest route across a layered graph by reasoning <strong>backward from the goal</strong> — the cleanest first taste of dynamic programming, and a problem where being greedy gets you burned.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §2–5 (Multistage Graph; backward &amp; forward reasoning; principle of optimality), slide 5.</p>
 
 <h2>What is it?</h2>
 <p><strong>Dynamic programming (DP)</strong> is a way to solve a problem that is really a <strong>sequence of decisions</strong>. Instead of grabbing the locally cheapest option at each step (that's the <em>greedy</em> method), DP works out the best answer to small subproblems, stores it, and stitches those answers together — so the final route is guaranteed to be the best <em>overall</em>.</p>
@@ -33,6 +34,10 @@
   <span class="chip">Time: <b>O(V + E)</b></span>
   <span class="chip">Beats: <b>greedy (23 vs 9)</b></span>
 </div>
+
+<h2>The other direction — forward reasoning</h2>
+<p>The animation above used <strong>backward reasoning</strong>: define <code>d(X,T)</code> = cheapest cost from <code>X</code> to the sink, and fill it in from <code>T</code> back toward <code>S</code> — giving <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, and finally <code>d(S,T)=9</code>. But you can solve the very same graph the opposite way. In <strong>forward reasoning</strong> you define <code>d(S,X)</code> = cheapest cost from the source <code>S</code> down to node <code>X</code>, and fill it in from <code>S</code> forward toward <code>T</code>. The stage-2 nodes are just their single edge from <code>S</code> (<code>d(S,A)=1</code>, <code>d(S,B)=2</code>, <code>d(S,C)=5</code>); then for each later node you take "each incoming neighbor's <code>d(S,·)</code> plus the edge into this node, keep the smallest." That gives <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>, and finally <code>d(S,T)=min{5+18, 7+13, 7+2}=9</code> — the <em>same</em> optimum of <strong>9</strong>, reached from the front instead of the back.</p>
+<p><strong>Principle of optimality.</strong> Both directions work for the same reason: if a sequence of decisions is optimal overall, then any tail (or head) of that sequence must itself be optimal — so an optimal path is built from optimal sub-paths, which is exactly what lets us reuse the stored <code>d(·)</code> values instead of re-exploring.</p>
 
 <h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
 

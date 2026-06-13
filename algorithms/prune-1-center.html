@@ -16,12 +16,15 @@
 <div class="kicker">Prune-and-Search</div>
 <h1>1-Center Problem</h1>
 <div class="mission">Find the one spot that is as close as possible to the <strong>farthest</strong> point — the centre of the <strong>smallest circle that covers every point</strong>.</div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §7 (1-Center / smallest enclosing circle), Fig 7-18, Fig 7-23.</p>
 
 <h2>What is it?</h2>
 <p>You are given <code>n</code> points scattered on a plane. The <strong>1-center problem</strong> asks for a single <em>centre</em> position so that the distance to the point <em>farthest</em> from it is as small as possible. Equivalently: find the <strong>smallest circle that encloses all the points</strong>. The centre of that circle is the answer, and its radius is that smallest-possible farthest distance.</p>
 <p>The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. You are <strong>not</strong> minimising the total or average distance to the points — only the single worst (largest) one matters, because that worst point is what forces the circle to be big.</p>
 <p><strong>Where it's used:</strong> <em>facility location</em>. If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center. Nobody should be more than the radius away.</p>
 <p><strong>The idea (prune-and-search).</strong> Prune-and-search is the strategy behind binary search: each round throw away a fixed <em>fraction</em> of the data, then repeat on what's left. Here the slides solve a <strong>constrained</strong> version first — force the centre onto a given line, which is solvable in <code>O(n)</code> — and use it to figure out <em>which side</em> the true optimum lies. A point sitting safely deep <em>inside</em> the current circle can never be the farthest point, so it can be <strong>pruned</strong>. Each round provably discards about <strong>n/16</strong> of the points. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</p>
+
+<div class="note"><strong>Two versions.</strong> The slides solve 1-center in <strong>two stages</strong>: first the <strong>constrained</strong> problem — centre forced onto a given line — in O(n) (§7.1); then the <strong>general</strong> problem (§7.2–7.3), which uses a sign-determination test to decide which side the optimum lies on and prunes ~n/16 of the points each round, also O(n).</div>
 
 <h2>Watch it run</h2>
 <p>Eight points (dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one. Green dots are points pruned because they sit safely inside — they can't be the farthest, so they're dropped.</p>
