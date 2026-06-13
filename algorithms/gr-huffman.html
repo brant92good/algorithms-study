@@ -1,0 +1,135 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huffman Coding — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Greedy</div>
+<h1>Huffman Coding</h1>
+<div class="mission">Squeeze a message smaller by giving <strong>frequent symbols short codes</strong> and rare symbols long ones — built by always merging the two rarest trees.</div>
+
+<h2>What is it?</h2>
+<p>Computers store text as <strong>codewords</strong> — strings of bits (0s and 1s). The simplest scheme gives every symbol the same length (e.g. 3 bits each). Huffman coding does better: it builds a <strong>variable-length code</strong> where common symbols get fewer bits, so the whole message shrinks.</p>
+<p>The catch is decoding. If <code>A</code>=<code>0</code> and <code>B</code>=<code>01</code>, then reading <code>01</code> is ambiguous — is it <code>B</code>, or <code>A</code> then something? Huffman avoids this by producing a <strong>prefix code</strong>: <em>no codeword is a prefix of (the start of) another</em>. With a prefix code you can read bits left to right and the instant they match a codeword, you know that's the symbol — no lookahead, no ambiguity.</p>
+<p>The construction is <strong>greedy</strong>. Treat each symbol as a tiny tree weighted by its frequency (how often it appears). The rule, repeated until one tree is left: <strong>take the two trees with the smallest frequencies and merge them under a new parent</strong> whose frequency is their sum. Rare symbols get merged early, so they sit <em>deeper</em> in the final tree and end up with longer codes. Reading the path from the root, <strong>left = 0, right = 1</strong>, spells each symbol's codeword.</p>
+<p>Tiny example: frequencies <code>A:5, B:2, C:1, D:1, E:1</code> (10 symbols total). Watch the forest of single nodes get merged, two-rarest-first, into one tree.</p>
+
+<h2>Watch it run</h2>
+<p>Each box is a tree; the number after <code>:</code> is its total frequency. Step through — each step fuses the two smallest-frequency trees into a parent (their sum). The final frame reads off the codes.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Build: <b>O(n log n)</b></span>
+  <span class="chip">Result: <b>optimal prefix code</b></span>
+  <span class="chip">Decode: <b>walk root→leaf</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="3" data-explain="Huffman gives the most frequent symbol the shortest code so the total bit count drops. A appears 5 of 10 times — far more than B, C, D, or E — so it sits highest in the tree and gets the fewest bits. Trap: people pick the rarest, but rare symbols go deepest and get the LONGEST codes.">
+  <div class="q">With frequencies A:5, B:2, C:1, D:1, E:1, which symbol gets the <em>shortest</em> codeword?</div>
+  <button class="opt">C</button>
+  <button class="opt">E</button>
+  <button class="opt">B</button>
+  <button class="opt">A</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The greedy rule is: each step merge the two trees with the smallest current frequencies. C:1 and D:1 are the two smallest, so they merge first into a node of weight 2. Trap: merging the two largest, or pairing alphabetically, both break optimality.">
+  <div class="q">Starting forest: A:5, B:2, C:1, D:1, E:1. Which two trees does Huffman merge <em>first</em>?</div>
+  <button class="opt">A:5 and B:2 (the two largest)</button>
+  <button class="opt">C:1 and D:1 (the two smallest)</button>
+  <button class="opt">A:5 and E:1 (largest with smallest)</button>
+  <button class="opt">B:2 and C:1 (next to each other)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="gr-huffman">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Chapter 16 (Greedy Algorithms), section on Huffman codes — including the proof that the greedy "merge two rarest" choice yields an optimal prefix code.</p>
+<div class="note"><strong>Next in this bucket:</strong> Kruskal's MST — another greedy method: sort the edges and keep adding the cheapest one that doesn't form a cycle.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ---- Build the Huffman tree, recording a snapshot after each merge ----
+const FREQ = [['A',5],['B',2],['C',1],['D',1],['E',1]];
+let nextId = 0;
+function leaf(sym, w){ return {id:nextId++, sym, w, l:null, r:null}; }
+// initial forest of single-symbol trees
+let forest = FREQ.map(([s,w]) => leaf(s, w));
+
+// Render one tree as an array of text lines (root at top, indented children).
+function treeLines(t){
+  const label = t.sym ? `[${t.sym}:${t.w}]` : `(${t.w})`;
+  if (!t.l && !t.r) return [label];
+  const lines = [label];
+  const L = treeLines(t.l), R = treeLines(t.r);
+  L.forEach((ln,i) => lines.push((i===0 ? ' ├0─ ' : ' │   ') + ln));
+  R.forEach((ln,i) => lines.push((i===0 ? ' └1─ ' : '     ') + ln));
+  return lines;
+}
+// Render a whole forest side-stacked vertically, each tree boxed by a blank line.
+function forestStr(trees){
+  return trees.map(t => treeLines(t).join('\n')).join('\n\n');
+}
+
+const frames = [];
+frames.push({
+  trees: forest.map(t=>t),
+  cap: `Start: a <b>forest</b> of single-node trees, one per symbol, weighted by frequency. Total = 10.`
+});
+
+// greedy: repeatedly merge the two smallest-frequency trees
+while (forest.length > 1){
+  forest = forest.slice().sort((a,b) => a.w - b.w || a.id - b.id);
+  const x = forest.shift(), y = forest.shift();
+  const parent = { id: nextId++, sym:null, w: x.w + y.w, l: x, r: y };
+  forest.push(parent);
+  const xn = x.sym ? `${x.sym}:${x.w}` : `tree of ${x.w}`;
+  const yn = y.sym ? `${y.sym}:${y.w}` : `tree of ${y.w}`;
+  frames.push({
+    trees: forest.slice().sort((a,b)=>a.w-b.w || a.id-b.id),
+    cap: `Two smallest are <b>${xn}</b> and <b>${yn}</b> → merge under a parent of weight <b>${x.w+y.w}</b>. ${forest.length} tree${forest.length>1?'s':''} left.`
+  });
+}
+
+// final frame: read off the codes (left=0, right=1)
+const codes = {};
+(function walk(t, path){
+  if (!t.l && !t.r){ codes[t.sym] = path || '0'; return; }
+  walk(t.l, path + '0'); walk(t.r, path + '1');
+})(forest[0], '');
+
+const codeLines = FREQ.map(([s,w]) => `  ${s} (freq ${w})  →  ${codes[s]}   (${codes[s].length} bit${codes[s].length>1?'s':''})`).join('\n');
+frames.push({
+  trees: forest.slice(),
+  codeStr: `Codes (left=0, right=1):\n\n${codeLines}`,
+  cap: `One tree remains. Read each root→leaf path: <b>left = 0, right = 1</b>. A (freq 5) gets the shortest code; C, D, E (freq 1) get the longest. That's an <b>optimal prefix code</b>.`
+});
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    let body = forestStr(f.trees);
+    if (f.codeStr) body += '\n\n────────────────────\n\n' + f.codeStr;
+    stage.innerHTML = '<div class="atree">' + body
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+  }
+});
+</script>
+</body></html>

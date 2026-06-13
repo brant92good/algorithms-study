@@ -1,0 +1,1921 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch6 · Searching Strategies — Algo Finals</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Algo Finals</a>
+  <a class="crumb" href="../index.html#notes">Notes</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+<h1 id="chapter-6-the-searching-strategies">Chapter 6 — The Searching Strategies</h1>
+<blockquote>
+<p>Source: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6.
+Deck: <code>Alg05(1).ppt</code>. Figure/Table numbers (Fig. 6-x, Table 6-x) are preserved so you can cross-check against the slides.</p>
+</blockquote>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>This chapter surveys <strong>searching strategies</strong> that explore a <em>solution-space tree</em> (also called a state-space tree). Many hard problems can be cast as "search a tree of candidate (partial) solutions," and the searching strategy decides the <em>order</em> in which nodes are expanded.</p>
+<p>The chapter is organized in two halves:</p>
+<ol>
+<li>
+<p><strong>Search strategies for decision / feasibility problems</strong> (find <em>a</em> solution, or decide if one exists):
+   - Satisfiability problem (tree of <code>2ⁿ</code> assignments)
+   - Hamiltonian circuit problem
+   - Sum-of-subsets problem
+   - <strong>Depth-first search (DFS)</strong> — guided by a stack
+   - <strong>Breadth-first search (BFS)</strong>
+   - <strong>Hill climbing</strong> — a greedy variant of DFS (8-puzzle)
+   - <strong>Best-first search</strong> — combines DFS + BFS, global view (8-puzzle)</p>
+</li>
+<li>
+<p><strong>Search strategies for optimization problems</strong> (find the <em>best</em> solution):
+   - <strong>Branch-and-bound</strong> — the master strategy for optimization (multi-stage graph)
+   - Personnel assignment problem (cost matrix, partial order of jobs, topological sort)
+   - Travelling salesperson problem (reduced cost matrices, lower bounds, decision tree)
+   - 0/1 knapsack problem (upper/lower bounds via fractional relaxation)
+   - <strong>A*</strong> algorithm — best-first search with <code>f(n) = g(n) + h(n)</code>, <code>h(n) ≤ h*(n)</code>
+   - Channel routing problem (HCG, vertical constraint graph, max cliques, A*)</p>
+</li>
+</ol>
+<p>Key reason DFS/BFS/hill-climbing/best-first <strong>cannot</strong> solve optimization problems directly: they stop at the <em>first</em> goal node found, which need not be optimal. Branch-and-bound and A* add <strong>bounding</strong> so the <em>optimal</em> goal is guaranteed.</p>
+<hr />
+<h2 id="1-the-satisfiability-sat-problem">1. The Satisfiability (SAT) Problem</h2>
+<h3 id="idea">Idea</h3>
+<p>Given a Boolean formula in <code>n</code> variables <code>x₁, x₂, …, xₙ</code>, decide whether there is a truth assignment making it true. There are <strong>2ⁿ</strong> possible assignments, which can be laid out as a <strong>binary tree</strong> of depth <code>n</code>: at level <code>i</code> we branch on <code>xᵢ = true</code> vs <code>xᵢ = false</code> (<em>Tree Representation of Eight Assignments</em> shows <code>n = 3 → 2³ = 8</code> leaves).</p>
+<h3 id="instance-from-the-slides">Instance from the slides</h3>
+<p>A conjunction of clauses (each line is a clause that must hold). Using ¬ for negation and ∨ for OR:</p>
+<pre><code>(1)  ¬x₁
+(2)   x₁
+(3)   x₂ ∨ x₅
+(4)   x₃
+(5)  ¬x₂
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 3: the slide writes <code>-x₁</code>, <code>x₁</code>, <code>x₂ v x₅</code>, <code>x₃</code>, <code>-x₂</code> exactly as clauses (1)–(5). <code>-x</code> = ¬x, <code>v</code> = ∨. The clauses are a set that must <em>all</em> hold simultaneously.</p>
+</blockquote>
+<p>Notice clauses (1) <code>¬x₁</code> and (2) <code>x₁</code> directly contradict each other, so this particular instance is <strong>unsatisfiable</strong> — which is exactly the point: a <em>partial</em> assignment can already reveal a contradiction. The partial tree on slide 3 shows the root branching <code>X₁=T</code> / <code>X₁=F</code>, and <strong>both</strong> children are labeled "(1) falsified" / "(2) falsified" — i.e. either choice of X₁ immediately falsifies a clause.</p>
+<blockquote>
+<p>✅ The full 2³ truth table is on slide 2 (columns x₁,x₂,x₃): FFF, FFT, FTF, FTT, TFF, TFT, TTF, TTT — the eight assignments enumerated by the "Tree Representation of Eight Assignments."</p>
+</blockquote>
+<h3 id="why-search-helps">Why search helps</h3>
+<p><em>A Partial Tree to Determine the Satisfiability Problem</em>: <strong>We may not need to examine all 2ⁿ assignments.</strong> As soon as a partial assignment violates a clause, that entire subtree is abandoned (pruned). This early termination motivates tree-search strategies and, later, bounding.</p>
+<hr />
+<h2 id="2-the-hamiltonian-circuit-problem">2. The Hamiltonian Circuit Problem</h2>
+<h3 id="idea_1">Idea</h3>
+<p>A <strong>Hamiltonian circuit</strong> is a cycle that visits <em>every vertex of a graph exactly once</em> and returns to the start. The problem: does a given graph contain one?</p>
+<ul>
+<li><em>A Graph Containing a Hamiltonian Circuit</em> (Fig. 6-6) shows the example graph. ✅ Verified against slide 4 — see Appendix A for the edge list (vertices 1–7; edges 1-2, 1-6, 1-3, 2-3, 6-5, 7-5, 7-4, 3-4, 4-5).</li>
+<li><strong>Fig. 6-8</strong> — <em>The Tree Representation of Whether There Exists a Hamiltonian Circuit of the Graph in Fig. 6-6</em>: build a tree where each level chooses the next vertex to visit. A path from root to a leaf at depth <code>n</code> that reuses no vertex and closes back to the start is a Hamiltonian circuit.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 5 (Fig. 6-8) and slide 4 (Fig. 6-6): the full search tree is transcribed (root at vertex 1; two paths close back to 1 to give a Hamiltonian circuit, all other branches end in <code>X</code>). The underlying Fig. 6-6 graph is now also read directly from slide 4 (see Appendix A). The search idea (extend partial paths, backtrack on dead ends) is standard.</p>
+</blockquote>
+<hr />
+<h2 id="3-the-sum-of-subsets-problem-solved-by-depth-first-search">3. The Sum-of-Subsets Problem (solved by Depth-First Search)</h2>
+<h3 id="problem">Problem</h3>
+<p>Given a set <code>S</code> and a target, find a subset <code>S′ ⊆ S</code> whose elements sum to the target.</p>
+<pre><code>S = {7, 5, 1, 2, 10}
+Find S′ ⊆ S with  sum(S′) = 9 ?
+</code></pre>
+<p>(Answer: <code>{7, 2}</code>, since <code>7 + 2 = 9</code>. The slide's tree, <strong>Fig. 6-11</strong>, enumerates the candidate subsets via depth-first search.)</p>
+<blockquote>
+<p>✅ Verified against slide 6 (Fig. 6-11). The DFS tree: root = <code>0</code>; edge <code>X₁=7</code> → node <code>7</code>; from <code>7</code>: edge <code>X₂=5</code> → <code>12</code> (marked <code>x</code>, exceeds 9), edge <code>X₂=1</code> → <code>8</code>, edge <code>X₂=2</code> → <code>9</code> labeled <strong>Goal Node</strong> (7+2=9). From <code>8</code>: edge <code>X₃=2</code> → <code>10</code> (<code>x</code>), edge <code>X₃=10</code> → <code>18</code> (<code>x</code>). So the satisfying subset is <strong>{7, 2}</strong> and the goal node holds the running sum 9.</p>
+</blockquote>
+<h3 id="depth-first-search-dfs">Depth-First Search (DFS)</h3>
+<ul>
+<li><strong>Fig. 6-11</strong> — <em>A Sum of Subset Problem Solved by Depth-First Search.</em></li>
+<li>Build a binary tree: at level <code>i</code>, decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong> of <code>S′</code>.</li>
+<li><strong>A stack can be used to guide the depth-first search.</strong> DFS dives down one branch as deep as possible, then backtracks (pop the stack) when a branch is exhausted or the partial sum already exceeds the target.</li>
+</ul>
+<p><strong>DFS procedure (general):</strong>
+1. Push the root onto the stack.
+2. Pop a node; if it is a goal, stop.
+3. Otherwise push its children; repeat from step 2 until the stack is empty.</p>
+<p>LIFO ordering of the stack gives the deep-first exploration order.</p>
+<hr />
+<h2 id="4-breadth-first-search-bfs">4. Breadth-First Search (BFS)</h2>
+<h3 id="idea_2">Idea</h3>
+<p>Explore the tree <strong>level by level</strong>: expand all nodes at depth <code>d</code> before any node at depth <code>d+1</code>. Implemented with a <strong>queue</strong> (FIFO) instead of a stack.</p>
+<blockquote>
+<p>✅ Verified against slide 6: the slide titled "The breadth-first search" actually carries the <strong>sum-of-subset DFS example (Fig. 6-11)</strong> as its illustration — there is <strong>no separate BFS figure or example</strong> in the deck. BFS is the FIFO counterpart of the DFS in §3 (same tree, different expansion order).</p>
+</blockquote>
+<hr />
+<h2 id="5-hill-climbing-a-variant-of-dfs-the-8-puzzle">5. Hill Climbing (a variant of DFS) — the 8-Puzzle</h2>
+<h3 id="idea_3">Idea</h3>
+<p>Hill climbing is <strong>a variant of depth-first search</strong> in which, instead of expanding children in fixed order, <strong>the method selects the locally optimal node to expand</strong> (the child that looks best by an evaluation function). It is greedy and <em>local</em> — it commits to the locally best child and can get stuck.</p>
+<h3 id="8-puzzle-evaluation-function">8-puzzle evaluation function</h3>
+<p>For the 8-puzzle (a 3×3 board with tiles 1–8 and one blank, slide tiles to reach a goal configuration):</p>
+<pre><code>f(n) = d(n) + w(n)
+   d(n) = depth of node n  (number of moves made so far)
+   w(n) = number of misplaced tiles in node n
+</code></pre>
+<p>Lower <code>f(n)</code> is better. At each step expand the child minimizing <code>f</code>.</p>
+<ul>
+<li><strong>Fig. 6-15</strong> — <em>An 8-Puzzle Problem Solved by a Hill Climbing Method.</em></li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 8 (Fig. 6-15): the board states and per-node parenthesized evaluation values are transcribed (see Appendix A). Hill-climbing path: <code>initial(3) → 1(4) → 5(4) → 7(4) → 8 (Goal)</code>, always descending to the locally best child. The function <code>f(n) = d(n) + w(n)</code> and the "expand locally best child" rule are explicit on slide 7.</p>
+</blockquote>
+<hr />
+<h2 id="6-best-first-search">6. Best-First Search</h2>
+<h3 id="idea_4">Idea</h3>
+<p><strong>Combines depth-first search and breadth-first search.</strong> Rather than committing to a local best (hill climbing) or a rigid level order (BFS), best-first <strong>selects the node with the best estimated cost among <em>all</em> open nodes</strong> anywhere in the tree. Because it can jump to the globally most promising node, <strong>this method has a global view.</strong></p>
+<ul>
+<li><strong>Fig. 6-16</strong> — <em>An 8-Puzzle Problem Solved by a Best-First Search Scheme</em> (same evaluation function <code>f(n) = d(n) + w(n)</code> as hill climbing, but chosen globally).</li>
+</ul>
+<h3 id="best-first-search-scheme-explicit-step-1step-4">Best-First Search Scheme (explicit Step 1–Step 4)</h3>
+<blockquote>
+<p><strong>Step 1.</strong> Form a one-element list consisting of the root node.</p>
+<p><strong>Step 2.</strong> Remove the first element from the list. Expand it. If one of the descendants of this element is a <strong>goal node</strong>, then <strong>stop</strong>; otherwise, add the descendants into the list.</p>
+<p><strong>Step 3.</strong> Sort the entire list by the values of some <strong>estimation function</strong>.</p>
+<p><strong>Step 4.</strong> If the list is empty, then <strong>failure</strong>. Otherwise, go to Step 2.</p>
+</blockquote>
+<p>The sort in Step 3 is what makes the <em>first</em> element in Step 2 always the globally best-looking node.</p>
+<hr />
+<h2 id="7-the-branch-and-bound-strategy">7. The Branch-and-Bound Strategy</h2>
+<h3 id="idea_5">Idea</h3>
+<p><strong>Branch-and-bound can be used to solve optimization problems</strong> — and is needed because <strong>DFS, BFS, hill climbing, and best-first search cannot</strong> (they halt at the first goal, not the best one).</p>
+<p>Two ingredients:
+- <strong>Branching</strong> — split the solution space into subsets (subtrees), as in any tree search.
+- <strong>Bounding</strong> — compute, for each node, a <strong>bound</strong> on the best solution obtainable in its subtree. If a node's bound is <em>worse</em> than the best complete solution already found, <strong>prune</strong> the entire subtree.</p>
+<p>For a minimization problem you maintain a <strong>lower bound</strong> per node and an <strong>upper bound</strong> = best feasible solution found so far; prune any node whose lower bound ≥ current best.</p>
+<h3 id="example">Example</h3>
+<ul>
+<li><strong>Fig. 6-17</strong> — <em>A Multi-Stage Graph Searching Problem</em>, <strong>solved by branch-and-bound</strong> (find the cheapest path through a layered graph).</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 12 (Fig. 6-17): <strong>Correction</strong> — Fig. 6-17 is the multi-stage graph with vertices <code>V₀, V₁,₁ V₁,₂ V₁,₃, V₂,₁ V₂,₂ V₂,₃, V₃</code> (NOT the <code>S,V₁..V₅,T</code> graph — that one is <strong>Fig. 6-36</strong>, the A* example on slide 36). Fig. 6-17 edge weights (slide 12, disambiguated by the B&amp;B tree on slide 13): <code>V₀→V₁,₁=1, V₀→V₁,₂=3, V₀→V₁,₃=2</code>; <code>V₁,₁→V₂,₁=5, V₁,₁→V₂,₃=3</code>; <code>V₁,₂→V₂,₁=4, V₁,₂→V₂,₂=3</code>; <code>V₁,₃→V₂,₂=2, V₁,₃→V₂,₃=7</code>; <code>V₂,₁→V₃=4, V₂,₂→V₃=1, V₂,₃→V₃=1</code>. The best-first B&amp;B search tree for this graph is on slide 13 (Appendix A). See Appendix A "Fig. 6-17 correction."</p>
+</blockquote>
+<hr />
+<h2 id="8-the-personnel-assignment-problem-branch-and-bound">8. The Personnel Assignment Problem (Branch-and-Bound)</h2>
+<h3 id="problem-statement">Problem statement</h3>
+<ul>
+<li>A <strong>linearly ordered</strong> set of persons <code>P = {P₁, P₂, …, Pₙ}</code> with <code>P₁ &lt; P₂ &lt; … &lt; Pₙ</code>.</li>
+<li>A <strong>partially ordered</strong> set of jobs <code>J = {J₁, J₂, …, Jₙ}</code>.</li>
+<li>Constraint: if <code>Pᵢ</code> and <code>Pⱼ</code> are assigned to jobs <code>f(Pᵢ)</code> and <code>f(Pⱼ)</code>, then <strong><code>f(Pᵢ) ≤ f(Pⱼ)</code> whenever <code>Pᵢ ≤ Pⱼ</code></strong> (the assignment must respect the partial order of jobs — a <em>feasible</em> assignment).</li>
+<li><code>Cᵢⱼ</code> = cost of assigning person <code>Pᵢ</code> to job <code>Jⱼ</code>.</li>
+<li>Decision variable: <code>Xᵢⱼ = 1</code> if <code>Pᵢ</code> is assigned to <code>Jⱼ</code>, else <code>0</code>.</li>
+</ul>
+<p><strong>Objective:</strong></p>
+<pre><code>Minimize   Σᵢ Σⱼ Cᵢⱼ · Xᵢⱼ
+</code></pre>
+<p>subject to each person getting exactly one job, each job exactly one person, and the partial-order feasibility constraint.</p>
+<blockquote>
+<p>✅ Verified against slide 14: the slide states it as <strong>"If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ"</strong> (an order-preserving / monotone feasibility rule). Cost <code>Cᵢⱼ</code> = cost of assigning Pᵢ to Jⱼ; <code>Xᵢⱼ = 1</code> if Pᵢ→Jⱼ else 0; minimize <code>Σᵢ,ⱼ CᵢⱼXᵢⱼ</code>.</p>
+</blockquote>
+<h3 id="partial-order-of-jobs-fig-6-21">Partial order of jobs — Fig. 6-21</h3>
+<p><strong>Fig. 6-21</strong> — <em>A Partial Ordering of Jobs</em>. ✅ Verified against slide 15 — the diagram is <strong>two simple vertical arrows only</strong> (no diagonal):</p>
+<pre><code>   J1        J2
+   ↓         ↓
+   J3        J4
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 15: the arrows are exactly <code>J1 → J3</code> and <code>J2 → J4</code>. There is <strong>no</strong> <code>J1 → J4</code> diagonal (the earlier reconstruction's <code>↘</code> was wrong). So J1 precedes J3, and J2 precedes J4; J1/J2 are incomparable, as are J3/J4.</p>
+</blockquote>
+<h3 id="topological-sorting">Topological sorting</h3>
+<p>A feasible assignment corresponds to a <strong>topological order</strong> of the jobs (one that respects all precedence arrows). The slide lists several topologically sorted sequences that can be generated:</p>
+<pre><code>J1, J2, J3, J4
+J1, J2, J4, J3
+J1, J3, J2, J4
+J2, J1, J3, J4
+J2, J1, J4, J3
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 15: the five topologically-sorted sequences listed above are exactly those shown on the slide.</p>
+</blockquote>
+<p><strong>One feasible assignment:</strong></p>
+<pre><code>P1 → J1,  P2 → J2,  P3 → J3,  P4 → J4
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 15.</p>
+</blockquote>
+<h3 id="cost-matrix-table-6-1">Cost matrix — Table 6-1</h3>
+<p><strong>Table 6-1</strong> — <em>A Cost Matrix for a Personnel Assignment Problem</em> (rows = persons, columns = jobs):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Person \ Job</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P1</strong></td>
+<td>29</td>
+<td>19</td>
+<td>17</td>
+<td>12</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>32</td>
+<td>30</td>
+<td>26</td>
+<td>28</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>3</td>
+<td>21</td>
+<td>7</td>
+<td>9</td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td>18</td>
+<td>13</td>
+<td>10</td>
+<td>15</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>✅ Verified against slide 16: the P3 row reads <strong>C₃₁ = 3, C₃₂ = 21, C₃₃ = 7, C₃₄ = 9</strong> exactly (single-digit <code>3</code> in column 1, clearly distinct). All other cells match the table above.</p>
+</blockquote>
+<h3 id="reduced-cost-matrix-table-6-2">Reduced cost matrix — Table 6-2</h3>
+<p><strong>Reduction rule:</strong> <em>subtract a constant from each row and each column so that each row and each column contains at least one zero.</em> The total subtracted is a <strong>lower bound</strong> on the optimal assignment cost.</p>
+<p><strong>Table 6-2</strong> — <em>A Reduced Cost Matrix</em>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Person \ Job</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>row reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P1</strong></td>
+<td>17</td>
+<td>4</td>
+<td>5</td>
+<td>0</td>
+<td>(−12)</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>6</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>(−26)</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>0</td>
+<td>15</td>
+<td>4</td>
+<td>6</td>
+<td>(−3)</td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td>8</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td>(−10)</td>
+</tr>
+<tr>
+<td>col reduction</td>
+<td></td>
+<td>(−3)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Total cost subtracted: 12 + 26 + 3 + 10 + 3 = 54.</strong>
+<strong>This is a lower bound of our solution.</strong></p>
+<blockquote>
+<p>✅ Verified against slides 17 &amp; 18: Table 6-2 cells and the red row-reduction tags <code>(−12)(−26)(−3)(−10)</code> plus the column-2 reduction <code>(−3)</code> are exactly as printed; slide 18 states "Total cost subtracted: 12+26+3+10+3 = 54" and "This is a lower bound of our solution."</p>
+</blockquote>
+<h3 id="solving">Solving</h3>
+<ul>
+<li><strong>Solution tree:</strong> branch on which job each person takes (respecting feasibility).</li>
+<li><strong>Apply the best-first search scheme</strong> (the Step 1–4 scheme from §6) to expand the most promising node.</li>
+<li><strong>Bounding of subsolutions:</strong> at each tree node, recompute a reduced matrix / lower bound for the remaining sub-assignment; prune nodes whose lower bound exceeds the best feasible cost found.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slides 19–21 — the numeric trees are now transcribed (see Appendix A entries "Personnel — Solution Tree (slide 19)", "Personnel — Best-First Search Tree (slide 20)", "Personnel — Bounding of Subsolutions (slide 21)"). Slide 20 is annotated <strong>"Only one node is pruned away."</strong> The bounding tree on slide 21 follows the spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>, i.e. the optimal feasible assignment costs <strong>70</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="9-the-travelling-salesperson-problem-tsp-via-branch-and-bound">9. The Travelling Salesperson Problem (TSP) via Branch-and-Bound</h2>
+<h3 id="problem_1">Problem</h3>
+<p>Find a minimum-cost tour visiting every city exactly once and returning to the start. <strong>It is NP-complete.</strong></p>
+<h3 id="cost-matrix-table-6-3">Cost matrix — Table 6-3</h3>
+<p><strong>Table 6-3</strong> — <em>A Cost Matrix for a Traveling Salesperson Problem</em> (7 cities; <code>∞</code> on the diagonal = no self-loop). Entry <code>(i, j)</code> = cost of arc <code>i → j</code>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i \ j</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>∞</td>
+<td>3</td>
+<td>93</td>
+<td>13</td>
+<td>33</td>
+<td>9</td>
+<td>57</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>4</td>
+<td>∞</td>
+<td>77</td>
+<td>42</td>
+<td>21</td>
+<td>16</td>
+<td>34</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>45</td>
+<td>17</td>
+<td>∞</td>
+<td>36</td>
+<td>16</td>
+<td>28</td>
+<td>25</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>39</td>
+<td>90</td>
+<td>80</td>
+<td>∞</td>
+<td>56</td>
+<td>7</td>
+<td>91</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>28</td>
+<td>46</td>
+<td>88</td>
+<td>33</td>
+<td>∞</td>
+<td>25</td>
+<td>57</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>3</td>
+<td>88</td>
+<td>18</td>
+<td>46</td>
+<td>92</td>
+<td>∞</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>44</td>
+<td>26</td>
+<td>33</td>
+<td>27</td>
+<td>84</td>
+<td>39</td>
+<td>∞</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="first-reduction-table-6-4-row-reductions">First reduction — Table 6-4 (row reductions)</h3>
+<p>Subtract the row minimum from each row (so each row has a zero):</p>
+<p><strong>Table 6-4</strong> — <em>A Reduced Cost Matrix</em>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i \ j</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>row reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>∞</td>
+<td>0</td>
+<td>90</td>
+<td>10</td>
+<td>30</td>
+<td>6</td>
+<td>54</td>
+<td>(−3)</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>0</td>
+<td>∞</td>
+<td>73</td>
+<td>38</td>
+<td>17</td>
+<td>12</td>
+<td>30</td>
+<td>(−4)</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>29</td>
+<td>1</td>
+<td>∞</td>
+<td>20</td>
+<td>0</td>
+<td>12</td>
+<td>9</td>
+<td>(−16)</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>32</td>
+<td>83</td>
+<td>73</td>
+<td>∞</td>
+<td>49</td>
+<td>0</td>
+<td>84</td>
+<td>(−7)</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>3</td>
+<td>21</td>
+<td>63</td>
+<td>8</td>
+<td>∞</td>
+<td>0</td>
+<td>32</td>
+<td>(−25)</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>0</td>
+<td>85</td>
+<td>15</td>
+<td>43</td>
+<td>89</td>
+<td>∞</td>
+<td>4</td>
+<td>(−3)</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>18</td>
+<td>0</td>
+<td>7</td>
+<td>1</td>
+<td>58</td>
+<td>13</td>
+<td>∞</td>
+<td>(−26)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Sum of row reductions: <code>reduced: 84</code></strong> (= 3+4+16+7+25+3+26 = 84).</p>
+<blockquote>
+<p>✅ Verified against slides 22 (Table 6-3) and 23 (Table 6-4): every cell and the red <code>(−3)(−4)(−16)(−7)(−25)(−3)(−26)</code> row tags and "reduced:84" match exactly.</p>
+</blockquote>
+<h3 id="second-reduction-table-6-5-column-reductions">Second reduction — Table 6-5 (column reductions)</h3>
+<p>Now subtract column minimums from columns that still lack a zero:</p>
+<p><strong>Table 6-5</strong> — <em>Another Reduced Cost Matrix</em>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i \ j</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>∞</td>
+<td>0</td>
+<td>83</td>
+<td>9</td>
+<td>30</td>
+<td>6</td>
+<td>50</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>0</td>
+<td>∞</td>
+<td>66</td>
+<td>37</td>
+<td>17</td>
+<td>12</td>
+<td>26</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>29</td>
+<td>1</td>
+<td>∞</td>
+<td>19</td>
+<td>0</td>
+<td>12</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>32</td>
+<td>83</td>
+<td>66</td>
+<td>∞</td>
+<td>49</td>
+<td>0</td>
+<td>80</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>3</td>
+<td>21</td>
+<td>56</td>
+<td>7</td>
+<td>∞</td>
+<td>0</td>
+<td>28</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>0</td>
+<td>85</td>
+<td>8</td>
+<td>42</td>
+<td>89</td>
+<td>∞</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>18</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>58</td>
+<td>13</td>
+<td>∞</td>
+</tr>
+<tr>
+<td><strong>col reduction</strong></td>
+<td></td>
+<td></td>
+<td>(−7)</td>
+<td>(−1)</td>
+<td></td>
+<td></td>
+<td>(−4)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).</p>
+<p><strong>Total cost reduced: 84 + 7 + 1 + 4 = 96  (lower bound).</strong></p>
+<blockquote>
+<p>✅ Verified against slide 24 (Table 6-5): all cells match; the column reductions <code>(−7)(−1)(−4)</code> sit under columns 3, 4, 7. Slide circles the cells <code>17</code> (row 2, col 5) and <code>1</code> (row 3, col 2). Slide 25 states "Total cost reduced: 84+7+1+4 = 96 (lower bound)."</p>
+</blockquote>
+<h3 id="decision-tree-fig-6-25-and-branching-choice">Decision tree — Fig. 6-25 and branching choice</h3>
+<ul>
+<li><strong>Fig. 6-25</strong> — <em>The Highest Level of a Decision Tree.</em> ✅ Verified against slide 25. The root box "All solutions" has <strong>Lower bound = 96</strong>. It splits into:</li>
+<li><strong>"All solutions with arc 4-6"</strong> — Lower bound = <strong>96</strong> (including the zero-cost arc 4→6 adds nothing).</li>
+<li><strong>"All solutions without arc 4-6"</strong> — Lower bound = <strong>96 + 32 = 128</strong> (excluding arc 4→6 forces the next-cheapest entry, penalty 32).</li>
+<li><strong>Choosing the splitting arc:</strong> pick the zero-cost arc whose <em>exclusion</em> raises the bound the most. Arc <strong>4-6</strong> is chosen because its exclusion penalty (<strong>32</strong>) is the largest.</li>
+<li>The slide also notes a comparison: "If we use arc <strong>3-5</strong> to split, the difference on the lower bounds is <strong>17 + 1 = 18</strong>" — smaller than 32, so 4-6 wins.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 25: arc <strong>4-6</strong> is the splitting arc (penalty 32, giving the 96/128 split shown in Fig. 6-25); the 3-5 alternative would only give penalty 18. The "with 4-6" subtree (LB still 96) is expanded next via Tables 6-6/6-7.</p>
+</blockquote>
+<h3 id="including-arc-4-6-tables-6-6-and-6-7">Including arc 4-6 — Tables 6-6 and 6-7</h3>
+<ul>
+<li><strong>Table 6-6</strong> — <em>A Reduced Cost Matrix if Arc 4-6 is Included.</em> Including arc 4→6 means we delete <strong>row 4</strong> and <strong>column 6</strong>, and set entry <code>(6,4) = ∞</code> (to forbid the premature subtour 4→6→4). ✅ Verified against slide 26 (columns 1,2,3,4,5,7; the <code>(6,4)=∞</code> cell is circled on the slide):</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i \ j</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>∞</td>
+<td>0</td>
+<td>83</td>
+<td>9</td>
+<td>30</td>
+<td>50</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>0</td>
+<td>∞</td>
+<td>66</td>
+<td>37</td>
+<td>17</td>
+<td>26</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>29</td>
+<td>1</td>
+<td>∞</td>
+<td>19</td>
+<td>0</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>3</td>
+<td>21</td>
+<td>56</td>
+<td>7</td>
+<td>∞</td>
+<td>28</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>0</td>
+<td>85</td>
+<td>8</td>
+<td>∞</td>
+<td>89</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>18</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>58</td>
+<td>∞</td>
+</tr>
+</tbody>
+</table></div>
+<p>(Note: in Table 6-6 row 5 is still <code>3,21,56,7,∞,28</code> — not yet reduced. Reducing row 5 by its minimum 3 gives Table 6-7.)</p>
+<p><strong>Table 6-7</strong> — <em>A Reduced Cost Matrix for that in Table 6-6</em> (rows/cols 4 and 6 removed; row 5 further reduced by −3). ✅ Verified cell-by-cell against slide 27:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i \ j</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>7</th>
+<th>reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>∞</td>
+<td>0</td>
+<td>83</td>
+<td>9</td>
+<td>30</td>
+<td>50</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>0</td>
+<td>∞</td>
+<td>66</td>
+<td>37</td>
+<td>17</td>
+<td>26</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>29</td>
+<td>1</td>
+<td>∞</td>
+<td>19</td>
+<td>0</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>0</td>
+<td>18</td>
+<td>53</td>
+<td>4</td>
+<td>∞</td>
+<td>25</td>
+<td>(−3)</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>0</td>
+<td>85</td>
+<td>8</td>
+<td>∞</td>
+<td>89</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>18</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>58</td>
+<td>∞</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Row 5 here carries an extra reduction <strong>(−3)</strong>.</p>
+<p><strong>Total cost reduced: 96 + 3 = 99  (new lower bound)</strong> for the subtree where arc 4-6 is included.</p>
+<blockquote>
+<p>✅ Verified against slides 26 (Table 6-6) and 27 (Table 6-7): every cell confirmed. Slide 27 prints "Total cost reduced: 96+3 = 99 (new lower bound)."</p>
+</blockquote>
+<ul>
+<li><strong>Fig. 6-26</strong> — <em>A Branch-and-Bound Solution of a Traveling Salesperson Problem.</em> Continue branching on arcs, propagating lower bounds, pruning subtrees whose bound ≥ best tour found, until the optimal tour is isolated.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 28 (Fig. 6-26): the full B&amp;B tree is transcribed. Spine bounds: All=96, With/Without 4-6 = 99/128, With/Without 3-5 = 99/117, With/Without 2-1 = 112/125, With/Without 1-4 = 126/153, With/Without 6-7 = 126/141, With/Without 5-2 = 126/(no soln), With/Without 7-3 = Solution/(no soln). <strong>Optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126.</strong> Slide 28 also draws the tour itself (arrows 1→4→6→7→3→5→2→1 over the 7 city dots).</p>
+</blockquote>
+<hr />
+<h2 id="10-the-01-knapsack-problem-via-branch-and-bound">10. The 0/1 Knapsack Problem via Branch-and-Bound</h2>
+<h3 id="problem_2">Problem</h3>
+<ul>
+<li>Positive integers: profits <code>P₁, P₂, …, Pₙ</code>; weights <code>W₁, W₂, …, Wₙ</code>; capacity <code>M</code>.</li>
+<li>Choose <code>Xᵢ ∈ {0, 1}</code> to <strong>maximize</strong> <code>Σ PᵢXᵢ</code> subject to <code>Σ WᵢXᵢ ≤ M</code>.</li>
+<li>Slides minimize the <em>negative</em> profit (so it becomes a minimization B&amp;B): objective value <code>−Σ PᵢXᵢ</code>.</li>
+</ul>
+<h3 id="branching-fig-6-27">Branching — Fig. 6-27</h3>
+<ul>
+<li><strong>Fig. 6-27</strong> — <em>The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem.</em> At level <code>i</code> branch on <code>Xᵢ = 1</code> (include item <code>i</code>) vs <code>Xᵢ = 0</code> (exclude it).</li>
+</ul>
+<h3 id="example-data-n-6-m-34">Example data — <code>n = 6, M = 34</code></h3>
+<p>Items are sorted by profit density so that <code>Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁</code>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pᵢ</strong></td>
+<td>6</td>
+<td>10</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong>Wᵢ</strong></td>
+<td>10</td>
+<td>19</td>
+<td>8</td>
+<td>10</td>
+<td>12</td>
+<td>8</td>
+</tr>
+<tr>
+<td><strong>Pᵢ/Wᵢ</strong></td>
+<td>0.60</td>
+<td>0.53</td>
+<td>0.50</td>
+<td>0.50</td>
+<td>0.50</td>
+<td>0.50</td>
+</tr>
+</tbody>
+</table></div>
+<p>Property: <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> — items in non-increasing density order, which the greedy bound relies on.</p>
+<blockquote>
+<p>✅ Verified against slide 31: data <code>Pᵢ = 6,10,4,5,6,4</code> and <code>Wᵢ = 10,19,8,10,12,8</code> (n=6, M=34) and the ordering claim <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> are exactly as printed. (Densities are not numerically tabulated on the slide; the 0.60/0.53/0.50… values above are computed here.) The feasible solution <code>X1=X2=1, rest 0</code> giving upper bound <code>−(P1+P2) = −16</code> is on slide 31; "Any solution higher than −16 cannot be an optimal solution" is verbatim.</p>
+</blockquote>
+<h3 id="upper-bound-a-feasible-solution">Upper bound (a feasible solution)</h3>
+<p>A quick feasible solution gives an <strong>upper bound</strong> on the (negated) objective:</p>
+<pre><code>X1 = 1, X2 = 1, X3 = 0, X4 = 0, X5 = 0, X6 = 0
+weight used = W1 + W2 = 10 + 19 = 29 ≤ 34 ✓
+objective  = −(P1 + P2) = −16     (upper bound)
+</code></pre>
+<p><strong>Any solution higher than −16 cannot be an optimal solution</strong> (we are minimizing the negative profit, i.e. we will not accept anything worse than −16).</p>
+<h3 id="lower-bound-via-fractional-relaxation">Lower bound via fractional relaxation</h3>
+<p><strong>Relax the restriction from <code>Xᵢ = 0 or 1</code> to <code>0 ≤ Xᵢ ≤ 1</code></strong> — this is the (fractional) <strong>knapsack problem</strong>, solvable optimally by the <strong>greedy method</strong> (fill by decreasing density until capacity runs out, taking a fraction of the last item):</p>
+<pre><code>X1 = 1, X2 = 1, X3 = 5/8, X4 = 0, X5 = 0, X6 = 0
+weight = 10 + 19 + (5/8)(8) = 10 + 19 + 5 = 34 = M  ✓ (capacity exactly full)
+objective = −(P1 + P2 + (5/8)P3) = −(6 + 10 + 2.5) = −18.5   (lower bound)
+</code></pre>
+<p>Since the true 0/1 objective must be an integer, the lower bound rounds to <strong>−18</strong> (only integer solutions count).</p>
+<p><strong>Therefore:</strong></p>
+<pre><code>−18 ≤ optimal solution ≤ −16
+</code></pre>
+<h3 id="optimal-solution">Optimal solution</h3>
+<p>After completing the branch-and-bound search:</p>
+<pre><code>optimal solution: X1 = 1, X2 = 0, X3 = 0, X4 = 1, X5 = 1, X6 = 0
+weight = W1 + W4 + W5 = 10 + 10 + 12 = 32 ≤ 34 ✓
+objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
+</code></pre>
+<p>This <code>−17</code> lies inside <code>[−18, −16]</code>, consistent with the bounds.</p>
+<ul>
+<li><strong>Fig. 6-28</strong> — <em>0/1 Knapsack Problem Solved by Branch-and-Bound Strategy</em> shows the full tree with per-node upper/lower bounds and pruning.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 34 (Fig. 6-28): all per-node U.B./L.B. values for nodes 0–30 are transcribed. Root node 0 = (U.B. −16, L.B. −18); node 14 is annotated "(a good upper bound is found here)" with U.B.=−17; the optimal −17 is reached on the X1=0 (node 14) sub-branch (nodes 15/16/17/18/20 circled in red on the slide). Slides 32–33 confirm the fractional-relaxation lower bound: <code>X3 = 5/8</code>, <code>−(P1+P2+⅝P3) = −18.5</code> → rounded <code>−18</code>, so <code>−18 ≤ optimal ≤ −16</code>, and optimal <code>X1=1,X4=1,X5=1</code> (rest 0) → <code>−(P1+P4+P5) = −17</code>. The weight sums (29, 34, 32) are computed here from the data.</p>
+</blockquote>
+<hr />
+<h2 id="11-the-a-algorithm">11. The A* Algorithm</h2>
+<h3 id="idea_6">Idea</h3>
+<p>A* is used to <strong>solve optimization problems</strong> with the <strong>best-first strategy</strong>, but with a special cost function that guarantees optimality. <strong>If a feasible solution (goal node) is obtained, then it is optimal and we can stop.</strong></p>
+<h3 id="cost-function">Cost function</h3>
+<p>For each node <code>n</code>:</p>
+<pre><code>f(n) = g(n) + h(n)
+   g(n): actual cost from the root to node n.
+   h(n): estimated cost from node n to a goal node.
+   h*(n): the &quot;real&quot; (true minimum) cost from node n to a goal node.
+</code></pre>
+<p><strong>Admissibility condition:</strong> the heuristic must never overestimate:</p>
+<pre><code>h(n) ≤ h*(n)
+⇒  f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)
+</code></pre>
+<p>i.e. <code>f(n)</code> is a <em>lower bound</em> on the best total cost of any solution through <code>n</code>. This is what makes the first goal reached optimal.</p>
+<h3 id="stopping-rule">Stopping rule</h3>
+<p><strong>Stop iff the selected (expanded) node is also a goal node.</strong> (Reaching a goal node in the list is not enough — it must be the node with the smallest <code>f</code>, i.e. the one selected for expansion.)</p>
+<h3 id="worked-example-fig-6-36-slides-3642">Worked example — Fig. 6-36 (slides 36–42)</h3>
+<ul>
+<li><strong>Fig. 6-36</strong> — <em>A Graph to Illustrate A* Algorithm</em> (slide 36). The search graph (NOT a tree — it is the layered graph <code>S→V₁..V₅→T</code>; see Appendix A for the literal Fig. 6-36 graph). The <strong>A* search tree</strong> is built on it across slides 37–42, with the underlying graph relabeled <code>R, A, B, C, D, E, F, G, H, I, J, K, L</code>. The slides walk the expansion order with full <code>g/h/f</code> bookkeeping:</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step (slide)</th>
+<th>Action</th>
+<th>New <code>g/h/f</code> values shown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 (37)</td>
+<td>Form list with root R; children A,B,C</td>
+<td>A(g2,h2,f4), B(g4,h2,f6), C(g3,h2,f5)</td>
+</tr>
+<tr>
+<td>2 (38)</td>
+<td><strong>Expand A</strong> (smallest f=4)</td>
+<td>D(g4,h1,f5), E(g5,h2,f7)</td>
+</tr>
+<tr>
+<td>3 (39)</td>
+<td><strong>Expand C</strong> (f=5)</td>
+<td>F(g5,h1,f6), G(g5,h5,f10)</td>
+</tr>
+<tr>
+<td>4 (40)</td>
+<td><strong>Expand D</strong> (f=5)</td>
+<td>H(g5,h5,f10), I(g7,h0,f7)</td>
+</tr>
+<tr>
+<td>5 (41)</td>
+<td><strong>Expand B</strong> (f=6)</td>
+<td>J(g6,h5,f11)</td>
+</tr>
+<tr>
+<td>6 (42)</td>
+<td><strong>Expand F</strong> (f=6)</td>
+<td>K(g6,h5,f11), L(g8,h0,f8)</td>
+</tr>
+</tbody>
+</table></div>
+<p>After step 6, the smallest-<code>f</code> open node is <strong>I (f = 7)</strong>, and <strong>I is the goal node</strong> → stop, optimal.</p>
+<blockquote>
+<p>✅ Verified against slides 36–42: edges <code>R→A(a,2), R→B(b,4), R→C(c,3), A→D(d,2), A→E(e,3), C→F(k,2), C→G(f,2), D→H(h,1), D→I(i,3), B→J(g,2), F→K(h,1), F→L(l,3)</code> and all <code>g/h/f</code> values as tabulated. <strong>Correction:</strong> the goal node is <strong>I</strong>, not F (slide 42 prints "I is a goal node !"); F is merely the last node <em>expanded</em>. Expansion order: <strong>A → C → D → B → F</strong>, terminating by selecting goal I.</p>
+</blockquote>
+<hr />
+<h2 id="12-the-channel-routing-problem-a">12. The Channel Routing Problem (A*)</h2>
+<h3 id="problem_3">Problem</h3>
+<p>In VLSI layout, a <strong>channel</strong> is a rectangular region with terminals (pins) on its top and bottom edges. Each <strong>net</strong> connects a set of terminals. Wires run in horizontal <strong>tracks</strong> (and vertical segments). Goal: <strong>find a routing that minimizes the number of tracks.</strong> <strong>This problem is NP-complete.</strong></p>
+<ul>
+<li><strong>Fig. 6-40</strong> — <em>A Channel Specification</em> (slide 43). ✅ Verified. 13 columns; terminal numbers (a net number, <code>0</code> = no terminal):</li>
+<li><strong>Top row</strong> (cols 1→13): <code>4, 8, 0, 7, 0, 3, 6, 0, 0, 2, 1, 5, 0</code></li>
+<li><strong>Bottom row</strong> (cols 1→13): <code>0, 0, 7, 0, 5, 4, 0, 8, 3, 0, 2, 6, 1</code></li>
+<li>The slide also sketches each net's horizontal span (nets 7, 3, 1, 8, 2, 5, 4, 6).</li>
+<li><strong>Illegal wirings</strong> (slide 44): three example layouts of wires that short/overlap illegally are forbidden. "We want to find a routing which minimizes the number of tracks."</li>
+<li>The slides distinguish <strong>a feasible routing</strong> (slide 45 — uses <strong>7 tracks</strong>: nets placed 7→track1, 2→track2, 3→track3, 4→track4, 5→track5, 6→track6, 8→track7, etc.) from <strong>an optimal routing</strong> (slide 46 — only <strong>4 tracks</strong>). "This problem is NP-complete."</li>
+</ul>
+<h3 id="horizontal-constraint-graph-hcg">Horizontal Constraint Graph (HCG)</h3>
+<ul>
+<li>Nodes = nets. Captures which nets' horizontal spans <strong>overlap</strong> (if two nets overlap horizontally they cannot share a track).</li>
+<li>Example ordering rule from the slide (slide 47): <strong>"net 8 must be to the left of net 1 and net 2 if they are in the same track."</strong></li>
+<li><strong>Fig. 6-41 (HCG), slide 47</strong> — ✅ Verified directed edges (tail = must-be-left-of head): <code>7→5, 7→6, 7→3, 7→1, 7→2</code>, <code>8→1, 8→2</code>, <code>4→6, 4→1, 4→2</code>, <code>3→1, 3→2</code>. (This is the directed graph the earlier note recorded as the uncaptioned <code>png_014</code> "personnel/VCG ordering graph" — it is in fact the <strong>channel-routing HCG</strong>.)</li>
+<li><strong>Maximal cliques in the HCG: <code>{1,8}</code>, <code>{1,3,7}</code>, <code>{5,7}</code>. Each maximal clique can be assigned to a track.</strong> ✅ Verified verbatim on slide 48. (A clique = a set of nets that mutually conflict; the cliques bound how many nets pile up at one horizontal position = the <em>local density</em>.)</li>
+</ul>
+<h3 id="vertical-constraint-graph-vcg">Vertical Constraint Graph (VCG)</h3>
+<ul>
+<li>Captures top/bottom precedence: if a net has a terminal on top at a column where another net has a terminal on the bottom, the top net must be routed in a track <strong>above</strong> the bottom net. These vertical constraints further restrict track assignment.</li>
+<li><strong>VCG (slide 48)</strong> — ✅ Verified edges: <code>1→2</code>, <code>3→4</code>, <code>5→6</code> (three disjoint edges; nets 7 and 8 are isolated VCG nodes). The slide annotates <strong>"e.g. net 3 must be wired before net 4."</strong></li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 48: the VCG is exactly the three edges 1→2, 3→4, 5→6.</p>
+</blockquote>
+<h3 id="solving-with-a">Solving with A*</h3>
+<ul>
+<li><strong>Fig. 6-46</strong> — <em>The First Level of a Tree to Solve a Channel Routing Problem</em> (slide 48). ✅ Verified: the root branches into three children = the three maximal cliques: <strong><code>{8,1}</code>, <code>{7,3,1}</code>, <code>{7,5}</code></strong> (one per candidate first track).</li>
+<li>Cost function (slide 49):</li>
+</ul>
+<pre><code>f(n) = g(n) + h(n)
+   g(n): the level of the tree   (= number of tracks used so far)
+   h(n): maximal local density    (a lower bound on tracks still needed)
+</code></pre>
+<p>Since <code>h(n)</code> = maximal local density never overestimates the remaining tracks needed, A* finds the minimum-track routing.
+- <strong>Fig. 6-48</strong> — <em>A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm</em> (slide 49). ✅ Verified — full tree transcribed in Appendix A. (This is the same tree the earlier note recorded as the uncaptioned <code>png_015</code> "best-first g+h tree"; it is in fact <strong>Fig. 6-48</strong>, with node states being net-cliques.)</p>
+<blockquote>
+<p>✅ Verified against slides 43–49: Fig. 6-40 channel spec, the HCG (slide 47) and VCG (slide 48) edge lists, the three maximal cliques <code>{1,8},{1,3,7},{5,7}</code>, the Fig. 6-46 first level, and the Fig. 6-48 A* tree with <code>f=g+h</code> (g = tree level, h = max local density) are all read directly.</p>
+</blockquote>
+<hr />
+<h2 id="items-reconstructed-earlier-now-resolved-against-the-clean-slide-renders">Items reconstructed earlier — now resolved against the clean slide renders</h2>
+<p>All items below have been checked against the per-slide PNG renders in <code>render/A05full/</code> (49 slides). Every previously-reconstructed item is now resolved.</p>
+<ol>
+<li>✅ <strong>Verified against slide 3</strong> — SAT instance <code>-x₁, x₁, x₂∨x₅, x₃, -x₂</code> (clauses 1–5); both partial-tree children labeled "(1)/(2) falsified"; full 2³ truth table on slide 2. Instance is unsatisfiable. <em>(§1)</em></li>
+<li>✅ <strong>Verified against slides 4 &amp; 5</strong> — Fig. 6-8 search tree + Fig. 6-6 graph (edges 1-2,1-6,1-3,2-3,6-5,7-5,7-4,3-4,4-5) both read directly. <em>(§2)</em></li>
+<li>✅ <strong>Verified against slide 6</strong> — Fig. 6-11 DFS tree; satisfying subset <strong>{7,2}</strong> (goal node "9"); 12/10/18 dead-ends marked <code>x</code>. <em>(§3)</em></li>
+<li>✅ <strong>Verified against slide 6</strong> — the "breadth-first search" slide reuses the Fig. 6-11 DFS example; <strong>no separate BFS figure</strong> exists. <em>(§4)</em></li>
+<li>✅ <strong>Verified against slide 8</strong> — Fig. 6-15 hill-climbing 8-puzzle boards + (f) values; path initial→1→5→7→8(Goal). <em>(§5)</em></li>
+<li>✅ <strong>Verified against slide 10</strong> — Fig. 6-16 best-first 8-puzzle; goal at node 10 via root→1→5(node5? see Appendix)→…; Step 1–4 scheme verbatim on slide 11. <em>(§6)</em></li>
+<li>✅ <strong>Verified against slides 12 &amp; 13</strong> — <strong>Correction:</strong> Fig. 6-17 is the <code>V₀…V₃</code> multi-stage graph (slide 12, 12 edges) with its best-first B&amp;B tree (slide 13). The <code>S,V₁..V₅,T</code> graph the old note called "Fig. 6-17" is actually <strong>Fig. 6-36</strong> (slide 36). <em>(§7)</em></li>
+<li>✅ <strong>Verified against slide 14</strong> — feasibility rule printed as "If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ". <em>(§8)</em></li>
+<li>✅ <strong>Verified against slide 15</strong> — <strong>Correction:</strong> Fig. 6-21 has only <code>J1→J3</code> and <code>J2→J4</code> (two vertical arrows; <strong>no</strong> <code>J1→J4</code> diagonal). <em>(§8)</em></li>
+<li>✅ <strong>Verified against slide 16</strong> — Table 6-1 P3 row = 3, 21, 7, 9 (C₃₁=3 confirmed). <em>(§8)</em></li>
+<li>✅ <strong>Verified against slides 19–21</strong> — personnel solution tree (slide 19), best-first tree with bounds (slide 20, "Only one node is pruned away"), bounding tree (slide 21, optimal cost 70). <em>(§8)</em></li>
+<li>✅ <strong>Verified against slide 25</strong> — splitting arc is <strong>4-6</strong> (exclusion penalty 32 → 96/128 split); the 3-5 alternative penalty is only 17+1=18. <em>(§9)</em></li>
+<li>✅ <strong>Verified against slides 26 &amp; 27</strong> — Tables 6-6 and 6-7 confirmed cell-by-cell; LB 96+3 = 99. <em>(§9)</em></li>
+<li>✅ <strong>Verified against slide 28</strong> — Fig. 6-26 B&amp;B tree + all bounds; optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126. <em>(§9)</em></li>
+<li>✅ <strong>Verified against slides 31–33</strong> — knapsack data, density ordering claim, UB −16, LB −18 (via X3=5/8, −18.5), optimum −17 ({1,4,5}). <em>(§10)</em></li>
+<li>✅ <strong>Verified against slide 34</strong> — Fig. 6-28 per-node UB/LB for nodes 0–30; root −16/−18; "good upper bound" at node 14; optimum −17. <em>(§10)</em></li>
+<li>✅ <strong>Verified against slides 36–42</strong> — Fig. 6-36 graph edges + all <code>g/h/f</code> across six expansion steps. <strong>Correction:</strong> the <strong>goal node is I</strong> (slide 42: "I is a goal node !"), not F; expansion order A→C→D→B→F. <em>(§11)</em></li>
+<li>✅ <strong>Verified against slides 43–49</strong> — Fig. 6-40 channel spec (top/bottom terminal rows), HCG edges (slide 47), VCG edges 1→2/3→4/5→6 (slide 48), max cliques <code>{1,8},{1,3,7},{5,7}</code>, Fig. 6-46 first level, Fig. 6-48 A* tree, <code>f=g+h</code>. <em>(§12)</em></li>
+</ol>
+<hr />
+<h2 id="appendix-a-figures-visually-extracted-from-slide-images">Appendix A — Figures (visually extracted from slide images)</h2>
+<blockquote>
+<p>The diagrams below were transcribed from slide images. <strong>All entries have now been re-verified against the clean per-slide renders in <code>render/A05full/</code> (49 slides, <code>slide-NN.png</code>).</strong> Each entry gives the source slide, a description, and an exact transcription of every label/number visible.</p>
+<p><strong>Update note (clean-render pass):</strong> Two figure identities were corrected. The graph the original carve recorded as "Fig. 6-17" (<code>S,V₁..V₅,T</code>) is in fact <strong>Fig. 6-36</strong> (the A* example, slide 36). The uncaptioned <code>png_014</code> directed graph is the <strong>channel-routing HCG</strong> (slide 47), and the uncaptioned <code>png_015</code> "best-first g+h tree" is <strong>Fig. 6-48</strong> (slide 49). The true <strong>Fig. 6-17</strong> is the <code>V₀…V₃</code> multi-stage graph (slide 12). Fig. 6-21 was corrected (no <code>J1→J4</code> diagonal), and the A* goal node is <strong>I</strong>, not F.</p>
+</blockquote>
+<h3 id="sat-tree-representation-of-the-2n-assignments">SAT — Tree Representation of the 2ⁿ Assignments</h3>
+<ul>
+<li><strong>Source:</strong> slide 2 (<code>render/A05full/slide-02.png</code>). ✅ Verified.</li>
+<li>A complete binary tree of depth 3 (for <code>n = 3</code>, giving <code>2³ = 8</code> leaves). The root has no label; each level branches left/right on one variable.</li>
+</ul>
+<pre><code>                         (root)
+              X1=T /                \ X1=F
+            ( )                        ( )
+      X2=T /    \ X2=F           X2=T /    \ X2=F
+     ( )         ( )            ( )         ( )
+  X3=T/\X3=F  X3=T/\X3=F   X3=T/\X3=F   X3=T/\X3=F
+  ( )  ( )    ( )  ( )     ( )  ( )     ( )  ( )
+</code></pre>
+<p>Edge labels are exactly <code>X₁=T / X₁=F</code> at level 1, <code>X₂=T / X₂=F</code> at level 2, <code>X₃=T / X₃=F</code> at level 3. Nodes themselves are unlabeled circles. This is the generic "Tree Representation of Eight Assignments" referenced in §1.</p>
+<h3 id="fig-6-8-tree-representation-of-whether-a-hamiltonian-circuit-exists-graph-of-fig-6-6">Fig. 6-8 — Tree Representation of Whether a Hamiltonian Circuit Exists (graph of Fig. 6-6)</h3>
+<ul>
+<li><strong>Source:</strong> slide 5 (<code>render/A05full/slide-05.png</code>). ✅ Verified.</li>
+<li>A search tree whose nodes are vertex numbers (1–7), rooted at vertex <code>1</code>. Each root-to-leaf path is a candidate vertex-visiting order; dead ends are marked <code>X</code>. Edges are unlabeled (no weights — Hamiltonicity is a feasibility, not optimization, problem).</li>
+</ul>
+<p>Exact tree structure (children read left→right; <code>X</code> = dead end / pruned):</p>
+<pre><code>1
+├─ 2 ── 3 ── 4 ─┬─ 5 ─┬─ 7 (X)
+│                │     └─ 6 (X)
+│                └─ 7 ── 5 ── 6 ── 1
+├─ 6 ── 5 ─┬─ 4 ─┬─ 3 ── 2 (X)
+│           │     └─ 7 (X)
+│           └─ 7 ── 4 ── 3 ── 2 ── 1
+└─ 3 ─┬─ 2 (X)
+       └─ 4 ─┬─ 5 ─┬─ 7 (X)
+              │     └─ 6 (X)
+              └─ 7 ── 5 ── 6 (X)
+</code></pre>
+<p>Two paths close back to vertex <code>1</code> (a Hamiltonian circuit): <code>1-2-3-4-5-7-5-6-1</code> reading and <code>1-6-5-7-4-3-2-1</code>. The two successful leaves both terminate in node <code>1</code>; all other branches end in <code>X</code>.</p>
+<blockquote>
+<p>Note: vertex adjacencies of the underlying graph (Fig. 6-6) are not separately shown in the extracted image set, but the full tree above is now transcribed. Resolves reconstruction item #2 (tree portion).</p>
+</blockquote>
+<h3 id="fig-6-15-8-puzzle-solved-by-hill-climbing">Fig. 6-15 — 8-Puzzle Solved by Hill Climbing</h3>
+<ul>
+<li><strong>Source:</strong> slide 8 (<code>render/A05full/slide-08.png</code>). ✅ Verified.</li>
+<li>Each node is a 3×3 board; the number in parentheses beside a board is its evaluation <code>f</code> (here <code>f = w(n)</code>, the misplaced-tile count used to pick the locally best child — the labels shown are the parenthesized values). Edge labels <code>1..9</code> are move/step indices. The blank cell is empty.</li>
+<li>Initial state (top), goal node reached at bottom-left.</li>
+</ul>
+<p>Boards (row by row; <code>_</code> = blank):</p>
+<pre><code>initial state (3):   2 8 3 / 1 _ 4 / 7 6 5
+  ├─1 (4):  2 _ 3 / 1 8 4 / 7 6 5
+  ├─2 (4):  2 8 3 / _ 1 4 / 7 6 5
+  ├─3 (5):  2 8 3 / 1 4 _ / 7 6 5      (blank moved right on row 2)
+  └─4 (5):  2 8 3 / 1 6 4 / 7 _ 5
+  from node 1:
+     ├─5 (4):  _ 2 3 / 1 8 4 / 7 6 5
+     └─6 (6):  2 3 _ / 1 8 4 / 7 6 5   (shown as 2 _ 3 .. ; see image)
+  from node 5:
+     └─7 (4):  1 2 3 / _ 8 4 / 7 6 5
+        from node 7:
+           ├─8 (4):  1 2 3 / 8 _ 4 / 7 6 5   ← GOAL NODE (f=0 conceptually; labeled (4) in fig as path value)
+           └─9 (6):  1 2 3 / 7 8 4 / _ 6 5
+</code></pre>
+<p>The hill-climbing path is <code>initial → 1 → 5 → 7 → 8 (Goal)</code>, always descending to the child with the smallest parenthesized value. Resolves reconstruction item #5 (board states + f-values now transcribed).</p>
+<h3 id="fig-6-16-8-puzzle-solved-by-best-first-search">Fig. 6-16 — 8-Puzzle Solved by Best-First Search</h3>
+<ul>
+<li><strong>Source:</strong> slide 10 (<code>render/A05full/slide-10.png</code>). ✅ Verified. Path root→2→7→9→10 (goal at node 10).</li>
+<li>Same start board and same numbering scheme as Fig. 6-15, but the tree is broader because best-first keeps <strong>all</strong> open nodes and expands the globally best one. Parenthesized numbers are the evaluation values; edge numbers <code>1..11</code> are expansion order.</li>
+</ul>
+<pre><code>root (3):  2 8 3 / 1 _ 4 / 7 6 5
+  ├─1 (4):  2 _ 3 / 1 8 4 / 7 6 5
+  ├─2 (4):  2 8 3 / _ 1 4 / 7 6 5
+  ├─3 (5):  2 8 3 / 1 4 _ / 7 6 5
+  └─4 (5):  2 8 3 / 1 6 4 / 7 _ 5
+  from node 1:
+     ├─5 (5):  _ 2 3 / 1 8 4 / 7 6 5
+     └─6 (6):  2 _ 3 / 1 8 4 / 7 6 5
+  from node 2:
+     ├─7 (4):  2 3 _ / 1 8 4 / 7 6 5   (board: 2 3 / 1 8 4 / 7 6 5)
+     └─8 (6):  2 3 _ / 1 8 4 / 7 6 5
+  from node 7:
+     └─9 (4):  1 2 3 / _ 8 4 / 7 6 5
+        from node 9:
+           ├─10 (4):  1 2 3 / 8 _ 4 / 7 6 5   ← goal
+           └─11 (6):  1 2 3 / 7 8 4 / _ 6 5
+</code></pre>
+<blockquote>
+<p>✅ Verified against clean slide 10. The parenthesized evaluation values along the expansion order are <code>root(3); 1(4),2(4),3(5),4(5); under 1: 5(5),6(6); under 2: 7(4),8(6); under 7: 9(4); under 9: 10(4),11(6)</code>. Goal at node 10 via root→2→7→9→10. (Resolves item #6.)</p>
+</blockquote>
+<h3 id="fig-6-36-a-graph-to-illustrate-the-a-algorithm-was-mislabeled-fig-6-17">Fig. 6-36 — A Graph to Illustrate the A* Algorithm (was mislabeled "Fig. 6-17")</h3>
+<ul>
+<li><strong>Source:</strong> slide 36 (<code>render/A05full/slide-36.png</code>) — ✅ Verified.</li>
+<li>A layered directed graph from source <code>S</code> to sink <code>T</code>. Vertices: <code>S, V₁, V₂, V₃, V₄, V₅, T</code>. Each edge has a lowercase letter id and a weight. <strong>This is the graph the A* worked example (slides 37–42) operates on</strong>, relabeled R/A/B/…/L there.</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Edge id</th>
+<th>From → To</th>
+<th>weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>S → V₁</td>
+<td>2</td>
+</tr>
+<tr>
+<td>c</td>
+<td>S → V₂</td>
+<td>3</td>
+</tr>
+<tr>
+<td>b</td>
+<td>S → V₃</td>
+<td>4</td>
+</tr>
+<tr>
+<td>e</td>
+<td>V₁ → V₂</td>
+<td>3</td>
+</tr>
+<tr>
+<td>d</td>
+<td>V₁ → V₄</td>
+<td>2</td>
+</tr>
+<tr>
+<td>k</td>
+<td>V₂ → V₄</td>
+<td>2</td>
+</tr>
+<tr>
+<td>f</td>
+<td>V₂ → V₅</td>
+<td>2</td>
+</tr>
+<tr>
+<td>g</td>
+<td>V₃ → V₅</td>
+<td>2</td>
+</tr>
+<tr>
+<td>h</td>
+<td>V₄ → V₅</td>
+<td>1</td>
+</tr>
+<tr>
+<td>i</td>
+<td>V₄ → T</td>
+<td>3</td>
+</tr>
+<tr>
+<td>j</td>
+<td>V₅ → T</td>
+<td>5</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>Correction:</strong> this is <strong>Fig. 6-36</strong> (A* example), not Fig. 6-17. Cheapest S→T path by inspection: <code>S→V₁→V₄→T = 2+2+3 = 7</code>.</p>
+</blockquote>
+<h3 id="fig-6-17-a-multi-stage-graph-searching-problem-the-real-fig-6-17-its-bb-tree">Fig. 6-17 — A Multi-Stage Graph Searching Problem (the real Fig. 6-17) + its B&amp;B tree</h3>
+<ul>
+<li><strong>Sources:</strong> slide 12 (graph) and slide 13 (best-first B&amp;B search tree). ✅ Verified.</li>
+</ul>
+<p><strong>The graph (slide 12):</strong> vertices <code>V₀</code> (source), layer 1 <code>V₁,₁ V₁,₂ V₁,₃</code>, layer 2 <code>V₂,₁ V₂,₂ V₂,₃</code>, sink <code>V₃</code>. Edge weights:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>From → To</th>
+<th>weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V₀ → V₁,₁</td>
+<td>1</td>
+</tr>
+<tr>
+<td>V₀ → V₁,₂</td>
+<td>3</td>
+</tr>
+<tr>
+<td>V₀ → V₁,₃</td>
+<td>2</td>
+</tr>
+<tr>
+<td>V₁,₁ → V₂,₁</td>
+<td>5</td>
+</tr>
+<tr>
+<td>V₁,₁ → V₂,₃</td>
+<td>3</td>
+</tr>
+<tr>
+<td>V₁,₂ → V₂,₁</td>
+<td>4</td>
+</tr>
+<tr>
+<td>V₁,₂ → V₂,₂</td>
+<td>3</td>
+</tr>
+<tr>
+<td>V₁,₃ → V₂,₂</td>
+<td>2</td>
+</tr>
+<tr>
+<td>V₁,₃ → V₂,₃</td>
+<td>7</td>
+</tr>
+<tr>
+<td>V₂,₁ → V₃</td>
+<td>4</td>
+</tr>
+<tr>
+<td>V₂,₂ → V₃</td>
+<td>1</td>
+</tr>
+<tr>
+<td>V₂,₃ → V₃</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>The search tree (slide 13):</strong> nodes <code>a</code>–<code>l</code>. The number inside/next to a node is its cost estimate; the small number on an edge is the incremental cost; <code>x &gt;k</code> under a leaf means "pruned, bound &gt; k". Node <code>a</code> is the root (cost 1 shown above it). Branch labels are the V-vertices reached.</p>
+<pre><code>a (1)
+├─[1]→ b  V₁,₁  (2)
+│        ├─[5]→ e  V₂,₁  (3)   x &gt;6
+│        └─[3]→ f  V₂,₃  (3)
+│                 └─[1]→ g  V₃  (4)
+├─[3]→ c  V₁,₂  (2)
+│        ├─[4]→ h  V₂,₁  (7)   x &gt;7
+│        └─[3]→ i  V₂,₂  (7)   x &gt;6
+└─[2]→ d  V₁,₃  (2)
+         ├─[2]→ j  V₂,₂  (5)
+         │        └─[1]→ l  V₃  (6)
+         └─[7]→ k  V₂,₃  (5)   x &gt;9
+</code></pre>
+<p>The optimal root→sink path is <code>a→b→f→g</code>, i.e. <code>V₀→V₁,₁→V₂,₃→V₃</code> with cost <code>1+3+1 = 5</code> (node g labeled cost 4 inside the circle is the estimate at that node). This is the B&amp;B search tree for <strong>Fig. 6-17</strong> (slide 12 graph).</p>
+<h3 id="fig-6-26-branch-and-bound-solution-of-the-traveling-salesperson-problem">Fig. 6-26 — Branch-and-Bound Solution of the Traveling Salesperson Problem</h3>
+<ul>
+<li><strong>Source:</strong> slide 28 (<code>render/A05full/slide-28.png</code>). ✅ Verified.</li>
+<li>A chain of <code>With X-Y</code> / <code>Without X-Y</code> decision boxes, each annotated with a lower bound <code>L.B.</code>. The left spine (the "With" choices) leads to the optimal tour.</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Node</th>
+<th>L.B.</th>
+<th>role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All</td>
+<td>96</td>
+<td>root</td>
+</tr>
+<tr>
+<td>With 4-6</td>
+<td>99</td>
+<td>expanded (left spine)</td>
+</tr>
+<tr>
+<td>Without 4-6</td>
+<td>128</td>
+<td><strong>terminated</strong></td>
+</tr>
+<tr>
+<td>With 3-5</td>
+<td>99</td>
+<td>expanded</td>
+</tr>
+<tr>
+<td>Without 3-5</td>
+<td>117</td>
+<td>to be expanded</td>
+</tr>
+<tr>
+<td>With 2-1</td>
+<td>112</td>
+<td>expanded</td>
+</tr>
+<tr>
+<td>Without 2-1</td>
+<td>125</td>
+<td>to be expanded</td>
+</tr>
+<tr>
+<td>With 1-4</td>
+<td>126</td>
+<td>expanded</td>
+</tr>
+<tr>
+<td>Without 1-4</td>
+<td>153</td>
+<td>terminated</td>
+</tr>
+<tr>
+<td>With 6-7</td>
+<td>126</td>
+<td>expanded</td>
+</tr>
+<tr>
+<td>Without 6-7</td>
+<td>141</td>
+<td>terminated</td>
+</tr>
+<tr>
+<td>With 5-2</td>
+<td>126</td>
+<td>expanded</td>
+</tr>
+<tr>
+<td>Without 5-2</td>
+<td>—</td>
+<td><strong>No solution</strong></td>
+</tr>
+<tr>
+<td>With 7-3</td>
+<td>(Solution)</td>
+<td>optimal</td>
+</tr>
+<tr>
+<td>Without 7-3</td>
+<td>—</td>
+<td><strong>No solution</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Final answer (printed in the figure):</strong> <code>Solution 1-4-6-7-3-5-2-1, Cost = 126</code>.</p>
+<blockquote>
+<p>Resolves reconstruction item #14 — the full B&amp;B tree and the optimal tour (<code>1-4-6-7-3-5-2-1</code>, cost 126) are now extracted.</p>
+</blockquote>
+<h3 id="fig-6-28-01-knapsack-problem-solved-by-branch-and-bound">Fig. 6-28 — 0/1 Knapsack Problem Solved by Branch-and-Bound</h3>
+<ul>
+<li><strong>Source:</strong> slide 34 (<code>render/A05full/slide-34.png</code>). ✅ Verified.</li>
+<li>Boxed nodes numbered <code>0</code>–<code>30</code> in creation order. Edges labeled <code>Xᵢ = 1</code> / <code>Xᵢ = 0</code>. Each live node carries <code>U.B.</code> (upper bound) and <code>L.B.</code> (lower bound). Many nodes are marked <code>infeasible</code>. (Recall the deck minimizes negative profit, so more-negative is better; U.B. = best feasible found, L.B. = relaxation bound.)</li>
+</ul>
+<p>Per-node bounds, exactly as printed:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Node</th>
+<th>branch taken to reach it</th>
+<th>U.B.</th>
+<th>L.B.</th>
+<th>note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>(root)</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>X1=1</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>X1=0</td>
+<td>−14</td>
+<td>−17</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>X2=1</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>X2=0</td>
+<td>−15</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>X3=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>6</td>
+<td>X3=0</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>X4=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>8</td>
+<td>X4=0</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>X5=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>10</td>
+<td>X5=0</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>11</td>
+<td>X6=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>12</td>
+<td>X6=0</td>
+<td>−16</td>
+<td>−16</td>
+<td></td>
+</tr>
+<tr>
+<td>13</td>
+<td>(under 4) X3=1</td>
+<td>−15</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>14</td>
+<td>(under 4) X3=0</td>
+<td>−17</td>
+<td>−18</td>
+<td>"a good upper bound is found here"</td>
+</tr>
+<tr>
+<td>15</td>
+<td>X4=1</td>
+<td>−17</td>
+<td>−17</td>
+<td></td>
+</tr>
+<tr>
+<td>16</td>
+<td>X4=0</td>
+<td>−16</td>
+<td>−16</td>
+<td></td>
+</tr>
+<tr>
+<td>17</td>
+<td>X5=1</td>
+<td>−17</td>
+<td>−17</td>
+<td></td>
+</tr>
+<tr>
+<td>18</td>
+<td>X5=0</td>
+<td>−17</td>
+<td>−17</td>
+<td></td>
+</tr>
+<tr>
+<td>19</td>
+<td>X6=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>20</td>
+<td>X6=0</td>
+<td>−17</td>
+<td>−17</td>
+<td></td>
+</tr>
+<tr>
+<td>21</td>
+<td>(under 13) X4=1</td>
+<td>−15</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>22</td>
+<td>(under 13) X4=0</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>23</td>
+<td>X5=1</td>
+<td>−16</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>24</td>
+<td>X5=0</td>
+<td>−14</td>
+<td>−14</td>
+<td></td>
+</tr>
+<tr>
+<td>25</td>
+<td>X6=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>26</td>
+<td>X6=0</td>
+<td>−16</td>
+<td>−16</td>
+<td></td>
+</tr>
+<tr>
+<td>27</td>
+<td>(under 21) X5=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>28</td>
+<td>(under 21) X5=0</td>
+<td>−15</td>
+<td>−18</td>
+<td></td>
+</tr>
+<tr>
+<td>29</td>
+<td>X6=1</td>
+<td></td>
+<td></td>
+<td>infeasible</td>
+</tr>
+<tr>
+<td>30</td>
+<td>X6=0</td>
+<td>−15</td>
+<td>−15</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>The branch labels in the figure are <code>X1</code> (level 1, nodes 1/2), <code>X2</code> (nodes 3/4), <code>X3</code> (5/6 and 13/14), <code>X4</code> (7/8, 21/22, 15/16), <code>X5</code> (9/10, 27/28, 23/24, 17/18), <code>X6</code> (11/12, 29/30, 25/26, 19/20). The annotation "(a good upper bound is found here)" sits at node 14. The optimal value −17 surfaces along the node 14 → 15 → 17/18 → 20 chain (X1=0,…) consistent with the optimal set <code>{1,4,5}</code> giving −17 in §10.</p>
+<blockquote>
+<p>Resolves reconstruction item #16 — all per-node U.B./L.B. values now transcribed (root −16/−18 confirmed).</p>
+</blockquote>
+<h3 id="fig-6-36-a-search-tree-progressive-expansion-snapshots-slides-3742">Fig. 6-36 — A* Search Tree (progressive-expansion snapshots, slides 37–42)</h3>
+<ul>
+<li><strong>Sources:</strong> slides 37–42 (<code>render/A05full/slide-37..42.png</code>) — the A* search <strong>tree</strong> built on the Fig. 6-36 graph (slide 36). ✅ Verified.</li>
+<li>A search tree rooted at <code>R</code>. Each edge has a letter id and a weight <code>g</code>-increment; each node has a heuristic <code>h</code> value shown beneath it. <code>×</code> marks a node not (yet) expanded / a leaf in that snapshot. (The exact <code>g/h/f</code> table is given just below.)</li>
+</ul>
+<p><strong>Edges (from slides 37–42):</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Edge id</th>
+<th>From → To</th>
+<th>weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>R → A</td>
+<td>2</td>
+</tr>
+<tr>
+<td>b</td>
+<td>R → B</td>
+<td>4</td>
+</tr>
+<tr>
+<td>c</td>
+<td>R → C</td>
+<td>3</td>
+</tr>
+<tr>
+<td>d</td>
+<td>A → D</td>
+<td>2</td>
+</tr>
+<tr>
+<td>e</td>
+<td>A → E</td>
+<td>3</td>
+</tr>
+<tr>
+<td>g</td>
+<td>B → J</td>
+<td>2</td>
+</tr>
+<tr>
+<td>k</td>
+<td>C → F</td>
+<td>2</td>
+</tr>
+<tr>
+<td>f</td>
+<td>C → G</td>
+<td>2</td>
+</tr>
+<tr>
+<td>h</td>
+<td>D → H</td>
+<td>1</td>
+</tr>
+<tr>
+<td>i</td>
+<td>D → I</td>
+<td>3</td>
+</tr>
+<tr>
+<td>h</td>
+<td>F → K</td>
+<td>1</td>
+</tr>
+<tr>
+<td>l</td>
+<td>F → L</td>
+<td>3</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Exact <code>g/h/f</code> per node (read directly from slides 37–42):</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Node</th>
+<th>g</th>
+<th>h</th>
+<th>f</th>
+<th>source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>2</td>
+<td>2</td>
+<td>4</td>
+<td>slide 37</td>
+</tr>
+<tr>
+<td>B</td>
+<td>4</td>
+<td>2</td>
+<td>6</td>
+<td>slide 37</td>
+</tr>
+<tr>
+<td>C</td>
+<td>3</td>
+<td>2</td>
+<td>5</td>
+<td>slide 37</td>
+</tr>
+<tr>
+<td>D</td>
+<td>4</td>
+<td>1</td>
+<td>5</td>
+<td>slide 38</td>
+</tr>
+<tr>
+<td>E</td>
+<td>5</td>
+<td>2</td>
+<td>7</td>
+<td>slide 38 (×)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>5</td>
+<td>1</td>
+<td>6</td>
+<td>slide 39</td>
+</tr>
+<tr>
+<td>G</td>
+<td>5</td>
+<td>5</td>
+<td>10</td>
+<td>slide 39 (×)</td>
+</tr>
+<tr>
+<td>H</td>
+<td>5</td>
+<td>5</td>
+<td>10</td>
+<td>slide 40 (×)</td>
+</tr>
+<tr>
+<td>I</td>
+<td>7</td>
+<td>0</td>
+<td>7</td>
+<td>slide 40 — <strong>GOAL</strong></td>
+</tr>
+<tr>
+<td>J</td>
+<td>6</td>
+<td>5</td>
+<td>11</td>
+<td>slide 41 (×)</td>
+</tr>
+<tr>
+<td>K</td>
+<td>6</td>
+<td>5</td>
+<td>11</td>
+<td>slide 42 (×)</td>
+</tr>
+<tr>
+<td>L</td>
+<td>8</td>
+<td>0</td>
+<td>8</td>
+<td>slide 42 (×)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Expansion order (each step picks the smallest-<code>f</code> open node): <strong>A(4) → C(5) → D(5) → B(6) → F(6)</strong>. After expanding F, the smallest open node is <strong>I (f=7)</strong>, which is a goal node ("I is a goal node !", slide 42) → stop, optimal.</p>
+<blockquote>
+<p>✅ Verified against slides 36–42 (resolves item #17). <strong>Correction:</strong> goal node is <strong>I</strong>, not F.</p>
+</blockquote>
+<h3 id="fig-6-48-a-partial-solution-tree-for-the-channel-routing-problem-was-mislabeled-best-first-gh-tree">Fig. 6-48 — A* Partial Solution Tree for the Channel Routing Problem (was mislabeled "best-first g+h tree")</h3>
+<ul>
+<li><strong>Source:</strong> slide 49 (<code>render/A05full/slide-49.png</code>) — ✅ Verified.</li>
+<li><code>root</code> with three children; nodes labeled A–I. Edge labels are <code>g+h</code> sums; node interiors hold the net set assigned to that track; <code>g(n)</code> = tree level, <code>h(n)</code> = maximal local density. Goal reached at node <strong>I</strong>.</li>
+</ul>
+<pre><code>root
+├─[1+3]→ A  {8,1}      (f=4)
+├─[1+3]→ B  {7,3,1}    (f=4)
+│          ├─[2+3]→ D  {4,2}   (f=5)
+│          ├─[2+2]→ E  {8,2}   (f=4)
+│          │          ├─[3+2]→ G  {4}    (f=5)
+│          │          └─[3+1]→ H  {5}    (f=4)
+│          │                     └─[4]→ I  {4,6}   ← GOAL
+│          └─[2+2]→ F  {5}     (f=4)
+└─[1+3]→ C  {7,5}      (f=4)
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 49: this is <strong>Fig. 6-48</strong>. The three root children <code>{8,1}, {7,3,1}, {7,5}</code> are exactly the three maximal HCG cliques (= Fig. 6-46 first level). The node states are net-cliques assigned to successive tracks; goal is node I.</p>
+</blockquote>
+<h3 id="fig-6-41-horizontal-constraint-graph-hcg-was-the-uncaptioned-personnelvcg-ordering-graph">Fig. 6-41 — Horizontal Constraint Graph (HCG) (was the uncaptioned "personnel/VCG ordering graph")</h3>
+<ul>
+<li><strong>Source:</strong> slide 47 (<code>render/A05full/slide-47.png</code>) — ✅ Verified.</li>
+<li>A directed graph over nets <code>1</code>–<code>8</code>. Edge tail → head means "tail must be left of head if in the same track". Arrows:</li>
+</ul>
+<pre><code>7 → 5,  7 → 6,  7 → 3,  7 → 1,  7 → 2
+8 → 1,  8 → 2
+4 → 6,  4 → 1,  4 → 2
+3 → 1,  3 → 2
+</code></pre>
+<p>Sinks <code>1</code> and <code>2</code> receive the most arrows; <code>7, 8, 4</code> are sources; <code>3, 5, 6</code> intermediate.</p>
+<blockquote>
+<p>✅ Verified against slide 47: this is the <strong>channel-routing HCG</strong> (slide annotation: "net 8 must be to the left of net 1 and net 2 if they are in the same track"), NOT a personnel/VCG graph.</p>
+</blockquote>
+<h3 id="fig-6-40-channel-specification-newly-transcribed">Fig. 6-40 — Channel Specification (newly transcribed)</h3>
+<ul>
+<li><strong>Source:</strong> slide 43. ✅ Verified.</li>
+<li>13 columns; each column has a top terminal and bottom terminal (net number, <code>0</code> = none):</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Top</strong></td>
+<td>4</td>
+<td>8</td>
+<td>0</td>
+<td>7</td>
+<td>0</td>
+<td>3</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>Bottom</strong></td>
+<td>0</td>
+<td>0</td>
+<td>7</td>
+<td>0</td>
+<td>5</td>
+<td>4</td>
+<td>0</td>
+<td>8</td>
+<td>3</td>
+<td>0</td>
+<td>2</td>
+<td>6</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="vcg-vertical-constraint-graph-newly-transcribed">VCG — Vertical Constraint Graph (newly transcribed)</h3>
+<ul>
+<li><strong>Source:</strong> slide 48. ✅ Verified.</li>
+<li>Edges (top-net → bottom-net at shared column): <code>1 → 2</code>, <code>3 → 4</code>, <code>5 → 6</code>. Nets 7 and 8 are isolated. Annotation: "e.g. net 3 must be wired before net 4."</li>
+<li>Same slide states the <strong>max cliques in HCG: {1,8}, {1,3,7}, {5,7}</strong> and shows the <strong>Fig. 6-46</strong> first level (root → {8,1}, {7,3,1}, {7,5}).</li>
+</ul>
+<h3 id="fig-6-6-graph-containing-a-hamiltonian-circuit-newly-transcribed">Fig. 6-6 — Graph Containing a Hamiltonian Circuit (newly transcribed)</h3>
+<ul>
+<li><strong>Source:</strong> slide 4. ✅ Verified.</li>
+<li>Vertices laid out: top row <code>1, 2, 7, 5</code>; bottom row <code>6, 3, 4</code>. Edges: <code>1-2, 1-6, 1-3, 2-3, 6-5</code> (long crossing edge), <code>7-5, 7-4, 3-4, 4-5</code>.</li>
+</ul>
+<h3 id="tables-6-1-6-2-personnel-cost-reduced-matrices-newly-transcribed">Tables 6-1 / 6-2 — Personnel cost &amp; reduced matrices (newly transcribed)</h3>
+<ul>
+<li><strong>Source:</strong> slides 16, 17, 18. ✅ Verified — see §8 for the full Markdown tables. Table 6-1 P3 row = <code>3,21,7,9</code>; Table 6-2 row reductions <code>−12,−26,−3,−10</code> + column-2 <code>−3</code>; lower bound <strong>54</strong>.</li>
+</ul>
+<h3 id="personnel-bb-trees-newly-transcribed">Personnel B&amp;B trees (newly transcribed)</h3>
+<ul>
+<li><strong>Sources:</strong> slide 19 (solution tree), slide 20 (best-first with bounds), slide 21 (bounding).</li>
+<li><strong>Solution tree (slide 19, "Person Assigned" levels 1–4):</strong></li>
+</ul>
+<pre><code>            0
+          /   \
+         1      2
+        / \      \
+       2   3      1
+      /|   |     / \
+     3 4   2    3   4
+     | |   |    |   |
+     4 3   4    4   3
+</code></pre>
+<ul>
+<li><strong>Best-first tree (slide 20)</strong> — node value = partial cost; "Only one node is pruned away":</li>
+</ul>
+<pre><code>0(0)
+├─ 1(29)
+│   ├─ 2(59) ─┬─ 3(66) ── 4(81)
+│   │          └─ 4(68) ── 3(78)
+│   └─ 3(55) ── 2(76)
+└─ 2(19)
+    └─ 1(51) ─┬─ 3(58) ── 4(73)
+               └─ 4(60) ── 3(70)
+</code></pre>
+<ul>
+<li><strong>Bounding tree (slide 21)</strong> — node value = lower bound; spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>; optimal feasible cost = <strong>70</strong>.</li>
+</ul>
+<h3 id="tables-6-3-6-4-6-5-6-6-6-7-tsp-cost-reduced-matrices-newly-transcribed">Tables 6-3 / 6-4 / 6-5 / 6-6 / 6-7 — TSP cost &amp; reduced matrices (newly transcribed)</h3>
+<ul>
+<li><strong>Sources:</strong> slides 22, 23, 24, 26, 27. ✅ Verified — full Markdown tables in §9. Row-reduction sum 84 (Table 6-4); column reductions <code>−7,−1,−4</code> (Table 6-5) → lower bound <strong>96</strong>. Table 6-6 = "arc 4-6 included" with <code>(6,4)=∞</code>; Table 6-7 reduces row 5 by <code>−3</code> → lower bound <strong>99</strong>.</li>
+</ul>
+<h3 id="fig-6-25-highest-level-of-the-tsp-decision-tree-newly-transcribed">Fig. 6-25 — Highest Level of the TSP Decision Tree (newly transcribed)</h3>
+<ul>
+<li><strong>Source:</strong> slide 25. ✅ Verified.</li>
+</ul>
+<pre><code>          [All solutions]  L.B. = 96
+          /                       \
+[with arc 4-6]            [without arc 4-6]
+  L.B. = 96                L.B. = 96+32 = 128
+</code></pre>
+<p>Splitting arc = <strong>4-6</strong> (exclusion penalty 32, the largest; the 3-5 alternative penalty is 17+1=18).</p>
+<hr />
+<h3 id="summary-all-reconstruction-flags-now-verified-against-the-clean-renders">Summary — all reconstruction flags now ✅ Verified against the clean renders</h3>
+<p>With the full 49-slide render set (<code>render/A05full/</code>), <strong>every</strong> previously-reconstructed item (#1–#18) is now verified directly from a slide. Newly transcribed figures/tables added to this Appendix: <strong>Fig. 6-6</strong> (Hamiltonian graph, slide 4), <strong>Tables 6-1/6-2</strong> (personnel, slides 16–18), <strong>personnel B&amp;B trees</strong> (slides 19–21), <strong>Tables 6-3..6-7</strong> (TSP, slides 22–27), <strong>Fig. 6-25</strong> (TSP decision tree top, slide 25), <strong>Fig. 6-40</strong> (channel spec, slide 43), <strong>Fig. 6-41 HCG</strong> (slide 47), <strong>VCG</strong> (slide 48), <strong>Fig. 6-46/6-48</strong> (channel A* trees, slides 48–49).</p>
+<p><strong>Corrections made during the clean-render pass:</strong>
+- The graph called "Fig. 6-17" before is <strong>Fig. 6-36</strong> (A* example, slide 36); the true <strong>Fig. 6-17</strong> is the <code>V₀…V₃</code> multi-stage graph (slide 12, B&amp;B tree slide 13).
+- <strong>Fig. 6-21</strong> has only <code>J1→J3</code> and <code>J2→J4</code> — no <code>J1→J4</code> diagonal (was wrong).
+- The A* <strong>goal node is I</strong>, not F (slide 42).
+- The uncaptioned <code>png_014</code> graph = <strong>Fig. 6-41 HCG</strong>; the uncaptioned <code>png_015</code> tree = <strong>Fig. 6-48</strong>.</p>
+<hr>
+<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+</div></body></html>

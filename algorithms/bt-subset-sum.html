@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subset Sum — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Backtracking</div>
+<h1>Subset Sum</h1>
+<div class="mission">Pick some numbers from a set so they add up to a target — by trying choices one at a time and <strong>backing out</strong> of dead ends.</div>
+
+<h2>What is it?</h2>
+<p>You have a <strong>set of numbers</strong> and a <strong>target</strong> total. The question: is there a <em>subset</em> (some of the numbers, in any combination) that adds up exactly to the target? A <em>subset</em> just means "pick any of them — each number is either in or out."</p>
+<p>The core idea is <strong>backtracking</strong>: walk through the numbers one at a time and, for each, make a binary choice — <strong>include it</strong> or <strong>leave it out</strong>. Every choice splits the search into two branches, so all the possibilities form a <strong>decision tree</strong>: the root is "nothing decided yet," each level decides one number, and each leaf at the bottom is one complete subset. We explore the tree <strong>depth-first</strong> (go all the way down one branch, then back up and try the next).</p>
+<p>The smart part is <strong>pruning</strong>. We keep a <em>running sum</em> of the numbers we've included so far. The moment that running sum <strong>exceeds the target</strong>, this branch is hopeless — adding more numbers only makes it bigger — so we abandon it immediately instead of exploring its children. That cut-off is what makes backtracking faster than blindly listing every subset.</p>
+<p><strong>Tiny example:</strong> with the set <code>{3, 5, 6, 7}</code> and target <code>13</code>, including 6 and 7 gives <code>6 + 7 = 13</code>. But the branch that includes 3, 5, and 6 reaches <code>3 + 5 + 6 = 14</code>, which is already over 13 — so we prune it.</p>
+
+<h2>Watch it run</h2>
+<p>Set <strong>S = {3, 5, 6, 7}</strong>, target <strong>13</strong>. Each level of the tree decides one number (<code>in</code> or <code>out</code>); the number after <code>=</code> is the running sum. We explore depth-first; a branch ending in <code>✗ prune</code> is abandoned because its sum already passed 13.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Technique: <b>backtracking</b></span>
+  <span class="chip">Worst case: <b>O(2ⁿ)</b></span>
+  <span class="chip">Choice per item: <b>in / out</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="Pruning fires the instant the partial sum exceeds the target: 5+6+7=18 is already past 13, and every remaining number is positive, so no addition can bring it back down. We cut the branch without exploring deeper. 18 being 'close' or 'even' is irrelevant — only 'already over the target' matters.">
+  <div class="q">Exploring S = {5, 6, 7} with target 13, you're on the branch that included all three: 5 + 6 + 7 = 18. What does backtracking do here?</div>
+  <button class="opt">keep going — a later number might cancel it out</button>
+  <button class="opt">prune it — 18 is already over 13, so it can't work</button>
+  <button class="opt">accept it — it's the closest sum to the target</button>
+  <button class="opt">prune it — but only because 18 is an even number</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Each of the n items is an independent in/out choice, so the choices multiply: 2 × 2 × … × 2 = 2ⁿ complete subsets, one per leaf. With n = 5 that's 2⁵ = 32. Pruning skips many of them at run time, but the full tree still has 2ⁿ leaves — that's the worst-case cost.">
+  <div class="q">A subset-sum decision tree branches into "include" and "exclude" at every item. For a set of 5 items, how many leaves (complete subsets) does the full tree have?</div>
+  <button class="opt">5</button>
+  <button class="opt">10</button>
+  <button class="opt">32</button>
+  <button class="opt">120</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="bt-subset-sum">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em> — the subset-sum problem (NP-complete problems chapter) and the general backtracking / exhaustive-search pattern. Subset Sum is the textbook example of pruning an exponential search tree.</p>
+<div class="note"><strong>Next in this bucket:</strong> Permutations — arrange all items in every order using the same backtrack-and-undo idea, choosing one unused item per level.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// S = {3,5,6,7}, target 13. We grow an ASCII decision tree depth-first,
+// pruning any partial sum that exceeds the target, until we reach {6,7}=13.
+const S = [3,5,6,7], T = 13;
+
+// Each frame is a list of tree lines to show. We hand-build the DFS narrative
+// toward the solution {6,7}=13, including two pruned branches along the way.
+const L = {
+  root:    "{ }=0",
+  in3:     "├─ in 3 ......... =3",
+  in3in5:  "│   ├─ in 5 ..... =8",
+  in3in5in6:"│   │   ├─ in 6 . =14   ✗ prune: 14 > 13",
+  in3in5out6:"│   │   └─ out 6 =8",
+  in3in5out6in7:"│   │       └─ in 7 =15   ✗ prune: 15 > 13",
+  out3:    "└─ out 3 ........ =0",
+  out3out5:"    └─ out 5 .... =0",
+  out3out5in6:"        ├─ in 6 . =6",
+  out3out5in6in7:"        │   └─ in 7 =13   ★ FOUND  {6,7}",
+};
+
+const frames = [
+  { lines:[L.root],
+    cap:`Root: nothing decided, running sum = 0. We'll decide each of {3,5,6,7} in turn — <b>in</b> or <b>out</b>.` },
+
+  { lines:[L.root, L.in3],
+    cap:`First choice: <b>include 3</b>. Running sum = 3. Go deeper down this branch.` },
+
+  { lines:[L.root, L.in3, L.in3in5],
+    cap:`Then <b>include 5</b>. Sum = 3 + 5 = <b>8</b>. Still ≤ 13, so keep exploring.` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6],
+    cap:`<b>Include 6</b>: sum = 8 + 6 = <b>14</b>. That's over the target — <b>prune: 14 &gt; 13</b>. Abandon this branch and back up.` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6, L.in3in5out6, L.in3in5out6in7],
+    cap:`Backtrack: <b>exclude 6</b> (sum stays 8), then <b>include 7</b>: 8 + 7 = <b>15</b> — <b>prune: 15 &gt; 13</b>. The whole "in 3, in 5" region fails.` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6, L.in3in5out6, L.in3in5out6in7, L.out3],
+    cap:`No subset starting with 3 reaches 13 here. Back up to the root and try the other top choice: <b>exclude 3</b> (sum = 0).` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6, L.in3in5out6, L.in3in5out6in7, L.out3, L.out3out5],
+    cap:`<b>Exclude 5</b> too (sum still 0). Now consider the remaining numbers 6 and 7.` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6, L.in3in5out6, L.in3in5out6in7, L.out3, L.out3out5, L.out3out5in6],
+    cap:`<b>Include 6</b>: sum = <b>6</b>. Under 13 — one more number to try.` },
+
+  { lines:[L.root, L.in3, L.in3in5, L.in3in5in6, L.in3in5out6, L.in3in5out6in7, L.out3, L.out3out5, L.out3out5in6, L.out3out5in6in7],
+    cap:`<b>Include 7</b>: 6 + 7 = <b>13</b> = target. <b>★ Solution found: {6, 7}.</b>` },
+];
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const html = f.lines.map(line => {
+      let cls = '';
+      if (line.indexOf('prune') >= 0) cls = ' style="color:var(--mut)"';
+      else if (line.indexOf('FOUND') >= 0) cls = ' style="color:var(--good);font-weight:700"';
+      return `<span${cls}>${esc(line)}</span>`;
+    }).join('\n');
+    stage.innerHTML = `<div class="atree">${html}</div>`;
+  }
+});
+</script>
+</body></html>

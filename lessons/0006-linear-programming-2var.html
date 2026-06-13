@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 6 — Two-Variable Linear Programming in O(n)</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 6 · Ch7 Prune-and-Search</div>
+<h1>Two-Variable Linear Programming in O(n)</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> the boundary envelope and explain the slope test. Linear programming sounds heavy, but in 2 variables it collapses to one picture — <em>the lowest point of a convex curve</em> — and prune-and-search finds it in linear time by throwing away a quarter of the constraints each round.</div>
+
+<h2>1 · What is linear programming?</h2>
+<p><strong>Linear programming (LP)</strong> means: you have some quantities you can choose (the <strong>variables</strong>, say <code>x</code> and <code>y</code>), and you want to make one number as small (or large) as possible — that number is the <strong>objective</strong>, and it's <em>linear</em>, meaning it looks like <code>ax + by</code> (just variables times constants, added up — no squares, no products). But you can't choose freely: you must obey a list of <strong>constraints</strong>, each also linear, each an inequality like <code>aᵢx + bᵢy ≤ cᵢ</code> (read "<code>≤</code>" as "at most"). The job: find the <code>(x, y)</code> that obeys every constraint and makes the objective smallest. "Programming" here is an old word for <em>planning</em>, nothing to do with code.</p>
+<p>A tiny example in words: a bakery makes <code>x</code> loaves and <code>y</code> cakes; flour and oven-time are limited (those are the <code>≤</code> constraints); we want to minimize cost <code>ax + by</code>. LP is everywhere — diets, shipping, scheduling — wherever you optimize under linear limits.</p>
+
+<h3 style="font-size:1.05rem;font-weight:600;margin-top:1.4rem">What the constraints carve out</h3>
+<p>Picture the plane of all possible <code>(x, y)</code>. One inequality <code>aᵢx + bᵢy ≤ cᵢ</code> draws a straight line and keeps only the side that satisfies it — a <strong>half-plane</strong> (half the plane, on one side of a line). Stack up <code>n</code> such half-planes and only the points obeying <em>all</em> of them survive. That surviving overlap is the <strong>feasible region</strong>: every point in it is a legal choice (<strong>feasible</strong> = obeys all constraints; <strong>optimal</strong> = the best feasible one). It's a convex polygon-ish area — possibly unbounded. The optimum sits somewhere on its edge.</p>
+<div class="tree">y
+↑     each line is one constraint;
+│ \   keep only the side it allows
+│  \  ┌──────────  feasible region =
+│   \ │░░░░░░░░░░    overlap of all
+│    \│░░░░░░░░░░    the half-planes
+│─────┴──────────→ x</div>
+
+<h2>2 · The problem is one picture</h2>
+<p>General two-variable LP minimizes <code>ax + by</code> subject to <code>n</code> half-plane constraints <code>aᵢx + bᵢy ≤ cᵢ</code>. By a change of variables it reduces to the easy-to-see <strong>simplified form</strong>:</p>
+<div class="tree">Minimize    y
+subject to  y ≥ aᵢx + bᵢ ,   i = 1 … n</div>
+<p>Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> that line. So the feasible region is everything above the <em>highest</em> line at each <code>x</code>. We want the <strong>lowest</strong> feasible <code>y</code> — the bottom of that region.</p>
+
+<h2>3 · The boundary function F(x)</h2>
+<p>In the simplified form, each constraint <code>y ≥ aᵢx + bᵢ</code> forces our point to sit <em>on or above</em> that line. To be feasible at a given <code>x</code>, the point must be above <strong>every</strong> line at once — so it must be above the <em>highest</em> one there. Define the <strong>boundary function</strong> <code>F(x)</code> as exactly that: at each <code>x</code>, the height of whichever line is on top.</p>
+<div class="tree">F(x) = max { aᵢx + bᵢ : i = 1 … n }</div>
+<p>Tracing the top line across all <code>x</code> draws the <strong>upper envelope</strong> — the jagged ceiling formed by always taking the highest line. It is the lower edge of the feasible region: the lowest you're allowed to be at each <code>x</code>. Minimizing <code>y</code> means finding the lowest point <em>on this ceiling</em>.</p>
+<p>Here is the key fact. Because <code>F(x)</code> is the pointwise <em>maximum</em> of straight lines, it is <strong>convex</strong> — it bends only upward, like the inside of a bowl. (Why: each line is straight; taking the top one at every <code>x</code> can only ever kink <em>upward</em> where a steeper line overtakes, never downward.) So <code>F(x)</code> is a single valley: it falls, hits one bottom, then rises — a <code>V</code> or bowl shape, never a <code>W</code> with two dips. The optimum is that bottom:</p>
+<div class="tree">F(x₀) = min over all x of F(x)        (Fig. 7-2)</div>
+<img src="../render/A06full/slide-14.png" alt="Fig. 7-2: the n constraint lines, with F(x) the upper envelope (highest line at each x) bounding the shaded feasible region; the convex valley bottoms out at the optimum (x₀, y₀)." style="background:#fff;padding:.5rem;width:100%;border:1px solid var(--rule);border-radius:6px;margin:1rem 0">
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.4rem"><strong>Fig. 7-2.</strong> The lines are the constraints; <code>F(x)</code> is the highest one at each <code>x</code> (the jagged ceiling). The shaded feasible region sits above it; the convex valley bottoms out at the optimum <code>(x₀, y₀)</code> — the lowest point of the upper envelope.</p>
+<p>and <code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the answer. Convexity is the whole engine: a valley has <em>one</em> bottom, so a single left/right test at any probe point tells you which way the bottom lies — exactly what makes the fast pruning below possible.</p>
+<div class="note"><strong>Key exam line:</strong> <code>F(x)</code> = the <b>upper envelope</b> of the constraint lines (highest line at each x), and it is <b>convex</b>. The optimum is <em>not</em> the highest line — it's the lowest point of the highest-line-at-each-x curve.</div>
+
+<p>Tiny example you can see — two lines, <code>y ≥ x</code> and <code>y ≥ −x</code>. The envelope is the higher of the two at each <code>x</code>: the falling line on the left, the rising line on the right, meeting in a <code>V</code> at the origin. Lowest point = <code>(0, 0)</code>.</p>
+<div class="tree">  y
+  ↑  \           /     F(x) = max(−x, x)
+   \  \         /      left half:  y = −x  (falling)
+    \  \       /       right half: y =  x  (rising)
+     \  \     /        bottom of the V → optimum
+      \  \   /
+       \  \ /
+  ──────────●──────────→ x
+          (0,0)  ← lowest point of the envelope</div>
+
+<h2>4 · The slope test, then prune</h2>
+<p>Pick a probe abscissa <code>xₘ</code> and evaluate <code>yₘ = F(xₘ)</code> — find the line(s) active (on top) there. Read off the slope <code>g</code> of the active constraint:</p>
+<table>
+<tr><th>Active slope at xₘ</th><th>Envelope is…</th><th>So the bottom x₀ is…</th></tr>
+<tr><td><code>g &gt; 0</code> (rising)</td><td>still descending to the left</td><td><strong>left</strong>: x₀ &lt; xₘ</td></tr>
+<tr><td><code>g &lt; 0</code> (falling)</td><td>still descending to the right</td><td><strong>right</strong>: x₀ &gt; xₘ</td></tr>
+<tr><td>both signs present</td><td>at its bottom right here</td><td><strong>xₘ itself</strong> is x₀ ✓</td></tr>
+</table>
+<p>When several lines meet at <code>xₘ</code>, use <code>g_max</code>/<code>g_min</code> = the max/min slope among the active lines: both positive ⇒ x₀ left; both negative ⇒ x₀ right; opposite signs (<code>g_min &lt; 0 &lt; g_max</code>) ⇒ <code>xₘ</code> is the optimum (Fig. 7-6).</p>
+<p><strong>How a pair gets pruned.</strong> Group the <code>n</code> constraints into <code>n/2</code> pairs; intersect each pair, and let <code>xₘ</code> be the <em>median</em> of the <code>n/2</code> intersection x-values. Suppose the test says <code>x₀ &lt; xₘ</code>. Take any pair whose two lines cross at some <code>x &gt; xₘ</code>. To the left of that crossing one line of the pair is strictly below the other — and since we only care about <code>x ≤ xₘ &lt; </code> crossing, that <strong>lower line can never be on the upper envelope near x₀</strong>, so it is redundant and we delete it. Half the pairs (those crossing on the far side of <code>xₘ</code>) qualify, so <strong>n/4 constraints die every iteration</strong>.</p>
+<div class="note"><strong>Why O(n):</strong> each iteration does <code>O(n)</code> work (pairing, one median, one F-evaluation) and discards a constant fraction (≈1/4), so <code>T(n) = T(3n/4) + O(n) = O(n)</code> — the same prune-and-search payoff that makes median-of-medians selection (Lesson 5) linear.</div>
+
+<h2>5 · Trace it yourself</h2>
+<p>Three constraints in simplified form. Find the upper envelope's lowest point.</p>
+<div class="tree">L₁:  y ≥  x + 1      (slope +1)
+L₂:  y ≥ −x + 5      (slope −1)
+L₃:  y ≥  2          (slope  0, a floor)</div>
+<p>Work out <code>F(x) = max(L₁,L₂,L₃)</code>, find where it bottoms out, then reveal.</p>
+
+<details><summary>Where do the lines cross, and what is F(x)?</summary>
+<p><code>L₁ = L₂</code>: <code>x+1 = −x+5 ⇒ x = 2, y = 3</code>. At <code>x=2</code> both L₁ and L₂ give 3, and the floor L₃ gives 2 — so the floor is below them and inactive. For <code>x &lt; 2</code> the falling line <code>L₂</code> is on top; for <code>x &gt; 2</code> the rising line <code>L₁</code> is on top. So the envelope is a clean V with its vertex at <code>(2, 3)</code>.</p></details>
+
+<details><summary>Apply the slope test at the vertex x₀ = 2</summary>
+<p>At <code>xₘ = 2</code> the active lines are L₂ (slope <code>−1</code>) and L₁ (slope <code>+1</code>). <code>g_min = −1 &lt; 0</code> and <code>g_max = +1 &gt; 0</code> — opposite signs — so by the rule this point <em>is</em> the optimum. Answer: <code>x₀ = 2, y₀ = F(2) = 3</code>. (The floor L₃ = 2 never touches the envelope here, so it's a redundant constraint — exactly the kind prune-and-search would discard.)</p></details>
+
+<details><summary>Sanity-check with a probe to the left, say xₘ = 0</summary>
+<p><code>F(0) = max(0+1, 5, 2) = 5</code>, achieved by <code>L₂</code> alone, slope <code>−1 &lt; 0</code> ⇒ envelope still descending to the right ⇒ <code>x₀ &gt; 0</code>. Correct: the true bottom is at <code>x₀ = 2</code>, to the right. The single slope sign pointed the right way.</p></details>
+
+<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="3" data-explain="F(x) is the <b>max</b> (upper envelope), so F(3) = max(3+2, −3+8, 4) = max(5, 5, 4) = <b>5</b>. If you picked 4 you took the <b>min</b> (lower envelope) of the three values instead of the max; 8 means you read the constant term of −x+8 without substituting x=3; 2 is the constant term of the first line, same slip.">
+  <div class="q">Q1. Constraints y ≥ x+2, y ≥ −x+8, y ≥ 4. The boundary F(x) is the upper envelope max of the three lines. What is F(3)?</div>
+  <button class="opt">2</button>
+  <button class="opt">4</button>
+  <button class="opt">8</button>
+  <button class="opt">5</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="F is the upper envelope (a convex valley); the optimum is its <b>lowest</b> point. L₁ and L₂ cross at x+1 = −x+5 ⇒ x=2, y=3, and the floor L₃=2 sits below there (inactive), so x₀=2, y₀=3. If you picked (5,2) you took the floor's value (the lowest line) instead of the lowest point of the highest-line curve; (0,5) is the highest envelope value, not the lowest.">
+  <div class="q">Q2. Constraints y ≥ x+1, y ≥ −x+5, y ≥ 2. The optimum is the lowest point of the upper envelope. What is (x₀, y₀)?</div>
+  <button class="opt">(5, 2)</button>
+  <button class="opt">(0, 5)</button>
+  <button class="opt">(2, 3)</button>
+  <button class="opt">(2, 2)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="At a probe where the active line has slope <b>g &lt; 0</b> the envelope is still falling to the right, so the bottom x₀ lies to the <b>right</b> (x₀ &gt; xₘ). If you picked 'left' you flipped the rule — that's the g &gt; 0 case. Both-signs-present (g_min&lt;0&lt;g_max) would mean xₘ itself is the optimum, not that it's undecidable.">
+  <div class="q">Q3. You probe at xₘ = 1 and find F is achieved by a single active line of slope g = −2. Where is the optimum x₀?</div>
+  <button class="opt">to the right: x₀ &gt; 1</button>
+  <button class="opt">to the left: x₀ &lt; 1</button>
+  <button class="opt">exactly at xₘ = 1</button>
+  <button class="opt">undecidable from one slope</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="Since x₀ &lt; xₘ we only care about x ≤ xₘ = 4, which is left of the crossing at x=6. There L₂ (slope −1) sits <b>below</b> L₁ (slope +1) — check x=4: L₁=4+1=5, L₂=−4+9=5; just left, L₂ is smaller — so L₂ can never reach the upper envelope near x₀ and is deleted. If you picked L₁ you pruned the wrong side (the line that stays on top); if you said neither, you forgot the median test guarantees this pair crosses on the deletable side.">
+  <div class="q">Q4. The slope test gave x₀ &lt; xₘ = 4. A pair L₁: y ≥ x+1 (slope +1) and L₂: y ≥ −x+9 (slope −1) crosses at x = 6 (right of xₘ). Which line of the pair is redundant and pruned?</div>
+  <button class="opt">L₁ (slope +1)</button>
+  <button class="opt">L₂ (slope −1)</button>
+  <button class="opt">neither — both stay</button>
+  <button class="opt">both are pruned</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Median-of-medians sorts groups of <b>5</b> and takes the median of group-medians; this guarantees ≥1/4 of S is ≤ p and ≥1/4 is ≥ p, so ≤ <b>3n/4</b> survive — the same constant-fraction prune that this LP method reuses to drop n/4 constraints a round. (Lesson 5.)">
+  <div class="q">Q5. (Lesson 5) Median-of-medians selection divides the n elements into groups of size…</div>
+  <button class="opt">2</button>
+  <button class="opt">3</button>
+  <button class="opt">5</button>
+  <button class="opt">7</button>
+  <div class="fb"></div>
+</div>
+
+<h2>7 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.x on Prune-and-Search (your <code>Alg06</code> slides, "Prune-and-Search"). Study Fig. 7-2 (the F(x) envelope plot, slide 14) and Fig. 7-6 (the three slope-test subcases, slide 17), then re-trace the V above on paper. The <strong>1-center problem</strong> (smallest enclosing circle) is another prune-and-search O(n) result in the same chapter — same median-probe-then-discard rhythm.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A06-prune-and-search.html">chapter note (A06)</a> for the general-LP reduction and the F₁/F₂ feasibility cases.</p>
+
+<div class="note"><strong>Next up — Lesson 7:</strong> Dynamic Programming — multistage graphs. We trade pruning for <em>remembering</em>: build the shortest path stage by stage, both <strong>forward</strong> and <strong>backward</strong>, and read the cost off a filled table instead of re-searching.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want a worked general-LP reduction (the x′=x, y′=ax+by substitution)? Want the n/4 pruning argument drawn out line by line? Want a harder envelope with 5 lines to trace? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 7. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

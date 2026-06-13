@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Distance — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming</div>
+<h1>Edit Distance (Levenshtein)</h1>
+<div class="mission">Find the fewest single-character edits that turn one word into another — and watch a table fill itself in to discover the answer.</div>
+
+<h2>What is it?</h2>
+<p>Take two words, say <code>SUN</code> and <code>SAT</code>. <strong>Edit distance</strong> is the smallest number of <em>single-character edits</em> needed to transform the first into the second. There are exactly three allowed edits:</p>
+<ul>
+  <li><strong>Insert</strong> — add one character (e.g. <code>SU</code> → <code>SUN</code>).</li>
+  <li><strong>Delete</strong> — remove one character (e.g. <code>SUN</code> → <code>SU</code>).</li>
+  <li><strong>Substitute</strong> — swap one character for another (e.g. <code>SUN</code> → <code>SAN</code>).</li>
+</ul>
+<p>The trick is to break the big question into <strong>subproblems</strong>: the edit distance between <em>prefixes</em>. We build a table <code>dp</code> where <code>dp[i][j]</code> = the edit distance between the first <code>i</code> letters of <code>SUN</code> and the first <code>j</code> letters of <code>SAT</code>. The empty prefix <code>""</code> is included, which is why the table has an extra row and column.</p>
+<p><strong>Base cases:</strong> turning <code>""</code> into a <code>j</code>-letter word costs <code>j</code> inserts; turning an <code>i</code>-letter word into <code>""</code> costs <code>i</code> deletes. So the first row and column count up 0, 1, 2, 3.</p>
+<p><strong>Each interior cell</strong> <code>dp[i][j]</code> looks at three already-solved neighbors and takes the cheapest path:</p>
+<ul>
+  <li><strong>left</strong> <code>dp[i][j-1] + 1</code> — an insert,</li>
+  <li><strong>up</strong> <code>dp[i-1][j] + 1</code> — a delete,</li>
+  <li><strong>diagonal</strong> <code>dp[i-1][j-1] + cost</code> — a match or substitute, where <code>cost = 0</code> if the two current letters are equal, else <code>1</code>.</li>
+</ul>
+<p>The final answer sits in the bottom-right corner. For <code>SUN</code> → <code>SAT</code> it is <strong>2</strong> (substitute U→A, substitute N→T).</p>
+
+<h2>Watch it run</h2>
+<p>Rows are the prefixes of <strong>SUN</strong> (<code>""</code>, S, U, N); columns are the prefixes of <strong>SAT</strong> (<code>""</code>, S, A, T). The gold cell is the one we're filling; blue cells are the three neighbors it depends on.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(mn)</b></span>
+  <span class="chip">Space: <b>O(mn)</b></span>
+  <span class="chip">Edits: <b>insert · delete · substitute</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="When the two current letters are equal there is nothing to fix, so the diagonal move adds cost 0 — you simply inherit dp[i-1][j-1]. Adding 1 anyway (the common trap) would charge for an edit that never happened.">
+  <div class="q">While filling the table for <code>SUN</code>→<code>SAT</code>, the current letters are S (row) and S (column) — they match. The diagonal neighbor holds 0. What value goes in this cell from the diagonal move?</div>
+  <button class="opt">1, because every cell costs at least one edit</button>
+  <button class="opt">0, the diagonal value plus a cost of 0</button>
+  <button class="opt">2, the diagonal value plus both letters</button>
+  <button class="opt">undefined, matches are skipped entirely</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="S already matches S, so no edit there. That leaves U→A and N→T: two substitutions, and you can't do it in fewer. 3 would mean editing the matching S too; 1 ignores that two letters differ; 0 would require the words to be identical.">
+  <div class="q">What is the edit distance between <code>SUN</code> and <code>SAT</code>?</div>
+  <button class="opt">0</button>
+  <button class="opt">1</button>
+  <button class="opt">2</button>
+  <button class="opt">3</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-edit-distance">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Chapter 15 (Dynamic Programming) — the edit-distance / longest-common-subsequence family. The key DP habit: define the subproblem (here, distance between prefixes), solve smallest first, and reuse.</p>
+<div class="note"><strong>Next in this bucket:</strong> Graph Traversal — BFS and DFS, exploring a graph layer by layer or branch by branch.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+const SRC = "SUN", DST = "SAT";          // rows = SRC prefixes, cols = DST prefixes
+const m = SRC.length, n = DST.length;     // 3 x 3 interior, table is 4 x 4
+const rowLabels = ['""', 'S', 'U', 'N'];
+const colLabels = ['""', 'S', 'A', 'T'];
+
+// dp[i][j] = edit distance between SRC[0..i) and DST[0..j)
+const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(null));
+
+const frames = [];
+// helper: snapshot current dp into a frame
+function snap(extra) {
+  const grid = dp.map(row => row.map(v => v === null ? null : String(v)));
+  frames.push(Object.assign({grid}, extra));
+}
+
+// Frame 0: empty table, explain base cases coming
+snap({ cap: `Empty table. Rows = prefixes of <b>SUN</b>, columns = prefixes of <b>SAT</b>. We fill the base row and column first.`, cls: {} });
+
+// Fill base row 0 and base col 0
+for (let j = 0; j <= n; j++) dp[0][j] = j;
+for (let i = 0; i <= m; i++) dp[i][0] = i;
+{
+  const cls = {};
+  for (let j = 0; j <= n; j++) cls['0,' + j] = 'done';
+  for (let i = 0; i <= m; i++) cls[i + ',0'] = 'done';
+  snap({ cap: `<b>Base cases.</b> Turning <code>""</code> into a j-letter word costs j inserts (top row); turning an i-letter word into <code>""</code> costs i deletes (left column). They count up 0,1,2,3.`, cls });
+}
+
+// Compute one interior cell; returns details so we can narrate.
+function fill(i, j) {
+  const a = SRC[i - 1], b = DST[j - 1];
+  const match = a === b;
+  const cost = match ? 0 : 1;
+  const left = dp[i][j - 1] + 1;        // insert
+  const up = dp[i - 1][j] + 1;          // delete
+  const diag = dp[i - 1][j - 1] + cost; // match / substitute
+  const best = Math.min(left, up, diag);
+  dp[i][j] = best;
+  const costStr = match
+    ? `letters <b>${a}=${b}</b> match → diagonal adds <b>+0</b>`
+    : `letters <b>${a}≠${b}</b> differ → diagonal adds <b>+1</b> (substitute)`;
+  const cap = `Cell (${rowLabels[i]},${colLabels[j]}): ${costStr}. ` +
+    `min{ insert=${left}, delete=${up}, ${match ? 'match' : 'subst'}=${diag} } = <b>${best}</b>.`;
+  return { a, b, match, left, up, diag, best, cap };
+}
+function depCls(i, j) {
+  return { [i + ',' + j]: 'act',
+           [i + ',' + (j - 1)]: 'dep',
+           [(i - 1) + ',' + j]: 'dep',
+           [(i - 1) + ',' + (j - 1)]: 'dep' };
+}
+
+// Row 1 (S vs S,A,T): one frame per cell — shows match (+0) vs substitute (+1).
+for (let j = 1; j <= n; j++) {
+  const d = fill(1, j);
+  snap({ cap: d.cap, cls: depCls(1, j) });
+}
+
+// Rows 2 and 3: one frame each, narrating the right-most cell as the example.
+for (let i = 2; i <= m; i++) {
+  let last;
+  for (let j = 1; j <= n; j++) last = fill(i, j);
+  const cap = `Row ${rowLabels[i]} filled the same way, cell by cell. Last cell (${rowLabels[i]},${colLabels[n]}): ${last.match ? 'match +0' : 'substitute +1'}, ` +
+    `min{ insert=${last.left}, delete=${last.up}, ${last.match ? 'match' : 'subst'}=${last.diag} } = <b>${last.best}</b>.`;
+  snap({ cap, cls: depCls(i, n) });
+}
+
+// Final frame: highlight the answer
+{
+  const cls = { [m + ',' + n]: 'done' };
+  snap({ cap: `Done. <code>dp[3][3] = ${dp[m][n]}</code> — the edit distance of <b>SUN → SAT</b> is <b>${dp[m][n]}</b> (substitute U→A, substitute N→T).`, cls });
+}
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    stage.innerHTML = ZOO.grid(f.grid, { rows: rowLabels, cols: colLabels, cls: f.cls });
+  }
+});
+</script>
+</body></html>

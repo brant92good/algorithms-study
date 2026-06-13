@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fibonacci &amp; Memoization — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Dynamic Programming</div>
+<h1>Fibonacci &amp; Memoization</h1>
+<div class="mission">The same small problems keep coming back — so solve each one <strong>once</strong> and write the answer down. That single idea turns an exponential algorithm into a linear one.</div>
+
+<h2>What is it?</h2>
+<p>The <strong>Fibonacci numbers</strong> are 0, 1, 1, 2, 3, 5, 8, … — each one is the sum of the two before it: <code>fib(n) = fib(n−1) + fib(n−2)</code>, with the base cases <code>fib(0)=0</code> and <code>fib(1)=1</code>.</p>
+<p>The obvious way to compute <code>fib(5)</code> is to <strong>recurse</strong>: a function that calls itself. To get <code>fib(5)</code> you ask for <code>fib(4)</code> and <code>fib(3)</code>; each of those asks for two smaller ones, and so on down to the base cases. The problem: those smaller calls <strong>overlap</strong>. Computing <code>fib(5)</code> recomputes <code>fib(3)</code> twice and <code>fib(2)</code> three times — entirely from scratch each time. These repeated calls are called <strong>overlapping subproblems</strong>, and the wasted work doubles roughly every level: that is <strong>exponential</strong> time, O(2ⁿ).</p>
+<p><strong>Memoization</strong> is the fix. "Memo" as in a note to yourself: keep a small lookup table (a <strong>cache</strong>) of answers you've already computed. Before doing the work for <code>fib(k)</code>, check the cache — if it's there, return it instantly in <strong>O(1)</strong> and skip the whole subtree. Each subproblem is now solved <strong>exactly once</strong>, so the total work is just one entry per value: <strong>linear</strong> time, O(n).</p>
+<p>Below: first watch the naive call tree explode with duplicates, then watch a memo table fill in left-to-right with each value computed only once.</p>
+
+<h2>Watch it run</h2>
+<p>Frames 1–4 show the naive <strong>call tree</strong> for <code>fib(5)</code> — notice the <em>same</em> nodes appearing again and again. Frames 5–8 switch to a <strong>memo table</strong> indexed 0…5; each cell lights up as it's computed and then is reused for free.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Naive: <b>O(2ⁿ)</b></span>
+  <span class="chip">Memoized: <b>O(n)</b></span>
+  <span class="chip">Space: <b>O(n)</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="The naive call tree branches into two recursive calls at every node and never reuses results, so it recomputes the same subproblems (fib(2) three times, fib(3) twice for fib(5)). The number of calls roughly doubles per level → exponential. It is not the additions per call (constant) or the recursion depth (only n) that hurt — it's the repeated work.">
+  <div class="q">Computing <code>fib(5)</code> the naive recursive way, <code>fib(2)</code> gets evaluated 3 separate times and <code>fib(3)</code> twice. What makes this approach take exponential time?</div>
+  <button class="opt">each call does an expensive addition of two big numbers</button>
+  <button class="opt">the same subproblems are recomputed again and again from scratch</button>
+  <button class="opt">the recursion goes too deep, using one stack frame per value</button>
+  <button class="opt">the base cases fib(0) and fib(1) are checked too often</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="A memo (cache) stores each answer the first time it's computed; on every later request for the same value it returns the stored result in O(1) instead of re-expanding the subtree. So each of the n distinct subproblems is solved exactly once → O(n). It does not change the recurrence or the math, and it does not make the work free — it eliminates the *repetition*.">
+  <div class="q">You add a cache so that once <code>fib(k)</code> is computed its value is stored and looked up next time. What does this change about the work done?</div>
+  <button class="opt">each distinct subproblem is computed once, the rest are O(1) lookups</button>
+  <button class="opt">the recurrence fib(n)=fib(n−1)+fib(n−2) is replaced by a formula</button>
+  <button class="opt">recursion is eliminated, so no stack space is used</button>
+  <button class="opt">all the additions become free, so the cost drops to O(1) total</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="dp-fibonacci-memo">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Chapter 15 (Dynamic Programming) — the opening sections on overlapping subproblems and the top-down "memoization" vs. bottom-up "tabulation" views.</p>
+<div class="note"><strong>Next in this bucket:</strong> 0/1 Knapsack — choose items to maximize value under a weight limit, filling a 2-D DP table where each cell reuses two smaller subproblems.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// ----- precompute the two halves -----
+// Phase A: ASCII call tree for naive fib(5), highlighting duplicated subproblems.
+// Phase B: a 1-row memo table indexed 0..5 filled left-to-right with 0,1,1,2,3,5.
+
+// The naive recursion tree for fib(5) (each node expands into n-1 and n-2):
+const treeFull =
+`fib(5)
+├─ fib(4)
+│  ├─ fib(3)
+│  │  ├─ fib(2)
+│  │  │  ├─ fib(1)=1
+│  │  │  └─ fib(0)=0
+│  │  └─ fib(1)=1
+│  └─ fib(2)          ← already computed above
+│     ├─ fib(1)=1
+│     └─ fib(0)=0
+└─ fib(3)             ← already computed above
+   ├─ fib(2)          ← AND AGAIN
+   │  ├─ fib(1)=1
+   │  └─ fib(0)=0
+   └─ fib(1)=1`;
+
+const treeStub =
+`fib(5)
+├─ fib(4)
+│  ├─ fib(3)  → 2
+│  └─ fib(2)  → 1   (cached, no re-expand)
+└─ fib(3)     → 2   (cached, no re-expand)
+        = 5`;
+
+const FIB = [0,1,1,2,3,5];           // memo table values, indices 0..5
+const cols = [0,1,2,3,4,5];
+
+const frames = [
+  { kind:'tree', tree:treeFull,
+    cap:`Naive recursion for <b>fib(5)</b>. Every node splits into two smaller calls down to the base cases fib(0)=0, fib(1)=1.` },
+  { kind:'tree', tree:treeFull,
+    cap:`Look closely: <b>fib(3)</b> appears <b>2×</b> and <b>fib(2)</b> appears <b>3×</b> — each recomputed from scratch. These are <b>overlapping subproblems</b>.` },
+  { kind:'tree', tree:treeFull,
+    cap:`The duplicated work roughly <b>doubles every level</b>. For fib(n) the tree has ~2ⁿ nodes → <b>O(2ⁿ)</b>, hopeless for large n.` },
+  { kind:'tree', tree:treeStub,
+    cap:`Memoization's idea: the <b>first</b> time we compute a value we store it; repeat requests return instantly and we <b>never re-expand</b> the subtree.` },
+  { kind:'grid', filled:0,
+    cap:`Switch to a <b>memo table</b> indexed 0…5. Start by writing the two base cases as we reach them.` },
+  { kind:'grid', filled:2, act:[0,1],
+    cap:`<b>fib(0)=0</b> and <b>fib(1)=1</b> are stored. From here every value is the sum of its two left neighbours — each computed <b>once</b>.` },
+  { kind:'grid', filled:4, act:[2,3],
+    cap:`<b>fib(2)=0+1=1</b>, then <b>fib(3)=1+1=2</b>. Each needed its neighbours' values — and they were <b>already cached → O(1)</b> lookups.` },
+  { kind:'grid', filled:6, act:[4,5],
+    cap:`<b>fib(4)=1+2=3</b>, <b>fib(5)=2+3=5</b>. Every subproblem solved exactly once: <b>O(n) time, O(n) space</b>. Done — fib(5)=5.` },
+];
+
+ZOO.stepper({
+  mount:'#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    if (f.kind === 'tree') {
+      stage.innerHTML = '<div class="atree">' + f.tree + '</div>';
+      return;
+    }
+    // grid: 1 row, columns 0..5; show value only once "filled", highlight the active cells
+    const row = cols.map((_, c) => c < f.filled ? FIB[c] : null);
+    const cls = {};
+    (f.act || []).forEach(c => { if (c < f.filled) cls['0,' + c] = 'act'; });
+    stage.innerHTML = ZOO.grid([row], { rows:['fib'], cols, cls, blank:'·' });
+  }
+});
+</script>
+</body></html>

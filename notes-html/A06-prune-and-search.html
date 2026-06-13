@@ -1,0 +1,591 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prune-and-Search — Algo Finals</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Algo Finals</a>
+  <a class="crumb" href="../index.html#notes">Notes</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+<h1 id="a06-prune-and-search">A06 — Prune-and-Search</h1>
+<blockquote>
+<p>Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>
+Chapter 6/7: <strong>Prune-and-Search</strong></p>
+</blockquote>
+<hr />
+<h2 id="overview">Overview</h2>
+<p><strong>Prune-and-search</strong> is an algorithm-design strategy that generalizes the idea behind <strong>binary search</strong>:</p>
+<ul>
+<li>The algorithm runs in <strong>many iterations</strong>.</li>
+<li>At each iteration it <strong>prunes away a fixed fraction <code>f</code></strong> (<code>0 &lt; f &lt; 1</code>) of the current input data.</li>
+<li>It then <strong>recursively</strong> applies the same algorithm to the <strong>remaining <code>(1−f)·n</code></strong> elements.</li>
+<li>After enough iterations the surviving input is so small (size <code>q</code>) that the problem can be solved <strong>directly in constant time <code>c</code></strong>.</li>
+</ul>
+<p>The headline result: <strong>if each iteration's pruning work costs <code>O(nᵏ)</code>, the entire prune-and-search procedure also costs <code>O(nᵏ)</code></strong> — i.e. the cost is dominated by the <em>first</em> iteration, not the sum over all iterations. This is what makes the <strong>selection problem</strong> and <strong>two-variable linear programming</strong> solvable in <strong>linear time <code>O(n)</code></strong>, and the <strong>1-center problem</strong> solvable in <code>O(n)</code>.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>General method</td>
+<td><code>T(n) = T((1−f)·n) + O(nᵏ) ⇒ T(n) = O(nᵏ)</code></td>
+</tr>
+<tr>
+<td>Selection (k-th smallest) — naive</td>
+<td><code>O(n log n)</code> (sort)</td>
+</tr>
+<tr>
+<td>Selection — prune-and-search (median of medians)</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td>Two-variable linear programming</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td>1-center problem (smallest enclosing circle)</td>
+<td><code>O(n)</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="1-the-general-method">1. The General Method</h2>
+<h3 id="idea">Idea</h3>
+<p>Consider how <strong>binary search</strong> works. It consists of many iterations; at each iteration it prunes away a fraction (<code>f = 1/2</code> for binary search) of the input and recurses on the rest. Prune-and-search abstracts this:</p>
+<ol>
+<li>Prune away a fraction <code>f</code> of the input each iteration.</li>
+<li>Recursively invoke the same algorithm on the remaining <code>(1−f)·n</code> elements.</li>
+<li>After <code>p</code> iterations the size shrinks to some <code>q</code> small enough to solve directly in constant time <code>c</code>.</li>
+</ol>
+<h3 id="time-complexity-analysis">Time-complexity analysis</h3>
+<p>Assume the work to perform the prune-and-search step (pruning + bookkeeping) in <strong>each</strong> iteration is <code>O(nᵏ)</code> for some constant <code>k</code>, and let <code>T(n)</code> be the worst-case run time. Then:</p>
+<pre><code>T(n) = T((1 − f)·n) + O(nᵏ)
+</code></pre>
+<p>Unrolling the recurrence (for sufficiently large <code>n</code>, replace <code>O(nᵏ)</code> by <code>c·nᵏ</code>):</p>
+<pre><code>T(n) ≤ T((1 − f)·n) + c·nᵏ
+
+     ≤ T((1 − f)²·n) + c·nᵏ + c·(1 − f)ᵏ·nᵏ
+
+       ⋮   (continue unrolling p times)
+
+     ≤ c′ + c·nᵏ + c·(1 − f)ᵏ·nᵏ + c·(1 − f)²ᵏ·nᵏ + … + c·(1 − f)ᵖᵏ·nᵏ
+
+     = c′ + c·nᵏ · ( 1 + (1 − f)ᵏ + (1 − f)²ᵏ + … + (1 − f)ᵖᵏ )
+</code></pre>
+<p>The term <code>c′</code> is the constant-time cost of the base case (the directly-solved small instance).</p>
+<p>The parenthesized sum is a <strong>geometric series</strong> with ratio <code>(1 − f)ᵏ</code>. Since <code>1 − f &lt; 1</code>, we have <code>(1 − f)ᵏ &lt; 1</code>, so as <code>n → ∞</code> (i.e. <code>p → ∞</code>) the series converges to a constant:</p>
+<pre><code>1 + (1 − f)ᵏ + (1 − f)²ᵏ + … = 1 / (1 − (1 − f)ᵏ)   *(reconstructed closed form)*
+</code></pre>
+<blockquote>
+<p>⚠️ Reconstructed (slide leaves it implicit) — <strong>Verified against slide 4</strong>: the slide really writes only "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>". It never gives a closed form. The closed form <code>1/(1 − (1−f)ᵏ)</code> of the convergent geometric series is the standard fill-in that justifies why the bracket is a constant; it is genuinely absent from the slide.</p>
+</blockquote>
+<p>Therefore the whole sum is <code>c·nᵏ · (constant) + c′</code>, giving:</p>
+<pre><code>T(n) = O(nᵏ)
+</code></pre>
+<p><strong>Conclusion:</strong> the time-complexity of the <em>whole</em> prune-and-search process is of the <strong>same order</strong> as the time-complexity of a <em>single</em> iteration. The first iteration dominates.</p>
+<hr />
+<h2 id="2-the-selection-problem">2. The Selection Problem</h2>
+<h3 id="definition">Definition</h3>
+<ul>
+<li><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</li>
+<li><strong>Output:</strong> the <strong>k-th smallest</strong> element of <code>S</code>.</li>
+<li>The <strong>median problem</strong> is the special case of finding the <code>⌈n/2⌉</code>-th smallest element. ✅ Verified against slide 5 (the slide explicitly writes "the <code>⌈n/2⌉</code>-th smallest element").</li>
+</ul>
+<h3 id="straightforward-algorithm">Straightforward algorithm</h3>
+<ol>
+<li><strong>Sort</strong> the <code>n</code> elements.</li>
+<li><strong>Locate</strong> the k-th element in the sorted list.</li>
+</ol>
+<p><strong>Time complexity:</strong> <code>O(n log n)</code> (dominated by the sort).</p>
+<p>We can do better — <code>O(n)</code> — with prune-and-search.</p>
+<hr />
+<h2 id="3-prune-and-search-selection">3. Prune-and-Search Selection</h2>
+<h3 id="idea_1">Idea</h3>
+<p>Pick a pivot <code>p ∈ S</code> and use it to partition <code>S</code> into <strong>three</strong> subsets, then recurse into only <strong>one</strong> of them.</p>
+<p>Given <code>S = {a₁, a₂, …, aₙ}</code> and pivot <code>p ∈ S</code>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Subset</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>S₁</code></td>
+<td><code>{ aᵢ : aᵢ &lt; p, 1 ≤ i ≤ n }</code> (elements less than <code>p</code>)</td>
+</tr>
+<tr>
+<td><code>S₂</code></td>
+<td><code>{ aᵢ : aᵢ = p, 1 ≤ i ≤ n }</code> (elements equal to <code>p</code>)</td>
+</tr>
+<tr>
+<td><code>S₃</code></td>
+<td><code>{ aᵢ : aᵢ &gt; p, 1 ≤ i ≤ n }</code> (elements greater than <code>p</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="three-way-recursion">Three-way recursion</h3>
+<p>To find the k-th smallest element of <code>S</code>:</p>
+<ol>
+<li><strong>If <code>|S₁| ≥ k</code></strong> → the k-th smallest element of <code>S</code> lies in <code>S₁</code>. <strong>Prune away <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁</code> (same <code>k</code>).</li>
+<li><strong>Else if <code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> itself is the k-th smallest element of <code>S</code>. <strong>Done.</strong></li>
+<li><strong>Otherwise</strong> → the k-th smallest element of <code>S</code> is the <strong><code>(k − |S₁| − |S₂|)</code>-th</strong> smallest element in <code>S₃</code>. <strong>Prune away <code>S₁</code> and <code>S₂</code></strong> and recurse on <code>S₃</code> with the adjusted rank.</li>
+</ol>
+<blockquote>
+<p>✅ Verified against slides 6 and 9: the deck really is inconsistent. <strong>Slide 6</strong> (conceptual) writes <code>If |S₁| &gt; k</code> and <code>Else if |S₁| + |S₂| &gt; k</code> (strict <code>&gt;</code>). <strong>Slide 9</strong> (Step 5, formal) writes <code>If |S₁| ≥ k</code> and <code>else if |S₁| + |S₂| ≥ k</code> (<code>≥</code>). The correct boundary condition for "answer is in <code>S₁</code>" is <strong><code>|S₁| ≥ k</code></strong> and for "<code>p</code> is the answer" is <strong><code>|S₁| + |S₂| ≥ k</code></strong> — i.e. slide 9's <code>≥</code> version is the right one; slide 6's <code>&gt;</code> is the deck's error.</p>
+</blockquote>
+<p>The cost of this idea hinges entirely on <strong>choosing a good pivot <code>p</code></strong> so that a constant fraction is always pruned.</p>
+<hr />
+<h2 id="4-choosing-the-pivot-median-of-medians">4. Choosing the Pivot — Median of Medians</h2>
+<h3 id="idea_2">Idea</h3>
+<p>We want a pivot <code>p</code> that is guaranteed to be "central enough" that <strong>at least a constant fraction</strong> of <code>S</code> is pruned each iteration — regardless of input. The trick is the <strong>median of medians</strong>.</p>
+<h3 id="construction">Construction</h3>
+<ol>
+<li>Divide the <code>n</code> elements into <strong><code>⌈n/5⌉</code> groups of 5 elements each</strong> (pad the last group with dummy elements if <code>n</code> is not a multiple of 5).</li>
+<li><strong>Sort each 5-element group</strong> into non-decreasing order. The <strong>median</strong> of each group is its 3rd element.</li>
+<li>Let <code>p</code> = <strong>the median of the <code>⌈n/5⌉</code> group-medians</strong> <code>M</code>.</li>
+</ol>
+<h3 id="the-14-guarantee">The 1/4 guarantee</h3>
+<p>✅ <strong>Verified against slide 7</strong> (the median-of-medians grid figure, "How to select P?"). The actual slide layout:</p>
+<ul>
+<li>Each <strong>column</strong> is one 5-element subset, drawn as 5 dots stacked vertically; a vertical down-arrow on the left is labelled <strong>"Each 5-element subset is sorted in non-decreasing sequence"</strong> (smallest at top, largest at bottom).</li>
+<li>There are 7 columns of 5 dots in the drawing (a schematic of <code>⌈n/5⌉</code> columns).</li>
+<li>The <strong>middle row</strong> (3rd of 5) is the row of group-medians, enclosed in a thin dotted rectangle and labelled <strong><code>M</code></strong> at the right edge.</li>
+<li>The overall median of those medians, <strong><code>P</code></strong>, is the dot boxed in the middle of that median row (labelled <code>P</code> with an arrow pointing to it).</li>
+<li>Two solid rectangles mark the guaranteed regions:</li>
+<li>An <strong>upper-left</strong> solid rectangle covering the columns whose median ≤ P, rows from the median upward — labelled (top, arrow down into it) <strong>"At least 1/4 of S known to be less than or equal to P."</strong></li>
+<li>A <strong>lower-right</strong> solid rectangle covering the columns whose median ≥ P, rows from the median downward — labelled (bottom, arrow up into it) <strong>"At least 1/4 of S known to be greater than or equal to P."</strong></li>
+</ul>
+<p>Schematic reproduction (P boxed on the median row M; the two ≥1/4 blocks staircase around it):</p>
+<pre><code>   sorted ↓   each column = one sorted 5-element subset
+            ┌─────────────────────────┐
+        ·   │ ·    ·    ·    ·  │  ·    ·     ·
+        ·   │ ·    ·    ·    ·  │  ·    ·     ·
+   M →  ·     ·  [·]──P  ·    · │  ·    ·     ·   ← median row (dotted box = M)
+        ·     ·    ·    ·  │ ·    ·    ·     · │
+        ·     ·    ·    ·  │ ·    ·    ·     · │
+                          └──────────────────┘
+   ┌─ upper-left block: ≥ 1/4 of S is ≤ P
+   └─ lower-right block: ≥ 1/4 of S is ≥ P
+</code></pre>
+<ul>
+<li>Every group whose median is <code>≤ p</code>: at least 3 of its 5 elements (the median and the two above it in the sorted column) are <code>≤ p</code>. About <strong>half</strong> the groups have median <code>≤ p</code>. Hence <strong>at least about <code>n/4</code> elements are <code>≤ p</code></strong> (the upper-left block).</li>
+<li>Symmetrically, <strong>at least about <code>n/4</code> elements are <code>≥ p</code></strong> (the lower-right block).</li>
+</ul>
+<p><strong>Guarantees:</strong>
+- At least <strong>1/4 of <code>S</code></strong> is <strong>≤ p</strong>.
+- At least <strong>1/4 of <code>S</code></strong> is <strong>≥ p</strong>.</p>
+<p>Therefore <strong>at least <code>n/4</code> elements are pruned</strong> in each iteration, and <strong>at most <code>3n/4</code> elements remain</strong> for the next iteration.</p>
+<hr />
+<h2 id="5-the-full-linear-time-selection-algorithm">5. The Full Linear-Time Selection Algorithm</h2>
+<h3 id="algorithm-5-steps">Algorithm (5 steps)</h3>
+<ul>
+<li><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</li>
+<li><strong>Output:</strong> the k-th smallest element of <code>S</code>.</li>
+</ul>
+<ol>
+<li><strong>Step 1.</strong> Divide <code>S</code> into <code>⌈n/5⌉</code> subsets, each containing five elements. Add dummy elements to the last subset if <code>n</code> is not a multiple of 5.</li>
+<li><strong>Step 2.</strong> Sort each subset of elements.</li>
+<li><strong>Step 3.</strong> Find the element <code>p</code> which is the <strong>median of the medians</strong> of the <code>⌈n/5⌉</code> subsets.</li>
+<li><strong>Step 4.</strong> Partition <code>S</code> into <code>S₁, S₂, S₃</code> (elements less than, equal to, and greater than <code>p</code>, respectively).</li>
+<li><strong>Step 5.</strong> Three-way recursion:
+   - If <strong><code>|S₁| ≥ k</code></strong> → discard <code>S₂, S₃</code>, solve "select k-th smallest from <code>S₁</code>" next iteration.
+   - Else if <strong><code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> is the k-th smallest element of <code>S</code>. Done.
+   - Otherwise → let <code>k′ = k − |S₁| − |S₂|</code>, solve "select k′-th smallest from <code>S₃</code>" next iteration.</li>
+</ol>
+<p>Key facts (from §4): <strong>at least <code>n/4</code> pruned per iteration</strong>, and the <strong>remaining problem in step 5 has at most <code>3n/4</code> elements</strong>.</p>
+<h3 id="per-step-cost">Per-step cost</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Work</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>Divide into groups of 5</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>Sort each group (each is constant size 5)</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td>Recursively find median of <code>⌈n/5⌉</code> medians</td>
+<td><code>T(n/5)</code></td>
+</tr>
+<tr>
+<td>Step 4</td>
+<td>Partition <code>S</code> around <code>p</code></td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td>Step 5</td>
+<td>Recurse on ≤ <code>3n/4</code> survivors</td>
+<td><code>T(3n/4)</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="recurrence">Recurrence</h3>
+<pre><code>T(n) = T(3n/4) + T(n/5) + O(n)
+</code></pre>
+<p>Note the <strong>two</strong> recursive calls: one of size <code>n/5</code> (finding the pivot in step 3) and one of size <code>3n/4</code> (the surviving subproblem in step 5). Because <code>3/4 + 1/5 = 19/20 &lt; 1</code>, the recurrence still solves to <code>O(n)</code>.</p>
+<h3 id="proof-that-tn-on-polynomial-substitution">Proof that <code>T(n) = O(n)</code> — polynomial substitution</h3>
+<p>Assume <code>T(n)</code> can be written as a polynomial:</p>
+<pre><code>T(n)     = a₀ + a₁n + a₂n² + …          (a₁ ≠ 0)
+T(3n/4)  = a₀ + (3/4)a₁n + (9/16)a₂n² + …
+T(n/5)   = a₀ + (1/5)a₁n + (1/25)a₂n² + …
+</code></pre>
+<p>Adding the two recursive terms and comparing with <code>T(19n/20)</code>:</p>
+<pre><code>T(19n/20) = a₀ + (19/20)a₁n + (361/400)a₂n² + …
+</code></pre>
+<p>Coefficient comparison (the linear and higher coefficients of <code>T(3n/4) + T(n/5)</code> vs <code>T(19n/20)</code>):</p>
+<ul>
+<li>Linear term: <code>(3/4 + 1/5)a₁n = (19/20)a₁n</code> — matches <code>T(19n/20)</code>'s linear term.</li>
+<li>Quadratic term: <code>(9/16 + 1/25)a₂n²</code> vs <code>(361/400)a₂n²</code>. Now <code>9/16 + 1/25 = 225/400 + 16/400 = 241/400 &lt; 361/400</code>. So the sum's quadratic part is <em>smaller</em>.</li>
+</ul>
+<p>Hence, accounting for the extra constant <code>a₀</code>:</p>
+<pre><code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)
+</code></pre>
+<blockquote>
+<p>⚠️ Reconstructed detail: the slide states <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code> directly. The coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (and similarly for higher terms) is the justification I filled in for <em>why</em> the inequality holds.</p>
+</blockquote>
+<p>Substituting into the recurrence (with the <code>O(n)</code> term written as <code>cn</code>):</p>
+<pre><code>T(n) ≤ cn + T(19n/20)
+</code></pre>
+<p>Unrolling this single-term recurrence:</p>
+<pre><code>T(n) ≤ cn + (19/20)cn + T((19/20)²·n)
+
+     ≤ cn + (19/20)cn + (19/20)²cn + … + (19/20)ᵖ·cn + T((19/20)ᵖ⁺¹·n)
+</code></pre>
+<p>where <code>p</code> is chosen so the surviving size is constant: <code>(19/20)ᵖ⁺¹·n ≤ 1 ≤ (19/20)ᵖ·n</code>.</p>
+<p>The geometric series with ratio <code>19/20</code>:</p>
+<pre><code>cn · ( 1 + 19/20 + (19/20)² + … )  =  cn · 1/(1 − 19/20)  =  cn · 20  =  20cn
+</code></pre>
+<p>So, adding the constant base-case cost <code>b</code>:</p>
+<pre><code>T(n) ≤ 20cn + b = O(n)
+</code></pre>
+<h3 id="cn-log-n-vs-20cn"><code>cn log n</code> vs <code>20cn</code></h3>
+<p>The naive sort-based selection costs <code>cn log n</code>. The prune-and-search version costs <code>20cn</code>. The crossover: <code>20cn &lt; cn log n</code> exactly when <code>log n &gt; 20</code>, i.e. <code>n &gt; 2²⁰ ≈ 10⁶</code>. The point is <strong>asymptotically</strong> <code>20cn = O(n)</code> beats <code>O(n log n)</code>: the constant <code>20</code> is fixed while <code>log n</code> grows without bound.</p>
+<hr />
+<h2 id="6-linear-programming-with-two-variables">6. Linear Programming with Two Variables</h2>
+<h3 id="general-problem">General problem</h3>
+<pre><code>Minimize    a·x + b·y
+subject to  aᵢ·x + bᵢ·y ≤ cᵢ ,   i = 1, 2, …, n
+</code></pre>
+<h3 id="simplified-problem">Simplified problem</h3>
+<p>A canonical, easier-to-visualize version (we will reduce the general one to this later):</p>
+<pre><code>Minimize    y
+subject to  y ≥ aᵢ·x + bᵢ ,   i = 1, 2, …, n
+</code></pre>
+<p>Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> the line <code>aᵢx + bᵢ</code>.</p>
+<h3 id="the-boundary-function-fx">The boundary function <code>F(x)</code></h3>
+<p>The lower boundary of the feasible region is the <strong>upper envelope</strong> of all the lines:</p>
+<pre><code>F(x) = max { aᵢ·x + bᵢ : i = 1, 2, …, n }
+</code></pre>
+<p><code>F(x)</code> is a <strong>convex</strong>, piecewise-linear function (the pointwise maximum of linear functions). ✅ <strong>Verified against slide 14 (Fig. 7-2).</strong> The slide explicitly prints the formula <code>F(x) = max_{1≤i≤n} {aᵢx + bᵢ}</code> (printed as <code>1≤x≤n</code> on the slide — an obvious typo for <code>1≤i≤n</code>). The figure shows a gray convex feasible region above the upper envelope of eight constraint lines <code>a₁x+b₁ … a₈x+b₈</code>, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (marked by a red vertical segment). Earlier carved render (Figure A.1) showed the same kind of plot with five labelled lines; slide 14 is the authoritative version. So the F(x) body is <strong>not</strong> blank on the slide.</p>
+<h3 id="the-optimum">The optimum</h3>
+<p>The optimum <code>x₀</code> minimizes the boundary:</p>
+<pre><code>F(x₀) = min over x of  F(x)
+</code></pre>
+<p><code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the optimal solution — the lowest point of the convex envelope. ✅ <strong>Verified against slide 14 (Fig. 7-2)</strong>, which prints the optimum as <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code> and marks <code>(x₀, y₀)</code> at the bottom of the convex envelope. (The carved Figure A.1 with five labelled lines depicts the closely-related Fig. 7-3 pruning picture, case <code>x₀ &lt; xₘ</code>.)</p>
+<h3 id="deciding-which-side-x0-is-on-given-a-test-point-xm">Deciding which side <code>x₀</code> is on, given a test point <code>xₘ</code></h3>
+<p>Suppose a test abscissa <code>xₘ</code> is known. How do we know whether <code>x₀ &lt; xₘ</code> or <code>x₀ &gt; xₘ</code>? Evaluate <code>yₘ = F(xₘ)</code>.</p>
+<p><strong>Case 1: <code>yₘ</code> lies on only one constraint.</strong> Let <code>g</code> be the slope of that constraint.
+- If <code>g &gt; 0</code> → <code>x₀ &lt; xₘ</code> (envelope still descending to the left).
+- If <code>g &lt; 0</code> → <code>x₀ &gt; xₘ</code> (envelope still descending to the right).</p>
+<p><strong>Case 2: <code>yₘ</code> is the intersection of several constraints.</strong> ✅ <strong>Verified against slide 17 (Fig. 7-6).</strong> The slide prints the slope definitions explicitly:</p>
+<pre><code>g_max = max_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (max slope of constraints achieving F(xₘ))
+g_min = min_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (min slope of constraints achieving F(xₘ))
+</code></pre>
+<ul>
+<li><strong>Case 2a:</strong> <code>g_min &gt; 0</code> and <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>.</li>
+<li><strong>Case 2b:</strong> <code>g_min &lt; 0</code> and <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>.</li>
+<li><strong>Case 2c:</strong> <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>(xₘ, yₘ)</code> <strong>is</strong> the optimum solution (envelope has its minimum exactly here).</li>
+</ul>
+<p>The Fig. 7-6 plot draws a convex envelope with three test abscissae on the x-axis: the slide maps <strong>Case 2a → <code>xₘ,₃</code></strong>, <strong>Case 2b → <code>xₘ,₁</code></strong>, <strong>Case 2c → <code>xₘ,₂</code></strong> (with the <code>g_min</code>/<code>g_max</code> slope labels on the active lines at each intersection). The single-constraint Case 1 is the separate <strong>Fig. 7-5</strong> (slide 16).</p>
+<h3 id="pruning-constraints">Pruning constraints</h3>
+<p>Once we know <code>x₀</code>'s side relative to <code>xₘ</code>, we can <strong>delete</strong> constraints (Fig. 7-3):</p>
+<blockquote>
+<p>If <code>x₀ &lt; xₘ</code> and the intersection of <code>a₃x + b₃</code> and <code>a₂x + b₂</code> is <strong>greater than</strong> <code>xₘ</code>, then for all <code>x &lt; xₘ</code> one of these two constraints is always smaller than the other. The always-smaller constraint <strong>cannot</strong> contribute to the upper envelope near the optimum, so it can be <strong>deleted</strong>. (Symmetric reasoning for <code>x₀ &gt; xₘ</code>.)</p>
+</blockquote>
+<h3 id="choosing-xm-so-that-a-constant-fraction-is-pruned">Choosing <code>xₘ</code> (so that a constant fraction is pruned)</h3>
+<blockquote>
+<p>Arbitrarily group the <code>n</code> constraints into <code>n/2</code> <strong>pairs</strong>. For each pair, find their intersection. Among these <code>n/2</code> intersection x-coordinates, choose the <strong>median</strong> as <code>xₘ</code>.</p>
+</blockquote>
+<p>This guarantees that for half the pairs the intersection lies on the "deletable" side, so <strong><code>n/4</code> constraints are pruned per iteration</strong>.</p>
+<h3 id="algorithm-simplified-two-variable-lp">Algorithm (simplified two-variable LP)</h3>
+<ul>
+<li><strong>Input:</strong> constraints <code>S</code>: <code>aⱼx + bⱼ</code>, <code>j = 1, …, n</code>.</li>
+<li><strong>Output:</strong> the value <code>x₀</code> minimizing <code>y</code> subject to <code>y ≥ aⱼx + bⱼ</code> for all <code>j</code>.</li>
+</ul>
+<ol>
+<li><strong>Step 1.</strong> If <code>S</code> has ≤ 2 constraints, solve by brute force.</li>
+<li><strong>Step 2.</strong> Divide <code>S</code> into <code>n/2</code> pairs. For each pair <code>(aᵢx+bᵢ, aⱼx+bⱼ)</code>, find their intersection <code>pᵢⱼ</code> with x-value <code>xᵢⱼ</code>.</li>
+<li><strong>Step 3.</strong> Among the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them), find the median <code>xₘ</code>.</li>
+<li><strong>Step 4.</strong> Determine <code>yₘ = F(xₘ)</code>, <code>g_min</code>, and <code>g_max</code>.</li>
+<li><strong>Step 5.</strong>
+   - <strong>5a.</strong> If <code>g_min</code> and <code>g_max</code> are <strong>not</strong> of the same sign → <code>yₘ</code> is the solution. <strong>Exit.</strong>
+   - <strong>5b.</strong> Otherwise: <code>x₀ &lt; xₘ</code> if <code>g_min &gt; 0</code>; <code>x₀ &gt; xₘ</code> if <code>g_min &lt; 0</code>.</li>
+<li><strong>Step 6.</strong> Prune:
+   - <strong>6a.</strong> If <code>x₀ &lt; xₘ</code>: for each pair whose intersection x-coordinate is <strong>larger</strong> than <code>xₘ</code>, prune the constraint that is always smaller for <code>x ≤ xₘ</code>.
+   - <strong>6b.</strong> If <code>x₀ &gt; xₘ</code>: for each pair whose intersection x-coordinate is <strong>less</strong> than <code>xₘ</code>, prune the constraint that is always smaller for <code>x ≥ xₘ</code>.</li>
+</ol>
+<p>Let <code>S</code> be the remaining constraints. <strong>Go to Step 2.</strong></p>
+<p><strong>Pruning rate:</strong> there are <code>n/2</code> intersections, so <strong><code>n/4</code> constraints pruned per iteration</strong>.
+<strong>Time complexity:</strong> <code>O(n)</code>. The slide states only "O(n)"; by the same prune-and-search argument each iteration does <code>O(n)</code> work and prunes a constant fraction (≈1/4 of constraints), giving <code>T(n) = T(3n/4) + O(n) = O(n)</code>.</p>
+<h3 id="reducing-the-general-problem-to-the-simplified-one">Reducing the general problem to the simplified one</h3>
+<p>The general two-variable LP <code>Minimize ax + by  s.t.  aᵢx + bᵢy ≤ cᵢ</code> is transformed by the substitution:</p>
+<pre><code>x′ = x
+y′ = ax + by
+</code></pre>
+<p>giving</p>
+<pre><code>Minimize    y′
+subject to  aᵢ′·x′ + bᵢ′·y′ ≤ cᵢ′ ,   i = 1, …, n
+where   aᵢ′ = aᵢ − bᵢ·a/b ,   bᵢ′ = bᵢ/b ,   cᵢ′ = cᵢ
+</code></pre>
+<p>Rewriting (changing symbols), the general problem splits the constraints into two index sets <code>I₁</code> and <code>I₂</code> (constraints whose <code>y</code>-coefficient sign differs become "<code>y ≥</code>" or "<code>y ≤</code>" constraints):</p>
+<pre><code>Minimize    y
+subject to  y ≥ aᵢx + bᵢ   (i ∈ I₁)
+            y ≤ aᵢx + bᵢ   (i ∈ I₂)
+            a ≤ x ≤ b
+</code></pre>
+<p>Define:</p>
+<pre><code>F₁(x) = max { aᵢx + bᵢ : i ∈ I₁ }   (lower envelope constraint — must lie above)
+F₂(x) = min { aᵢx + bᵢ : i ∈ I₂ }   (upper envelope constraint — must lie below)
+</code></pre>
+<p>Then the problem becomes:</p>
+<pre><code>Minimize    F₁(x)
+subject to  F₁(x) ≤ F₂(x),   a ≤ x ≤ b
+</code></pre>
+<p>(Fig. 7-9: feasible where <code>F₁(x) ≤ F₂(x)</code>, between <code>x = a</code> and <code>x = b</code>.)</p>
+<h3 id="pruning-and-feasibility-test-for-the-general-problem">Pruning and feasibility test for the general problem</h3>
+<p>Define <code>F(x) = F₁(x) − F₂(x)</code>. Then <strong><code>xₘ</code> is feasible ⟺ <code>F(xₘ) ≤ 0</code></strong>.</p>
+<p>Slopes at <code>xₘ</code>:</p>
+<pre><code>g_min = min { aᵢ : i ∈ I₁, aᵢxₘ + bᵢ = F₁(xₘ) }   (min slope of active I₁ lines)
+g_max = max { aᵢ : i ∈ I₁, aᵢxₘ + bᵢ = F₁(xₘ) }   (max slope of active I₁ lines)
+h_min = min { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (min slope of active I₂ lines)
+h_max = max { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (max slope of active I₂ lines)
+</code></pre>
+<blockquote>
+<p>⚠️ Note: the slide lists <code>hmin = …</code> <strong>twice</strong> (once for min, once for max) — clearly a typo; the second should be <code>h_max</code>. Corrected above.</p>
+</blockquote>
+<p><strong>Case 1: <code>F(xₘ) ≤ 0</code> (<code>xₘ</code> feasible).</strong>
+- <code>g_min &gt; 0</code> and <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>.
+- <code>g_min &lt; 0</code> and <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>.
+- <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>xₘ = x₀</code> is the <strong>optimum</strong>.</p>
+<p><strong>Case 2: <code>F(xₘ) &gt; 0</code> (<code>xₘ</code> infeasible).</strong>
+- <code>g_min &gt; h_max</code> → <code>x₀ &lt; xₘ</code>.
+- <code>g_min &lt; h_max</code> → <code>x₀ &gt; xₘ</code>.
+- <code>g_min ≤ h_max</code> <strong>and</strong> <code>g_max ≥ h_min</code> → <strong>no feasible solution exists</strong>.</p>
+<h3 id="algorithm-general-two-variable-lp">Algorithm (general two-variable LP)</h3>
+<ul>
+<li><strong>Input:</strong> <code>I₁</code>: <code>y ≥ aᵢx + bᵢ</code>, <code>i = 1…n₁</code>;  <code>I₂</code>: <code>y ≤ aᵢx + bᵢ</code>, <code>i = n₁+1…n</code>;  <code>a ≤ x ≤ b</code>.</li>
+<li><strong>Output:</strong> <code>x₀</code> minimizing <code>y</code> subject to all constraints.</li>
+</ul>
+<ol>
+<li><strong>Step 1.</strong> Arrange the constraints in <code>I₁</code> and <code>I₂</code> into arbitrary disjoint pairs (within each set). For each pair: if <code>aᵢx + bᵢ</code> is <strong>parallel</strong> to <code>aⱼx + bⱼ</code>, delete <code>aᵢx + bᵢ</code> if <code>bᵢ &lt; bⱼ</code> for <code>i,j ∈ I₁</code> (or if <code>bᵢ &gt; bⱼ</code> for <code>i,j ∈ I₂</code>). Otherwise find the intersection <code>pᵢⱼ</code> with x-coordinate <code>xᵢⱼ</code>.</li>
+<li><strong>Step 2.</strong> Find the median <code>xₘ</code> of the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them).</li>
+<li><strong>Step 3.</strong>
+   - If <code>xₘ</code> is optimal → report and exit.
+   - If no feasible solution exists → report and exit.
+   - Otherwise → determine whether <code>x₀</code> lies to the <strong>left</strong> or <strong>right</strong> of <code>xₘ</code>.</li>
+<li><strong>Step 4.</strong> Discard at least <strong>1/4</strong> of the constraints. <strong>Go to Step 1.</strong></li>
+</ol>
+<p><strong>Time complexity:</strong> <code>O(n)</code>.</p>
+<hr />
+<h2 id="7-the-1-center-problem-smallest-enclosing-circle">7. The 1-Center Problem (Smallest Enclosing Circle)</h2>
+<h3 id="definition_1">Definition</h3>
+<p>Given <code>n</code> planar points, find the <strong>smallest circle</strong> that covers (encloses) all <code>n</code> points. (Fig. 7-16.)</p>
+<p>The center of the optimum circle lies in a region bounded by <strong>perpendicular bisectors</strong>: <code>L₁₂</code> = bisector of the segment joining <code>p₁, p₂</code>; <code>L₃₄</code> = bisector of segment joining <code>p₃, p₄</code>; etc. A point such as <code>p₁</code> can be <strong>eliminated</strong> without affecting the solution if it is dominated. ✅ <strong>Verified against slide 34</strong> (= Figure A.3): two bisectors <code>L₁₂</code> (positive slope) and <code>L₃₄</code> (negative slope) cross at origin <code>p</code>; points <code>p₁, p₂</code> on the right, <code>p₃, p₄</code> in the upper-left inside the shaded admissible region (upper-left quadrant). Slide 34's red caption reads "The area where the center of the optimum circle may be located." (The same figure is reused on slide 50 for Step 10.)</p>
+<h3 id="71-the-constrained-1-center-problem">7.1 The Constrained 1-Center Problem</h3>
+<p>The center is <strong>restricted to lie on a given straight line</strong> <code>y = y′</code>.</p>
+<ul>
+<li><strong>Input:</strong> <code>n</code> points and a straight line <code>y = y′</code>.</li>
+<li><strong>Output:</strong> the constrained center <code>x*</code> on the line <code>y = y′</code>.</li>
+</ul>
+<p>✅ Illustrated by <strong>Figure A.2</strong> (carved image) and confirmed by <strong>slide 35</strong> (statement "The center is restricted to lying on a straight line") and <strong>slide 38 / Fig. 7-18</strong> (the pruning geometry on <code>y = 0</code>).</p>
+<p><strong>Algorithm:</strong></p>
+<ol>
+<li><strong>Step 1.</strong> If <code>n ≤ 2</code>, solve by brute force.</li>
+<li><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), (p₃,p₄), …, (pₙ₋₁,pₙ)</code>. If there is an odd number of points, let the final pair be <code>(pₙ, p₁)</code>.</li>
+<li><strong>Step 3.</strong> For each pair <code>(pᵢ, pᵢ₊₁)</code>, find the point <code>xᵢ,ᵢ₊₁</code> on the line <code>y = y′</code> <strong>equidistant</strong> from both: <code>d(pᵢ, xᵢ,ᵢ₊₁) = d(pᵢ₊₁, xᵢ,ᵢ₊₁)</code>.</li>
+<li><strong>Step 4.</strong> Find the <strong>median</strong> of the <code>n/2</code> values <code>xᵢ,ᵢ₊₁</code>. Denote it <code>xₘ</code>.</li>
+<li><strong>Step 5.</strong> Compute the distance from every <code>pᵢ</code> to <code>xₘ</code>. Let <code>pⱼ</code> be the <strong>farthest</strong> point. Let <code>xⱼ</code> be the projection of <code>pⱼ</code> onto <code>y = y′</code>. If <code>xⱼ</code> is to the <strong>left (right)</strong> of <code>xₘ</code>, then the optimal solution <code>x*</code> must be to the <strong>left (right)</strong> of <code>xₘ</code>.</li>
+<li><strong>Step 6.</strong> Prune:
+   - If <code>x* &lt; xₘ</code>: for each <code>xᵢ,ᵢ₊₁ &gt; xₘ</code>, prune <code>pᵢ</code> if <code>pᵢ</code> is closer to <code>xₘ</code> than <code>pᵢ₊₁</code>, otherwise prune <code>pᵢ₊₁</code>.
+   - If <code>x* &gt; xₘ</code>: for each <code>xᵢ,ᵢ₊₁ &lt; xₘ</code>, prune <code>pᵢ</code> if <code>pᵢ</code> is closer to <code>xₘ</code> than <code>pᵢ₊₁</code>, otherwise prune <code>pᵢ₊₁</code>.</li>
+<li><strong>Step 7.</strong> <strong>Go to Step 1.</strong></li>
+</ol>
+<p><strong>Intuition for pruning:</strong> of the two points in a pair, the one <strong>closer</strong> to <code>xₘ</code> (on the far side from <code>x*</code>) can never be the farthest point determining the radius, so it is discarded. (Fig. 7-18.)</p>
+<p><strong>Time complexity:</strong> <code>O(n)</code>.</p>
+<h3 id="72-the-general-1-center-problem">7.2 The General 1-Center Problem</h3>
+<p>Using the <strong>constrained</strong> 1-center algorithm we can pin <code>x*</code> to a given line. We can do more: determine the sign of the optimum center's coordinates.</p>
+<p>Let <code>(xₛ, yₛ)</code> be the center of the optimum (unconstrained) circle. We can determine whether <code>yₛ &gt; 0</code>, <code>yₛ &lt; 0</code>, or <code>yₛ = 0</code>; similarly for <code>xₛ</code>.</p>
+<p><strong>Setup:</strong> For the constrained problem on <code>y = 0</code>, let <code>(x*, 0)</code> be the constrained center. Let <code>I</code> be the set of points <strong>farthest</strong> from <code>(x*, 0)</code>.</p>
+<p><strong>Case 1: <code>I</code> contains one point <code>P = (xₚ, yₚ)</code>.</strong>
+- <code>yₛ</code> has the <strong>same sign</strong> as <code>yₚ</code>. (We should move the center toward that farthest point.) ✅ <strong>Verified against slide 40 (Fig. 7-20, Case 1)</strong> = Figure A.4: the constrained circle on <code>y = 0</code> has its single farthest point <code>p</code> directly above center <code>x*</code> (apex of the half-disk), so the unconstrained optimum moves <strong>upward</strong> toward <code>p</code>. Slide 40 prints the rule "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</p>
+<p><strong>Case 2: <code>I</code> contains more than one point.</strong> ✅ <strong>Verified against slide 41 (Fig. 7-20(b)).</strong>
+- Find the <strong>smallest arc</strong> spanning all points in <code>I</code>. Let <code>P₁ = (x₁, y₁)</code> and <code>P₂ = (x₂, y₂)</code> be the two <strong>endpoints</strong> of that smallest spanning arc.
+- If the arc <strong>≥ 180°</strong> → <code>yₛ = 0</code> (the circle is already optimal — the farthest points "surround" the center).
+- Else (<code>&lt; 180°</code>) → <strong><code>yₛ</code> has the same sign as that of <code>(y₁ + y₂)/2</code></strong> (this expression IS printed on slide 41 — i.e. the sign of the midpoint-of-arc-endpoints' y-coordinate). Slide 41(b) draws the circle with farthest points <code>P₁,P₃,P₄,P₂</code> clustered on a short upper-right arc, center <code>(x*,0)</code>.</p>
+<p><strong>Why (acute vs obtuse):</strong>
+- If the farthest points form an <strong>acute triangle</strong> with respect to the center → the circle <strong>is optimal</strong>.
+- If they form an <strong>obtuse</strong> configuration (spanning arc <code>&lt; 180°</code>) → the circle is <strong>not</strong> optimal; the center can be moved.</p>
+<p><strong>Direction of <code>x*</code> / sign of <code>yₛ</code> when arc <code>&lt; 180°</code>:</strong></p>
+<p>When the smallest spanning arc is <code>&lt; 180°</code> (slide 43, <strong>Fig. 7-23</strong>), <code>(x₁ − x*)</code> and <code>(x₂ − x*)</code> must be of <strong>opposite signs</strong> — otherwise we could move <code>x*</code> toward where both <code>P₁</code> and <code>P₂</code> lie and shrink the circle.</p>
+<p>Let <code>P₁ = (a, b)</code> and <code>P₂ = (c, d)</code>. <strong>Without loss of generality assume <code>a &gt; x*</code>, <code>b &gt; 0</code> and <code>c &lt; x*</code>, <code>d &lt; 0</code></strong> (this WLOG is stated verbatim on slide 44). Let the current radius be <code>r</code>. Slide 44 draws four sub-figures (a)-(d), each shading the candidate region (regions 1, 2, 3, 4) where a smaller enclosing circle's center could lie; the optimum center must lie in <strong>region 3</strong> (the shaded region of sub-figure (c), the lower-left wedge between the two equal-radius arcs through <code>P₁</code> and <code>P₂</code>).</p>
+<p>✅ <strong>Verified against slide 45.</strong> The slide <strong>does</strong> print the closed-form sign expressions (the note's earlier "blank" claim was wrong — the formulas were merely typeset as overlapping fractions). The slide says "the sign of <code>yₛ</code> must be the sign of" and "similarly, <code>xₛ</code> has the same sign as that of", with the fractions:</p>
+<pre><code>sign(yₛ) = sign( (b + d)/2 )  =  sign( (y₁ + y₂)/2 )
+sign(xₛ) = sign( (a + c)/2 )  =  sign( (x₁ + x₂)/2 )
+</code></pre>
+<p>i.e. the optimum center's coordinates take the sign of the <strong>midpoint of the two spanning-arc endpoints</strong> <code>P₁=(a,b)=(x₁,y₁)</code> and <code>P₂=(c,d)=(x₂,y₂)</code>. (Since <code>P₁,P₂</code> are the arc endpoints, <code>(a,b)≡(x₁,y₁)</code> and <code>(c,d)≡(x₂,y₂)</code>, so the two forms of each line are identical.) This is consistent with slide 41's Case-2 statement that <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</p>
+<blockquote>
+<p>✅ Resolved: the §7.2 sign formulas are present on slides 41 and 45 and are now transcribed above. The slide-45 layout has the two text boxes overlapping the fraction objects, which is why an earlier text dump appeared blank; under the clean per-slide render the fractions <code>(b+d)/2</code>, <code>(y₁+y₂)/2</code>, <code>(a+c)/2</code>, <code>(x₁+x₂)/2</code> are legible.</p>
+</blockquote>
+<h3 id="73-the-general-1-center-algorithm-full">7.3 The General 1-Center Algorithm (full)</h3>
+<ul>
+<li><strong>Input:</strong> a set <code>S = {p₁, …, pₙ}</code> of <code>n</code> points.</li>
+<li><strong>Output:</strong> the smallest enclosing circle for <code>S</code>.</li>
+</ul>
+<ol>
+<li><strong>Step 1.</strong> If <code>S</code> has ≤ <strong>16</strong> points, solve by brute force.</li>
+<li><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), …, (pₙ₋₁,pₙ)</code>. For each pair <code>(pᵢ, pᵢ₊₁)</code> find the perpendicular bisector of segment <code>pᵢpᵢ₊₁</code>. Denote them <code>Lₖ</code> (<code>k = 1,…,n/2</code>) and compute their slopes <code>sₖ</code>.</li>
+<li><strong>Step 3.</strong> Compute the <strong>median</strong> of the slopes <code>sₖ</code>; denote it <code>sₘ</code>.</li>
+<li><strong>Step 4.</strong> Rotate the coordinate system so the x-axis coincides with <code>y = sₘ·x</code>. Let <code>I⁺</code> (<code>I⁻</code>) be the set of <code>Lₖ</code> with positive (negative) slope. (Each has size <code>n/4</code>.)</li>
+<li><strong>Step 5.</strong> Construct disjoint pairs <code>(Lᵢ⁺, Lᵢ⁻)</code>, <code>i = 1,…,n/4</code>, with <code>Lᵢ⁺ ∈ I⁺</code>, <code>Lᵢ⁻ ∈ I⁻</code>. Find each pair's intersection <code>(aᵢ, bᵢ)</code>.</li>
+<li><strong>Step 6.</strong> Find the <strong>median of the <code>bᵢ</code>'s</strong>; denote it <code>y*</code>. Apply the <strong>constrained 1-center</strong> subroutine to <code>S</code> with the center forced onto <code>y = y*</code>. Let its solution be <code>(x′, y*)</code>.</li>
+<li><strong>Step 7.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x′, y*)</code>. If <code>yₛ = y*</code> → report "the circle from step 6 with center <code>(x′, y*)</code> is optimal" and exit. Otherwise record whether <code>yₛ &gt; y*</code> or <code>yₛ &lt; y*</code>.</li>
+<li><strong>Step 8.</strong> If <code>yₛ &gt; y*</code>, find the median of the <code>aᵢ</code>'s among <code>(aᵢ,bᵢ)</code> with <code>bᵢ &lt; y*</code>. If <code>yₛ &lt; y*</code>, find the median of <code>aᵢ</code>'s among those with <code>bᵢ &gt; y*</code>. Denote the median <code>x*</code>. Apply the constrained 1-center algorithm forcing the center onto <code>x = x*</code>. Let its solution be <code>(x*, y′)</code>.</li>
+<li><strong>Step 9.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x*, y′)</code>. If <code>xₛ = x*</code> → report "the circle from step 8 with center <code>(x*, y′)</code> is optimal" and exit. Otherwise record <code>xₛ &gt; x*</code> or <code>xₛ &lt; x*</code>.</li>
+<li><strong>Step 10.</strong> Prune based on the quadrant of the optimum relative to <code>(x*, y*)</code>. In each case <code>(aᵢ, bᵢ)</code> is the intersection of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code>:<ul>
+<li><strong>Case 1: <code>xₛ &gt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the one of <code>pⱼ/pₖ</code> that is closer to <code>(x*, y*)</code>.</li>
+<li><strong>Case 2: <code>xₛ &lt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
+<li><strong>Case 3: <code>xₛ &lt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
+<li><strong>Case 4: <code>xₛ &gt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
+</ul>
+</li>
+<li><strong>Step 11.</strong> Let <code>S</code> be the remaining points. <strong>Go to Step 1.</strong></li>
+</ol>
+<p><strong>Pruning rate:</strong> ✅ <strong>Verified against slide 52</strong> ("One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration."). Only the intersections in the correct quadrant (relative to <code>(x*, y*)</code>) qualify, giving <strong><code>n/16</code> points pruned per iteration</strong>. Slide 52's figure shows the four quadrants about <code>(xₘ, yₘ)</code> with the prunable quadrant shaded and bisector-pair crosses scattered in each.</p>
+<p><strong>Time complexity:</strong></p>
+<pre><code>T(n) = T(15n/16) + O(n) = O(n)
+</code></pre>
+<p>(Since <code>15/16 &lt; 1</code> and per-iteration work is <code>O(n)</code>, the geometric series sums to <code>O(n)</code> — same general-method argument as §1.)</p>
+<hr />
+<h2 id="verification-status-after-reading-the-full-53-slide-render-rendera06full">Verification status (after reading the full 53-slide render <code>render/A06full/</code>)</h2>
+<h3 id="resolved-verified-against-specific-slides">✅ Resolved / verified against specific slides</h3>
+<ol>
+<li><strong>Geometric-series closed form (§1)</strong> → <strong>slide 4.</strong> The slide genuinely stops at "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>"; the closed form <code>1/(1 − (1−f)ᵏ)</code> is a legitimate fill-in but is <strong>not on the slide</strong> (correctly flagged).</li>
+<li><strong>Median definition (§2)</strong> → <strong>slide 5.</strong> Slide explicitly writes <code>⌈n/2⌉</code>-th smallest. No placeholder. Verified.</li>
+<li><strong>Selection boundary conditions (§3, §5)</strong> → <strong>slides 6 &amp; 9.</strong> The deck really is inconsistent: slide 6 uses strict <code>&gt;</code>; slide 9 (formal Step 5) uses <code>≥</code>. The <code>≥</code> version is correct. Verified.</li>
+<li><strong>Median-of-medians "1/4" grid (§4)</strong> → <strong>slide 7.</strong> The grid figure IS in the deck (columns of 5 sorted top-to-bottom, dotted median row <code>M</code>, boxed <code>P</code>, two solid rectangles for the ≥1/4-each regions). The §4 ASCII was replaced with the real layout. Verified.</li>
+<li><strong>Boundary function <code>F(x)</code> (§6)</strong> → <strong>slide 14 (Fig. 7-2).</strong> <strong>The note's "F(x) = blank" claim was WRONG.</strong> The slide prints <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (typeset <code>1≤x≤n</code>, a typo) and <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>, over a gray convex region with eight labelled lines and optimum <code>(x₀,y₀)</code>. Corrected + verified.</li>
+<li><strong>Fig. 7-6 three-subcase plot + Case-2 slopes (§6)</strong> → <strong>slide 17.</strong> Real plot; slide prints <code>g_max</code>/<code>g_min</code> set-builder definitions and the 2a/2b/2c rules. Case→point map: 2a↔xₘ,₃, 2b↔xₘ,₁, 2c↔xₘ,₂. Verified. (Single-constraint Case 1 = <strong>Fig. 7-5, slide 16</strong>.)</li>
+<li><strong><code>F₁</code>/<code>F₂</code> definitions &amp; general-LP reduction (§6)</strong> → <strong>slides 22–23.</strong> Slide 22 prints the substitution <code>x'=x, y'=ax+by</code> and <code>aᵢ'=aᵢ−bᵢa/b, bᵢ'=bᵢ/b, cᵢ'=cᵢ</code>; slide 23 prints <code>F₁(x)=max{aᵢx+bᵢ, i∈I₁}</code>, <code>F₂(x)=min{aᵢx+bᵢ, i∈I₂}</code> and Fig. 7-9-style region. Verified.</li>
+<li><strong><code>h_min</code> listed twice (§6)</strong> → <strong>slide 24.</strong> Confirmed: the slide's 4th bullet really reads <code>h_min = max{…}</code> — a slide typo; should be <code>h_max</code>. The note's correction stands. Verified.</li>
+<li><strong>§7.2 sign expressions</strong> → ✅ <strong>NOW RESOLVED — slides 41 &amp; 45.</strong> The note's "STILL UNVERIFIED / blank" claim was WRONG. The closed forms are printed on the slides:
+   - <code>sign(yₛ) = sign((b+d)/2) = sign((y₁+y₂)/2)</code>
+   - <code>sign(xₛ) = sign((a+c)/2) = sign((x₁+x₂)/2)</code>
+   (slide 45; slide 41 also shows <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code>). The overlap of text boxes in the original dump made them look blank. Transcribed into §7.2.</li>
+<li><strong>1-center <code>n/16</code> pruning rate (§7.3)</strong> → <strong>slide 52.</strong> Slide states "One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration." Figure shows the four quadrants around <code>(xₘ, yₘ)</code> with the prunable quadrant shaded. Verified; <code>T(n)=T(15n/16)+O(n)=O(n)</code> on slide 53.</li>
+</ol>
+<h3 id="remaining-genuinely-reconstructed-not-on-any-slide">Remaining genuinely-reconstructed (not on any slide)</h3>
+<ul>
+<li><strong>Geometric-series closed form <code>1/(1−(1−f)ᵏ)</code> (§1):</strong> confirmed absent from slide 4 (the slide leaves it implicit). Standard fill-in only.</li>
+<li><strong>Step-5 coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (§5):</strong> slide 11 asserts <code>T(3n/4)+T(n/5) ≤ a₀ + T(19n/20)</code> directly without the comparison; the <code>241/400 &lt; 361/400</code> justification remains my fill-in (the slide does print the <code>(9/16)</code>, <code>(1/25)</code>, <code>(361/400)</code> quadratic coefficients, so the comparison is trivially supported, but is not spelled out).</li>
+</ul>
+<hr />
+<h2 id="appendix-a-figures">Appendix A — Figures</h2>
+<blockquote>
+<p><strong>Two sources.</strong> (1) The original carved images from <code>/home/brant/finals_study/algo/render/A06/</code> — figures A.1–A.4 below (nine images, five decorative junk: red rose, panda doodles, house icon, the "ohmygoodness.com" green-car cartoon). (2) The <strong>clean per-slide render</strong> <code>/home/brant/finals_study/algo/render/A06full/slide-NN.png</code> (53 slides), which I have now read in full — figures A.5–A.10 below.</p>
+<p><strong>Correction to the earlier note:</strong> the full render set <strong>does</strong> contain the median-of-medians grid (slide 7), the F(x)/x₀ envelope plot Fig. 7-2 (slide 14), and the Fig. 7-6 three-subcase plot (slide 17). The earlier claim that these were absent was based only on the carved-image subset. They are transcribed below and the body sections (§4, §6) are upgraded to ✅ Verified.</p>
+</blockquote>
+<h3 id="figure-a1-two-variable-lp-convex-feasible-region-and-the-optimum-x0">Figure A.1 — Two-variable LP: convex feasible region and the optimum <code>x₀</code></h3>
+<ul>
+<li><strong>Source:</strong> <code>png_003.png</code></li>
+<li><strong>Axes:</strong> vertical <code>y</code>, horizontal <code>x</code>, origin at lower-left.</li>
+<li><strong>Content:</strong> a shaded <strong>convex region</strong> (the feasible region) bounded by straight constraint lines. Five lines are labelled, each with an <strong>outward-pointing normal arrow</strong> (the half-plane direction): <code>a₁x+b₁</code> and <code>a₄x+b₄</code> on the right (shallow positive / shallow negative slope), <code>a₂x+b₂</code> lower-right, <code>a₃x+b₃</code> a steep near-vertical line on the right, <code>a₅x+b₅</code> on the upper-right. The remaining (unlabelled) edges bound the left side of the region.</li>
+<li><strong>Markers:</strong> two <strong>dashed vertical lines</strong> drop to the x-axis at <code>x₀</code> and <code>xₘ</code>, with <strong><code>x₀</code> to the LEFT of <code>xₘ</code></strong>. <code>x₀</code> is the abscissa of the lowest point of the convex boundary (the optimum); <code>xₘ</code> is the test abscissa.</li>
+<li><strong>What it resolves:</strong> confirms <code>F(x)</code> is the convex lower-boundary envelope of the constraints and that the optimum is its lowest point. This figure depicts the decision case <strong><code>x₀ &lt; xₘ</code></strong>.</li>
+</ul>
+<h3 id="figure-a2-constrained-1-center-center-on-line-y-0">Figure A.2 — Constrained 1-center (center on line <code>y = 0</code>)</h3>
+<ul>
+<li><strong>Source:</strong> <code>png_005.png</code></li>
+<li><strong>Content:</strong> a single <strong>circle</strong> whose <strong>center is marked <code>x*</code></strong> lying <strong>on the horizontal line <code>y = 0</code></strong> (line drawn with an arrowhead, labelled <code>y=0</code> at right). Approximately <strong>eleven points</strong> (filled dots) are scattered inside the circle; two lie essentially on the <code>y=0</code> line and the rest above/below it.</li>
+<li><strong>What it shows:</strong> the constrained 1-center problem — the smallest enclosing circle subject to its center being pinned to the given line <code>y = y′</code> (here <code>y′ = 0</code>). The radius is set by the farthest point(s) from <code>x*</code>.</li>
+</ul>
+<h3 id="figure-a3-general-1-center-perpendicular-bisector-elimination-region">Figure A.3 — General 1-center: perpendicular-bisector elimination region</h3>
+<ul>
+<li><strong>Source:</strong> <code>png_008.png</code></li>
+<li><strong>Axes:</strong> <code>y</code> vertical, <code>x</code> horizontal; the crossing point of the axes / bisectors is labelled <strong><code>p</code></strong>.</li>
+<li><strong>Bisectors:</strong> <strong><code>L₁₂</code></strong> — a line of <strong>positive slope</strong> through <code>p</code>, arrowheads pointing up-right (toward its label <code>L₁₂</code>) and down-left. <strong><code>L₃₄</code></strong> — a line of <strong>negative slope</strong> through <code>p</code>, arrowheads pointing down-right (toward label <code>L₃₄</code>) and up-left.</li>
+<li><strong>Points:</strong> <code>p₁</code> and <code>p₂</code> on the <strong>right</strong> half (<code>p₁</code> above <code>p₂</code>); <code>p₃</code> and <code>p₄</code> in the <strong>upper-left</strong>, inside the shaded region (<code>p₃</code> above <code>p₄</code>).</li>
+<li><strong>Shaded region:</strong> the <strong>upper-left wedge/quadrant</strong> bounded by the two bisectors and the positive <code>y</code>-axis — the admissible region for the optimum center after the bisector constraints <code>L₁₂</code> (perp. bisector of <code>p₁p₂</code>) and <code>L₃₄</code> (perp. bisector of <code>p₃p₄</code>) are imposed. Points outside the relevant half-plane (e.g. <code>p₁</code>) can be eliminated.</li>
+</ul>
+<h3 id="figure-a4-sign-determination-single-farthest-point-ys-follows-yp">Figure A.4 — Sign determination, single farthest point (<code>yₛ</code> follows <code>yₚ</code>)</h3>
+<ul>
+<li><strong>Source:</strong> <code>png_006.png</code></li>
+<li><strong>Content:</strong> an <strong>upper half-disk</strong> (semicircle) sitting on the horizontal line <code>y = 0</code> (labelled <code>y=0</code>, arrow at right). The <strong>apex of the arc is labelled <code>p</code></strong> and a <strong>dashed vertical segment</strong> drops from <code>p</code> to the center <strong><code>x*</code></strong> on the line. Four interior points (filled dots) are scattered below the apex (two left of the dashed line, two right).</li>
+<li><strong>What it resolves:</strong> the §7.2 <strong>Case 1</strong> geometry. The single farthest point <code>p</code> lies <strong>directly above</strong> the constrained center <code>x*</code> (on <code>y = 0</code>); therefore the unconstrained optimum center should move <strong>upward toward <code>p</code></strong>, i.e. <code>yₛ</code> has the <strong>same sign as <code>yₚ</code></strong> (here positive). Confirms the qualitative "move toward the farthest point" rule. This is <strong>slide 40 (Fig. 7-20, Case 1)</strong> in the full render; slide 40 prints "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</li>
+</ul>
+<h3 id="figure-a5-median-of-medians-grid-slide-7">Figure A.5 — Median-of-medians grid (slide 7)</h3>
+<ul>
+<li><strong>Source:</strong> <code>render/A06full/slide-07.png</code> ("How to select P?").</li>
+<li><strong>Layout:</strong> <code>⌈n/5⌉</code> columns (drawn as 7), each a 5-element subset of dots; left-side down-arrow labelled "Each 5-element subset is sorted in non-decreasing sequence" (smallest top, largest bottom). Middle (3rd) row = group medians, in a <strong>dotted rectangle labelled <code>M</code></strong> at the right. The median-of-medians <strong><code>P</code></strong> is the boxed dot in the middle of that row (label + arrow).</li>
+<li><strong>Guarantee rectangles:</strong> a solid <strong>upper-left</strong> rectangle labelled "At least 1/4 of S known to be less than or equal to P" (arrow from top); a solid <strong>lower-right</strong> rectangle labelled "At least 1/4 of S known to be greater than or equal to P" (arrow from bottom). These staircase around <code>P</code>.</li>
+<li><strong>Resolves:</strong> §4 grid (was ASCII reconstruction → now ✅ verified).</li>
+</ul>
+<h3 id="figure-a6-fig-7-2-fx-upper-envelope-plot-slide-14">Figure A.6 — Fig. 7-2: F(x) upper-envelope plot (slide 14)</h3>
+<ul>
+<li><strong>Source:</strong> <code>render/A06full/slide-14.png</code> ("Fig. 7-2 An Example of the Special Two-Variable Linear Programming Problem").</li>
+<li><strong>Axes:</strong> <code>y</code> up, <code>x</code> right. Gray <strong>convex feasible region</strong> sitting above the upper envelope of <strong>eight</strong> constraint lines, each with an outward normal arrow, labelled <code>a₁x+b₁ … a₈x+b₈</code>. Optimum <code>(x₀, y₀)</code> at the lowest envelope point, marked with a short <strong>red vertical segment</strong>.</li>
+<li><strong>Formulas printed on slide (right column):</strong> <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (printed <code>1≤x≤n</code>, a typo) and the optimum <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>.</li>
+<li><strong>Resolves:</strong> §6 <code>F(x)</code> definition (was wrongly flagged "blank" → now ✅ verified; formula IS on the slide).</li>
+</ul>
+<h3 id="figure-a7-fig-7-3-7-5-7-6-constraint-pruning-xm-cases-slides-15-16-17">Figure A.7 — Fig. 7-3 / 7-5 / 7-6: constraint pruning &amp; xₘ cases (slides 15, 16, 17)</h3>
+<ul>
+<li><strong>Fig. 7-3 (slide 15):</strong> convex envelope, dashed vertical at <code>xₘ</code>, <code>x₀</code> to its left (case <code>x₀&lt;xₘ</code>), one line annotated "May be deleted"; green dot = optimum. Resolves §6 "deleting constraints".</li>
+<li><strong>Fig. 7-5 (slide 16):</strong> Case 1, <code>yₘ</code> on a single constraint of slope <code>g</code>; <code>g&gt;0 ⇒ x₀&lt;xₘ</code>, <code>g&lt;0 ⇒ x₀&gt;xₘ</code>. Shows two test verticals.</li>
+<li><strong>Fig. 7-6 (slide 17):</strong> three test abscissae <code>xₘ,₁ &lt; xₘ,₂ &lt; xₘ,₃</code> on a convex envelope, with <code>g_min</code>/<code>g_max</code> slope labels on active lines. Right column prints <code>g_max = max{aᵢ|aᵢxₘ+bᵢ=F(xₘ)}</code>, <code>g_min = min{…}</code>, and Cases 2a (<code>g_min,g_max&gt;0 ⇒ x₀&lt;xₘ</code>, at <code>xₘ,₃</code>), 2b (<code>&lt;0 ⇒ x₀&gt;xₘ</code>, at <code>xₘ,₁</code>), 2c (<code>g_min&lt;0&lt;g_max ⇒ optimum</code>, at <code>xₘ,₂</code>). Resolves §6 Case 2 (→ ✅ verified).</li>
+</ul>
+<h3 id="figure-a8-general-lp-feasibility-cases-f1f2-slides-2530-fig-7-9-slide-24">Figure A.8 — General-LP feasibility cases F₁/F₂ (slides 25–30, Fig. 7-9 = slide 24)</h3>
+<ul>
+<li><strong>Source:</strong> <code>render/A06full/slide-24..30.png</code>.</li>
+<li><strong>Slide 23:</strong> definitions <code>F₁(x)=max{aᵢx+bᵢ:i∈I₁}</code> (lower env., must lie above), <code>F₂(x)=min{…:i∈I₂}</code> (upper env., must lie below); shaded lens between them over <code>a≤x≤b</code>.</li>
+<li><strong>Slide 24 (Fig. 7-9):</strong> pruning picture, optimum (green dot), <code>x₀&lt;xₘ</code>; right column lists <code>g_min,g_max</code> (over <code>I₁</code>) and <code>h_min, h_min</code>(sic — second is the slide's typo for <code>h_max</code>) over <code>I₂</code>.</li>
+<li><strong>Slides 25–27 (Case 1, <code>F(xₘ)≤0</code> feasible):</strong> 1a <code>g_min&gt;0,g_max&gt;0 ⇒ x₀&lt;xₘ</code>; 1b <code>&lt;0,&lt;0 ⇒ x₀&gt;xₘ</code>; 1c <code>g_min&lt;0&lt;g_max ⇒ xₘ=x₀</code> optimum.</li>
+<li><strong>Slides 28–30 (Case 2, <code>F(xₘ)&gt;0</code> infeasible):</strong> 2a <code>g_min&gt;h_max ⇒ x₀&lt;xₘ</code>; 2b <code>g_min&lt;h_max ⇒ x₀&gt;xₘ</code>; 2c <code>g_min≤h_max &amp; g_max≥h_min ⇒ no feasible solution</code>.</li>
+</ul>
+<h3 id="figure-a9-fig-7-18-pruning-in-the-constrained-1-center-problem-slide-38">Figure A.9 — Fig. 7-18: pruning in the constrained 1-center problem (slide 38)</h3>
+<ul>
+<li><strong>Source:</strong> <code>render/A06full/slide-38.png</code>.</li>
+<li><strong>Content:</strong> horizontal line <code>y=0</code>; bisector <code>Lᵢⱼ</code> (positive slope) crossing <code>y=0</code> at <code>xᵢⱼ</code>; points <code>Pᵢ</code> (above-left, boxed dot) and <code>Pⱼ</code> (right). <code>xₘ</code> marked with leftward arrow to <code>x*</code>. Illustrates: of a pair, the point closer to <code>xₘ</code> on the far side from <code>x*</code> is pruned.</li>
+</ul>
+<h3 id="figure-a10-fig-7-23-region-14-sub-figures-sign-of-xsys-slides-4145">Figure A.10 — Fig. 7-23 &amp; "region 1–4" sub-figures; sign of xₛ/yₛ (slides 41–45)</h3>
+<ul>
+<li><strong>Sources:</strong> <code>render/A06full/slide-41.png</code> (Fig. 7-20(a)/(b)), <code>slide-42.png</code> (acute vs obtuse triangle: "circle is optimal" / "not optimal"), <code>slide-43.png</code> (Fig. 7-23, arc &lt; 180°, <code>P₁</code> upper-left and <code>P₂</code> lower-left of <code>(x*,0)</code>), <code>slide-44.png</code> (four sub-figures (a)-(d) shading regions 1–4; WLOG <code>a&gt;x*,b&gt;0,c&lt;x*,d&lt;0</code>, radius <code>r</code>), <code>slide-45.png</code> (the sign formulas).</li>
+<li><strong>Key recovered formulas (slide 45):</strong></li>
+<li><code>sign(yₛ) = sign((b+d)/2) = sign((y₁+y₂)/2)</code></li>
+<li><code>sign(xₛ) = sign((a+c)/2) = sign((x₁+x₂)/2)</code>
+  with the optimum center forced into <strong>region 3</strong> (slide-44(c)). Slide 41(b) independently states <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code> for the arc-<code>&lt;180°</code> case.</li>
+<li><strong>Resolves:</strong> §7.2 sign determination — the closed forms ARE on the slides (earlier marked unrecovered → now ✅ verified).</li>
+</ul>
+<hr>
+<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+</div></body></html>

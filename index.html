@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algorithms Finals — Study Hub</title>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="index.html">📘 Algo Finals</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="tag">Final Exam Prep · R.C.T. Lee — Design &amp; Analysis of Algorithms</div>
+    <h1>Algorithms Finals — Study Hub</h1>
+    <p class="lede">Hand-trace the algorithms, drill the theory Q&amp;A, reproduce the reductions.
+    Four chapters: Searching Strategies, Prune-and-Search, Dynamic Programming, NP-Completeness.</p>
+    <div class="countdown" id="cd">exam countdown…</div>
+  </div>
+
+  <a class="cardlink" href="algorithms/index.html" style="display:block;border-color:var(--accent);margin:0 0 1.5rem">
+    <div class="n">🧬 New · interactive</div>
+    <div class="t" style="font-size:1.2rem">Algorithm Zoo →</div>
+    <div class="d">Bite-size, one algorithm per session — step through 15 classics (sorting, greedy, DP, graphs, backtracking) with animations, two questions each, and a progress tracker. Breadth to go with the lessons' depth.</div>
+  </a>
+
+  <h2 id="lessons">Lessons <span style="font-weight:400;color:var(--mut);font-size:.9rem">— interactive, do-it-yourself · 10 lessons</span></h2>
+  <div class="grid">
+    <a class="cardlink" href="lessons/0001-search-strategies.html">
+      <div class="n">Lesson 1 · Ch6</div>
+      <div class="t">The Four Search Strategies</div>
+      <div class="d">DFS / BFS / hill-climbing / best-first as one loop with one knob.</div>
+    </a>
+    <a class="cardlink" href="lessons/0002-branch-and-bound.html">
+      <div class="n">Lesson 2 · Ch6</div>
+      <div class="t">Branch-and-Bound + TSP</div>
+      <div class="d">Reduced-cost-matrix lower bounds; hand-trace the cost-126 TSP tour.</div>
+    </a>
+    <a class="cardlink" href="lessons/0003-astar-and-knapsack-bb.html">
+      <div class="n">Lesson 3 · Ch6</div>
+      <div class="t">A* &amp; Knapsack B&amp;B</div>
+      <div class="d">f=g+h, admissibility h≤h*; 0/1-knapsack bounds (−18 ≤ opt ≤ −16).</div>
+    </a>
+    <a class="cardlink" href="lessons/0004-backtracking-trees.html">
+      <div class="n">Lesson 4 · Ch6</div>
+      <div class="t">Backtracking Trees</div>
+      <div class="d">SAT semantic tree · sum-of-subsets DFS · Hamiltonian circuit.</div>
+    </a>
+    <a class="cardlink" href="lessons/0005-selection-median-of-medians.html">
+      <div class="n">Lesson 5 · Prune</div>
+      <div class="t">Linear-Time Selection</div>
+      <div class="d">Median-of-medians pivot, ≥n/4 pruned, the T(n)=T(3n/4)+T(n/5)+O(n) → O(n) proof.</div>
+    </a>
+    <a class="cardlink" href="lessons/0006-linear-programming-2var.html">
+      <div class="n">Lesson 6 · Prune</div>
+      <div class="t">2-Variable Linear Programming</div>
+      <div class="d">The F(x) upper envelope, the slope test, pruning constraints to O(n).</div>
+    </a>
+    <a class="cardlink" href="lessons/0007-dp-multistage-graph.html">
+      <div class="n">Lesson 7 · Ch7</div>
+      <div class="t">DP: Multistage Graphs</div>
+      <div class="d">Forward vs backward reasoning · principle of optimality · d(S,T)=9.</div>
+    </a>
+    <a class="cardlink" href="lessons/0008-dp-knapsack-lcs.html">
+      <div class="n">Lesson 8 · Ch7</div>
+      <div class="t">DP: Knapsack &amp; LCS</div>
+      <div class="d">The gᵢ(y) knapsack recurrence; fill the LCS table → "acad".</div>
+    </a>
+    <a class="cardlink" href="lessons/0009-np-definitions-cook.html">
+      <div class="n">Lesson 9 · Ch8</div>
+      <div class="t">NP-Completeness I</div>
+      <div class="d">P/NP/NP-hard/NPC · reduction direction · nondeterminism · Cook's theorem.</div>
+    </a>
+    <a class="cardlink" href="lessons/0010-np-reduction-chain.html">
+      <div class="n">Lesson 10 · Ch8</div>
+      <div class="t">NP-Completeness II</div>
+      <div class="d">The full reduction map; SAT→3-SAT and sum-of-subsets→partition in detail.</div>
+    </a>
+  </div>
+
+  <h2 id="notes">Chapter Notes <span style="font-weight:400;color:var(--good);font-size:.85rem">✓ slide-verified</span></h2>
+  <div class="grid">
+    <a class="cardlink" href="notes-html/A05-searching-strategies.html">
+      <div class="n">Chapter 6</div>
+      <div class="t">Searching Strategies</div>
+      <div class="d">SAT/Hamiltonian/subset trees · DFS·BFS·hill·best-first · branch-and-bound (personnel, TSP, knapsack) · A*. Figures in Appendix A.</div>
+    </a>
+    <a class="cardlink" href="notes-html/A06-prune-and-search.html">
+      <div class="n">Prune-and-Search</div>
+      <div class="t">Selection &amp; LP</div>
+      <div class="d">General method + O(nᵏ) proof · median-of-medians O(n) selection · 2-var linear programming · 1-center.</div>
+    </a>
+    <a class="cardlink" href="notes-html/A07-dynamic-programming.html">
+      <div class="n">Chapter 7</div>
+      <div class="t">Dynamic Programming</div>
+      <div class="d">Multistage graph (forward/backward) · principle of optimality · 0/1 knapsack · resource alloc · TSP · LCS · OBST.</div>
+    </a>
+    <a class="cardlink" href="notes-html/A08-np-completeness.html">
+      <div class="n">Chapter 8</div>
+      <div class="t">NP-Completeness</div>
+      <div class="d">P/NP/NP-hard/NPC · reduction · nondeterministic algos · Cook's theorem · the full 13-reduction chain.</div>
+    </a>
+  </div>
+
+  <h2 id="reference">Reference</h2>
+  <div class="grid">
+    <a class="cardlink" href="reference/glossary.html">
+      <div class="n">Quick reference</div>
+      <div class="t">Glossary</div>
+      <div class="d">Every key term across all four chapters, one line each. The shared vocabulary.</div>
+    </a>
+  </div>
+
+  <h2 id="how">How to study this <span style="font-weight:400;color:var(--mut);font-size:.85rem">(~1 week out)</span></h2>
+  <p>Don't read-all-then-test — that's the fluency-illusion trap. Per chapter: <strong>learn → immediately self-test → mix older chapters into later sessions</strong> (retrieval + spacing + interleaving). NP-completeness is pure reproduce-the-reduction practice, so drill it actively.</p>
+  <p style="color:var(--mut);font-size:.9rem">Notes were extracted from the slide decks, cross-checked by independent verifiers, and every figure validated against the rendered slides (kept in <code>render/</code>). ⚠️-flagged items are the few spots still worth eyeballing.</p>
+</div>
+
+<script>
+(function(){
+  var exam=new Date('2026-06-20T09:00:00');
+  var now=new Date();
+  var days=Math.ceil((exam-now)/86400000);
+  var el=document.getElementById('cd');
+  el.textContent = days>0 ? ('🗓️ Exam ~Jun 20 · '+days+' day'+(days===1?'':'s')+' to go')
+                          : (days===0?'🗓️ Exam day — go get it.':'🗓️ Exam date passed');
+})();
+</script>
+</body></html>

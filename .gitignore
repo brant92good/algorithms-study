@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+*.pid
+# never publish raw third-party slides
+source/
+*.ppt
+*.pptx

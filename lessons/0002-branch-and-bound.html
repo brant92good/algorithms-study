@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 2 — Branch-and-Bound &amp; the TSP Trace</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 2 · Ch6 Searching Strategies</div>
+<h1>Branch-and-Bound &amp; the TSP Trace</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> a branch-and-bound search — reduce a cost matrix to a lower bound, then walk the TSP decision tree to the optimal tour. This is the strategy that the four from Lesson 1 <em>cannot</em> do: it finds the <strong>best</strong> solution, not just <em>a</em> solution. Your tangible win: reproduce the <code>1-4-6-7-3-5-2-1</code> tour, cost 126, from a 7×7 matrix on paper.</div>
+
+<h2>0 · What are we even solving?</h2>
+<p>Before any machinery, three plain-English ideas. Read these once and the rest of the lesson is just bookkeeping.</p>
+
+<p><strong>Feasibility vs optimization.</strong> A <strong>feasibility (or decision) problem</strong> asks "is there <em>any</em> valid answer?" — find one solution that works, or say "none exists." An <strong>optimization problem</strong> asks for the <em>best</em> valid answer by some measure (cheapest, shortest, most profit). The gap matters: finding <em>a</em> tour is easy; finding the <em>cheapest</em> tour, and <em>proving</em> nothing cheaper exists, is the hard part.</p>
+
+<p><strong>The Travelling Salesperson Problem (TSP).</strong> A salesperson must visit every city exactly once and return to the city they started from. Each leg from one city to another has a <strong>cost</strong> (think distance or price). The goal: find the cheapest such round-trip. One full round-trip — start city, through every other city once, back to start — is called a <strong>tour</strong>. TSP is an optimization problem, and a famously hard one (NP-complete).</p>
+
+<p><strong>The cost matrix.</strong> We write the costs in a grid called a <strong>cost matrix</strong>: the entry in row <code>i</code>, column <code>j</code> is the cost of going from city <code>i</code> to city <code>j</code>. The diagonal (going from a city to itself) is <code>∞</code> — you can't stay put. Here is a tiny 3-city example you can read at a glance:</p>
+<div class="tree">       to:  1    2    3
+ from 1:   ∞    7    3      (city 1 → city 2 costs 7; 1 → 3 costs 3)
+ from 2:   4    ∞    9
+ from 3:   6    2    ∞</div>
+<p>A tour like <code>1 → 2 → 3 → 1</code> costs <code>7 + 9 + 6 = 22</code>; the tour <code>1 → 3 → 2 → 1</code> costs <code>3 + 2 + 4 = 9</code>. With 3 cities there are only two tours to compare, but the number of tours explodes as cities grow — so we need a smarter method than listing them all.</p>
+
+<p><strong>Branch-and-bound, in plain terms.</strong> Instead of listing every tour, we split the choices into a <strong>tree</strong>: each branch is a yes/no decision like "does the tour use the leg 4→6 or not?" That's the <strong>branch</strong>. For every branch we compute a <strong>lower bound</strong> — the cheapest any complete tour inside that branch could <em>possibly</em> cost, even in the best case. That's the <strong>bound</strong>. The payoff: if a branch's lower bound is already <em>worse</em> than the best complete tour we've found so far, no tour in it can win, so we <strong>throw the whole branch away unopened</strong> (we "prune" it) without exploring it. That pruning is what lets us skip most of the tree yet still prove our answer is optimal.</p>
+
+<div class="note"><strong>Why a lower bound is allowed to prune.</strong> A lower bound is a guarantee: "everything in here costs <em>at least</em> this much." If that floor is already taller than a tour you've completed, opening the branch can only confirm bad news — so skip it. The whole skill below is just: how do we compute a trustworthy lower bound? Answer: the <em>reduced cost matrix</em>.</div>
+
+<h2>1 · The one new idea: a bound that prunes</h2>
+<p>Branch-and-bound is <strong>best-first search</strong> (Lesson 1) plus a <strong>bound</strong>. DFS/BFS/hill-climbing/best-first all stop at the <em>first</em> goal they reach — fine for feasibility, useless for <strong>optimization</strong>, because the first tour found is rarely the cheapest. Branch-and-bound fixes this with two moves:</p>
+<div class="tree">BRANCH:  split the solution space into subtrees
+         (e.g. "tours WITH arc 4-6" vs "tours WITHOUT arc 4-6")
+
+BOUND:   for each node compute a lower bound LB
+         = the cheapest any tour in this subtree could possibly be
+         if  LB  &ge;  best complete tour found so far
+             &rarr; PRUNE the whole subtree (it can't win)</div>
+<div class="note"><strong>Key exam line:</strong> for a minimization problem, each node carries a <strong>lower bound</strong>; you keep the <strong>best feasible cost found so far</strong> as an upper bound. Prune any node whose <code>LB &ge; best-so-far</code> — exploring it is pointless because nothing inside it can beat what you already have.</div>
+
+<h2>2 · Reduced cost matrix → a lower bound</h2>
+<p>How do we get a lower bound for "all tours"? A <strong>reduced cost matrix</strong> is what you get by subtracting a constant from each row, and then from each column, so that every row and every column contains at least one <code>0</code>. Here is the intuition for why the total you subtract is a valid lower bound:</p>
+<p>Every tour must <strong>leave each city exactly once</strong> — so it uses exactly one entry from each row. If the cheapest way out of city <code>i</code> costs <code>m</code>, then <em>every</em> tour pays at least <code>m</code> for leaving city <code>i</code>, no matter which tour it is. Subtracting <code>m</code> from row <code>i</code> just sets that unavoidable floor aside; it lowers every tour's cost by the same <code>m</code>, so it never changes <em>which</em> tour is cheapest. The same argument works column-by-column (every tour must <strong>enter each city exactly once</strong>). Add up everything subtracted and you have a cost <em>every</em> tour must pay — a lower bound. Concretely:</p>
+<div class="tree">1.  From each ROW, subtract that row's minimum
+      (now every row has a 0).
+2.  From each COLUMN that still has no 0,
+      subtract that column's minimum.
+3.  The TOTAL subtracted is a LOWER BOUND:
+      every tour must pay at least that much.</div>
+<p>Small worked example — a 3-city matrix (∞ on the diagonal):</p>
+<table>
+<tr><th>i \ j</th><th>1</th><th>2</th><th>3</th><th>row min</th></tr>
+<tr><td><strong>1</strong></td><td>∞</td><td>7</td><td>3</td><td>(−3)</td></tr>
+<tr><td><strong>2</strong></td><td>4</td><td>∞</td><td>9</td><td>(−4)</td></tr>
+<tr><td><strong>3</strong></td><td>6</td><td>2</td><td>∞</td><td>(−2)</td></tr>
+</table>
+<p>After row reduction each row has a zero, and the matrix becomes:</p>
+<table>
+<tr><th>i \ j</th><th>1</th><th>2</th><th>3</th></tr>
+<tr><td><strong>1</strong></td><td>∞</td><td>4</td><td>0</td></tr>
+<tr><td><strong>2</strong></td><td>0</td><td>∞</td><td>5</td></tr>
+<tr><td><strong>3</strong></td><td>4</td><td>0</td><td>∞</td></tr>
+<tr><td><strong>col min</strong></td><td>(0)</td><td>(0)</td><td>(0)</td></tr>
+</table>
+<p>Every column already has a 0, so no column reduction is needed. Total subtracted = <code>3 + 4 + 2 = 9</code> &rarr; <strong>lower bound 9</strong>. (The same trick gives the personnel-assignment bound of 54 in the chapter, and the TSP bound of 96 below.)</p>
+
+<h2>3 · The TSP trace (the marquee exam item)</h2>
+<p>Seven cities. Here is the full instance — <strong>Table 6-3</strong>, the 7×7 cost matrix. Entry <code>(i, j)</code> is the cost of arc <code>i → j</code>; the diagonal is <code>∞</code> (no self-loop). This is the same kind of grid as the 3-city toy above, just larger:</p>
+<table>
+<tr><th>i \ j</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+<tr><td><strong>1</strong></td><td>∞</td><td>3</td><td>93</td><td>13</td><td>33</td><td>9</td><td>57</td></tr>
+<tr><td><strong>2</strong></td><td>4</td><td>∞</td><td>77</td><td>42</td><td>21</td><td>16</td><td>34</td></tr>
+<tr><td><strong>3</strong></td><td>45</td><td>17</td><td>∞</td><td>36</td><td>16</td><td>28</td><td>25</td></tr>
+<tr><td><strong>4</strong></td><td>39</td><td>90</td><td>80</td><td>∞</td><td>56</td><td>7</td><td>91</td></tr>
+<tr><td><strong>5</strong></td><td>28</td><td>46</td><td>88</td><td>33</td><td>∞</td><td>25</td><td>57</td></tr>
+<tr><td><strong>6</strong></td><td>3</td><td>88</td><td>18</td><td>46</td><td>92</td><td>∞</td><td>7</td></tr>
+<tr><td><strong>7</strong></td><td>44</td><td>26</td><td>33</td><td>27</td><td>84</td><td>39</td><td>∞</td></tr>
+</table>
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.4rem">Table 6-3 — cost matrix for the 7-city TSP (verified against the A05 note).</p>
+
+<p><strong>Reduce it exactly as in the 3-city example.</strong> First subtract each <em>row's</em> minimum (the cheapest way out of that city): the row minimums are <code>3, 4, 16, 7, 25, 3, 26</code>, summing to <strong>84</strong>. After that, columns 3, 4 and 7 still have no zero, so subtract their minimums <code>7, 1, 4</code>, summing to <strong>12</strong>. The total subtracted is the root lower bound:</p>
+<div class="tree">row reductions:  3+4+16+7+25+3+26 = 84   (one min per row → every row gets a 0)
+col reductions:        7 + 1 + 4    = 12   (columns 3, 4, 7 still lacked a 0)
+                              ----------
+            ROOT LOWER BOUND  =  96</div>
+
+<p><strong>Choosing the branching arc.</strong> We split on a <em>zero-cost</em> arc — including it adds nothing, so the "include" side keeps the bound low, while the "exclude" side is forced to pay the next-cheapest way out. Pick the zero whose <em>exclusion</em> hurts the most.</p>
+
+<details><summary>Which arc do we branch on first, and what are the two child bounds? (work it, then reveal)</summary>
+<p>Arc <strong>4-6</strong>. Its exclusion penalty is <strong>32</strong> (the largest) — compare arc 3-5, whose penalty is only <code>17 + 1 = 18</code>. So:</p>
+<ul>
+<li><strong>Include 4-6:</strong> LB stays at <strong>96</strong> initially; after deleting row 4 / column 6 and re-reducing row 5 by 3, the bound becomes <strong>99</strong>.</li>
+<li><strong>Exclude 4-6:</strong> LB jumps to <strong>96 + 32 = 128</strong> — far worse, so this side is shelved.</li>
+</ul>
+</details>
+
+<p>Here is the complete decision tree the trace produces — <strong>Fig. 6-26</strong>. Every bound the trace below quotes (96, 99, 128, 117, 112, 125, 126, 153, 141) is read directly off this figure, and the optimal tour with its cost sits at the bottom of the left spine:</p>
+<img src="../render/A05/png_007.png" alt="Fig 6-26 TSP branch-and-bound tree" style="background:#fff;padding:.5rem;width:100%;border:1px solid var(--rule);border-radius:6px">
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.4rem">Fig. 6-26 — branch-and-bound tree for the 7-city TSP. Left spine = "with arc" (kept), right boxes = "without arc" (terminated / no solution). Optimal tour <code>1-4-6-7-3-5-2-1</code>, cost 126.</p>
+
+<p>Now follow the left spine — at each step include the chosen arc (cheap side) and read off the bound; the "without" branch is the prune/shelve side:</p>
+<div class="tree">                 All solutions   LB 96
+                  /            \
+        With 4-6           Without 4-6
+         LB 99               LB 128   (shelved)
+          |
+        With 3-5           Without 3-5
+         LB 99               LB 117
+          |
+        With 2-1           Without 2-1
+         LB 112              LB 125
+          |
+        With 1-4           Without 1-4
+         LB 126              LB 153   (terminated)
+          |
+        With 6-7           Without 6-7
+         LB 126              LB 141   (terminated)
+          |
+        With 5-2           Without 5-2
+         LB 126              (no solution)
+          |
+        With 7-3           Without 7-3
+       SOLUTION             (no solution)
+          |
+  Tour 1-4-6-7-3-5-2-1   Cost = 126</div>
+
+<details><summary>Read the final tour and its cost off the tree</summary>
+<p>The "with" arcs accumulated down the spine — 4-6, 3-5, 2-1, 1-4, 6-7, 5-2, 7-3 — stitch into the single Hamiltonian cycle</p>
+<p><code>1 → 4 → 6 → 7 → 3 → 5 → 2 → 1</code>, with total <strong>cost = 126</strong>.</p>
+<p>Every shelved "without" branch has a bound <strong>≥ 126</strong> (128, 117→…, 125, 153, 141) or no feasible solution, so none of them can beat 126 — the search is done and 126 is <em>proven optimal</em>. That proof of optimality is exactly what plain best-first search could never give you.</p>
+</details>
+
+<h2>4 · A peek at 0/1-knapsack bounds (Lesson 3)</h2>
+<p>Knapsack maximizes profit, which the deck flips into a minimization of <em>negative</em> profit. Branch-and-bound there needs the mirror image of the TSP setup: an <strong>upper bound</strong> from any quick feasible packing (e.g. taking items 1 and 2 gives <code>−16</code> — no optimum can be worse than that), and a <strong>lower bound</strong> from the <em>fractional relaxation</em> — allow <code>0 ≤ Xᵢ ≤ 1</code>, fill greedily by profit density, and you get <code>−18.5</code>, which rounds to <code>−18</code> since real solutions are integers. So the optimum is boxed in <code>−18 ≤ opt ≤ −16</code>. We trace that full tree next lesson.</p>
+
+<h2 class="qa-head">5 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="3" data-explain="Row minimums are 2, 5, 1 (sum 8). After subtracting them, column 1 still has no zero — its smallest remaining entry is 6&minus;2=4 in row 3, so subtract 4 more. The lower bound is the <b>total subtracted, 8 + 4 = 12</b>. If you picked 8 you stopped after the rows and forgot the column that still lacked a zero; if you picked 2 you reported the single smallest entry instead of the sum.">
+  <div class="q">Q1. For this 3-city matrix (∞ on the diagonal), reduce by rows then columns. What lower bound do you get?<br><span class="mono">&nbsp;&nbsp;&nbsp;∞&nbsp;&nbsp;8&nbsp;&nbsp;2<br>&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;∞&nbsp;&nbsp;5<br>&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;1&nbsp;&nbsp;∞</span></div>
+  <button class="opt">2 (the smallest entry in the matrix)</button>
+  <button class="opt">8 (the sum of the row minimums only)</button>
+  <button class="opt">15 (the sum of the largest row entries)</button>
+  <button class="opt">12 (the total subtracted across rows and columns)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="You prune when a node's lower bound <b>&ge;</b> the best complete tour found so far: nothing inside that subtree can beat what you already have. If you picked the <b>&le;</b> option you'd also prune a node whose bound equals or just-undershoots the best — but a node with bound strictly below best may still contain a cheaper tour, so pruning it would discard the actual optimum.">
+  <div class="q">Q2. You have already found a complete tour of cost 120. A live node has lower bound 120. Should you prune its subtree, and by what rule?</div>
+  <button class="opt">No — only prune when the bound is strictly greater than the best</button>
+  <button class="opt">Prune whenever the bound ≤ best-so-far (so 120 ≤ 120 prunes)</button>
+  <button class="opt">Yes — prune when bound ≥ best-so-far, and 120 ≥ 120 qualifies</button>
+  <button class="opt">No — a node can only be pruned if its bound is zero</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="Branch-and-bound is the strategy that returns the <b>optimal</b> solution. DFS, BFS, hill climbing, and best-first all stop at the <b>first</b> goal they reach, which need not be cheapest — best-first only orders the search, it does not prove optimality. Picking best-first is the classic trap: a good search order is not the same as a bound that proves no cheaper tour exists.">
+  <div class="q">Q3. Of these, which strategy is the one that actually <em>guarantees</em> the optimal solution to a minimization problem?</div>
+  <button class="opt">Branch and bound</button>
+  <button class="opt">Best-first search</button>
+  <button class="opt">Breadth-first search</button>
+  <button class="opt">Hill climbing search</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="In best-first branch-and-bound you expand the live node with the <b>smaller</b> lower bound, because it has the better chance of leading to a cheap tour — so you expand <b>include 4-6 (99)</b>, not exclude (128). Picking 128 is expanding the higher-bound child, which wastes work on the less promising side; picking 'either' ignores that the bounds rank the nodes.">
+  <div class="q">Q4. After splitting on arc 4-6 you have two children: "include 4-6" with lower bound 99 and "exclude 4-6" with lower bound 128. Which do you expand next?</div>
+  <button class="opt">Exclude 4-6, because excluding the arc is the harder, more informative case (128)</button>
+  <button class="opt">Include 4-6, the child with the smaller lower bound (99)</button>
+  <button class="opt">Either one — the lower bounds do not affect expansion order</button>
+  <button class="opt">Neither — both bounds exceed the root bound of 96, so prune both</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="The spine of 'with' arcs — 4-6, 3-5, 2-1, 1-4, 6-7, 5-2, 7-3 — stitches into the cycle <b>1-4-6-7-3-5-2-1</b>, and every shelved branch has a bound ≥ 126, so 126 is proven optimal. 96 is only the root lower bound and 99 is the bound after including 4-6 — neither is a complete tour's cost.">
+  <div class="q">Q5. In the TSP trace the root lower bound is 96 and including arc 4-6 raises it to 99. What is the cost of the proven-optimal tour 1-4-6-7-3-5-2-1?</div>
+  <button class="opt">96</button>
+  <button class="opt">99</button>
+  <button class="opt">126</button>
+  <button class="opt">128</button>
+  <div class="fb"></div>
+</div>
+
+<h2>6 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §6.7–6.9 (your <code>Alg05</code> slides, "The Searching Strategies" — branch-and-bound, personnel assignment, TSP). Re-draw the TSP decision tree (Fig. 6-25 / Fig. 6-26) and re-derive the 96 → 99 → … → 126 bounds from Tables 6-3 through 6-7.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> for one-line definitions, and the full <a href="../notes-html/A05-searching-strategies.html">chapter note (A05)</a> for every verified matrix and tree.</p>
+
+<div class="note"><strong>Next up — Lesson 3:</strong> the <strong>A*</strong> algorithm (best-first with <code>f(n)=g(n)+h(n)</code> and an admissible <code>h≤h*</code>) and the <strong>0/1-knapsack</strong> branch-and-bound trace — upper bound from a feasible packing, lower bound from the fractional relaxation, boxing the optimum in <code>−18 ≤ opt ≤ −16</code>.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to hand you the raw 7×7 matrix to reduce from scratch? Confused why "exclude 4-6" costs 32? Want the personnel-assignment trace (optimal cost 70) as extra reps? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → on to Lesson 3 (A* + knapsack). ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

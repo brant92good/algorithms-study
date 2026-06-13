@@ -1,0 +1,976 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch8 · NP-Completeness — Algo Finals</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Algo Finals</a>
+  <a class="crumb" href="../index.html#notes">Notes</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+<h1 id="chapter-8-the-theory-of-np-completeness">Chapter 8 — The Theory of NP-Completeness</h1>
+<blockquote>
+<p>Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>.
+Slide-deck companion (69 slides). This is the proof/QA-heavy final topic: <strong>the reductions are the core exam material.</strong></p>
+<p><strong>Notation legend</strong> (the slides render these as plain glyphs; restored here):
+<code>∨</code> = OR, <code>∧</code>/<code>&amp;</code> = AND, <code>¬x</code> (written <code>-x</code> in the deck) = NOT x, <code>→</code> = implies, <code>⇔</code>/<code>iff</code> = if-and-only-if, <code>≤ ≥ ≠ ∈ ∉ ⊆ ∪ Σ</code> as usual, <code>□</code> = the empty clause, <code>xᵢ</code> subscripts, <code>(k+1)ⁱ</code> superscripts.
+Markers like <em>"Lab. N"</em> in the raw dump are slide numbers; cited below as <strong>(slide N)</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>The chapter builds the theory of <strong>intractability</strong>: a large family of problems (the NP-complete, NPC, problems) for which no polynomial-time algorithm is known, and for which a polynomial algorithm for <em>any one</em> of them would yield one for <em>all</em> of them (collapsing NP into P).</p>
+<p>Core class definitions <strong>(slide 2)</strong>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P</strong></td>
+<td>Problems solvable by a <strong>deterministic</strong> polynomial-time algorithm.</td>
+</tr>
+<tr>
+<td><strong>NP</strong></td>
+<td><strong>Decision</strong> problems solvable by a <strong>non-deterministic</strong> polynomial-time algorithm (guess + polynomial-time check).</td>
+</tr>
+<tr>
+<td><strong>NP-hard</strong></td>
+<td>Problems to which <strong>every</strong> NP problem reduces. (Need not be in NP themselves.)</td>
+</tr>
+<tr>
+<td><strong>NP-complete (NPC)</strong></td>
+<td>Problems that are NP-hard <strong>and</strong> belong to NP.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Concept of reduction (slide 3).</strong></p>
+<blockquote>
+<p><strong>Def:</strong> Problem A <strong>reduces</strong> to problem B (written <strong>A → B</strong>) iff A can be solved by a deterministic polynomial-time algorithm that uses, as a subroutine, a deterministic polynomial-time algorithm that solves B.</p>
+</blockquote>
+<p>Intuition: "A → B" means <strong>B is at least as hard as A</strong> — if you can solve B fast, you can solve A fast.</p>
+<p><strong>Key concepts (slides 4–5):</strong></p>
+<ul>
+<li>Up to now, <strong>none</strong> of the NPC problems can be solved by a deterministic polynomial-time algorithm in the worst case.</li>
+<li>There does not <em>seem</em> to exist any polynomial-time algorithm for the NPC problems.</li>
+<li>The lower bound of any NPC problem <strong>seems</strong> to be of the order of an <strong>exponential</strong> function.</li>
+<li>The theory of NP-completeness always considers the <strong>worst case</strong>.</li>
+<li><strong>Not all NP problems are difficult</strong> — e.g. the <strong>Minimum Spanning Tree (MST)</strong> problem is an NP problem yet is solvable in polynomial time.</li>
+<li>If <strong>A, B ∈ NPC</strong>, then <strong>A → B and B → A</strong> (all NPC problems are inter-reducible; they are "equally hard").</li>
+<li><strong>The big theorem:</strong> If <strong>any</strong> NPC problem can be solved in polynomial time, then <strong>all</strong> NP problems can be — i.e. <strong>NP = P</strong>.</li>
+</ul>
+<hr />
+<h2 id="the-reduction-map">The Reduction Map</h2>
+<p>Every reduction shown in the deck. An edge <code>X → Y</code> means <em>"X reduces to Y"</em> and is used to prove *<em>Y is NP-complete given X is."</em> Cook's theorem seeds the chain with SAT.</p>
+<pre><code>                          [ Cook's Theorem ]
+                  every NP problem → SAT ; SAT is the first NPC problem
+                                     |
+        ┌─────────────────┬──────────┼───────────────┬───────────────────────┐
+        │                 │          │               │                       │
+        v                 v          v               v                       v
+     3-SAT            CLIQUE      SATY (≤3 lits)   DIRECTED              NODE COVER
+   (SAT→3-SAT)      (SAT→clique)   |               HAMILTONIAN          (SAT→node cover,
+        │               │         v               CYCLE                 via the BEGIN/
+        │               v       CHROMATIC          (SAT→dir.HC)          choice construction
+        │          NODE COVER   NUMBER (CN)           │                  — also clique→NC)
+        │          (clique→NC)     │                  v
+        │                          v                TSP (decision)
+        │                       EXACT COVER         (dir.HC → TSP)
+        │                          │
+        │                          v
+        │                    SUM OF SUBSETS
+        │                          │
+        │                          v
+        │                      PARTITION
+        │                     /          \
+        │                    v            v
+        │              BIN PACKING    0/1 KNAPSACK (decision)
+        │                    │         (partition → 0/1 knapsack)
+        │                    v
+        │              VLSI DISCRETE LAYOUT
+        │              (bin packing → VLSI)
+        │
+   (3-SAT is itself NPC; SATY = &quot;satisfiability with ≤ 3 literals/clause&quot; feeds CN)
+</code></pre>
+<p><strong>Reductions covered (13 total):</strong></p>
+<ol>
+<li>SAT → 3-SAT</li>
+<li>SATY (≤3 literals/clause) → Chromatic Number (CN)</li>
+<li>(Node cover → SAT) — the nondeterministic-construction direction, proving node cover ∈ NP / how to encode it as SAT</li>
+<li>CN → Exact Cover</li>
+<li>Exact Cover → Sum of Subsets</li>
+<li>Sum of Subsets → Partition</li>
+<li>Partition → Bin Packing</li>
+<li>Bin Packing → VLSI Discrete Layout</li>
+<li>SAT → Clique decision</li>
+<li>Clique decision → Node cover decision</li>
+<li>SAT → Directed Hamiltonian Cycle</li>
+<li>Directed Hamiltonian Cycle → TSP decision</li>
+<li>Partition → 0/1 Knapsack decision</li>
+</ol>
+<p><em>(Plus Cook's theorem: every NP problem → SAT.)</em></p>
+<hr />
+<h2 id="decision-vs-optimization-problems-slides-67">Decision vs. Optimization Problems (slides 6–7)</h2>
+<ul>
+<li>A <strong>decision problem</strong> has a Yes/No answer.</li>
+<li>An <strong>optimization problem</strong> is harder (asks for the best value/solution).</li>
+<li>NP-completeness is defined on <strong>decision</strong> problems.</li>
+</ul>
+<p><strong>Example — Traveling Salesperson Problem (TSP):</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optimization</td>
+<td>Find the <strong>shortest</strong> tour.</td>
+</tr>
+<tr>
+<td>Decision</td>
+<td>Is there a tour whose total length <strong>≤ C</strong> for a constant C?</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Solving the optimization problem via the decision algorithm (slide 7):</strong></p>
+<p>Repeatedly call the decision algorithm with different bounds and <strong>binary-search</strong> on C:</p>
+<pre><code>Give c1 and test (Yes/No)
+Give c2 and test
+   ⋮
+Give cn and test
+</code></pre>
+<p>Decide each cᵢ by <strong>binary search</strong> over the range <code>1 … K</code>, where K can be taken as the <strong>sum of all edge weights</strong> (or obtained from a heuristic / approximation algorithm — Chapter 9). Each test is one decision-algorithm call; binary search uses O(log K) calls, so an efficient decision algorithm yields an efficient optimization algorithm.</p>
+<hr />
+<h2 id="the-satisfiability-problem-sat-slides-813">The Satisfiability Problem (SAT) (slides 8–13)</h2>
+<p><strong>Building blocks (slide 10):</strong></p>
+<ul>
+<li><strong>Literal:</strong> <code>xᵢ</code> or <code>¬xᵢ</code>.</li>
+<li><strong>Clause:</strong> a disjunction (OR) of literals, e.g. <code>cᵢ = x₁ ∨ x₂ ∨ ¬x₃</code>.</li>
+<li><strong>Formula (CNF, conjunctive normal form):</strong> a conjunction (AND) of clauses, <code>C₁ ∧ C₂ ∧ … ∧ Cₘ</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Def (SAT):</strong> Given a Boolean formula (in CNF), determine whether it is <strong>satisfiable</strong> — i.e. whether some truth assignment makes the whole formula true.</p>
+</blockquote>
+<p><strong>Satisfiable example (slide 8):</strong></p>
+<pre><code>   x₁ ∨ x₂ ∨ x₃
+ ∧ ¬x₁
+ ∧ ¬x₂
+</code></pre>
+<p>The assignment <code>x₁ ← F, x₂ ← F, x₃ ← T</code> makes the formula <strong>true</strong>. (Notation: writing <code>(¬x₁, ¬x₂, x₃)</code> denotes exactly this assignment <code>x₁←F, x₂←F, x₃←T</code>.)</p>
+<p><strong>Definition of satisfiable (slide 9):</strong> If there is <strong>at least one</strong> assignment satisfying the formula, the formula is <strong>satisfiable</strong>; otherwise it is <strong>unsatisfiable</strong>.</p>
+<p><strong>Unsatisfiable example (slide 9):</strong></p>
+<pre><code>   x₁ ∨ x₂
+ ∧ x₁ ∨ ¬x₂
+ ∧ ¬x₁ ∨ x₂
+ ∧ ¬x₁ ∨ ¬x₂
+</code></pre>
+<p>All four combinations of <code>(x₁, x₂)</code> falsify one clause, so this is unsatisfiable.</p>
+<h3 id="the-resolution-principle-slides-1112">The Resolution Principle (slides 11–12)</h3>
+<p><strong>Resolvent rule:</strong> from two clauses containing complementary literals, derive a new clause (the <strong>resolvent</strong>) consisting of all the <em>other</em> literals:</p>
+<pre><code>c₁ : ¬x₁ ∨ ¬x₂ ∨ x₃
+c₂ : x₁ ∨ x₄
+─────────────────────────────  (resolve on x₁ / ¬x₁)
+c₃ : ¬x₂ ∨ x₃ ∨ x₄   (resolvent)
+</code></pre>
+<ul>
+<li>If <strong>no new clauses</strong> can be deduced ⇒ the formula is <strong>satisfiable</strong>.</li>
+<li>If the <strong>empty clause <code>□</code></strong> is deduced ⇒ the formula is <strong>unsatisfiable</strong>.</li>
+</ul>
+<p><strong>Worked deduction — satisfiable (slide 11):</strong></p>
+<pre><code>   ¬x₁ ∨ ¬x₂ ∨ x₃          (1)
+   x₁                       (2)
+   x₂                       (3)
+(1)&amp;(2)  ⊢  ¬x₂ ∨ x₃        (4)
+(4)&amp;(3)  ⊢  x₃              (5)
+(1)&amp;(3)  ⊢  ¬x₁ ∨ x₃        (6)
+</code></pre>
+<p>No empty clause arises ⇒ <strong>satisfiable</strong>.</p>
+<p><strong>Worked deduction — unsatisfiable, deriving <code>□</code> (slide 12):</strong></p>
+<pre><code>   ¬x₁ ∨ ¬x₂ ∨ x₃          (1)
+   x₁ ∨ ¬x₂                 (2)
+   x₂                       (3)
+   ¬x₃                      (4)
+─────── deduce ───────
+(1)&amp;(2)  ⊢  ¬x₂ ∨ x₃        (5)
+(4)&amp;(5)  ⊢  ¬x₂             (6)
+(6)&amp;(3)  ⊢  □               (7)   ← empty clause
+</code></pre>
+<p>Empty clause <code>□</code> derived ⇒ <strong>unsatisfiable</strong>.</p>
+<h3 id="semantic-tree-slide-13">Semantic Tree (slide 13)</h3>
+<ul>
+<li>In a <strong>semantic tree</strong>, each <strong>path from root to a leaf</strong> represents a <em>class of truth assignments</em> (each level branches on one variable: true vs. false).</li>
+<li>If <strong>every leaf node</strong> can be attached (falsified by) some clause of the formula, then the formula is <strong>unsatisfiable</strong> (no assignment escapes contradiction).</li>
+</ul>
+<hr />
+<h2 id="nondeterministic-algorithms-slides-1419">Nondeterministic Algorithms (slides 14–19)</h2>
+<p>A <strong>nondeterministic algorithm</strong> has two stages:</p>
+<ol>
+<li><strong>Guessing</strong> — magically choose a candidate solution.</li>
+<li><strong>Checking</strong> — verify the guess deterministically.</li>
+</ol>
+<blockquote>
+<p>If the <strong>checking</strong> stage runs in <strong>polynomial time</strong>, the algorithm is an <strong>NP (nondeterministic polynomial)</strong> algorithm.</p>
+</blockquote>
+<p><strong>NP problems are decision problems.</strong> Examples (slide 14): searching, MST, sorting, the satisfiability problem (SAT), the traveling salesperson problem (TSP).</p>
+<p><strong>Primitives (Horowitz &amp; Sahni 1998, slide 16):</strong></p>
+<ul>
+<li><code>Choice(S)</code> — arbitrarily chooses one element of set S. <em>(Time O(1).)</em></li>
+<li><code>Failure</code> — signals an unsuccessful completion.</li>
+<li><code>Success</code> — signals a successful completion.</li>
+</ul>
+<blockquote>
+<p>A nondeterministic algorithm <strong>terminates unsuccessfully iff there exists no set of choices</strong> leading to a <code>Success</code> signal. A deterministic interpretation can be made by allowing <strong>unbounded parallelism</strong> (explore all choice paths at once).</p>
+</blockquote>
+<h3 id="nondeterministic-searching-slide-17">Nondeterministic Searching (slide 17)</h3>
+<pre><code>j ← Choice(1 : n)            /* guess  */
+if A(j) = x then Success     /* check  */
+            else Failure
+</code></pre>
+<p><code>Choice(1:n)</code> is O(1); the check is O(1) ⇒ polynomial. So searching is an NP problem.</p>
+<h3 id="nondeterministic-sorting-slide-18">Nondeterministic Sorting (slide 18)</h3>
+<pre><code>B ← 0
+for i = 1 to n do                 // Guessing: scatter A into B by guessed positions
+    j ← Choice(1 : n)
+    if B[j] ≠ 0 then Failure       // position already used
+    B[j] = A[i]
+
+for i = 1 to n-1 do               // Checking: verify B is sorted
+    if B[i] &gt; B[i+1] then Failure
+Success
+</code></pre>
+<h3 id="nondeterministic-sat-slide-19">Nondeterministic SAT (slide 19)</h3>
+<pre><code>for i = 1 to n do                          // Guessing
+    xᵢ ← Choice(true, false)
+
+if E(x₁, x₂, …, xₙ) is true                // Checking
+   then Success
+   else Failure
+</code></pre>
+<h3 id="decision-version-of-sorting-slide-15">Decision version of sorting (slide 15)</h3>
+<blockquote>
+<p>Given <code>a₁, a₂, …, aₙ</code> and <code>C</code>, is there a permutation <code>(a₁, a₂, …, aₙ)</code> such that
+<code>|a₂ − a₁| + |a₃ − a₂| + … + |aₙ − a_{n−1}| &lt; C</code> ?</p>
+</blockquote>
+<h3 id="not-all-decision-problems-are-np-the-halting-problem-slide-15">Not all decision problems are NP — the Halting Problem (slide 15)</h3>
+<blockquote>
+<p><strong>Halting problem:</strong> Given a program with certain input data, will the program terminate or not?</p>
+</blockquote>
+<ul>
+<li>It is <strong>NP-hard</strong> (every NP problem reduces to it).</li>
+<li>It is <strong>undecidable</strong> — so it is <strong>not</strong> in NP (no algorithm, deterministic or not, decides it). This shows NP-hard ⊋ NP-complete: a problem can be NP-hard yet lie outside NP.</li>
+</ul>
+<hr />
+<h2 id="cooks-theorem-slide-20">Cook's Theorem (slide 20)</h2>
+<blockquote>
+<p><strong>Cook's Theorem:</strong> <strong>NP = P iff the satisfiability problem is a P problem.</strong></p>
+</blockquote>
+<p>Consequences:</p>
+<ul>
+<li><strong>SAT is NP-complete.</strong></li>
+<li>It is the <strong>first</strong> NP-complete problem.</li>
+<li><strong>Every NP problem reduces to SAT</strong> (every NP problem → SAT).</li>
+</ul>
+<h3 id="why-every-np-problem-sat-slides-34">Why every NP problem → SAT (slides 34)</h3>
+<ul>
+<li>Every NP problem can be solved by an NP (nondeterministic polynomial) algorithm.</li>
+<li>Every NP algorithm can be <strong>transformed in polynomial time into a SAT instance</strong> (Horowitz &amp; Sahni 1998)…</li>
+<li>…such that the <strong>SAT instance is satisfiable iff the answer to the original NP problem is "Yes."</strong></li>
+<li>Therefore every NP problem → SAT, hence <strong>SAT is NP-complete.</strong></li>
+</ul>
+<h3 id="worked-example-transforming-searching-into-sat-slides-2124">Worked Example — Transforming Searching into SAT (slides 21–24)</h3>
+<p><strong>Problem:</strong> Does there exist a number in <code>{ x(1), x(2), …, x(n) }</code> equal to <strong>7</strong>? Take <strong>n = 2</strong>.</p>
+<p>The nondeterministic search algorithm is encoded as a Boolean formula. Logical form <strong>(slide 22)</strong>:</p>
+<pre><code>   i=1 ∨ i=2
+ ∧ i=1 → i≠2
+ ∧ i=2 → i≠1
+ ∧ x(1)=7 ∧ i=1 → SUCCESS
+ ∧ x(2)=7 ∧ i=2 → SUCCESS
+ ∧ x(1)≠7 ∧ i=1 → FAILURE
+ ∧ x(2)≠7 ∧ i=2 → FAILURE
+ ∧ FAILURE → ¬SUCCESS
+ ∧ SUCCESS                 (guarantees a successful termination)
+ ∧ x(1)=7                  (input data)
+ ∧ x(2)≠7                  (input data)
+</code></pre>
+<p>Rewritten as <strong>CNF (slide 23)</strong> — using <code>(A → B) ≡ (¬A ∨ B)</code>:</p>
+<pre><code>   i=1 ∨ i=2                          (1)
+   i≠1 ∨ i≠2                          (2)
+   x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
+   x(2)≠7 ∨ i≠2 ∨ SUCCESS             (4)
+   x(1)=7 ∨ i≠1 ∨ FAILURE             (5)
+   x(2)=7 ∨ i≠2 ∨ FAILURE             (6)
+   ¬FAILURE ∨ ¬SUCCESS                (7)
+   SUCCESS                            (8)
+   x(1)=7                             (9)
+   x(2)≠7                            (10)
+</code></pre>
+<p><strong>Satisfying assignment (slide 24):</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Assign</th>
+<th>Satisfies clauses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i=1</code></td>
+<td>(1)</td>
+</tr>
+<tr>
+<td><code>i≠2</code></td>
+<td>(2), (4), (6)</td>
+</tr>
+<tr>
+<td><code>SUCCESS</code></td>
+<td>(3), (4), (8)</td>
+</tr>
+<tr>
+<td><code>¬FAILURE</code></td>
+<td>(7)</td>
+</tr>
+<tr>
+<td><code>x(1)=7</code></td>
+<td>(5), (9)</td>
+</tr>
+<tr>
+<td><code>x(2)≠7</code></td>
+<td>(4), (10)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The formula is <strong>satisfiable</strong> ⇒ "Yes, 7 is present" (it is x(1)).</p>
+<h4 id="variant-a-both-inputs-7-unsatisfiable-via-resolution-slides-2627">Variant A — both inputs ≠ 7 ⇒ unsatisfiable via resolution (slides 26–27)</h4>
+<p>Searching for 7 but <code>x(1)≠7, x(2)≠7</code>. CNF (note clauses (9),(10) flip to <code>x(1)≠7</code>, <code>x(2)≠7</code>, and (7)=<code>SUCCESS</code>, (8)=<code>¬SUCCESS ∨ ¬FAILURE</code>):</p>
+<pre><code>   i=1 ∨ i=2                          (1)
+   i≠1 ∨ i≠2                          (2)
+   x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
+   x(2)≠7 ∨ i≠2 ∨ SUCCESS             (4)
+   x(1)=7 ∨ i≠1 ∨ FAILURE             (5)
+   x(2)=7 ∨ i≠2 ∨ FAILURE             (6)
+   SUCCESS                            (7)
+   ¬SUCCESS ∨ ¬FAILURE                (8)
+   x(1)≠7                             (9)
+   x(2)≠7                            (10)
+</code></pre>
+<p><strong>Apply resolution (slide 27):</strong></p>
+<pre><code>(9)&amp;(5)   ⊢  i≠1 ∨ FAILURE            (11)
+(10)&amp;(6)  ⊢  i≠2 ∨ FAILURE            (12)
+(7)&amp;(8)   ⊢  ¬FAILURE                 (13)
+(13)&amp;(11) ⊢  i≠1                      (14)
+(13)&amp;(12) ⊢  i≠2                      (15)
+(14)&amp;(1)  ⊢  i=2                      (16)
+(15)&amp;(16) ⊢  □                        (17)
+</code></pre>
+<p>Empty clause <code>□</code> ⇒ <strong>unsatisfiable</strong> ⇒ <strong>7 does not exist</strong> in x(1) or x(2). Correct.</p>
+<blockquote>
+<p>⚠️ Reconstructed: the dump labels two derived lines both "(11)" and then "(16)"; per the deduction chain the lines are renumbered (11)–(17) as above (slide 27).</p>
+</blockquote>
+<h4 id="variant-b-both-inputs-7-satisfiable-both-i1-and-i2-work-slides-2829">Variant B — both inputs = 7 ⇒ satisfiable, both i=1 and i=2 work (slides 28–29)</h4>
+<p>Searching for 7 where <code>x(1)=7, x(2)=7</code>. CNF:</p>
+<pre><code>   i=1 ∨ i=2                          (1)
+   i≠1 ∨ i≠2                          (2)
+   x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
+   x(2)≠7 ∨ i≠2 ∨ SUCCESS             (4)
+   x(1)=7 ∨ i≠1 ∨ FAILURE             (5)
+   x(2)=7 ∨ i≠2 ∨ FAILURE             (6)
+   SUCCESS                            (7)
+   ¬SUCCESS ∨ ¬FAILURE                (8)
+   x(1)=7                             (9)
+   x(2)=7                            (10)
+</code></pre>
+<p>The semantic tree shows <strong>both</strong> assignments (<code>i=1</code> and <code>i=2</code>) satisfy the clauses — either index witnesses the answer "Yes."</p>
+<hr />
+<h2 id="proving-a-problem-a-is-np-complete-slide-35">Proving a problem A is NP-complete (slide 35)</h2>
+<p>To show <strong>A is NP-complete:</strong></p>
+<ol>
+<li><strong>(I)</strong> Prove <strong>A ∈ NP</strong> (give a nondeterministic polynomial algorithm / poly-time checker).</li>
+<li><strong>(II)</strong> Prove that <strong>some known B ∈ NPC reduces to A</strong>, i.e. <strong>B → A</strong>.</li>
+</ol>
+<p>Then <strong>A ∈ NPC</strong>.</p>
+<p><strong>Why this works:</strong> (II) shows A is <strong>at least as hard as</strong> an already-hardest problem B, so A is NP-hard; (I) places it inside NP. Together ⇒ NP-complete.</p>
+<blockquote>
+<p><strong>Caution (slide 43):</strong> If a problem is NP-complete, its <strong>special cases may or may not</strong> be NP-complete.</p>
+</blockquote>
+<hr />
+<h2 id="reduction-1-sat-3-sat-slides-3642">Reduction 1 — SAT → 3-SAT (slides 36–42)</h2>
+<p><strong>3-SAT:</strong> SAT where <strong>each clause has exactly three literals.</strong></p>
+<p><strong>(I) 3-SAT ∈ NP</strong> — obvious (it is a restricted SAT; guess + check in poly time).</p>
+<p><strong>(II) SAT → 3-SAT — Construction.</strong> Convert each clause of a SAT instance into a set of 3-literal clauses by <strong>padding with new variables yᵢ</strong>, by clause size:</p>
+<p><strong>1 literal <code>L₁</code></strong> → 4 clauses with 2 fresh variables <code>y₁, y₂</code> (all four sign combos):</p>
+<pre><code>L₁ ∨  y₁ ∨  y₂
+L₁ ∨ ¬y₁ ∨  y₂
+L₁ ∨  y₁ ∨ ¬y₂
+L₁ ∨ ¬y₁ ∨ ¬y₂
+</code></pre>
+<p><strong>2 literals <code>L₁, L₂</code></strong> → 2 clauses with 1 fresh variable <code>y₁</code>:</p>
+<pre><code>L₁ ∨ L₂ ∨  y₁
+L₁ ∨ L₂ ∨ ¬y₁
+</code></pre>
+<p><strong>3 literals</strong> → <strong>unchanged.</strong></p>
+<p><strong>More than 3 literals <code>L₁, L₂, …, Lₖ</code></strong> → chain with <code>k−3</code> fresh variables <code>y₁ … y_{k−3}</code>:</p>
+<pre><code>L₁    ∨ L₂   ∨  y₁
+L₃    ∨ ¬y₁  ∨  y₂
+L₄    ∨ ¬y₂  ∨  y₃
+        ⋮
+L_{k−2} ∨ ¬y_{k−4} ∨ y_{k−3}
+L_{k−1} ∨ Lₖ ∨ ¬y_{k−3}
+</code></pre>
+<p><strong>Worked example (slides 39).</strong> SAT instance:</p>
+<pre><code>x₁ ∨ x₂
+¬x₃
+x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅
+</code></pre>
+<p>Transformed 3-SAT instance:</p>
+<pre><code> x₁ ∨ x₂ ∨  y₁          (from 2-literal clause)
+ x₁ ∨ x₂ ∨ ¬y₁
+
+¬x₃ ∨  y₂ ∨  y₃         (from 1-literal clause ¬x₃)
+¬x₃ ∨ ¬y₂ ∨  y₃
+¬x₃ ∨  y₂ ∨ ¬y₃
+¬x₃ ∨ ¬y₂ ∨ ¬y₃
+
+ x₁ ∨ ¬x₂ ∨  y₄         (from 5-literal clause, chained)
+ x₃ ∨ ¬y₄ ∨  y₅
+¬x₄ ∨  x₅ ∨ ¬y₅
+</code></pre>
+<p><strong>Correctness — S satisfiable ⇔ S′ satisfiable (slides 40–42).</strong></p>
+<ul>
+<li><strong>(⇒)</strong> Given a satisfying assignment of the original clause <code>S = L₁ ∨ … ∨ Lₖ</code> (k ≥ 4), at least one <code>Lᵢ = T</code>. Assign the chain variables so the new clauses are all satisfied:</li>
+<li>set <code>y_{i−1} = F</code>,</li>
+<li>set <code>yⱼ = T</code> for <code>j ≤ i−1</code>... <em>(reconstructed reading; see note)</em> — concretely, set <code>yⱼ = T</code> for the clauses <strong>before</strong> Lᵢ's clause and <code>yⱼ = F</code> for those <strong>after</strong>, which is exactly what is needed because the clause containing <code>Lᵢ</code> is <code>Lᵢ ∨ ¬y_{i−2} ∨ y_{i−1}</code> and <code>Lᵢ = T</code> already satisfies it. Hence S′ is satisfiable.</li>
+<li>(3-literal and shorter clauses are trivial: any satisfying literal carries over; the fresh y's can be set freely.)</li>
+<li><strong>(⇐)</strong> If S′ is satisfiable, a satisfying assignment <strong>cannot</strong> rely on the <code>yᵢ</code>'s alone — because the chain forces a contradiction (resolving the chain on all the <code>yᵢ</code>'s yields <code>L₁ ∨ … ∨ Lₖ</code>, the empty padding cancels). Therefore at least one original <code>Lᵢ</code> must be true, so S is satisfiable. <em>(The resolution principle can also be applied to show this.)</em></li>
+</ul>
+<p>⇒ <strong>3-SAT is NP-complete.</strong></p>
+<blockquote>
+<p>⚠️ Reconstructed: the (⇒) chain-variable assignment on slide 41 is heavily garbled in the dump (<code>yi-1=F</code>, <code>yj=T ∀j≤i-1</code>, <code>yj=F ∀j&gt;i-1</code> with a <code>(∵ Li ∨ ¬yi-2 ∨ yi-1)</code> hint). The reconstruction above (set y's true before, false after the true-literal's clause) is the standard textbook argument; <strong>validate against slide 41.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-2-saty-3-literalsclause-chromatic-number-cn-slides-4449">Reduction 2 — SATY (≤ 3 literals/clause) → Chromatic Number (CN) (slides 44–49)</h2>
+<p><strong>Coloring / Chromatic Number (slides 44–45).</strong> A <strong>coloring</strong> of <code>G=(V,E)</code> is <code>f : V → {1,…,k}</code> with <code>f(u) ≠ f(v)</code> whenever <code>(u,v) ∈ E</code>. The <strong>CN decision problem:</strong> does G have a coloring with k colors?</p>
+<blockquote>
+<p>Example (slide 45): a graph is 3-colorable with <code>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</code>.</p>
+<p><strong>Theorem:</strong> Satisfiability with <strong>at most 3 literals per clause (SATY)</strong> → CN.</p>
+</blockquote>
+<p><strong>Construction (slide 46).</strong> Instance of SATY: variables <code>x₁,…,xₙ</code> (with <strong>n ≥ 4</strong>), clauses <code>c₁,…,c_r</code>. Build graph <code>G=(V,E)</code>:</p>
+<p><strong>Vertices:</strong></p>
+<pre><code>V = { x₁, …, xₙ }              (positive-literal vertices)
+  ∪ { ¬x₁, …, ¬xₙ }            (negative-literal vertices)
+  ∪ { y₁, …, yₙ }              (newly added &quot;palette&quot; vertices)
+  ∪ { c₁, …, c_r }             (clause vertices)
+</code></pre>
+<p><strong>Edges:</strong></p>
+<pre><code>E = { (xᵢ, ¬xᵢ)        | 1 ≤ i ≤ n }          // a variable and its negation conflict
+  ∪ { (yᵢ, yⱼ)         | i ≠ j }              // all yᵢ mutually adjacent (form a clique)
+  ∪ { (yᵢ, xⱼ)         | i ≠ j }              // yᵢ adjacent to every xⱼ except xᵢ
+  ∪ { (yᵢ, ¬xⱼ)        | i ≠ j }              // yᵢ adjacent to every ¬xⱼ except ¬xᵢ
+  ∪ { (xᵢ, cⱼ)         | xᵢ ∉ cⱼ }            // clause vertex joined to literals NOT in it
+  ∪ { (¬xᵢ, cⱼ)        | ¬xᵢ ∉ cⱼ }
+</code></pre>
+<blockquote>
+<p>✅ Verified against slides 46 &amp; 47. Slide 46 prints the edge set verbatim: <code>E = {(xᵢ,¬xᵢ)|1≤i≤n} ∪ {(yᵢ,yⱼ)|i≠j} ∪ {(yᵢ,xⱼ)|i≠j} ∪ {(yᵢ,¬xⱼ)|i≠j} ∪ {(xᵢ,cⱼ)|xᵢ∉cⱼ} ∪ {(¬xᵢ,cⱼ)|¬xᵢ∉cⱼ}</code>. The clause-vertex edges use <strong><code>∉</code></strong> (joined to literals NOT in the clause) exactly as reconstructed. Slide 47's drawn graph + 5-coloring confirms the worked instance. See Appendix A — Slide 47.</p>
+<p>✅ Worked example (slide 47, verified): clauses <code>(1) x₁ ∨ x₂ ∨ x₃</code> and <code>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</code>, <strong>n=4</strong>. The deck draws the resulting graph (8 literal vertices, the y₁..y₄ clique, clause nodes c₁,c₂ wired to non-member literals) with a 5-coloring: x₁=1, x₂=5, x₃=5, x₄=4, ¬x₁=5, ¬x₂=2, ¬x₃=3, ¬x₄=5, y₁..y₄=1..4, c₁=1, c₂=3 — encoding the assignment x₁=T, x₂=F, x₃=F, x₄=T. <strong>Full transcription + edge list in Appendix A — Slide 47.</strong></p>
+</blockquote>
+<p><strong>Claim: satisfiable ⇔ (n+1)-colorable.</strong></p>
+<p><strong>(⇒) Satisfiable → (n+1)-colorable (slide 48).</strong> Given a satisfying assignment, color:
+1. <code>f(yᵢ) = i</code>.
+2. If <code>xᵢ = T</code> then <code>f(xᵢ) = i, f(¬xᵢ) = n+1</code>; else <code>f(xᵢ) = n+1, f(¬xᵢ) = i</code>.
+3. For each clause <code>cⱼ</code>: pick a literal in <code>cⱼ</code> that is true. If <code>xᵢ ∈ cⱼ</code> and <code>xᵢ = T</code>, set <code>f(cⱼ) = f(xᵢ)</code>; if <code>¬xᵢ ∈ cⱼ</code> and <code>¬xᵢ = T</code>, set <code>f(cⱼ) = f(¬xᵢ)</code>. (A satisfied clause has <strong>at least one</strong> such true literal.)</p>
+<p>This uses colors <code>{1,…,n+1}</code> and respects all edges ⇒ <strong>(n+1)-colorable</strong>.</p>
+<p><strong>(⇐) (n+1)-colorable → Satisfiable (slide 49).</strong> Given an (n+1)-coloring:
+1. Each <code>yᵢ</code> must get color <code>i</code> (the y's form a clique adjacent to all literals except their own index, forcing the palette).
+2. <code>f(xᵢ) ≠ f(¬xᵢ)</code> (they are adjacent); so for each i either <code>f(xᵢ)=i, f(¬xᵢ)=n+1</code> <strong>or</strong> <code>f(xᵢ)=n+1, f(¬xᵢ)=i</code>.
+3. Each clause has at most 3 literals and <code>n ≥ 4</code>, so there is <strong>at least one variable xᵢ with neither xᵢ nor ¬xᵢ in cⱼ</strong>; hence <code>cⱼ</code> is adjacent to both <code>xᵢ</code> and <code>¬xᵢ</code>, one of which has color <code>n+1</code> ⇒ <strong><code>f(cⱼ) ≠ n+1</code></strong>, so <code>f(cⱼ) = i</code> for some <code>i ≤ n</code>.
+4. Read off the assignment: if <code>f(cⱼ) = i = f(xᵢ)</code>, set <code>xᵢ = T</code>; if <code>f(cⱼ) = i = f(¬xᵢ)</code>, set <code>¬xᵢ = T</code>.
+5. Since <code>f(cⱼ)=i=f(xᵢ)</code> means <code>(cⱼ, xᵢ) ∉ E</code>, i.e. <code>xᵢ ∈ cⱼ</code>, the chosen literal is actually <strong>in</strong> <code>cⱼ</code> and is true ⇒ <code>cⱼ</code> is satisfied. (Symmetric for <code>¬xᵢ</code>.)</p>
+<p>⇒ the formula is satisfiable. Hence <strong>CN is NP-complete.</strong> ∎</p>
+<hr />
+<h2 id="reduction-3-node-cover-sat-slides-3033">Reduction 3 — Node Cover → SAT (slides 30–33)</h2>
+<p>This shows how the <strong>node cover</strong> decision problem is encoded as a SAT instance (it is the "every NP problem → SAT" recipe applied concretely to node cover; equivalently it certifies node cover ∈ NP).</p>
+<p><strong>Node cover (slide 30).</strong> Given <code>G=(V,E)</code>, <code>S ⊆ V</code> is a <strong>node cover</strong> if for every edge <code>(u,v) ∈ E</code>, <code>u ∈ S</code> or <code>v ∈ S</code>. <strong>Decision version:</strong> does there exist S with <strong>|S| ≤ K</strong>?</p>
+<blockquote>
+<p>Example (slide 30): node covers <code>{1,3}</code> and <code>{5,2,4}</code>.</p>
+</blockquote>
+<p><strong>Nondeterministic construction (slide 31)</strong> — guess K vertices, check every edge is covered:</p>
+<pre><code>BEGIN
+   i₁ ← Choice({1, 2, …, n})
+   i₂ ← Choice({1, 2, …, n} − {i₁})
+       ⋮
+   i_k ← Choice({1, 2, …, n} − {i₁, i₂, …, i_{k−1}})
+   For j = 1 to m do
+       BEGIN
+         if eⱼ is not incident to one of the iₜ (1 ≤ t ≤ k)
+            then FAILURE
+       END
+   SUCCESS
+END
+</code></pre>
+<p><strong>The corresponding CNF (slides 32–33).</strong> Encode "the t-th chosen vertex iₜ equals some value in 1..n", "the choices are distinct", "every edge is covered, else FAILURE", and the success/failure bookkeeping:</p>
+<pre><code>(A) Each iₜ takes some value (one clause per t):
+    i₁=1 ∨ i₁=2 ∨ … ∨ i₁=n
+    i₂=1 ∨ i₂=2 ∨ … ∨ i₂=n
+              ⋮
+    i_k=1 ∨ i_k=2 ∨ … ∨ i_k=n
+    (intended meaning: i₁≠1 ⇒ i₁=2 ∨ i₁=3 ∨ … ∨ i₁=n, etc.)
+
+(B) Distinctness — no value chosen twice (pairwise):
+    i₁≠1 ∨ i₂≠1
+    i₁≠1 ∨ i₃≠1
+              ⋮
+    i_{k−1}≠n ∨ i_k≠n
+    (intended: i₁=1 ⇒ i₂≠1 ∧ … ∧ i_k≠1, …)
+
+(C) Edge coverage — for each edge eⱼ=(rⱼ, sⱼ), some chosen vertex must be an endpoint, else FAILURE:
+    i₁≠e₁ ∨ i₂≠e₁ ∨ … ∨ i_k≠e₁ ∨ FAILURE
+       (i.e.  (i₁∉e₁ ∧ i₂∉e₁ ∧ … ∧ i_k∉e₁) → FAILURE )
+    i₁≠e₂ ∨ i₂≠e₂ ∨ … ∨ i_k≠e₂ ∨ FAILURE
+              ⋮
+    i₁≠e_m ∨ i₂≠e_m ∨ … ∨ i_k≠e_m ∨ FAILURE
+
+(D) Success / failure bookkeeping (slide 33):
+    SUCCESS
+    ¬SUCCESS ∨ ¬FAILURE
+    r₁ ∈ e₁ ,  s₁ ∈ e₁          (endpoints of each edge — input data)
+    r₂ ∈ e₂ ,  s₂ ∈ e₂
+              ⋮
+    r_m ∈ e_m , s_m ∈ e_m
+</code></pre>
+<p>The SAT instance is satisfiable <strong>iff</strong> there is a choice of k vertices covering all edges <strong>iff</strong> G has a node cover of size ≤ k. This is the per-problem instance of Cook's "every NP problem → SAT."</p>
+<blockquote>
+<p>⚠️ Reconstructed: the entire CNF on slides 31–33 is fragmentary in the dump (the <code>=</code>, <code>≠</code>, <code>∈</code>, <code>∉</code> glyphs are dropped; the "r/s ∈ e" lines on slide 33 are bare). The grouping (A)–(D) and the intended meanings above are reconstructed from the nondeterministic pseudocode and the standard encoding; <strong>validate clause-by-clause against slides 31–33.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-4-cn-exact-cover-slides-5051">Reduction 4 — CN → Exact Cover (slides 50–51)</h2>
+<p><strong>Set cover decision problem (slide 50).</strong> A family <code>F = {S₁, S₂, …, S_k}</code> over universe <code>⋃_{Sᵢ∈F} Sᵢ = {u₁, u₂, …, uₙ}</code>. <code>T ⊆ F</code> is a <strong>set cover</strong> if <code>⋃_{Sᵢ∈T} Sᵢ = ⋃_{Sᵢ∈F} Sᵢ</code>. <strong>Decision:</strong> does F have a cover T with <strong>≤ C</strong> sets?</p>
+<blockquote>
+<p>Example: <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)} = {s₁, s₂, s₃, s₄}</code>.
+<code>T = {s₁, s₃, s₄}</code> is a set cover.
+<code>T = {s₁, s₂}</code> is a set cover <strong>and an exact cover</strong> (disjoint, covers everything).</p>
+</blockquote>
+<p><strong>Exact cover problem (slide 51).</strong> Same notation. Determine if F has an <strong>exact cover</strong> T: a cover of F whose sets are <strong>pairwise disjoint</strong>.</p>
+<blockquote>
+<p><strong>Theorem: CN → exact cover.</strong> <em>(The deck states the theorem; the construction details are not expanded in the dump — see flagged items.)</em></p>
+<p>⚠️ Reconstructed/Not fully shown: slide 51 only states "CN → exact cover" as a theorem with <strong>no construction in the dump</strong>. <strong>Validate whether slide 51 (or an animation) carries a construction; the deck appears to leave it as a stated result.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-5-exact-cover-sum-of-subsets-slides-5254">Reduction 5 — Exact Cover → Sum of Subsets (slides 52–54)</h2>
+<p><strong>Sum of subsets problem (slide 52).</strong> Given positive numbers <code>A = {a₁, …, aₙ}</code> and a constant <code>C</code>, determine if some subset <code>A′ ⊆ A</code> has <code>Σ_{aᵢ∈A′} aᵢ = C</code>.</p>
+<blockquote>
+<p>Example (slide 52): <code>A = {7, 5, 19, 1, 12, 8, 14}</code>. For <code>C=21</code>, <code>A′={7,14}</code> works. For <code>C=11</code>, no solution.</p>
+<p><strong>Theorem: Exact cover → sum of subsets.</strong></p>
+</blockquote>
+<p><strong>Construction (slide 53).</strong> Instance of exact cover: <code>F = {S₁,…,S_k}</code> over universe <code>{u₁,…,uₙ}</code>. Build a sum-of-subsets instance <code>A = {a₁,…,a_k}</code> by encoding each set Sⱼ as a <strong>base-(k+1) number</strong> whose digit in position i flags membership of uᵢ:</p>
+<pre><code>aⱼ = Σ_{i=1..n}  eⱼᵢ · (k+1)^{i−1},   where  eⱼᵢ = 1 if uᵢ ∈ Sⱼ, else 0
+
+C = Σ_{i=0..n−1} (k+1)^i = ((k+1)ⁿ − 1) / k     (all-ones in base k+1)
+</code></pre>
+<p><strong>Why base (k+1)?</strong> There are k sets, so any subset of them sums <strong>at most k</strong> ones into any single digit position. Using base <strong>k+1</strong> guarantees <strong>no carries</strong> across digit positions: a subset of A sums to C (the all-ones number) <strong>iff</strong> every universe element uᵢ is covered <strong>exactly once</strong> ⇒ exactly an <strong>exact cover.</strong> A smaller base could let carries fake a sum.</p>
+<p><strong>Worked example (slide 54).</strong> <code>u₁=1, u₂=2, u₃=3</code>, <code>n=3</code>.</p>
+<p><em>Variant E (k=3 sets):</em> <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F = {u₁,u₂,u₃} = {1,2,3}</code>. Base <code>k+1 = 4</code>:</p>
+<pre><code>a₁ = 4⁰ + 4¹ = 5          (S₁ covers u₁,u₂)
+a₂ = 4²    = 16           (S₂ covers u₃)
+a₃ = 4⁰ + 4² = 17         (S₃ covers u₁,u₃)
+C  = 4⁰ + 4¹ + 4² = 21
+</code></pre>
+<p><code>a₁ + a₃ = 5 + 17 = 22 ≠ 21</code> and <code>a₂ + ...</code> — the exact cover <code>{S₁, S₂}</code> gives <code>5 + 16 = 21 = C</code>. ✓ (sets disjoint, cover all)</p>
+<p><em>Variant (k chosen so k+1 = 2+1 = 3; 4 sets):</em> <code>S₁={1,2}, S₂={2}, S₃={2}, S₄={1,3}</code>. Here the deck uses base <code>k+1</code> with the indicated value:</p>
+<pre><code>a₁ = 2⁰ + 2¹ = 3
+a₂ = 2¹     = 2
+a₃ = 2¹     = 2
+a₄ = 2¹ + 2² = 6
+C  = 2⁰ + 2¹ + 2² = 7
+</code></pre>
+<p>Illustrates the role of the base (this variant deliberately uses a too-small base to show how collisions/carries arise).</p>
+<blockquote>
+<p>✅ Verified against slide 54. Exponent restorations are correct (<code>4⁰+4¹</code>, <code>4²</code>, base 4 in variant 1; base 2 in variant 2). The duplicated "S₃" in variant 2 is a <strong>typo on the slide itself</strong> (the 4th set is meant to be S₄={1,3}). The key takeaways (the formula and "why k+1") are confirmed. See Appendix A — Slide 54.</p>
+</blockquote>
+<hr />
+<h2 id="reduction-6-sum-of-subsets-partition-slides-5557">Reduction 6 — Sum of Subsets → Partition (slides 55–57)</h2>
+<p><strong>Partition problem (slide 55).</strong> Given positive numbers <code>A = {a₁,…,aₙ}</code>, determine if there is a partition <code>P</code> with <code>Σ_{i∈P} aᵢ = Σ_{i∉P} aᵢ</code> (split A into two equal-sum halves).</p>
+<blockquote>
+<p>Example: <code>A = {1,3,8,4,10}</code> partitions into <code>{1,8,4}</code> (sum 13) and <code>{3,10}</code> (sum 13).</p>
+<p><strong>Theorem: sum of subsets → partition.</strong></p>
+</blockquote>
+<p><strong>Construction (slide 56).</strong> Instance of sum of subsets: <code>A = {a₁,…,aₙ}, C</code>. Build a partition instance <code>B = {b₁,…,b_{n+2}}</code>:</p>
+<pre><code>bᵢ      = aᵢ        for 1 ≤ i ≤ n
+b_{n+1} = C + 1
+b_{n+2} = (Σ_{1≤i≤n} aᵢ) + 1 − C
+</code></pre>
+<p>Let <code>Tsum = Σ aᵢ</code>. Then <code>Σ B = Tsum + (C+1) + (Tsum + 1 − C) = 2·Tsum + 2</code>, so each side of a partition must sum to <code>Tsum + 1</code>.</p>
+<p><strong>Correctness.</strong> A subset <code>S ⊆ A</code> with <code>Σ_S aᵢ = C</code> exists <strong>iff</strong> B has a balanced partition:
+- Put <code>S ∪ {b_{n+2}}</code> on one side: sum <code>= C + (Tsum + 1 − C) = Tsum + 1</code>. ✓
+- The other side is <code>(A∖S) ∪ {b_{n+1}}</code>: sum <code>= (Tsum − C) + (C+1) = Tsum + 1</code>. ✓</p>
+<p>So the partition is <code>{ bᵢ | aᵢ ∈ S } ∪ {b_{n+2}}</code> and <code>{ bᵢ | aᵢ ∉ S } ∪ {b_{n+1}}</code>.</p>
+<p><strong>Why <code>b_{n+1} = C+1</code> and not <code>C</code>? (slide 57).</strong> To <strong>force <code>b_{n+1}</code> and <code>b_{n+2}</code> into different subsets.</strong> With the +1 offsets, <code>b_{n+1} + b_{n+2} = (C+1) + (Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they <strong>cannot both</strong> be on the same side. This pins down the structure so a balanced partition of B corresponds exactly to a subset of A summing to C. (If we used <code>C</code> directly, the two padding numbers could land together and break the correspondence.)</p>
+<hr />
+<h2 id="reduction-7-partition-bin-packing-slide-58">Reduction 7 — Partition → Bin Packing (slide 58)</h2>
+<p><strong>Bin packing problem (slide 58).</strong> <code>n</code> items, each of size <code>cᵢ &gt; 0</code>; bin capacity <code>C</code>. Determine if the items can be assigned into <code>k</code> bins with <code>Σ_{i∈binⱼ} cᵢ ≤ C</code> for every <code>1 ≤ j ≤ k</code>.</p>
+<blockquote>
+<p><strong>Theorem: partition → bin packing.</strong></p>
+</blockquote>
+<p><strong>Construction <em>(reconstructed)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with total <code>Tsum = Σ aᵢ</code>, build a bin-packing instance with the <strong>same item sizes</strong> <code>cᵢ = aᵢ</code>, bin capacity <code>C = Tsum / 2</code>, and <code>k = 2</code> bins.</p>
+<p><strong>Correctness <em>(reconstructed)</em>.</strong> A is partitionable into two equal halves (each summing to <code>Tsum/2</code>) <strong>iff</strong> the n items fit into <strong>2 bins</strong> each of capacity <code>Tsum/2</code> (each bin must be exactly full, forcing an equal split).</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 58 states only the theorem "partition → bin packing"; <strong>the dump shows no construction.</strong> The 2-bins / capacity-Tsum/2 construction above is the standard one; <strong>validate against slide 58.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-8-bin-packing-vlsi-discrete-layout-slides-5960">Reduction 8 — Bin Packing → VLSI Discrete Layout (slides 59–60)</h2>
+<p><strong>VLSI discrete layout problem (slide 59).</strong> Given <code>n</code> rectangles, each with integer height <code>hᵢ</code> and width <code>wᵢ</code>, and an area <code>A</code>, determine if there is a placement of the n rectangles within A obeying the <strong>4 placement rules</strong>:</p>
+<ol>
+<li>Boundaries of rectangles are <strong>parallel to the x-axis or y-axis</strong> (axis-aligned).</li>
+<li><strong>Corners lie on integer points.</strong></li>
+<li><strong>No two rectangles overlap.</strong></li>
+<li>Two rectangles are <strong>separated by at least a unit distance.</strong></li>
+</ol>
+<blockquote>
+<p>The deck illustrates "A Successful Placement" (slide 60).</p>
+<p><strong>Theorem: bin packing → VLSI discrete layout.</strong></p>
+</blockquote>
+<p><strong>Idea <em>(reconstructed)</em>.</strong> Encode each bin-packing item of size <code>cᵢ</code> as a rectangle (e.g. <code>1 × cᵢ</code>), and the bins/capacity as the layout area A, so that a valid non-overlapping unit-separated placement exists iff the items pack into the bins. The discrete (integer-corner) + unit-separation rules make placement equivalent to discrete packing.</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 60 states only the theorem; <strong>no construction in the dump.</strong> The rectangle-per-item encoding is the standard intuition; <strong>validate against slide 60.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-9-sat-clique-decision-slide-61">Reduction 9 — SAT → Clique Decision (slide 61)</h2>
+<p><strong>Max clique / clique (slide 61).</strong> A <strong>maximal complete subgraph</strong> of <code>G=(V,E)</code> is a <strong>clique</strong>. The <strong>max (maximum) clique problem</strong> asks for the size of the largest clique in G.</p>
+<blockquote>
+<p>Example: maximal cliques <code>{a,b}, {a,c,d}, {c,d,e,f}</code>; <strong>maximum</strong> clique <code>{c,d,e,f}</code>.</p>
+</blockquote>
+<p>The <strong>clique decision problem:</strong> does G have a clique of size ≥ k?</p>
+<blockquote>
+<p><strong>Theorem: SAT → clique decision problem.</strong></p>
+</blockquote>
+<p><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a CNF formula with clauses <code>c₁,…,c_m</code>:
+- Create a vertex for <strong>each literal occurrence</strong> in each clause.
+- Add an edge between two literal-vertices iff they are in <strong>different clauses</strong> and are <strong>not complementary</strong> (not <code>xᵢ</code> vs <code>¬xᵢ</code>).
+- Ask for a clique of size <strong>k = m</strong> (number of clauses).</p>
+<p><strong>Correctness <em>(reconstructed)</em>.</strong> A clique of size m must pick exactly one literal from each clause, all mutually consistent (no variable and its negation) ⇒ a satisfying assignment; and conversely a satisfying assignment yields one true literal per clause forming an m-clique. So the formula is satisfiable iff G has an m-clique.</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 61 states only the theorem (with the max-clique example); <strong>no construction in the dump.</strong> The literal-vertex / inter-clause-non-conflict construction is the standard Cook/Karp one; <strong>validate against slide 61.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-10-clique-decision-node-cover-decision-slides-6263">Reduction 10 — Clique Decision → Node Cover Decision (slides 62–63)</h2>
+<p><strong>Node cover decision problem (slide 62).</strong> <code>S ⊆ V</code> is a <strong>node cover</strong> of <code>G=(V,E)</code> iff every edge of E is incident to at least one vertex of S. <strong>Decision:</strong> does there exist S with <code>|S| ≤ K</code>?</p>
+<blockquote>
+<p><strong>Theorem: clique decision problem → node cover decision problem.</strong></p>
+</blockquote>
+<p><strong>Construction (slide 63).</strong> Given <code>G=(V,E)</code> with <code>|V| = n</code>, form the <strong>complement graph</strong> <code>G′ = (V, E′)</code> where <code>E′ = { (u,v) | (u,v) ∉ E }</code>.</p>
+<p><strong>Key fact:</strong></p>
+<blockquote>
+<p><strong>G has a clique of size k ⇔ G′ has a node cover of size n − k.</strong></p>
+</blockquote>
+<p><strong>Correctness.</strong> If <code>K ⊆ V</code> is a clique of size k in G, then <strong>no edge of G′</strong> has both endpoints in K (clique edges are absent from G′), so every edge of G′ touches <code>V∖K</code> ⇒ <code>V∖K</code> (size n−k) is a node cover of G′. Conversely, if <code>S</code> is a node cover of size n−k in G′, then <code>V∖S</code> (size k) is an <strong>independent set</strong> in G′ ⇒ a <strong>clique</strong> in G. So the two questions are equivalent under <code>K ↔ n−K</code>.</p>
+<blockquote>
+<p>Worked example (slide 63): vertices <code>{a,b,c,d,e,f}</code>. The deck draws G with a clique and its complement G′ with the corresponding node cover <code>V∖clique</code>. (G's clique of size k ⇔ G′'s node cover of size n−k = 6−k.)</p>
+</blockquote>
+<p>⇒ <strong>Node cover decision is NP-complete.</strong></p>
+<hr />
+<h2 id="reduction-11-sat-directed-hamiltonian-cycle-slide-64">Reduction 11 — SAT → Directed Hamiltonian Cycle (slide 64)</h2>
+<p><strong>Hamiltonian cycle problem (slide 64).</strong> A <strong>Hamiltonian cycle</strong> is a round-trip path along n edges of G that <strong>visits every vertex exactly once</strong> and returns to its start.</p>
+<blockquote>
+<p>Example: Hamiltonian cycle <code>1, 2, 8, 7, 6, 5, 4, 3, 1</code>.</p>
+<p><strong>Theorem: SAT → directed Hamiltonian cycle</strong> (in a <strong>directed</strong> graph).</p>
+</blockquote>
+<p><strong>Idea <em>(reconstructed, standard)</em>.</strong> Build a directed graph with a "diamond/gadget" chain per variable (traversed left→right for <code>xᵢ=T</code>, right→left for <code>xᵢ=F</code>) and a vertex per clause; route the clause vertex through the variable gadgets so a Hamiltonian cycle exists iff each clause can be visited by some true literal. Formula satisfiable ⇔ directed Hamiltonian cycle exists.</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 64 states only the theorem (plus the undirected example); <strong>no gadget construction in the dump.</strong> The variable-gadget / clause-vertex construction is the standard one; <strong>validate against slide 64.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-12-directed-hamiltonian-cycle-tsp-decision-slides-6566">Reduction 12 — Directed Hamiltonian Cycle → TSP Decision (slides 65–66)</h2>
+<p><strong>Traveling salesperson problem (slide 65).</strong> A <strong>tour</strong> of a directed graph <code>G=(V,E)</code> is a directed cycle that includes every vertex in V. The problem: find a <strong>minimum-cost</strong> tour.</p>
+<blockquote>
+<p><strong>Theorem: Directed Hamiltonian cycle → traveling salesperson decision problem.</strong></p>
+</blockquote>
+<p><strong>Construction (slide 66).</strong> Given directed graph <code>G=(V,E)</code> (a Hamiltonian-cycle instance), build a complete weighted directed graph on the same vertices with edge weights:</p>
+<pre><code>cost(u,v) = 1   if (u,v) ∈ E
+cost(u,v) = 2   if (u,v) ∉ E      (a larger value; &quot;2&quot; per the slide)
+</code></pre>
+<p>Ask the TSP <strong>decision</strong> question with bound <code>C = n</code> (= |V|).</p>
+<p><strong>Correctness.</strong> A tour of total cost <strong>≤ n</strong> can only use cost-1 edges (any cost-2 edge pushes the total above n), i.e. it uses <strong>only edges of G</strong> ⇒ it is a <strong>directed Hamiltonian cycle</strong> of G. Conversely a Hamiltonian cycle of G has cost exactly n. So G has a directed Hamiltonian cycle ⇔ the TSP tour cost ≤ n.</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 66 shows only a small picture with labels "1" and "2"; the weighting <code>1 / 2</code> and bound <code>C = n</code> above are the standard construction reading of those labels; <strong>validate against slide 66.</strong></p>
+</blockquote>
+<hr />
+<h2 id="reduction-13-partition-01-knapsack-decision-slides-6768">Reduction 13 — Partition → 0/1 Knapsack Decision (slides 67–68)</h2>
+<p><strong>0/1 knapsack problem (slide 67).</strong> <code>n</code> objects, each with weight <code>wᵢ &gt; 0</code> and profit <code>pᵢ &gt; 0</code>; knapsack capacity <code>M</code>.</p>
+<pre><code>Maximize   Σ_{1≤i≤n} pᵢ xᵢ
+Subject to Σ_{1≤i≤n} wᵢ xᵢ ≤ M ,   xᵢ ∈ {0, 1}
+</code></pre>
+<p><strong>Decision version:</strong> given K, is there a 0/1 choice with <code>Σ pᵢ xᵢ ≥ K</code> (subject to the weight constraint)?</p>
+<blockquote>
+<p>(The fractional <strong>knapsack</strong> problem allows <code>0 ≤ xᵢ ≤ 1</code> and is <em>not</em> NP-complete — solvable greedily.)</p>
+<p><strong>Theorem: partition → 0/1 knapsack decision problem.</strong></p>
+</blockquote>
+<p><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with <code>Tsum = Σ aᵢ</code>, set <code>wᵢ = pᵢ = aᵢ</code>, capacity <code>M = Tsum/2</code>, and target profit <code>K = Tsum/2</code>. A subset with weight ≤ Tsum/2 and profit ≥ Tsum/2 must have weight = profit = Tsum/2 exactly ⇒ an equal-sum partition. So A is partitionable ⇔ the 0/1 knapsack decision answer is "Yes."</p>
+<blockquote>
+<p>⚠️ Reconstructed: slide 68 states only the theorem; <strong>no construction in the dump.</strong> The <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code> construction is the standard one; <strong>validate against slide 68.</strong></p>
+</blockquote>
+<hr />
+<h2 id="closing-reference-slide-69">Closing reference (slide 69)</h2>
+<blockquote>
+<p>Refer to <strong>Sec. 11.3, Sec. 11.4</strong> and their exercises of <strong>[Horowitz &amp; Sahni 1998]</strong> for the proofs of more NP-complete problems.</p>
+</blockquote>
+<hr />
+<h2 id="items-i-reconstructed-couldnt-fully-verify">⚠️ Items I reconstructed / couldn't fully verify</h2>
+<p>Validation checklist — confirm each against the cited slide of the PDF (<code>source/Alg08 - 相容模式.pdf</code>). The dump drops the <code>≤ ≥ ≠ ∈ ∉ ⊆ ∨ ¬ □</code> glyphs, so logic/edge symbols were inferred throughout; the items below are the <strong>load-bearing</strong> reconstructions:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Slide(s)</th>
+<th>Item</th>
+<th>What was reconstructed</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>27</td>
+<td>Searching→SAT, "both ≠ 7" resolution</td>
+<td>Renumbered the duplicated <code>(11)</code>/<code>(16)</code> derivation lines to (11)–(17)</td>
+<td>Low (chain is clear)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>41</td>
+<td>SAT→3-SAT (⇒)</td>
+<td>Chain-variable assignment (set yⱼ true before / false after the true literal's clause)</td>
+<td>Medium — slide text garbled</td>
+</tr>
+<tr>
+<td>3</td>
+<td>46, 47</td>
+<td>SATY→CN edge set E</td>
+<td>Full edge families, esp. <code>(xᵢ,cⱼ)</code> for <code>xᵢ ∉ cⱼ</code> and <code>(¬xᵢ,cⱼ)</code> for <code>¬xᵢ ∉ cⱼ</code>; the <code>≠ / ∈ / ∉</code> conditions</td>
+<td>✅ <strong>Verified against slide 47</strong> (and edge set printed verbatim on slide 46). <code>∉</code> confirmed. See Appendix A.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>51</td>
+<td>CN → exact cover</td>
+<td><strong>Construction not in dump</strong> — only the theorem is stated</td>
+<td>High — verify if slide carries a construction</td>
+</tr>
+<tr>
+<td>5</td>
+<td>54</td>
+<td>Exact cover→sum-of-subsets example</td>
+<td>Superscript restorations (<code>4⁰+4¹</code> etc.) and the 2nd variant's base/set list (a duplicated "S₃")</td>
+<td>✅ <strong>Verified against slide 54.</strong> Superscripts correct; the duplicated "S₃" is a <strong>genuine slide typo</strong> (4th set should be S₄={1,3}); 2nd variant uses base 2. See Appendix A.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>58</td>
+<td>Partition → bin packing</td>
+<td><strong>Construction not in dump</strong> — used standard 2-bins, capacity Tsum/2</td>
+<td>High</td>
+</tr>
+<tr>
+<td>7</td>
+<td>60</td>
+<td>Bin packing → VLSI layout</td>
+<td><strong>Construction not in dump</strong> — rectangle-per-item intuition only</td>
+<td>High</td>
+</tr>
+<tr>
+<td>8</td>
+<td>61</td>
+<td>SAT → clique decision</td>
+<td><strong>Construction not in dump</strong> — used standard literal-vertex / inter-clause-non-conflict, k=m</td>
+<td>High</td>
+</tr>
+<tr>
+<td>9</td>
+<td>64</td>
+<td>SAT → directed Hamiltonian cycle</td>
+<td><strong>Construction not in dump</strong> — used standard variable-gadget/clause-vertex idea</td>
+<td>High</td>
+</tr>
+<tr>
+<td>10</td>
+<td>66</td>
+<td>Dir. Hamiltonian cycle → TSP</td>
+<td>Edge weights <code>1/2</code> and bound <code>C=n</code> inferred from the picture labels "1","2"</td>
+<td>✅ <strong>Edge weights verified against slide 66</strong> (left = original G, edges cost 1; right = completed graph, added edges blue = cost 2). Bound <code>C=n</code> not printed on the slide (implied by construction). See Appendix A.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>68</td>
+<td>Partition → 0/1 knapsack</td>
+<td><strong>Construction not in dump</strong> — used standard <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code></td>
+<td>High</td>
+</tr>
+<tr>
+<td>12</td>
+<td>31–33</td>
+<td>Node cover → SAT CNF</td>
+<td>Grouped/restored the (A)–(D) clause families and the <code>= / ≠ / ∈</code> meanings</td>
+<td>Medium-High</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Note on items 4, 6, 7, 8, 9, 11:</strong> these slides in the deck state the reduction <strong>as a theorem only</strong> (the textbook leaves the construction to Horowitz &amp; Sahni Sec. 11.3–11.4). The constructions given here are the standard textbook ones, supplied so the note is self-contained — but they are <strong>not transcribed from the slides.</strong> Treat them as study aids and confirm scope expectations with the course.</p>
+<hr />
+<h2 id="appendix-a-figures-visually-extracted-from-slide-images">Appendix A — Figures (visually extracted from slide images)</h2>
+<p>Transcribed directly from the rendered slide PNGs (<code>render/A08/slide-NN.png</code>). These are the diagrams the text dump could not recover. Graph edges are listed explicitly; colors/assignments are read off the figures.</p>
+<h3 id="slide-13-semantic-tree-unsatisfiable-formula">Slide 13 — Semantic tree (unsatisfiable formula)</h3>
+<p>A binary tree, branching on variables, whose nodes are annotated with the clause that falsifies that branch. Reading the figure:</p>
+<ul>
+<li>Root <code>(7)(□)</code> — branches on x₂: left edge labelled <code>x₂ ← T : x₂</code>, right edge labelled <code>-x₂ : x₂ ← F</code>.</li>
+<li>Right child <code>(3)(x₂)</code> — labelled <strong>"become false"</strong> (a leaf; clause (3) <code>x₂</code> falsified when x₂←F).</li>
+<li>Left child <code>(6)(-x₂)</code> — branches on x₃: left edge <code>x₃</code>, right edge <code>-x₃</code>.<ul>
+<li>Left child <code>(4)(-x₃)</code> — leaf.</li>
+<li>Right child <code>(5)(-x₂ ∨ x₃)</code> — branches on x₁: left edge <code>x₁</code>, right edge <code>-x₁</code>.</li>
+<li>Left leaf <code>(1)(-x₁ ∨ -x₂ ∨ x₃)</code>.</li>
+<li>Right leaf <code>(2)(x₁ ∨ -x₂)</code> — labelled <strong>"become false"</strong>.</li>
+</ul>
+</li>
+</ul>
+<p>Every leaf is attached to (falsified by) some clause ⇒ the formula is <strong>unsatisfiable</strong>. (This is the figure for the slide-12 unsatisfiable example.)</p>
+<h3 id="slide-25-semantic-tree-for-searchingsat-both-inputs-7-unsatisfiable">Slide 25 — Semantic tree for Searching→SAT, "both inputs ≠ 7" (unsatisfiable)</h3>
+<p>A single descending (right-leaning) chain of decision nodes; each internal node branches into a leaf labelled by the clause it falsifies and a child that continues the chain. Top-to-bottom:</p>
+<ul>
+<li>Root branches on SUCCESS: left <code>SUCCESS</code> → child; right <code>-SUCCESS</code> → leaf <strong>(8)</strong>.</li>
+<li>Next node branches on FAILURE: left <code>FAILURE</code> → leaf <strong>(7)</strong>; right <code>-FAILURE</code> → child.</li>
+<li>branch <code>X(1)=7</code> → child / <code>X(1)≠7</code> → leaf <strong>(9)</strong>.</li>
+<li>branch <code>X(2)=7</code> → leaf <strong>(10)</strong> / <code>X(2)≠7</code> → child.</li>
+<li>branch on i: <code>i=1</code> → child / <code>i≠1</code> → child.</li>
+<li>under <code>i=1</code>: <code>i=2</code> → leaf <strong>(2)</strong> / <code>i≠2</code> → leaf (closes).</li>
+<li>under <code>i≠1</code>: <code>i=2</code> → leaf <strong>(6)</strong> / <code>i≠2</code> → leaf <strong>(1)</strong>.</li>
+</ul>
+<p>Each leaf is attached to a clause of the CNF (slide 26) ⇒ no escaping assignment ⇒ <strong>unsatisfiable</strong> ⇒ 7 is absent. (Clause numbers match the slide-26 CNF.)</p>
+<h3 id="slide-29-semantic-tree-for-searchingsat-both-inputs-7-satisfiable">Slide 29 — Semantic tree for Searching→SAT, "both inputs = 7" (satisfiable)</h3>
+<p>Same shape as slide 25 but the branch order is <code>X(1)=7 → X(2)=7 → SUCCESS → -FAILURE → i</code>. Leaves are labelled with clause numbers <code>(9),(10),(7),(8),(2),(1)</code> and <code>(6)</code>. Two root-to-leaf paths survive without hitting a contradiction. Slide caption (red): <strong>"It implies that both assignments (i=1, i=2) satisfy the clauses."</strong> ⇒ formula <strong>satisfiable</strong>; either index witnesses "7 is present."</p>
+<h3 id="slide-30-node-cover-example-graph">Slide 30 — Node cover example graph</h3>
+<p>Undirected graph, 5 vertices <code>{1,2,3,4,5}</code>.
+Edge list: <strong>(1,2), (1,5), (2,3), (3,4)</strong>.
+Layout: 1 top-left, 2 top-right, 3 middle, 4 bottom-right, 5 bottom-left. Vertex 1 connects right to 2 and down to 5; vertex 2 connects down-left to 3; vertex 3 connects down-right to 4.
+Node covers shown: <strong>{1,3}</strong> and <strong>{5,2,4}</strong>.</p>
+<h3 id="slide-45-chromatic-number-example-graph-3-colorable">Slide 45 — Chromatic-number example graph (3-colorable)</h3>
+<p>Undirected graph, 5 vertices <code>{a,b,c,d,e}</code>.
+Edge list: <strong>(a,b), (a,d), (b,c), (d,e), (c,e)</strong> (a 5-cycle a-b-c-e-d-a).
+Layout: a top-left, b top-right, d middle-right, c-area; e at the bottom apex.
+Coloring (k=3): <strong>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</strong>.
+Colors drawn: a = green(1), b = red(2), c = green(1), d = red(2), e = yellow(3). 3-colorable.</p>
+<h3 id="slide-47-satycn-graph-construction-the-worked-example-critical">Slide 47 — SATY→CN graph construction (the worked example) — CRITICAL</h3>
+<p>SATY instance, <strong>n = 4</strong>, clauses: <strong>(1) x₁ ∨ x₂ ∨ x₃</strong> and <strong>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</strong>.</p>
+<p><strong>Vertices (two rows):</strong>
+- Top row (8 literal vertices), left→right: <code>x₁, x₂, x₃, x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</code>.
+- Bottom row: the y-clique <code>y₁, y₂, y₃, y₄</code> then the two clause vertices <code>c₁, c₂</code>.</p>
+<p><strong>Coloring shown above/below each vertex (an (n+1)=5-coloring):</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>vertex</th>
+<th>x₁</th>
+<th>x₂</th>
+<th>x₃</th>
+<th>x₄</th>
+<th>¬x₁</th>
+<th>¬x₂</th>
+<th>¬x₃</th>
+<th>¬x₄</th>
+<th>y₁</th>
+<th>y₂</th>
+<th>y₃</th>
+<th>y₄</th>
+<th>c₁</th>
+<th>c₂</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>color</td>
+<td>1</td>
+<td>5</td>
+<td>5</td>
+<td>4</td>
+<td>5</td>
+<td>2</td>
+<td>3</td>
+<td>5</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+</tr>
+</tbody>
+</table></div>
+<p>Vertex fill colors observed: x₁ black, x₂ yellow, x₃/x₄/¬x₁/¬x₂ white/open, ¬x₃ teal, ¬x₄ blue; y₁ black, y₂ yellow, y₃ teal, y₄ blue; c₁ black, c₂ teal. (Fill colors are decorative; the numeric labels are the coloring.)</p>
+<p><strong>Edges (per the slide-46 construction, instantiated for n=4, the two clauses):</strong>
+- Conflict edges (xᵢ,¬xᵢ): (x₁,¬x₁), (x₂,¬x₂), (x₃,¬x₃), (x₄,¬x₄).
+- y-clique (yᵢ,yⱼ) i≠j: all 6 pairs among {y₁,y₂,y₃,y₄}.
+- (yᵢ, xⱼ) i≠j and (yᵢ, ¬xⱼ) i≠j: each yᵢ joins every literal vertex <strong>except</strong> xᵢ and ¬xᵢ (so yᵢ touches 6 of the 8 literal vertices). This is the dense web from each yᵢ up to the literal row.
+- (xᵢ, cⱼ) for xᵢ ∉ cⱼ and (¬xᵢ, cⱼ) for ¬xᵢ ∉ cⱼ:
+  - c₁ = {x₁,x₂,x₃} → c₁ joins the literals <strong>not</strong> in it: <strong>x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</strong> (5 edges).
+  - c₂ = {¬x₃,¬x₄,x₂} → c₂ joins: <strong>x₁, x₃, x₄, ¬x₁, ¬x₂</strong> (5 edges).</p>
+<p><strong>Verification of the coloring (reads off a satisfying assignment):</strong> yᵢ=i ✓. x₁=T (f(x₁)=1, f(¬x₁)=5=n+1) ✓; x₂=F (f(¬x₂)=2, f(x₂)=5) ✓; x₃=F (f(¬x₃)=3, f(x₃)=5) ✓; x₄=T (f(x₄)=4, f(¬x₄)=5) ✓. Clause colors: f(c₁)=1=f(x₁) ⇒ x₁∈c₁ true ✓; f(c₂)=3=f(¬x₃) ⇒ ¬x₃∈c₂ true ✓. Uses colors {1..5} and respects every edge ⇒ 5-colorable ⇔ satisfiable.</p>
+<p><strong>SATY→CN VERDICT:</strong> The note's reconstructed construction (V and the six edge families) is <strong>CONFIRMED</strong> — it matches slide 46's edge set verbatim and slide 47's drawn graph + coloring. The critical condition is <strong><code>(literal, cⱼ)</code> whenever the literal is NOT in cⱼ</strong> (i.e. <code>∉</code>), exactly as the note states. No correction needed.</p>
+<h3 id="slide-50-set-cover-example">Slide 50 — Set cover example</h3>
+<p>Family <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)}</code>, named <code>s₁=(a₁,a₃), s₂=(a₂,a₄), s₃=(a₂,a₃), s₄=(a₄)</code>. Universe <code>{a₁,a₂,a₃,a₄}</code>.
+- <code>T = {s₁, s₃, s₄}</code> — a <strong>set cover</strong> (covers a₁,a₃,a₂,a₄; not disjoint since a₃ repeats).
+- <code>T = {s₁, s₂}</code> — a <strong>set cover AND exact cover</strong> (s₁={a₁,a₃}, s₂={a₂,a₄}, disjoint, cover all).</p>
+<h3 id="slide-54-exact-cover-sum-of-subsets-worked-example-two-variants">Slide 54 — Exact cover → sum of subsets, worked example (two variants)</h3>
+<p><strong>Left variant (proper, base k+1 = 4, k = 3 sets):</strong>
+Universe <code>u₁=1, u₂=2, u₃=3</code> (n=3). Sets <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F={1,2,3}</code>.</p>
+<pre><code>a₁ = 4⁰ + 4¹ = 5     (S₁ has u₁,u₂)
+a₂ = 4²      = 16    (S₂ has u₃)
+a₃ = 4⁰ + 4² = 17    (S₃ has u₁,u₃)
+C  = 4⁰ + 4¹ + 4² = 21
+</code></pre>
+<p>Exact cover {S₁,S₂} ⇒ 5 + 16 = 21 = C. ✓</p>
+<p><strong>Right variant (base 2 — the deliberately too-small base, "k−1=2 is selected"):</strong>
+The slide's set list reads <code>S₁={1,2}, S₂={2}, S₃={2}, S₃={1,3}</code> — <strong>the slide itself prints "S₃" twice</strong>; the fourth set is clearly meant to be S₄={1,3} (this is a slide typo, not a transcription error).</p>
+<pre><code>a₁ = 2⁰ + 2¹ = 3
+a₂ = 2¹      = 2
+a₃ = 2¹      = 2
+a₄ = 2¹ + 2² = 6
+C  = 2⁰ + 2¹ + 2² = 7
+</code></pre>
+<p>Demonstrates that with too small a base, carries/collisions can occur. (Slide annotates "k−1=2 is selected" — i.e. the base used here is 2.)</p>
+<h3 id="slide-61-max-clique-example-graph">Slide 61 — Max clique example graph</h3>
+<p>Undirected graph, 6 vertices <code>{a,b,c,d,e,f}</code>.
+Layout: a top, b top-right (pendant), c/d middle row, e/f bottom row.
+Edge list: <strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>.
+(Note <code>b</code> is a pendant vertex, edge only to <code>a</code>.) {c,d,e,f} is a 4-clique (all 6 internal edges present).
+- Maximal cliques: <strong>{a,b}, {a,c,d}, {c,d,e,f}</strong>.
+- Maximum clique: <strong>{c,d,e,f}</strong>.</p>
+<h3 id="slide-63-clique-node-cover-g-and-its-complement-g">Slide 63 — Clique → node cover (G and its complement G′)</h3>
+<p>Same 6 vertices <code>{a,b,c,d,e,f}</code> in both graphs.</p>
+<p><strong>G</strong> (left) — identical to the slide-61 graph:
+Edge list: <strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>.
+Clique highlighted: <code>{c,d,e,f}</code> (size k=4); these four vertices drawn yellow.</p>
+<p><strong>G′</strong> (right) — the complement on the same 6 vertices (E′ = non-edges of G):
+G has 9 edges; K₆ has 15; so G′ has <strong>6 edges</strong>.
+Edge list of G′: <strong>(a,e), (a,f), (b,c), (b,d), (b,e), (b,f)</strong>.
+(Check: a's non-neighbors in G are e,f → (a,e),(a,f); b's non-neighbors are c,d,e,f → 4 edges; c,d,e,f are mutually complete in G so no further G′ edges. Total 6. ✓ The drawing shows a and b at top each fanning down to lower vertices.)
+Node cover of G′ = V∖clique = <strong>{a,b}</strong> (size n−k = 6−4 = 2). Every G′ edge is incident to a or b. ✓</p>
+<h3 id="slide-64-hamiltonian-cycle-example-graph">Slide 64 — Hamiltonian cycle example graph</h3>
+<p>Undirected graph, 8 vertices <code>{1,…,8}</code> in two rows: top <code>1,2,3,4</code> (left→right), bottom <code>8,7,6,5</code> (left→right, so 8 under 1, 5 under 4).
+Edge list: <strong>(1,2), (2,3), (3,4), (1,3) [the curved top arc], (1,6), (2,7) [the two crossing diagonals], (8,7), (7,6), (6,5), (4,5), (3,6)</strong>.
+(The crossing "X" in the middle is edges (1,6) and (2,7); the long curved arc over the top connects 1 and 3.)
+Hamiltonian cycle drawn: <strong>1, 2, 8, 7, 6, 5, 4, 3, 1</strong>.</p>
+<blockquote>
+<p>Note: edge (2,8) is required by the stated cycle (2→8); the figure's lower-left region is slightly ambiguous, but the cycle 1-2-8-7-6-5-4-3-1 implies edges (2,8) and (3,1) exist. Treat the cycle as authoritative.</p>
+</blockquote>
+<h3 id="slide-66-directed-hamiltonian-tsp-proof-gadget">Slide 66 — Directed Hamiltonian → TSP proof gadget</h3>
+<p>Two drawings of the <strong>same 7-vertex</strong> graph (heptagon layout).
+- <strong>Left:</strong> the original Hamiltonian-cycle instance G — only its actual edges drawn (black), forming the sparse graph.
+- <strong>Right:</strong> the TSP instance — the <strong>complete</strong> graph on the same 7 vertices. Edges that <strong>were in G</strong> are black and labelled cost <strong>"1"</strong>; edges <strong>added to complete the graph</strong> (not in G) are drawn in <strong>blue</strong> and labelled cost <strong>"2"</strong>.</p>
+<p>This confirms the note's weighting: <strong>cost = 1 for original edges, cost = 2 for added (non-)edges</strong>, and a TSP tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G. (The slide shows only the "1"/"2" labels and the two graphs; the bound C = n is implied by the construction, not printed.)</p>
+<hr>
+<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+</div></body></html>

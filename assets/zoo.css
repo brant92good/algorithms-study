@@ -1,0 +1,110 @@
+/* Algorithm Zoo — interactive widgets + quiz, built on top of site.css theme vars */
+.kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+.mission{color:var(--mut);font-style:italic;margin:.3rem 0 1.6rem;border-left:3px solid var(--rule);padding-left:1rem}
+
+/* ---- step player ---- */
+.viz{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:1rem 1.1rem;margin:1.1rem 0}
+.viz .stage{min-height:9rem;display:flex;align-items:flex-end;justify-content:center;gap:.3rem;padding:.6rem 0 1rem;overflow-x:auto}
+.viz .cap{min-height:2.6em;font-size:.95rem;line-height:1.4;color:var(--ink);background:var(--hi);border-radius:7px;padding:.5rem .7rem}
+.viz .controls{display:flex;align-items:center;gap:.5rem;margin-top:.7rem;flex-wrap:wrap}
+.viz button.ctl{font:inherit;font-size:.9rem;padding:.4rem .8rem;border:1px solid var(--rule);border-radius:8px;
+  background:var(--bg);color:var(--ink);cursor:pointer;transition:.12s}
+.viz button.ctl:hover:not(:disabled){border-color:var(--accent);background:var(--hi)}
+.viz button.ctl:disabled{opacity:.45;cursor:default}
+.viz .ctl.play{background:var(--accent);color:#fff;border-color:var(--accent)}
+.viz .dots{display:flex;gap:.25rem;margin-left:auto;flex-wrap:wrap}
+.viz .dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--rule)}
+.viz .dot.on{background:var(--accent)}
+.viz .step-n{font-size:.8rem;color:var(--mut);font-variant-numeric:tabular-nums}
+
+/* ---- bars (sorting / arrays) ---- */
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:1.7rem}
+.bar .col{width:1.5rem;background:var(--accent2);border-radius:3px 3px 0 0;transition:height .25s, background .15s}
+.bar .val{font-size:.72rem;color:var(--mut);margin-top:.15rem;font-variant-numeric:tabular-nums}
+.bar.cmp .col{background:#d9a441}.bar.act .col{background:var(--accent)}
+.bar.done .col{background:var(--good)}.bar.dim .col{opacity:.35}
+.ptr{font-size:.72rem;color:var(--accent);font-weight:700;height:1rem}
+
+/* ---- grid (DP tables) ---- */
+table.dp{border-collapse:collapse;margin:.2rem auto;font-variant-numeric:tabular-nums}
+table.dp td,table.dp th{border:1px solid var(--rule);width:2.2rem;height:2.2rem;text-align:center;font-size:.85rem;padding:0}
+table.dp th{color:var(--mut);font-weight:600;background:var(--bg)}
+table.dp td.act{background:var(--accent);color:#fff;font-weight:700}
+table.dp td.dep{background:var(--hi)}
+table.dp td.path{background:#eaf5ec;color:var(--good);font-weight:700}
+:root[data-theme="dark"] table.dp td.path{background:#1b2c1f}
+
+/* ---- graph ---- */
+.graph{position:relative;width:100%;max-width:30rem;height:16rem;margin:0 auto}
+.graph svg{position:absolute;inset:0;width:100%;height:100%}
+.graph .edge{stroke:var(--rule);stroke-width:2}
+.graph .edge.act{stroke:var(--accent);stroke-width:3.5}
+.graph .edge.tree{stroke:var(--good);stroke-width:3.5}
+.graph .ew{fill:var(--mut);font-size:.72rem;font-family:ui-monospace,monospace}
+.graph .node{position:absolute;width:2rem;height:2rem;transform:translate(-50%,-50%);border-radius:50%;
+  border:2px solid var(--rule);background:var(--card);display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:700;color:var(--ink);transition:.15s}
+.graph .node.act{border-color:var(--accent);background:var(--accent);color:#fff}
+.graph .node.done{border-color:var(--good);background:var(--good);color:#fff}
+.graph .node.frontier{border-color:var(--accent)}
+.graph .badge{position:absolute;width:1.3rem;height:1.3rem;transform:translate(40%,-120%);border-radius:50%;
+  background:var(--accent2);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* ---- queue/stack strip ---- */
+.lane{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;font-size:.85rem;margin-top:.4rem;color:var(--mut)}
+.lane .tok{background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:.1rem .5rem;color:var(--ink);font-weight:600}
+
+/* ---- board (n-queens) ---- */
+.board{display:grid;gap:0;margin:.2rem auto;width:max-content;border:2px solid var(--rule)}
+.board .sq{width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.board .sq.lt{background:#f2ead6}.board .sq.dk{background:#cdbf9a}
+:root[data-theme="dark"] .board .sq.lt{background:#2a2820}:root[data-theme="dark"] .board .sq.dk{background:#3a362a}
+.board .sq.bad{box-shadow:inset 0 0 0 2px var(--bad)}
+
+/* ---- tree (huffman / recursion) ---- */
+.atree{font-family:ui-monospace,monospace;font-size:.9rem;white-space:pre;line-height:1.4;overflow-x:auto;
+  background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.8rem}
+
+/* ---- complexity chips + learned ---- */
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}
+.chip{font-size:.82rem;border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+.chip b{color:var(--accent)}
+.learned-row{display:flex;align-items:center;gap:.7rem;margin:1.4rem 0;flex-wrap:wrap}
+.learnbtn{font:inherit;font-size:.92rem;padding:.45rem .9rem;border:1px solid var(--good);border-radius:8px;
+  background:var(--bg);color:var(--good);cursor:pointer;font-weight:600}
+.learnbtn.on{background:var(--good);color:#fff}
+
+/* ---- quiz (shared with lessons) ---- */
+.qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.score{font-size:.78rem;font-weight:700;color:var(--mut);border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+.quiz{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;counter-reset:opt}
+.q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+.opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+  background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;cursor:pointer;transition:.12s}
+.opt::before{counter-increment:opt;content:counter(opt,upper-alpha);flex:0 0 1.55rem;height:1.55rem;
+  display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:var(--mut);background:var(--codebg);border-radius:6px}
+.opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+.opt:disabled{cursor:default;opacity:.92}
+.opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+.opt.correct::before{background:var(--good);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+.opt.wrong::before{background:var(--bad);color:#fff}
+:root[data-theme="dark"] .opt.correct{background:#1b2c1f}:root[data-theme="dark"] .opt.wrong{background:#321f1e}
+:root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f}
+:root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f}
+.fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+.fb:empty{display:none}.fb .v{font-weight:700}.fb.ok .v{color:var(--good)}.fb.no .v{color:var(--bad)}
+
+/* ---- zoo index map ---- */
+.bucket{margin:1.8rem 0}
+.bucket h2{display:flex;align-items:baseline;gap:.6rem}
+.bucket .tagline{font-size:.85rem;color:var(--mut);font-style:italic;font-weight:400}
+.zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.7rem}
+.algo{display:block;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:.8rem .9rem;color:var(--ink);transition:.15s;position:relative}
+.algo:hover{border-color:var(--accent);transform:translateY(-2px);text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.algo .t{font-weight:600;color:var(--accent)}
+.algo .d{font-size:.85rem;color:var(--mut);margin-top:.15rem;line-height:1.35}
+.algo .tick{position:absolute;top:.6rem;right:.7rem;color:var(--good);font-weight:700;opacity:0}
+.algo.learned .tick{opacity:1}
+.progwrap{height:.5rem;background:var(--rule);border-radius:999px;overflow:hidden;margin:.4rem 0 0}
+.progwrap .bar{height:100%;background:var(--good);width:0;transition:width .4s}

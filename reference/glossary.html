@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — Algorithms Final</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; }
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.5;
+       max-width:46rem;margin:3rem auto;padding:0 1.6rem;}
+  h1{font-weight:600;font-size:1.9rem;letter-spacing:.01em;margin-bottom:.2rem}
+  .sub{color:var(--mut);font-style:italic;margin-bottom:2rem}
+  dl{margin:0}
+  dt{font-weight:600;margin-top:1.25rem;color:var(--accent)}
+  dd{margin:.15rem 0 0 0}
+  dd .sym{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  section{border-top:1px solid var(--rule);margin-top:2rem;padding-top:.5rem}
+  section>h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);font-weight:600}
+  a{color:var(--accent)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;}
+  :root[data-theme="dark"] dd .sym{background:#2b291f;}
+  @media print{body{margin:0;max-width:none}a{color:var(--ink);text-decoration:none}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<h1>Glossary</h1>
+<div class="sub">Shared vocabulary for the Algorithms final. Every lesson uses these exact terms.</div>
+
+<section><h2>Ch6 · Searching Strategies</h2>
+<dl>
+  <dt>Solution tree</dt><dd>Tree whose root-to-leaf paths enumerate all candidate solutions; each level fixes one decision. Searching = walking this tree.</dd>
+  <dt>DFS (depth-first search)</dt><dd>Expand the <em>deepest</em> unexpanded node first. Implemented with a <span class="sym">stack</span>. Backtracks on dead ends.</dd>
+  <dt>BFS (breadth-first search)</dt><dd>Expand the <em>shallowest</em> unexpanded node first. Implemented with a <span class="sym">queue</span>.</dd>
+  <dt>Hill climbing</dt><dd>DFS variant: among the children of the current node, expand the locally best one (greedy). No global view — can stall in a local optimum.</dd>
+  <dt>Best-first search</dt><dd>Expand the node with the best estimate among <em>all</em> open nodes (global view). Combines DFS + BFS reach.</dd>
+  <dt>Evaluation function <span class="sym">f(n)</span></dt><dd>Estimated promise of node n. 8-puzzle: <span class="sym">f(n)=d(n)+w(n)</span>, d=depth, w=# misplaced tiles.</dd>
+  <dt>Branch-and-bound</dt><dd>Strategy for <em>optimization</em> problems: prune any subtree whose bound can't beat the best solution found. (DFS/BFS/hill/best-first solve only feasibility, not optimization.)</dd>
+  <dt>Lower bound (reduced cost matrix)</dt><dd>Subtract the row min from each row, then the column min from each column, so every row & column has a 0. The total subtracted is a lower bound on any tour cost.</dd>
+  <dt>A* algorithm</dt><dd>Best-first for optimization with <span class="sym">f(n)=g(n)+h(n)</span>: g=cost root→n, h=estimate n→goal. If <span class="sym">h(n)≤h*(n)</span> (never overestimates), the first goal popped is optimal.</dd>
+</dl>
+</section>
+
+<section><h2>Prune-and-Search</h2>
+<dl>
+  <dt>Prune-and-search</dt><dd>Each iteration discards a fixed fraction f of the data, then recurses on the rest. <span class="sym">T(n)=T((1−f)n)+O(n^k) ⇒ O(n^k)</span>.</dd>
+  <dt>Selection problem</dt><dd>Find the k-th smallest of n elements. Median = the (n/2)-th smallest.</dd>
+  <dt>Median of medians</dt><dd>Split into groups of 5, take each group's median, take the median of those as pivot p. Guarantees ≥ n/4 pruned per step ⇒ selection in <span class="sym">O(n)</span>.</dd>
+</dl>
+</section>
+
+<section><h2>Ch7 · Dynamic Programming</h2>
+<dl>
+  <dt>Multistage graph</dt><dd>DAG with vertices partitioned into ordered stages V₁…V_k; edges go stage i→i+1. Goal: min-cost path s→t.</dd>
+  <dt>Principle of optimality</dt><dd>If a sequence of decisions D₁…Dₙ is optimal, then every suffix (last k decisions) is itself optimal. Lets us write a recurrence.</dd>
+  <dt>Forward reasoning</dt><dd>Express decision xᵢ via optimal sequences for x_{i+1}…xₙ. (Relations formed forward are solved backward.)</dd>
+  <dt>Backward reasoning</dt><dd>Express decision xᵢ via optimal sequences for x₁…x_{i−1}.</dd>
+  <dt>0/1 knapsack (DP)</dt><dd><span class="sym">gᵢ(y)=max{ g_{i+1}(y), g_{i+1}(y−w_{i+1})+p_{i+1} }</span>; answer g₀(M).</dd>
+</dl>
+</section>
+
+<section><h2>Ch8 · NP-Completeness</h2>
+<dl>
+  <dt>P</dt><dd>Problems solvable by a <em>deterministic</em> polynomial-time algorithm.</dd>
+  <dt>NP</dt><dd><em>Decision</em> problems solvable by a <em>nondeterministic</em> polynomial algorithm = guess a certificate, <em>check</em> it in poly time.</dd>
+  <dt>Reduction <span class="sym">A → B</span></dt><dd>A solvable in poly time using a poly-time algorithm for B. "A is no harder than B."</dd>
+  <dt>NP-hard</dt><dd>Every NP problem reduces to it. (May not be in NP — e.g. the halting problem.)</dd>
+  <dt>NP-complete (NPC)</dt><dd>NP-hard <em>and</em> in NP. If any NPC problem ∈ P then P = NP.</dd>
+  <dt>Nondeterministic algorithm</dt><dd>Two phases: <span class="sym">choice()</span> guesses; then a deterministic check. NP if the check is polynomial.</dd>
+  <dt>Cook's theorem</dt><dd>SAT is NP-complete — the first one. Every NP problem reduces to SAT.</dd>
+  <dt>Decision vs optimization</dt><dd>Decision answers Yes/No ("is there a tour ≤ C?"). Solve optimization by binary-searching C with the decision algorithm.</dd>
+</dl>
+</section>
+
+</body>
+</html>

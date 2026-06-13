@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 10 — NP-Completeness II: The Reduction Chain</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 10 · Ch8 NP-Completeness II</div>
+<h1>The Reduction Chain</h1>
+<div class="mission">Exam goal: <strong>prove a problem is NP-complete</strong> and <strong>reproduce a reduction by hand</strong>. This is the highest-stakes proof/QA topic. The single win: lock in the 2-step recipe, memorize the reduction map, and be able to redraw the two cleanest constructions — <em>SAT → 3-SAT</em> and <em>sum of subsets → partition</em> — from scratch.</div>
+
+<h2>1 · What is all this? (start here)</h2>
+<p>This whole topic is about <strong>which problems are "hard"</strong> in a precise sense. A few plain-words definitions first — everything later is built on these, so don't skip them.</p>
+
+<p><strong>Decision problem:</strong> a problem whose answer is just <em>Yes</em> or <em>No</em> (e.g. "is there a tour shorter than 100?"), as opposed to an <em>optimization</em> problem that asks for the best value. The whole theory is about decision problems.</p>
+
+<p><strong>NP</strong> (informally): the class of decision problems where, <em>if</em> someone hands you a candidate answer, you can <strong>check</strong> it is correct in polynomial time (fast). You may not be able to <em>find</em> the answer quickly, but you can <em>verify</em> a proposed one. (Formally: a "guess a candidate, then check it quickly" algorithm.)</p>
+
+<p><strong>NP-complete (NPC):</strong> the <em>hardest</em> problems inside NP. Two conditions: (a) the problem is in NP (answers are checkable fast), and (b) it is <strong>NP-hard</strong> — <em>every</em> NP problem can be transformed into it. So if you ever found a fast algorithm for one NP-complete problem, you'd get a fast algorithm for <em>all</em> of NP. Nobody has, which is why these are considered intractable.</p>
+
+<div class="note"><strong>What is a reduction?</strong> A <strong>reduction A → B</strong> is a recipe that turns <em>any</em> instance of problem A into an instance of problem B in polynomial time, so that the <strong>Yes/No answer is preserved</strong> (the A-instance is a "Yes" exactly when the built B-instance is a "Yes"). Intuition: if you can solve B, you can solve A by translating and asking B — so <strong>B is at least as hard as A</strong>. Read the arrow as "A reduces to B" = "B is at least as hard as A."</div>
+
+<p><strong>Why "known NP-complete B reduces to A" makes A NP-complete.</strong> Suppose B is already known to be NP-complete (the hardest kind), and you exhibit a reduction <code>B → A</code>. That says A is at least as hard as B — and since B is at least as hard as <em>everything</em> in NP, so is A. That makes A NP-hard. If you <em>also</em> show A ∈ NP, then A is NP-hard <em>and</em> in NP = <strong>NP-complete</strong>. The two-step recipe below is exactly this.</p>
+
+<h2>2 · How to prove A is NP-complete</h2>
+<p>Two steps, always (slide 35):</p>
+<div class="tree">(I)  show  A ∈ NP        — give a nondeterministic poly-time
+                            algorithm (guess + poly-time check)
+(II) show  B → A         — pick a KNOWN NPC problem B and
+                            reduce it TO A  (B reduces to A)</div>
+<p>Recall the reduction arrow: <strong>B → A</strong> means "B can be solved using a poly-time algorithm for A as a subroutine," i.e. <strong>A is at least as hard as B</strong>.</p>
+<div class="note"><strong>Why this suffices:</strong> (II) shows A is at least as hard as an <em>already-hardest</em> problem B, so A is NP-hard. (I) places A inside NP. NP-hard + in NP = <strong>NP-complete</strong>. <br><br><strong>Direction trap (memorize):</strong> you reduce the <em>known</em> hard problem <strong>B → A</strong> (known → new). Reducing the other way (A → B) would only prove A is <em>easy</em>, not hard. Cook's theorem seeds the whole chain: every NP problem → SAT, so <strong>SAT is the first NPC problem</strong>.</div>
+
+<h2>3 · The reduction map</h2>
+<p>Every edge <code>X → Y</code> reads "<em>X reduces to Y</em>" and is used to prove <strong>Y is NPC given X is</strong>. Burn this picture in — it is gold for the exam.</p>
+<div class="tree">                     [ Cook's Theorem ]
+            every NP problem → SAT  (SAT = first NPC)
+                            │
+   ┌──────────┬────────────┼──────────────┬──────────────┐
+   v          v            v              v              v
+ 3-SAT     CLIQUE        SATY          DIRECTED        NODE COVER
+(SAT→3SAT)(SAT→clique) (≤3 lits)     HAMILTONIAN     (also clique→NC)
+              │           │           CYCLE
+              v           v          (SAT→dir.HC)
+          NODE COVER  CHROMATIC          │
+          (clique→NC)  NUMBER (CN)       v
+                          │            TSP (decision)
+                          v          (dir.HC → TSP)
+                     EXACT COVER
+                          │
+                          v
+                    SUM OF SUBSETS
+                          │
+                          v
+                      PARTITION
+                     /          \
+                    v            v
+              BIN PACKING    0/1 KNAPSACK
+                    │       (partition→knapsack)
+                    v
+              VLSI DISCRETE LAYOUT
+              (bin packing → VLSI)</div>
+<div class="note"><strong>Spine to recite:</strong> SAT → SATY → CN → exact cover → sum of subsets → <strong>partition</strong>, and from partition it branches to <strong>{bin packing → VLSI, 0/1 knapsack}</strong>. Separately SAT → 3-SAT; SAT → clique → node cover; SAT → directed Hamiltonian cycle → TSP.</div>
+
+<h2>4 · Meet SAT and 3-SAT</h2>
+<p>The first reduction is between two cousins, so define them before using them.</p>
+<p><strong>Literal:</strong> a variable or its negation — <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). <strong>Clause:</strong> a bunch of literals joined by OR (<code>∨</code>), e.g. <code>x₁ ∨ ¬x₂ ∨ x₃</code> — true if <em>any</em> of its literals is true. <strong>CNF (conjunctive normal form):</strong> several clauses joined by AND (<code>∧</code>) — true only if <em>every</em> clause is true.</p>
+<p><strong>SAT (satisfiability):</strong> given a CNF formula, is there a True/False assignment to the variables that makes the whole formula true? If yes it's <em>satisfiable</em>. By Cook's theorem SAT is the first NP-complete problem.</p>
+<div class="tree">tiny SAT instance:   (x₁ ∨ x₂ ∨ x₃) ∧ (¬x₁) ∧ (¬x₂)
+assignment x₁=F, x₂=F, x₃=T  →  every clause true  →  SATISFIABLE ✓</div>
+<p><strong>3-SAT:</strong> exactly the same question, but with the restriction that <strong>every clause has <em>exactly</em> three literals</strong>. So <code>(x₁ ∨ ¬x₂ ∨ x₃) ∧ (x₂ ∨ x₃ ∨ ¬x₄)</code> is a legal 3-SAT formula; a 2-literal or 4-literal clause is not.</p>
+
+<h2>5 · Reduction in detail — SAT → 3-SAT</h2>
+<p>We show 3-SAT is NP-complete by reducing SAT (known NPC) <strong>to</strong> it. <strong>(I)</strong> 3-SAT is in NP (it's a restricted SAT: guess an assignment, check in poly time). <strong>(II)</strong> SAT → 3-SAT by <strong>padding each clause with fresh variables</strong> <code>yᵢ</code> so it ends up with exactly 3 literals, splitting by the clause's current size:</p>
+<div class="tree">1 literal  L₁          → 4 clauses, 2 new vars (all 4 sign combos):
+   L₁ ∨  y₁ ∨  y₂
+   L₁ ∨ ¬y₁ ∨  y₂
+   L₁ ∨  y₁ ∨ ¬y₂
+   L₁ ∨ ¬y₁ ∨ ¬y₂
+
+2 literals L₁,L₂       → 2 clauses, 1 new var:
+   L₁ ∨ L₂ ∨  y₁
+   L₁ ∨ L₂ ∨ ¬y₁
+
+3 literals             → UNCHANGED
+
+k > 3 literals         → chain with k−3 new vars y₁…y_{k−3}:
+   L₁     ∨ L₂    ∨  y₁
+   L₃     ∨ ¬y₁   ∨  y₂
+   L₄     ∨ ¬y₂   ∨  y₃
+            ⋮
+   L_{k−1} ∨ Lₖ   ∨ ¬y_{k−3}</div>
+<p>Work the note's example before peeking. SAT instance: <code>x₁ ∨ x₂</code> &nbsp;·&nbsp; <code>¬x₃</code> &nbsp;·&nbsp; <code>x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅</code>.</p>
+<details><summary>The transformed 3-SAT instance (slide 39)</summary>
+<div class="tree"> x₁ ∨ x₂ ∨  y₁          (from the 2-literal clause)
+ x₁ ∨ x₂ ∨ ¬y₁
+
+¬x₃ ∨  y₂ ∨  y₃         (from the 1-literal clause ¬x₃)
+¬x₃ ∨ ¬y₂ ∨  y₃
+¬x₃ ∨  y₂ ∨ ¬y₃
+¬x₃ ∨ ¬y₂ ∨ ¬y₃
+
+ x₁ ∨ ¬x₂ ∨  y₄         (from the 5-literal clause, chained, k−3 = 2 new vars)
+ x₃ ∨ ¬y₄ ∨  y₅
+¬x₄ ∨  x₅ ∨ ¬y₅</div>
+</details>
+<details><summary>Why it works (correctness sketch)</summary>
+<p><strong>S satisfiable ⇔ S′ satisfiable.</strong></p>
+<p><strong>(⇒)</strong> Some original literal <code>Lᵢ = T</code>. In the k&gt;3 chain, set the chain y's <em>true for the clauses before Lᵢ's clause and false for those after</em> — then every padding clause is covered by a y except Lᵢ's own clause, which <code>Lᵢ = T</code> already satisfies. (1- and 2-literal cases: the true literal carries over and the fresh y's can be set freely.)</p>
+<p><strong>(⇐)</strong> A satisfying assignment of S′ <em>cannot</em> ride on the y's alone: resolving the chain on all the <code>yᵢ</code> cancels the padding and yields back <code>L₁ ∨ … ∨ Lₖ</code>, so at least one original <code>Lᵢ</code> must be true ⇒ S is satisfiable.</p>
+<p>Hence <strong>3-SAT is NP-complete</strong>.</p>
+</details>
+
+<h2>6 · Meet sum-of-subsets and partition</h2>
+<p>The second reduction is between two number problems. Define them first.</p>
+<p><strong>Sum-of-subsets:</strong> given a set of positive numbers <code>A = {a₁,…,aₙ}</code> and a target <code>C</code>, is there <em>some</em> subset of A whose numbers add up to exactly <code>C</code>?</p>
+<div class="tree">tiny instance:  A = {7, 5, 19, 1, 12, 8, 14},  C = 21
+subset {7, 14} sums to 21  →  YES ✓     (for C = 11, no subset works → NO)</div>
+<p><strong>Partition:</strong> given a set of positive numbers <code>A</code>, can you split it into two groups whose sums are <em>equal</em> (each group gets exactly half the total)?</p>
+<div class="tree">tiny instance:  A = {1, 3, 8, 4, 10}   (total 26)
+{1, 8, 4} = 13   and   {3, 10} = 13   →  equal halves  →  YES ✓</div>
+
+<h2>7 · Reduction in detail — Sum of subsets → Partition</h2>
+<p>We show partition is NP-complete by reducing sum-of-subsets (known NPC, upstream in the map) <strong>to</strong> it. <strong>(I)</strong> partition is in NP (guess the split, add up both sides, check equal). <strong>(II)</strong> sum-of-subsets → partition by adding <strong>two</strong> numbers (slide 56). Let <code>Tsum = Σ aᵢ</code>:</p>
+<div class="tree">bᵢ      = aᵢ                 for 1 ≤ i ≤ n
+b_{n+1} = C + 1
+b_{n+2} = Tsum + 1 − C
+
+B = A ∪ { C+1 ,  Tsum+1−C }
+Σ B = 2·Tsum + 2   ⇒  each side must sum to  Tsum + 1</div>
+<p>Try the correspondence yourself, then reveal.</p>
+<details><summary>The partition that matches a subset summing to C</summary>
+<p>A subset <code>S ⊆ A</code> with <code>Σ_S = C</code> exists <strong>iff</strong> B has a balanced partition:</p>
+<div class="tree">side 1:  S ∪ {b_{n+2}}     →  C + (Tsum+1−C) = Tsum + 1  ✓
+side 2: (A∖S) ∪ {b_{n+1}}  → (Tsum−C) + (C+1) = Tsum + 1  ✓</div>
+</details>
+<details><summary>Why C+1, not C? (slide 57)</summary>
+<p>The <code>+1</code> offsets <strong>force the two padding numbers onto different sides</strong>: <code>b_{n+1} + b_{n+2} = (C+1)+(Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they cannot both sit on one side. That pins the structure so a balanced partition of B corresponds <em>exactly</em> to a subset of A summing to C. With plain <code>C</code>, the two padding numbers could land together and break the correspondence.</p>
+</details>
+<div class="note"><strong>Map context:</strong> CN → exact cover → sum of subsets → partition is the chain that lands here, and SATY → CN supplies the construction upstream (a graph whose vertices are the literals <code>xᵢ, ¬xᵢ</code>, a <code>y₁…yₙ</code> palette clique, and a clause vertex per <code>cⱼ</code> joined to the literals <em>not</em> in it; satisfiable ⇔ <code>(n+1)</code>-colorable). We keep depth to the two reductions above — those are the cleanest to reproduce under exam pressure.</div>
+
+<h2 class="qa-head">8 · Retrieve (no peeking) <span class="score" id="score">0 / 6 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="1" data-explain="A clause with k &gt; 3 literals is padded by <b>chaining</b>: it becomes k−2 three-literal clauses linked by k−3 fresh variables y₁…y_{k−3}. Here k=6, so <b>3 new variables and 4 clauses</b>. If you picked <i>2 vars / 4 clauses</i> you used the 1-literal rule's count; if you picked <i>6 vars</i> you confused k with k−3.">
+  <div class="q">Q1. You apply the SAT → 3-SAT padding to one clause with 6 literals, <code>L₁ ∨ L₂ ∨ L₃ ∨ L₄ ∨ L₅ ∨ L₆</code>. How many new variables and how many 3-literal clauses does it produce?</div>
+  <button class="opt">2 new variables, 4 clauses</button>
+  <button class="opt">3 new variables, 4 clauses</button>
+  <button class="opt">6 new variables, 6 clauses</button>
+  <button class="opt">0 new variables, 1 clause</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="With Tsum = 4+5+6 = 15 and C = 9, the two added numbers are <b>b_{n+1} = C+1 = 10</b> and <b>b_{n+2} = Tsum+1−C = 7</b>. If you picked <i>9 and 6</i> you used C and Tsum−C (no +1 offset); if you picked <i>10 and 6</i> you added 1 to only one of them.">
+  <div class="q">Q2. Apply sum-of-subsets → partition to A = {4, 5, 6} with target C = 9. Which two numbers do you append to A to build the partition instance?</div>
+  <button class="opt">9 and 6</button>
+  <button class="opt">10 and 6</button>
+  <button class="opt">10 and 7</button>
+  <button class="opt">8 and 8</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Using <b>C+1</b> (not C) makes the two padding numbers sum to (C+1)+(Tsum+1−C) = Tsum+2, which exceeds one side's required Tsum+1 — so they <b>cannot both sit on the same side</b>, forcing them apart. With plain C they could land together and break the correspondence. The +1 is not about avoiding negatives (Tsum+1−C is already positive when C ≤ Tsum) nor about making ΣB even.">
+  <div class="q">Q3. In sum-of-subsets → partition we add C+1, not C. Why the +1?</div>
+  <button class="opt">To keep b_{n+2} = Tsum+1−C from going negative</button>
+  <button class="opt">To make the total Σ B come out even</button>
+  <button class="opt">It is arbitrary; using C works just as well</button>
+  <button class="opt">So the two padding numbers can't share a side, forcing them apart</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="To prove A is NP-complete you reduce a <b>known</b> NPC problem B <b>to</b> A: <b>B → A</b> (known → new). This shows A is at least as hard as B. Reducing <i>A → B</i> (the reversed direction) would only show A is no harder than B — i.e. that A is <i>easy</i>, not hard.">
+  <div class="q">Q4. "To prove A is NP-complete you reduce ___ → ___." Filling in B = a known NP-complete problem, the correct direction is:</div>
+  <button class="opt">B → A  (known → new)</button>
+  <button class="opt">A → B  (new → known)</button>
+  <button class="opt">A → every NP problem</button>
+  <button class="opt">B → every NP problem</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="A <b>1-literal</b> clause L₁ is padded into <b>4 clauses using 2 fresh variables</b> y₁,y₂ — one clause per sign combination of (±y₁, ±y₂). The 2-literal rule (2 clauses, 1 var) and the k&gt;3 chain (k−3 vars) are the cases people mix it up with.">
+  <div class="q">Q5. Apply the SAT → 3-SAT padding to a single-literal clause <code>¬x₃</code>. How many new variables and clauses does it become?</div>
+  <button class="opt">1 new variable, 2 clauses</button>
+  <button class="opt">0 new variables, 1 clause</button>
+  <button class="opt">2 new variables, 4 clauses</button>
+  <button class="opt">3 new variables, 4 clauses</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="<b>Cook's theorem</b>: every NP problem reduces to SAT, making SAT the <b>first</b> NP-complete problem and the seed of the whole reduction chain. (Lesson 9.) The halting problem is NP-hard but undecidable, so it is <i>not</i> in NP and not NP-complete.">
+  <div class="q">Q6. (Lesson 9 recall) Which problem is the first NP-complete problem, by Cook's theorem?</div>
+  <button class="opt">The clique problem</button>
+  <button class="opt">The partition problem</button>
+  <button class="opt">The satisfiability problem</button>
+  <button class="opt">The halting problem</button>
+  <div class="fb"></div>
+</div>
+
+<h2>9 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 (your <code>Alg08</code> slides, "The Theory of NP-Completeness," slides 35–57 for the proof recipe and the two reductions here). Cook's theorem is slide 20; the full reduction map covers slides 36–68.</p>
+<p>See the <a href="../reference/glossary.html">Glossary → Ch8</a> for one-line definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for all 13 reductions plus the SATY → CN edge set and worked colorings.</p>
+
+<div class="note"><strong>Next up — you've reached the last lesson.</strong> Now <em>interleave</em>: mix questions across all chapters in one sitting (a search trace, a branch-and-bound prune, a DP table, an NP-completeness proof) so the topics compete in memory — that's what the exam actually does. Then ask me for a <strong>mock exam</strong>: I'll assemble a timed, mixed-topic paper and grade your hand-traces and proofs.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to drill the SATY → CN coloring construction? Build the SAT → clique gadget? Or just fire off a mixed-topic mock exam? Just say so.</p>
+  <p>Score this lesson out of 6 to yourself. 5–6 → you're exam-ready on reductions. ≤4 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

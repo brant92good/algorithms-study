@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dijkstra's Shortest Path — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Greedy</div>
+<h1>Dijkstra's Shortest Path</h1>
+<div class="mission">Find the cheapest route from one node to every other node in a <strong>weighted graph</strong> — by always growing outward from the nearest node you haven't finished yet.</div>
+
+<h2>What is it?</h2>
+<p>A <strong>graph</strong> is a set of <strong>nodes</strong> (dots) joined by <strong>edges</strong> (lines). Here the graph is <strong>weighted</strong>: each edge carries a number — its <strong>cost</strong> or distance — and <strong>undirected</strong>, so you can walk an edge either way. The <strong>shortest path</strong> from a start node to some node is the route whose edge weights add up to the smallest total. (Fewest edges is <em>not</em> the same thing: three cheap hops can beat one expensive one.)</p>
+<p>Dijkstra's algorithm finds the shortest path from one <strong>source</strong> to <em>every</em> node. It keeps a <code>dist</code> value for each node — the best total cost found <em>so far</em> — starting at <code>0</code> for the source and <code>∞</code> for everything else. Two key moves:</p>
+<p><strong>Relax an edge (u, v) with weight w:</strong> check whether going through <code>u</code> beats what we already had for <code>v</code>. If <code>dist[u] + w &lt; dist[v]</code>, we found a cheaper way in, so lower <code>dist[v]</code> to <code>dist[u] + w</code>. Otherwise leave it.</p>
+<p><strong>Settle a node:</strong> among all nodes not yet finished, pick the one with the <em>smallest</em> <code>dist</code> (the greedy choice), mark it <strong>done</strong>, and relax all its edges. The invariant that makes this work: once a node is settled, its <code>dist</code> is its true shortest distance and can never improve again. Why? Every other route to it would have to leave through some farther, not-yet-settled node — and with non-negative weights, a longer start can only get longer.</p>
+
+<h2>Watch it run</h2>
+<p>Source = <strong>S</strong>. The badge on each node is its current best distance (<code>∞</code> = not reached yet). Green = settled (final). Gold edges are the ones we just relaxed. Step until <strong>T</strong> is settled.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O((V+E) log V)</b></span>
+  <span class="chip">Space: <b>O(V)</b></span>
+  <span class="chip">Needs: <b>non-negative weights</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="To relax edge (u,v) you ask: is the path through u cheaper than what v already has? Only if dist[u]+w &lt; dist[v] do you lower dist[v] to dist[u]+w. It never raises a distance, and it never blindly overwrites — it keeps the smaller of the two.">
+  <div class="q">Node <code>u</code> has <code>dist[u] = 4</code>, node <code>v</code> has <code>dist[v] = 10</code>, and edge <code>(u,v)</code> has weight <code>3</code>. What does relaxing edge <code>(u,v)</code> do?</div>
+  <button class="opt">leaves dist[v] at 10 since v is already reachable</button>
+  <button class="opt">sets dist[v] to 7 because 4 + 3 is cheaper than 10</button>
+  <button class="opt">sets dist[v] to 3, the edge weight</button>
+  <button class="opt">sets dist[u] to 13 because 10 + 3 is a new path</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Dijkstra settles the nearest node and assumes its distance is final. A negative edge can make a longer-looking route actually cheaper, reached only through a node settled earlier — so the 'settled = final' invariant breaks. Non-negative weights guarantee a longer prefix can never shrink later.">
+  <div class="q">Why can Dijkstra give a wrong answer if some edge weights are negative?</div>
+  <button class="opt">negative numbers can't be stored as distances</button>
+  <button class="opt">the priority queue can't order negative values</button>
+  <button class="opt">an already-settled node could later be reached more cheaply, breaking the 'final once settled' rule</button>
+  <button class="opt">the graph would have to be directed instead of undirected</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="gr-dijkstra">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Chapter 24 (Single-Source Shortest Paths) — Section 24.3 covers Dijkstra's algorithm and the proof that the greedy settle order is correct for non-negative weights.</p>
+<div class="note"><strong>Next in this bucket:</strong> on to <strong>Dynamic Programming</strong> — where instead of one greedy choice we build optimal answers up from overlapping subproblems.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// Undirected weighted graph
+const nodes = [
+  {id:'S', x:8,  y:50},
+  {id:'A', x:38, y:18},
+  {id:'B', x:38, y:82},
+  {id:'C', x:68, y:30},
+  {id:'D', x:68, y:72},
+  {id:'T', x:92, y:50},
+];
+const edges = [
+  {u:'S', v:'A', w:2}, {u:'S', v:'B', w:4}, {u:'A', v:'B', w:1},
+  {u:'A', v:'C', w:3}, {u:'B', v:'D', w:5}, {u:'C', v:'D', w:2},
+  {u:'C', v:'T', w:6}, {u:'D', v:'T', w:2},
+];
+const adj = {};
+nodes.forEach(n => adj[n.id] = []);
+edges.forEach(e => { adj[e.u].push([e.v, e.w]); adj[e.v].push([e.u, e.w]); });
+
+const INF = Infinity;
+const fmt = d => d === INF ? '∞' : d;
+
+// precompute Dijkstra frames
+const frames = [];
+const dist = {}; nodes.forEach(n => dist[n.id] = INF);
+dist['S'] = 0;
+const done = {};
+const snapBadge = () => { const b = {}; for (const k in dist) b[k] = fmt(dist[k]); return b; };
+
+frames.push({
+  badge: snapBadge(), done: {}, act: null, relaxEdges: [],
+  cap: `Initialise: dist[S] = 0, every other node = ∞. Nothing settled yet.`
+});
+
+while (true) {
+  // greedy: smallest dist among unsettled
+  let pick = null;
+  for (const n of nodes) {
+    if (!done[n.id] && dist[n.id] < INF && (pick === null || dist[n.id] < dist[pick])) pick = n.id;
+  }
+  if (pick === null) break;
+  done[pick] = true;
+  // relax neighbours
+  const relaxed = [];
+  for (const [v, w] of adj[pick]) {
+    if (done[v]) continue;
+    if (dist[pick] + w < dist[v]) { dist[v] = dist[pick] + w; relaxed.push(pick + '-' + v); }
+  }
+  const doneList = Object.keys(done).filter(k => done[k]);
+  let cap;
+  if (relaxed.length) {
+    const parts = relaxed.map(e => { const v = e.split('-')[1]; return `${v}=${dist[v]}`; });
+    cap = `Smallest unsettled distance is <b>${pick}</b> (${dist[pick]}) → settle it. Relax its edges: ${parts.join(', ')}.`;
+  } else {
+    cap = `Smallest unsettled distance is <b>${pick}</b> (${dist[pick]}) → settle it. No neighbour improves.`;
+  }
+  if (pick === 'T') cap = `Settle <b>T</b> (9) — the target. Its distance is final, so we can stop. Shortest S→T = 9 (path S-A-C-D-T).`;
+  frames.push({
+    badge: snapBadge(), done: Object.assign({}, done), act: pick, relaxEdges: relaxed, cap
+  });
+  if (pick === 'T') break;
+}
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const node = {}, edge = {}, badge = f.badge;
+    for (const k in f.done) if (f.done[k]) node[k] = 'done';
+    if (f.act) node[f.act] = 'act';
+    f.relaxEdges.forEach(e => edge[e] = 'act');
+    stage.innerHTML = ZOO.graph({nodes, edges}, {node, edge, badge});
+  }
+});
+</script>
+</body></html>

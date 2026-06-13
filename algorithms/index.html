@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">One algorithm per session · step through each one</div>
+    <h1>🧬 Algorithm Zoo</h1>
+    <p class="lede">A guided tour of the classic algorithms, grouped by the <em>idea</em> behind them. Each card is a 3-minute interactive session: see what it does, watch it run step by step, answer two questions, mark it learned.</p>
+    <div class="progwrap"><div class="bar"></div></div>
+    <div class="countdown" id="prog-count">0 / 0 learned</div>
+  </div>
+
+  <div class="bucket">
+    <h2>🪓 Divide &amp; Conquer <span class="tagline">— split the problem, solve the pieces, combine</span></h2>
+    <div class="zgrid">
+      <a class="algo" data-id="dc-binary-search" href="dc-binary-search.html"><span class="tick">✓</span><div class="t">Binary Search</div><div class="d">Halve a sorted range each step → O(log n).</div></a>
+      <a class="algo" data-id="dc-merge-sort" href="dc-merge-sort.html"><span class="tick">✓</span><div class="t">Merge Sort</div><div class="d">Split in half, sort each, merge back → O(n log n).</div></a>
+      <a class="algo" data-id="dc-quicksort" href="dc-quicksort.html"><span class="tick">✓</span><div class="t">Quicksort</div><div class="d">Partition around a pivot, recurse on each side.</div></a>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <h2>🤑 Greedy <span class="tagline">— take the locally best choice and never look back</span></h2>
+    <div class="zgrid">
+      <a class="algo" data-id="gr-huffman" href="gr-huffman.html"><span class="tick">✓</span><div class="t">Huffman Coding</div><div class="d">Merge the two rarest symbols repeatedly → optimal prefix code.</div></a>
+      <a class="algo" data-id="gr-kruskal-mst" href="gr-kruskal-mst.html"><span class="tick">✓</span><div class="t">Kruskal's MST</div><div class="d">Add the cheapest edge that doesn't make a cycle.</div></a>
+      <a class="algo" data-id="gr-dijkstra" href="gr-dijkstra.html"><span class="tick">✓</span><div class="t">Dijkstra</div><div class="d">Settle the nearest unvisited node, relax its edges.</div></a>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <h2>🧩 Dynamic Programming <span class="tagline">— solve small subproblems once, reuse them</span></h2>
+    <div class="zgrid">
+      <a class="algo" data-id="dp-fibonacci-memo" href="dp-fibonacci-memo.html"><span class="tick">✓</span><div class="t">Fibonacci &amp; Memoization</div><div class="d">Cache subresults → exponential becomes linear.</div></a>
+      <a class="algo" data-id="dp-knapsack01" href="dp-knapsack01.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Fill a value table over items × capacity.</div></a>
+      <a class="algo" data-id="dp-edit-distance" href="dp-edit-distance.html"><span class="tick">✓</span><div class="t">Edit Distance</div><div class="d">Cheapest edits to turn one string into another.</div></a>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <h2>🕸️ Graph Traversal <span class="tagline">— systematically visit every node</span></h2>
+    <div class="zgrid">
+      <a class="algo" data-id="gt-bfs" href="gt-bfs.html"><span class="tick">✓</span><div class="t">Breadth-First Search</div><div class="d">Explore level by level with a queue.</div></a>
+      <a class="algo" data-id="gt-dfs" href="gt-dfs.html"><span class="tick">✓</span><div class="t">Depth-First Search</div><div class="d">Dive deep with a stack, backtrack on dead ends.</div></a>
+      <a class="algo" data-id="gt-topo-sort" href="gt-topo-sort.html"><span class="tick">✓</span><div class="t">Topological Sort</div><div class="d">Order a DAG by repeatedly removing in-degree-0 nodes.</div></a>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <h2>🔙 Backtracking <span class="tagline">— build a candidate, abandon it the moment it fails</span></h2>
+    <div class="zgrid">
+      <a class="algo" data-id="bt-n-queens" href="bt-n-queens.html"><span class="tick">✓</span><div class="t">N-Queens</div><div class="d">Place queens row by row; retreat on a conflict.</div></a>
+      <a class="algo" data-id="bt-subset-sum" href="bt-subset-sum.html"><span class="tick">✓</span><div class="t">Subset Sum</div><div class="d">In/out decisions down a tree, prune when over target.</div></a>
+      <a class="algo" data-id="bt-permutations" href="bt-permutations.html"><span class="tick">✓</span><div class="t">Permutations</div><div class="d">Fix one element at a time; recurse on the rest.</div></a>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:2rem"><strong>How to use:</strong> pick any bucket — order doesn't matter. Do one card, step the animation to the end, take the two questions. Your "learned" ticks are saved on this device and fill the bar above. These complement the deeper <a href="../index.html#lessons">finals lessons</a>; the Zoo is for breadth, the lessons for depth.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+</body></html>

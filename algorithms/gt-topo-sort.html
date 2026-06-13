@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topological Sort — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">Graph Traversal</div>
+<h1>Topological Sort</h1>
+<div class="mission">Order tasks so every job comes <strong>after</strong> the things it depends on — using Kahn's algorithm and the "in-degree 0" rule.</div>
+
+<h2>What is it?</h2>
+<p>A <strong>graph</strong> is a set of <em>nodes</em> (dots) joined by <em>edges</em> (lines). When the edges have a direction — an arrow from <code>u</code> to <code>v</code> — we call it a <strong>directed</strong> graph. If you can never follow the arrows in a loop back to where you started, it has no cycles: it's a <strong>DAG</strong> (Directed Acyclic Graph).</p>
+<p>Think of <strong>course prerequisites</strong>: an arrow <code>A→C</code> means "you must finish A before you can take C". A <strong>topological order</strong> is a single line-up of all the courses such that <em>every arrow points forward</em> — you never take a course before something it requires. The same idea drives <strong>build systems</strong> (compile a library before the program that uses it) and <strong>task scheduling</strong>.</p>
+<p>The key quantity is a node's <strong>in-degree</strong>: how many arrows point <em>into</em> it — i.e. how many unfinished prerequisites it still has. <strong>Kahn's algorithm</strong>: any node with <strong>in-degree 0</strong> has no remaining prerequisites, so it's safe to do now. Output it, then "remove" it by decrementing the in-degree of every node it pointed to. That may free up new in-degree-0 nodes. Repeat until every node is placed.</p>
+<p>Tiny example: with arrows <code>A→C</code> and <code>B→C</code>, both A and B start at in-degree 0 (do either first); only after both are done does C drop to 0.</p>
+
+<h2>Watch it run</h2>
+<p>DAG below — arrows are prerequisites (<code>A→C</code> means A before C). The <strong>badge</strong> on each node is its current in-degree. Each step we pick a node showing <strong>0</strong>, mark it green (done), append it to the output order, and decrease its successors' badges.</p>
+<div id="viz"></div>
+
+<div class="chips">
+  <span class="chip">Time: <b>O(V + E)</b></span>
+  <span class="chip">Space: <b>O(V)</b></span>
+  <span class="chip">Needs: <b>a DAG (no cycles)</b></span>
+</div>
+
+<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+
+<div class="quiz" data-correct="1" data-explain="Kahn's algorithm only ever outputs a node whose in-degree has hit 0. In a cycle X→Y→Z→X, each node keeps an incoming edge from another cycle member, so none can reach 0 — the algorithm stalls with nodes left over. That stall is exactly how you detect a cycle, and it's why only DAGs have a topological order.">
+  <div class="q">Three tasks form a loop: X→Y, Y→Z, and Z→X. What happens when you run Kahn's algorithm on them?</div>
+  <button class="opt">it outputs X, Y, Z in that order</button>
+  <button class="opt">no node ever reaches in-degree 0, so none can be output</button>
+  <button class="opt">it outputs them in reverse: Z, Y, X</button>
+  <button class="opt">it picks an arbitrary starting node and continues normally</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="In-degree counts the arrows still pointing into a node, i.e. its unfinished prerequisites. In-degree 0 means nothing must come before it now, so it's safe to do immediately. It says nothing about outgoing arrows (a 0-in-degree node can still point to many others) or about the total number of nodes.">
+  <div class="q">During the run, node D shows a badge of 0. What does that tell you about D right now?</div>
+  <button class="opt">all of D's prerequisites are already done, so D can be taken next</button>
+  <button class="opt">D has no outgoing edges and is therefore a final task</button>
+  <button class="opt">D depends on every other remaining node</button>
+  <button class="opt">D must be the very last node in any valid order</button>
+  <div class="fb"></div>
+</div>
+
+<div class="learned-row">
+  <button class="learnbtn" data-learn="gt-topo-sort">Mark as learned</button>
+  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+</div>
+
+<h2>Go deeper</h2>
+<p><strong>Primary source:</strong> CLRS, <em>Introduction to Algorithms</em>, Chapter 22 (Elementary Graph Algorithms) — topological sort. Kahn's in-degree method is the standard alternative to the DFS-finish-time approach; both run in O(V+E).</p>
+<div class="note"><strong>Next in this bucket:</strong> Backtracking — build a solution one choice at a time and undo (backtrack) the moment a choice can't lead anywhere valid.</div>
+
+</div>
+<script src="../assets/zoo.js"></script>
+<script>
+// DAG: course prerequisites. Edges u→v means u before v.
+const nodes = [
+  {id:'A', x:15, y:30}, {id:'B', x:15, y:70}, {id:'C', x:45, y:50},
+  {id:'D', x:78, y:28}, {id:'E', x:78, y:72}
+];
+const edges = [
+  {u:'A', v:'C', dir:true}, {u:'B', v:'C', dir:true},
+  {u:'C', v:'D', dir:true}, {u:'C', v:'E', dir:true},
+  {u:'A', v:'D', dir:true}
+];
+// successors per node
+const succ = {A:['C','D'], B:['C'], C:['D','E'], D:[], E:[]};
+
+// --- run Kahn's algorithm, recording a frame per state ---
+const frames = [];
+const indeg = {A:0, B:0, C:0, D:0, E:0};
+edges.forEach(e => indeg[e.v]++);   // A0 B0 C2 D2 E1
+const done = [];      // nodes finished, in output order
+let order = [];       // output order so far
+
+const snap = (cap, picked) => frames.push({
+  indeg: Object.assign({}, indeg),
+  done: done.slice(),
+  order: order.slice(),
+  picked,
+  cap
+});
+
+snap('Start. Badges show each node’s <b>in-degree</b> (unfinished prerequisites). A and B are at <b>0</b> — no prerequisites.', null);
+
+// Kahn's: at each step pick the available 0-in-degree node with smallest id (deterministic = A,B,C,D,E)
+const remaining = () => nodes.map(n => n.id).filter(id => !done.includes(id));
+while (done.length < nodes.length) {
+  const ready = remaining().filter(id => indeg[id] === 0).sort();
+  if (!ready.length) break;            // would mean a cycle
+  const pick = ready[0];
+  done.push(pick); order.push(pick);
+  // decrement successors
+  succ[pick].forEach(v => { indeg[v]--; });
+  const others = ready.slice(1);
+  let cap = `<b>${pick}</b> has in-degree 0 → output it (it’s done). `;
+  if (succ[pick].length) cap += `Decrement its successors: ${succ[pick].map(v=>v+'→'+indeg[v]).join(', ')}. `;
+  else cap += `It has no successors. `;
+  if (others.length) cap += `(${others.join(', ')} also ready.)`;
+  snap(cap, pick);
+}
+frames[frames.length-1].cap = `<b>${order[order.length-1]}</b> output last. All nodes placed — valid topological order: <b>${order.join(', ')}</b>. Every arrow points forward.`;
+
+ZOO.stepper({
+  mount: '#viz', frames,
+  caption: f => f.cap,
+  render: (f, stage) => {
+    const node = {}, badge = {};
+    nodes.forEach(n => {
+      if (f.done.includes(n.id)) node[n.id] = 'done';
+      else if (f.indeg[n.id] === 0) node[n.id] = 'frontier';  // ready to pick
+      if (f.picked === n.id && !(f.done.includes(n.id))) node[n.id] = 'act';
+      badge[n.id] = f.indeg[n.id];
+    });
+    if (f.picked) node[f.picked] = 'act';
+    stage.innerHTML =
+      ZOO.graph({nodes, edges}, {node, badge}) +
+      ZOO.lane('Output order', f.order);
+  }
+});
+</script>
+</body></html>

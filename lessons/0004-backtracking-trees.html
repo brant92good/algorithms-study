@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 4 — Backtracking on Solution Trees</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 4 · Ch6 Searching Strategies</div>
+<h1>Backtracking on Solution Trees</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> the three classic Ch6 feasibility problems — SAT, sum-of-subsets, Hamiltonian circuit — as a walk over a solution tree. Lesson 1 gave you the abstract knob; here you turn it on real instances. The tangible win: draw the tree, prune dead subtrees, and read off the answer.</div>
+
+<h2>0 · What are these problems?</h2>
+<p>Before any tree-drawing, here are the four ideas this lesson rests on — assume you have never met them.</p>
+
+<p><strong>Backtracking.</strong> A way to search for a solution by <em>building a candidate one piece at a time</em>. Picture the choices as a tree: the root has chosen nothing, and each step down adds one more decision. You walk down a branch, and <strong>the moment a partial choice can no longer lead to a valid solution you abandon that branch</strong> — retreat back up and try the next option. That retreat is the "backtrack." It saves you from finishing candidates you already know are doomed.</p>
+
+<p><strong>The Satisfiability problem (SAT).</strong> You are given a <strong>Boolean formula</strong> — a logic expression whose variables are each either <code>true</code> or <code>false</code> — and asked: is there a way to set the variables that makes the whole formula true? Some vocabulary, defined once and used throughout:</p>
+<table>
+<tr><th>Term</th><th>Plain meaning</th><th>Example</th></tr>
+<tr><td><strong>literal</strong></td><td>a variable, or its negation (NOT)</td><td><code>x₁</code> or <code>¬x₁</code></td></tr>
+<tr><td><strong>clause</strong></td><td>an OR of literals — true if <em>any one</em> literal in it is true</td><td><code>x₂ ∨ x₅</code></td></tr>
+<tr><td><strong>CNF</strong></td><td>(conjunctive normal form) an AND of clauses — true only if <em>every</em> clause is true</td><td><code>(x₂ ∨ x₅) ∧ x₃</code></td></tr>
+<tr><td><strong>satisfiable</strong></td><td>some assignment of true/false makes the whole formula true</td><td>see below</td></tr>
+</table>
+<p>Tiny example: the CNF formula <code>(x₁ ∨ x₂) ∧ (¬x₁)</code> is <strong>satisfiable</strong> — set <code>x₁ = false, x₂ = true</code> and both clauses hold. By contrast <code>(x₁) ∧ (¬x₁)</code> is <strong>unsatisfiable</strong>: no value of <code>x₁</code> can make both clauses true at once.</p>
+
+<p><strong>The sum-of-subsets problem.</strong> Given a set of numbers and a <em>target</em>, is there a subset whose elements add up to <em>exactly</em> the target? Tiny example: from <code>{3, 5, 8}</code> with target <code>11</code>, the subset <code>{3, 8}</code> works (<code>3 + 8 = 11</code>); with target <code>4</code>, no subset hits it.</p>
+
+<p><strong>The Hamiltonian circuit problem.</strong> A <strong>Hamiltonian circuit</strong> is a cycle in a graph that visits <em>every vertex exactly once</em> and returns to where it started. The question: does a given graph contain one? Do not confuse it with an <strong>Euler circuit</strong>, which is a cycle that uses <em>every edge exactly once</em> (vertices may be revisited). The classic trap is swapping the two:</p>
+<div class="note"><strong>Hamiltonian = every <u>vertex</u> once. Euler = every <u>edge</u> once.</strong> In a square <code>a-b-c-d-a</code>, going round the rim <code>a→b→c→d→a</code> is <em>both</em> — but add a diagonal <code>a-c</code> and the rim is still Hamiltonian (all 4 corners once) yet no longer Euler (the diagonal edge is never used).</p></div>
+
+<div class="note"><strong>Why one technique fits all three:</strong> each asks "does <em>a</em> valid candidate exist?" (a <em>feasibility</em> question, not "find the cheapest"). Each candidate is built choice by choice, so each is a walk down a tree — exactly what backtracking searches, abandoning doomed branches early.</div>
+
+<h2>1 · The same tree, three disguises</h2>
+<p>Every problem below becomes a <strong>solution tree</strong>: the root decides nothing, each level fixes one more choice, each leaf is a full candidate. We walk it <strong>depth-first</strong> (deepest open node first → a <code>stack</code>, from Lesson 1) and <strong>backtrack</strong> — pop and retreat — the instant a partial choice can no longer succeed. That early abandon is <em>pruning</em>: skip a whole subtree without examining its leaves.</p>
+<table>
+<tr><th>Problem</th><th>Each level decides…</th><th>Prune when…</th></tr>
+<tr><td><strong>SAT</strong></td><td><code>xᵢ = T</code> or <code>xᵢ = F</code></td><td>a clause is already falsified</td></tr>
+<tr><td><strong>Sum-of-subsets</strong></td><td>element <code>i</code> in or out</td><td>partial sum exceeds target</td></tr>
+<tr><td><strong>Hamiltonian</strong></td><td>which vertex to visit next</td><td>vertex reused / no edge / dead end</td></tr>
+</table>
+<div class="note"><strong>Key exam idea:</strong> these are <em>feasibility</em> problems — we want <em>a</em> solution (or "none exists"), so DFS stops at the first goal leaf. Pruning is what makes the <code>2ⁿ</code>-leaf tree tractable: <strong>you may never need to examine all 2ⁿ assignments.</strong></p></div>
+
+<h2>2 · SAT: a depth-n binary tree</h2>
+<p>Given a Boolean formula in <code>n</code> variables, there are <code>2ⁿ</code> truth assignments — a complete <strong>binary tree of depth n</strong>, branching <code>xᵢ = T</code> / <code>xᵢ = F</code> at level <code>i</code>. For <code>n = 3</code>, that is <code>2³ = 8</code> leaves.</p>
+<div class="tree">                    (root)
+          X1=T /              \ X1=F
+          ( )                  ( )
+      X2=T/  \X2=F         X2=T/  \X2=F
+     ( )      ( )         ( )      ( )
+   X3=T/\X3=F …          …        …      &larr; 8 leaves at depth 3</div>
+<p>The slide instance (clauses that must <em>all</em> hold; <code>¬</code> = NOT, <code>∨</code> = OR):</p>
+<div class="tree">(1) ¬x₁        (4)  x₃
+(2)  x₁        (5) ¬x₂
+(3)  x₂ ∨ x₅</div>
+<p>Walk the tree and prune the moment any clause is violated. At the very first level we already hit a wall:</p>
+
+<details><summary>Trace the root's two branches</summary>
+<p>Branch <code>x₁ = T</code> → clause (1) <code>¬x₁</code> is <strong>falsified</strong> → prune that whole subtree.<br>
+Branch <code>x₁ = F</code> → clause (2) <code>x₁</code> is <strong>falsified</strong> → prune that subtree too.<br>
+Both children of the root die immediately because clauses (1) and (2) directly contradict. So this instance is <strong>unsatisfiable</strong> — proven by pruning at depth 1, without ever building the other <code>2³ − 2</code> nodes. That is the whole point: <em>a partial assignment can already reveal a contradiction.</em></p></details>
+
+<h2>3 · Sum-of-subsets by DFS</h2>
+<p><code>S = {7, 5, 1, 2, 10}</code>, target <code>= 9</code>. Binary tree: at level <code>i</code> decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong>. A <strong>stack</strong> guides the DFS (push children, pop to backtrack). <strong>Prune when the running sum exceeds 9.</strong> Node labels below are the running sum; <code>x</code> = pruned (over target).</p>
+<div class="tree">                0
+         X1=7 /
+            7
+   X2=5 /  X2=1 \  X2=2 \
+    12(x)    8        9  ← Goal (7+2=9)
+          X3=2/ X3=10\
+           10(x)    18(x)</div>
+<p>Decide the answer subset yourself before opening it.</p>
+<details><summary>DFS trace and the answer</summary>
+<p>Push root <code>0</code>. Take <code>x₁ = 7</code> → sum <code>7</code>. From <code>7</code>, try <code>x₂ = 5</code> → <code>12 &gt; 9</code> → <strong>prune, pop</strong>. Try <code>x₂ = 1</code> → <code>8</code>; from <code>8</code>, <code>x₃ = 2 → 10 (x)</code> and <code>x₃ = 10 → 18 (x)</code>, both over → backtrack. Try <code>x₂ = 2</code> → <code>7 + 2 = 9</code> = target → <strong>goal node</strong>.<br>
+Answer subset: <code>{7, 2}</code>. The stack's LIFO order is exactly what makes the search dive down the <code>7</code> branch fully, then retreat.</p></details>
+
+<h2>4 · Hamiltonian circuit</h2>
+<p>A <strong>Hamiltonian circuit</strong> visits <em>every</em> vertex exactly once and returns to the start. Tree: each level chooses the next vertex to visit; a root-to-leaf path of length <code>n</code> that reuses no vertex and <strong>closes back to the start</strong> is a Hamiltonian circuit (Fig. 6-8). The example graph (Fig. 6-6, vertices 1–7) — adjacency you can walk by hand:</p>
+<div class="tree">edges: 1-2  1-6  1-3  2-3
+       6-5  7-5  7-4  3-4  4-5
+
+vertex 1 → 2, 6, 3
+vertex 2 → 1, 3
+vertex 3 → 1, 2, 4
+vertex 4 → 7, 3, 5
+vertex 5 → 6, 7, 4
+vertex 6 → 1, 5
+vertex 7 → 5, 4</div>
+<p>Root the search at vertex <code>1</code>; extend partial paths, mark dead ends <code>X</code>, backtrack on failure (children left→right). This is <strong>Fig. 6-8</strong>, the full search tree — node labels are the vertices visited, and every doomed branch is marked <code>X</code>:</p>
+<img src="../render/A05/png_002.png" alt="Fig. 6-8 — search tree for a Hamiltonian circuit of the Fig. 6-6 graph, rooted at vertex 1; dead-end branches marked X" style="background:#fff;padding:.5rem;width:100%;border:1px solid var(--rule);border-radius:6px">
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.3rem">Fig. 6-8 — Search tree for a Hamiltonian circuit of the Fig. 6-6 graph. Each path from the root (vertex 1) down chooses the next vertex; branches that reuse a vertex or hit a missing edge dead-end at <code>X</code>; the two branches that reach a leaf <code>1</code> close the cycle.</p>
+<details><summary>Which leaves are Hamiltonian circuits?</summary>
+<p>Two root-to-leaf paths visit all 7 vertices once and close back to <code>1</code> (the two leaf nodes labeled <code>1</code> in Fig. 6-8): <code>1-2-3-4-5-7-…</code> down the left subtree closing at <code>6-1</code>, and <code>1-6-5-7-4-3-2-1</code> down the middle subtree. They are the same cycle traversed in opposite directions. Every other branch ends in <code>X</code> — a reused vertex, a missing edge, or a dead end with vertices still unvisited. Because this is feasibility, finding <em>one</em> closing path answers "yes, a Hamiltonian circuit exists." No edge weights appear: Hamiltonicity is feasibility, not optimization.</p></details>
+
+<h2 class="qa-head">5 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="2" data-explain="DFS on <code>S = {7,5,1,2,10}</code>, target 9, dives the 7-branch first. From running sum 7 it tries x₂=5 → <b>12 &gt; 9</b>, so it backtracks here. Next x₂=1 → 8, whose children 10 and 18 also exceed 9, then x₂=2 → <b>7+2 = 9</b> = goal. If you picked the 8-node you forgot DFS goes left-to-right and hits 12 first; if you picked the 9-node that's the <i>goal</i>, not a backtrack.">
+  <div class="q">Q1. Sum-of-subsets on S = {7,5,1,2,10}, target 9. DFS takes element 7 first (sum 7), then tries the elements in order. At which running sum does it FIRST backtrack?</div>
+  <button class="opt">at 8 (after adding 1)</button>
+  <button class="opt">at 9 (after adding 2)</button>
+  <button class="opt">at 12 (after adding 5)</button>
+  <button class="opt">at 10 (after adding 1 then 2)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="You prune the instant a <b>partial</b> assignment <b>falsifies any single clause</b> — no extension can revive that clause, so the whole subtree is dead. Waiting until a full leaf (a complete assignment) throws away the entire benefit of search: you'd build all 2ⁿ leaves. The depth-n / leaf-only options are exactly that mistake.">
+  <div class="q">Q2. In SAT search, when is a subtree pruned (abandoned)?</div>
+  <button class="opt">only once the path reaches a full leaf at depth n</button>
+  <button class="opt">as soon as the partial assignment falsifies any one clause</button>
+  <button class="opt">only when both of a node's children are leaves</button>
+  <button class="opt">when the number of true variables exceeds n/2</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Clause (1) <code>¬x₁</code> needs x₁=F; clause (2) <code>x₁</code> needs x₁=T. They contradict, so <b>at depth 1</b> either choice of x₁ already falsifies a clause — the whole tree is pruned and the formula is unsatisfiable. If you said depth 3 you waited for a full assignment; depth 2 forgets that clause (2) is just <code>x₁</code> alone, deciding the issue at level 1.">
+  <div class="q">Q3. Clauses: (1) ¬x₁, (2) x₁, (3) x₂∨x₅, (4) x₃, (5) ¬x₂. Branching x₁ first, then x₂, then x₃, at what depth is EVERY subtree first pruned?</div>
+  <button class="opt">depth 3 — only at the full leaves</button>
+  <button class="opt">depth 2 — after fixing x₁ and x₂</button>
+  <button class="opt">never — the formula is satisfiable</button>
+  <button class="opt">depth 1 — right after fixing x₁</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="A <b>Hamiltonian</b> circuit visits every <b>vertex</b> exactly once and returns to the start. Option B is the <b>Euler</b> circuit — every <b>edge</b> exactly once; swapping vertex/edge is the classic trap. Minimum edge weight is TSP/optimization, but Hamiltonicity is pure feasibility (no weights).">
+  <div class="q">Q4. A root-to-leaf path in the Hamiltonian search tree counts as a solution when it…</div>
+  <button class="opt">visits every vertex exactly once and closes back to the start</button>
+  <button class="opt">traverses every edge of the graph exactly once and returns</button>
+  <button class="opt">forms the closed walk of minimum total edge weight</button>
+  <button class="opt">visits every vertex, allowing repeats, until it returns home</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="Each variable adds one level (x_i = T or F), so n decisions give a binary tree of <b>depth n</b> with <b>2ⁿ leaves</b>. The trap is reading the leaf count as the depth: 2ⁿ is how many leaves there are, n is how deep you go to reach one.">
+  <div class="q">Q5. A SAT formula has n variables. How deep is its solution tree, and how many leaves does it have?</div>
+  <button class="opt">depth 2ⁿ, with n leaves</button>
+  <button class="opt">depth n, with 2ⁿ leaves</button>
+  <button class="opt">depth n, with n² leaves</button>
+  <button class="opt">depth log₂ n, with n leaves</button>
+  <div class="fb"></div>
+</div>
+
+<h2>6 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §§ on the satisfiability, Hamiltonian circuit, and sum-of-subsets problems and depth-first search (your <code>Alg05</code> slides, "The Searching Strategies"). Re-draw the SAT 2ⁿ tree, Fig. 6-8 (Hamiltonian), and Fig. 6-11 (sum-of-subsets DFS) from scratch and prune them by hand.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> and the <a href="../notes-html/A05-searching-strategies.html">full chapter note</a> for the verified figures and edge lists.</p>
+
+<div class="note"><strong>Next up — Lesson 5:</strong> Prune-and-Search — linear-time selection by <em>median of medians</em>. We leave feasibility trees behind and shrink the input itself: pick a pivot so good that a constant fraction of elements is thrown away each round, giving worst-case <code>O(n)</code> selection.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want the full Fig. 6-8 tree with every X explained? A bigger sum-of-subsets instance to trace? The BFS (queue) version of the same tree? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 5. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

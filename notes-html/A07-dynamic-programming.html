@@ -1,0 +1,715 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch7 · Dynamic Programming — Algo Finals</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Algo Finals</a>
+  <a class="crumb" href="../index.html#notes">Notes</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+<h1 id="chapter-7-dynamic-programming">Chapter 7 — Dynamic Programming</h1>
+<h2 id="overview">Overview</h2>
+<p><strong>Dynamic Programming (DP)</strong> is an algorithm-design method used when the solution to a problem can be viewed as <strong>the result of a sequence of decisions</strong>. Instead of committing to a locally best choice at every step (as the greedy method does), DP records the optimal values of subproblems and combines them, guaranteeing a globally optimal answer.</p>
+<p>Key ideas this chapter develops:</p>
+<ul>
+<li>A problem is solved as a <strong>sequence of decisions</strong> D₁, D₂, …, Dₙ.</li>
+<li>The <strong>Principle of Optimality</strong> lets us write a <strong>recurrence relation</strong> linking a subproblem's optimum to smaller subproblems' optima.</li>
+<li>Many such problems can equivalently be expressed as finding a <strong>min-cost (or max-profit) path through a multistage graph</strong>.</li>
+<li>The two routes to a DP solution:
+  1. <strong>Find the recurrence relations</strong>, or
+  2. <strong>Represent the problem by a multistage graph</strong>.
+  (In the textbook these are shown to be equivalent.)</li>
+</ul>
+<p>Topics covered: multistage graph &amp; shortest path (forward/backward reasoning), principle of optimality, 0/1 knapsack, forward vs. backward approach, plus further DP applications — resource allocation, traveling salesperson, longest common subsequence, 0/1 knapsack as a multistage graph, and optimal binary search trees.</p>
+<hr />
+<h2 id="1-why-not-greedy-motivating-example">1. Why Not Greedy? — Motivating Example</h2>
+<p>To find a shortest path in a multistage graph, the greedy method makes the cheapest decision at each stage. This can fail.</p>
+<ul>
+<li>Naïve greedy (always take the cheapest outgoing edge):
+  <code>1 + 2 + 5 = 8</code> — the greedy choice. <em>(The slide states only this sum. Greedy is not guaranteed optimal on a multistage graph — see below, where greedy gives 23 but the true optimum is 9.)</em></li>
+<li>Greedy starting <code>S → A → D → T</code>:
+  <code>1 + 4 + 18 = 23</code> — far from optimal.</li>
+<li>The <strong>true shortest path</strong> is:
+  <code>S → C → F → T = 5 + 2 + 2 = 9</code>.</li>
+</ul>
+<p>So greedy gives 23 while the optimum is 9. DP is needed because the right early decision (go to C, an expensive-looking first edge of cost 5) only pays off later.</p>
+<hr />
+<h2 id="2-multistage-graph">2. Multistage Graph</h2>
+<h3 id="formal-definition">Formal definition</h3>
+<p>A <strong>multistage graph</strong> <code>G = (V, E)</code> is a <strong>directed</strong> graph in which:</p>
+<ul>
+<li>The vertices are partitioned into <code>k ≥ 2</code> disjoint sets <code>V₁, V₂, …, V_k</code> (with <code>1 ≤ i ≤ k</code>).</li>
+<li>Every edge <code>⟨u, v⟩ ∈ E</code> goes <strong>from one stage to the next</strong>: <code>u ∈ Vᵢ</code> and <code>v ∈ V_{i+1}</code> for some <code>i</code>, <code>1 ≤ i &lt; k</code>.</li>
+<li>The first and last stages are singletons: <code>|V₁| = |V_k| = 1</code>. Call the lone source <code>s ∈ V₁</code> and the lone sink <code>t ∈ V_k</code>.</li>
+</ul>
+<p>Each set <code>Vᵢ</code> defines a <strong>stage</strong> of the graph.</p>
+<p><strong>The multistage-graph problem:</strong> find a <strong>minimum-cost path</strong> from <code>s</code> (in <code>V₁</code>) to <code>t</code> (in <code>V_k</code>).</p>
+<h3 id="the-running-example-graph">The running example graph</h3>
+<p>The slides use a 4-stage graph with vertices <code>S</code> (stage 1); <code>A, B, C</code> (stage 2); <code>D, E, F</code> (stage 3); <code>T</code> (stage 4). The edge weights below are <strong>consistent with every numeric result in the deck</strong> (e.g. <code>d(S,T)=9</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(C,T)=4</code>).</p>
+<blockquote>
+<p>✅ Verified against slide 5 (the full multistage-graph figure). Every edge weight below was read directly off the rendered slide and matches exactly. The companion abstract figures on slide 6 (<code>S→{A,B,C}→T</code>) and slide 7 (<code>A→{D,E}→T</code>) confirm <code>S→A=1, S→B=2, S→C=5</code> and <code>A→D=4, A→E=11</code>.</p>
+</blockquote>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Edge</th>
+<th style="text-align: right;">Cost</th>
+<th>Edge</th>
+<th style="text-align: right;">Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S → A</td>
+<td style="text-align: right;">1</td>
+<td>A → D</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>S → B</td>
+<td style="text-align: right;">2</td>
+<td>A → E</td>
+<td style="text-align: right;">11</td>
+</tr>
+<tr>
+<td>S → C</td>
+<td style="text-align: right;">5</td>
+<td>B → D</td>
+<td style="text-align: right;">9</td>
+</tr>
+<tr>
+<td>D → T</td>
+<td style="text-align: right;">18</td>
+<td>B → E</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td>E → T</td>
+<td style="text-align: right;">13</td>
+<td>B → F</td>
+<td style="text-align: right;">16</td>
+</tr>
+<tr>
+<td>F → T</td>
+<td style="text-align: right;">2</td>
+<td>C → F</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table></div>
+<p>Stages: <code>V₁={S}</code>, <code>V₂={A,B,C}</code>, <code>V₃={D,E,F}</code>, <code>V₄={T}</code>.</p>
+<blockquote>
+<p>✅ Verified against slide 5: <code>T</code> is the final singleton stage. The penultimate-stage vertices <code>D, E, F</code> connect directly to <code>T</code> with the weights <code>D→T=18</code>, <code>E→T=13</code>, <code>F→T=2</code>, as drawn on the slide and confirmed by the worked lines <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.</p>
+</blockquote>
+<hr />
+<h2 id="3-backward-reasoning">3. Backward Reasoning</h2>
+<p>Define <code>d(X, T)</code> = cost of the shortest path <strong>from vertex X to the sink T</strong>. Work <strong>from the sink backward</strong> toward the source. (Base cases at the stage just before <code>T</code>: <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.)</p>
+<pre><code>d(C, T) = min{ 2 + d(F, T) }
+        = 2 + 2
+        = 4
+
+d(A, T) = min{ 4 + d(D, T), 11 + d(E, T) }
+        = min{ 4 + 18, 11 + 13 }
+        = min{ 22, 24 }
+        = 22
+
+d(B, T) = min{ 9 + d(D, T), 5 + d(E, T), 16 + d(F, T) }
+        = min{ 9 + 18, 5 + 13, 16 + 2 }
+        = min{ 27, 18, 18 }
+        = 18
+
+d(S, T) = min{ 1 + d(A, T), 2 + d(B, T), 5 + d(C, T) }
+        = min{ 1 + 22, 2 + 18, 5 + 4 }
+        = min{ 23, 20, 9 }
+        = 9
+</code></pre>
+<p><strong>Answer:</strong> <code>d(S, T) = 9</code>, achieved via <code>S → C → F → T</code>.</p>
+<p>This style — express each vertex's optimal cost in terms of vertices <strong>closer to the sink</strong>, then resolve from the sink backward — is called <strong>backward reasoning</strong>.</p>
+<hr />
+<h2 id="4-forward-reasoning">4. Forward Reasoning</h2>
+<p>Define <code>d(S, X)</code> = cost of the shortest path <strong>from the source S to vertex X</strong>. Work <strong>from the source forward</strong> toward the sink.</p>
+<p>Base (stage-2 vertices, directly reachable from S):</p>
+<pre><code>d(S, A) = 1
+d(S, B) = 2
+d(S, C) = 5
+</code></pre>
+<p>Stage-3 vertices:</p>
+<pre><code>d(S, D) = min{ d(S, A) + d(A, D), d(S, B) + d(B, D) }
+        = min{ 1 + 4, 2 + 9 }
+        = min{ 5, 11 }
+        = 5
+
+d(S, E) = min{ d(S, A) + d(A, E), d(S, B) + d(B, E) }
+        = min{ 1 + 11, 2 + 5 }
+        = min{ 12, 7 }
+        = 7
+
+d(S, F) = min{ d(S, A) + d(A, F), d(S, B) + d(B, F) }
+        = min{ 2 + 16, 5 + 2 }
+        = min{ 18, 7 }
+        = 7
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 9 — with a caveat about the slide itself. The slide literally prints <code>d(S,F)=min{d(S,A)+d(A,F), d(S,B)+d(B,F)} = min{2+16, 5+2} = 7</code>. But the <strong>graph (slide 5) has no edges <code>A→F</code> or <code>B→F</code>'s-pair that produce these constants under those labels</strong>: F's only incoming edges are <code>B→F=16</code> and <code>C→F=2</code>. So the slide's <em>labels</em> are wrong; the <em>numbers</em> are right. The correct reading consistent with the graph is <code>d(S,F)=min{d(S,B)+d(B,F), d(S,C)+d(C,F)} = min{2+16, 5+2} = 7</code>. Result <code>d(S,F)=7</code> is firm; the slide's term-labels (<code>A</code>,<code>B</code>) are a typo for (<code>B</code>,<code>C</code>).</p>
+</blockquote>
+<p>Final stage:</p>
+<pre><code>d(S, T) = min{ d(S, D) + d(D, T), d(S, E) + d(E, T), d(S, F) + d(F, T) }
+        = min{ 5 + 18, 7 + 13, 7 + 2 }
+        = min{ 23, 20, 9 }
+        = 9
+</code></pre>
+<p><strong>Answer:</strong> <code>d(S, T) = 9</code> — the same optimum, reached by reasoning <strong>forward</strong>.</p>
+<p>Here each vertex's optimal cost is expressed in terms of vertices <strong>closer to the source</strong>, then resolved from the source forward — <strong>forward reasoning</strong>.</p>
+<hr />
+<h2 id="5-principle-of-optimality">5. Principle of Optimality</h2>
+<p><strong>Statement.</strong> Suppose that, in solving a problem, we must make a sequence of decisions <code>D₁, D₂, …, Dₙ</code>. If this sequence is <strong>optimal</strong>, then the <strong>last k decisions</strong> (for any <code>1 ≤ k ≤ n</code>) must themselves be optimal.</p>
+<p><strong>Shortest-path corollary.</strong>
+If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>.</p>
+<blockquote>
+<p>Intuition: if the suffix were not optimal, we could replace it with a cheaper suffix and obtain a cheaper overall path — contradicting optimality of the whole.</p>
+</blockquote>
+<p><strong>Consequence:</strong> if a problem can be described by a multistage graph, then it can be solved by dynamic programming.</p>
+<hr />
+<h2 id="6-01-knapsack-via-dynamic-programming">6. 0/1 Knapsack via Dynamic Programming</h2>
+<h3 id="problem-formulation">Problem formulation</h3>
+<p>Represent the problem as <code>KNAP(k, j, Y)</code>:</p>
+<pre><code>maximize     Σ_{i=k}^{j} pᵢ·xᵢ
+subject to   Σ_{i=k}^{j} wᵢ·xᵢ ≤ Y
+             xᵢ = 0 or 1,    k ≤ i ≤ j
+</code></pre>
+<p>The full 0/1 knapsack problem is then <code>KNAP(1, n, M)</code> — all <code>n</code> objects, capacity <code>M</code>.</p>
+<h3 id="optimality-argument-split-on-the-first-decision">Optimality argument (split on the first decision)</h3>
+<p>Let <code>y₁, y₂, …, yₙ</code> be an <strong>optimal</strong> sequence of 0/1 values for <code>x₁, x₂, …, xₙ</code>.</p>
+<ul>
+<li><strong>If <code>y₁ = 0</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M)</code>.
+  <em>(If it weren't, we could improve it and thereby improve the whole — contradiction.)</em></li>
+<li><strong>If <code>y₁ = 1</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M − w₁)</code> (capacity reduced by the weight of object 1), by the principle of optimality.</li>
+</ul>
+<h3 id="the-recurrence">The recurrence</h3>
+<p>Let <code>gⱼ(y)</code> = the value of an optimal solution to <code>KNAP(j+1, n, y)</code>.</p>
+<p>Then <code>g₀(M)</code> is the value of an optimal solution to the whole problem <code>KNAP(1, n, M)</code>.</p>
+<p>Since <code>x₁</code> can be 0 or 1, the principle of optimality gives:</p>
+<pre><code>g₀(M) = max{ g₁(M),  g₁(M − w₁) + p₁ }
+</code></pre>
+<p>and in general:</p>
+<pre><code>gᵢ(y) = max{ g_{i+1}(y),  g_{i+1}(y − w_{i+1}) + p_{i+1} }
+</code></pre>
+<ul>
+<li>First term: skip object <code>i+1</code> (<code>x_{i+1}=0</code>).</li>
+<li>Second term: take object <code>i+1</code> (<code>x_{i+1}=1</code>), gaining profit <code>p_{i+1}</code> and using capacity <code>w_{i+1}</code>.</li>
+</ul>
+<h3 id="base-case-and-solving-direction">Base case and solving direction</h3>
+<pre><code>gₙ(y) = 0   for all y
+</code></pre>
+<p>Solve <strong>backward through the index</strong> using the recurrence:</p>
+<ol>
+<li>From <code>gₙ(y)</code> obtain <code>g_{n−1}(y)</code> (apply the recurrence with <code>i = n−1</code>).</li>
+<li>From <code>g_{n−1}(y)</code> obtain <code>g_{n−2}(y)</code>.</li>
+<li>Repeat, eventually determining <code>g₁(y)</code> and finally <code>g₀(M)</code> — the answer.</li>
+</ol>
+<hr />
+<h2 id="7-forward-approach-vs-backward-approach">7. Forward Approach vs. Backward Approach</h2>
+<p>Let <code>x₁, x₂, …, xₙ</code> be the decision variables.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Decision <code>xᵢ</code> is formulated in terms of…</th>
+<th>Knapsack recurrence</th>
+<th>Boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Forward</strong></td>
+<td>optimal decision sequences for <code>x_{i+1}, …, xₙ</code></td>
+<td><code>gᵢ(y) = max{ g_{i+1}(y), g_{i+1}(y − w_{i+1}) + p_{i+1} }</code></td>
+<td><code>g₀(M) = max{ g₁(M), g₁(M − w₁) + p₁ }</code></td>
+</tr>
+<tr>
+<td><strong>Backward</strong></td>
+<td>optimal decision sequences for <code>x₁, …, x_{i−1}</code></td>
+<td><code>gᵢ(y) = max{ g_{i−1}(y), g_{i−1}(y − wᵢ) + pᵢ }</code></td>
+<td><code>gₙ(M) = max{ g_{n−1}(M), g_{n−1}(M − wₙ) + pₙ }</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>In the backward approach, <code>gᵢ(y)</code> is the optimal value of <code>KNAP(1, i, y)</code>.</p>
+<p><strong>Crucial subtlety about solving direction:</strong></p>
+<ul>
+<li>If the recurrence is <strong>formulated using the forward approach</strong>, the relations are <strong>solved backwards</strong> — i.e. beginning with the <strong>last</strong> decision.</li>
+<li>If the recurrence is <strong>formulated using the backward approach</strong>, the relations are <strong>solved forwards</strong>.</li>
+</ul>
+<p>(Formulation direction and solution direction are opposite to one another.)</p>
+<hr />
+<h2 id="8-summary-how-to-solve-a-problem-by-dynamic-programming">8. Summary — How to Solve a Problem by Dynamic Programming</h2>
+<p>To solve a problem by DP, do <strong>either</strong>:</p>
+<ol>
+<li><strong>Find the recurrence relations</strong>, or</li>
+<li><strong>Represent the problem by a multistage graph</strong>.</li>
+</ol>
+<p>In the textbook, these two are shown to be <strong>equivalent</strong>.</p>
+<hr />
+<h1 id="further-dp-applications-also-in-this-deck">Further DP Applications (also in this deck)</h1>
+<p>The remaining slides apply the same machinery to several classic problems.</p>
+<h2 id="9-the-resource-allocation-problem">9. The Resource Allocation Problem</h2>
+<ul>
+<li><code>m</code> resources, <code>n</code> projects.</li>
+<li><code>p(i, j)</code> = profit when <code>j</code> resources are allocated to project <code>i</code>.</li>
+<li><strong>Goal:</strong> maximize total profit.</li>
+</ul>
+<p><strong>Profit table (deck example, slide 19).</strong> Rows = project <code>i</code>, columns = number of resources <code>j</code>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Project \ Resources</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">9</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Multistage-graph model.</strong> A node <code>(i, j)</code> means <em><code>i</code> resources allocated to projects <code>1, 2, …, j</code></em> (i.e. the first <code>j</code> projects collectively use <code>i</code> resources).
+Example: node <code>H = (3, 2)</code> ⇒ 3 resources allocated across projects 1 and 2.</p>
+<p>The problem becomes <strong>find the longest (max-profit) path from S to T</strong>.</p>
+<p>Worked example from the deck:</p>
+<pre><code>S → C → H → L → T,   8 + 5 = 13
+</code></pre>
+<p>with the interpretation:
+- 2 resources allocated to project 1,
+- 1 resource allocated to project 2,
+- 0 resources to projects 3 and 4.</p>
+<blockquote>
+<p>✅ Verified against slides 19–21. Slide 20 shows the full figure "The Resource Allocation Problem Described as a Multi-Stage Graph"; slide 21 states the winning path and allocation verbatim. Node naming on slide 20 (each labeled <code>(i,j)</code> = <code>i</code> resources allocated to the first <code>j</code> projects):
+- Stage 1: <code>S</code>. Stage 2: <code>A=(0,1)</code>, <code>B=(1,1)</code>, <code>C=(2,1)</code>, <code>D=(3,1)</code>. Stage 3: <code>E=(0,2)</code>, <code>F=(1,2)</code>, <code>G=(2,2)</code>, <code>H=(3,2)</code>. Stage 4: <code>I=(0,3)</code>, <code>J=(1,3)</code>, <code>K=(2,3)</code>, <code>L=(3,3)</code>. Stage 5: <code>T</code>.
+- Edge weights are the profit increments from the table above. The S-edges read <code>S→A=0, S→B=2, S→C=8, S→D=9</code> (project-1 profits for 0/1/2/3 resources). The winning path is shown bold on slide 21: <code>S —8→ C —5→ H —0→ L —0→ T</code>, total <code>8+5=13</code>.</p>
+<p>Note: slide 20 is a dense diagram; many interior edge labels overlap and only the S-stage edges and the winning-path edges are read with full confidence. The path, totals, and allocation are confirmed exactly.</p>
+</blockquote>
+<hr />
+<h2 id="10-the-traveling-salesperson-problem-tsp">10. The Traveling Salesperson Problem (TSP)</h2>
+<p>Given a <strong>directed</strong> graph with a <strong>cost matrix</strong>, find the shortest tour that starts at vertex 1, visits every vertex exactly once, and returns to 1.</p>
+<p><strong>Small example (slide 22).</strong> Directed graph on 4 vertices with cost matrix (rows = from, cols = to; <code>∞</code> = no edge):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td style="text-align: right;">∞</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">∞</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">∞</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">∞</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">∞</td>
+</tr>
+</tbody>
+</table></div>
+<pre><code>Shortest tour: 1, 4, 3, 2, 1   →   5 + 7 + 3 + 2 = 17
+</code></pre>
+<p><strong>Tour multistage graph (slide 23, "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph").</strong> Root <code>(1)</code> branches by first vertex chosen, edge costs <code>c(1,k)</code>: <code>(1,2)</code> cost 2, <code>(1,3)</code> cost 10, <code>(1,4)</code> cost 5. Each then expands to the third vertex, then the fourth, then returns to <code>1</code>. The bottom branch realizes the optimum: <code>(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1</code>, total 17.</p>
+<p><strong>Multistage-graph view.</strong> All possible tours form a multistage graph (one stage per "next vertex chosen"). Partial tours that end at the same vertex with the same remaining set can be <strong>merged</strong>:</p>
+<blockquote>
+<p>Suppose 6 vertices. We can combine the partial tours <code>{1, 2, 3, 4}</code> and <code>{1, 3, 2, 4}</code> into one node, because: the last vertex visited is the same (here vertex 3 in the deck's phrasing), and the remaining vertices to visit are the same (<code>4, 5, 6</code>). Their futures are identical, so they share a subproblem.</p>
+</blockquote>
+<p><strong>DP recurrence (Held–Karp).</strong> Let <code>g(i, S)</code> = the length of a shortest path that <strong>starts at vertex <code>i</code>, goes through all vertices in <code>S</code>, and terminates at vertex 1</strong>.</p>
+<ul>
+<li><strong>Length of an optimal tour (slide 25):</strong>
+  <code>g(1, V − {1}) = min_{2 ≤ k ≤ n} { c_{1k} + g(k, V − {1, k}) }</code></li>
+<li><strong>General form (slide 25):</strong>
+  <code>g(i, S) = min_{j ∈ S} { c_{ij} + g(j, S − {j}) }</code></li>
+<li><strong>Base:</strong> <code>g(i, ∅) = c_{i1}</code>.</li>
+</ul>
+<blockquote>
+<p>✅ Verified against slide 25. The slide prints both recurrences (with the <code>min_{2≤k≤n}</code> and <code>min_{j∈S}</code> ranges) exactly as above; the <code>g(i,S)</code> definition is stated verbatim on slide 25.</p>
+</blockquote>
+<p><strong>Time complexity (slide 25, verbatim).</strong></p>
+<pre><code>n + Σ_{k=2}^{n-1} (n−1)·C(n−2, n−k)·(n−k)  =  O(n² · 2ⁿ)
+</code></pre>
+<blockquote>
+<p>✅ Verified against slide 25: the slide shows the explicit sum <code>n + Σ_{k=2} (n−1)(ⁿ⁻²_{n−k})(n−k) = O(n² 2ⁿ)</code>, the standard Held–Karp bound — exponential but far better than <code>(n−1)!</code> brute force.</p>
+</blockquote>
+<hr />
+<h2 id="11-longest-common-subsequence-lcs">11. Longest Common Subsequence (LCS)</h2>
+<p><strong>Subsequence.</strong> A subsequence of a string <code>A</code> is obtained by deleting 0 or more symbols from <code>A</code> (not necessarily consecutive).
+For <code>A = b a c a d</code>: examples include <code>ad, ac, bac, acad, bacad, bcd</code>.</p>
+<p><strong>Common subsequence.</strong> Of <code>A = b a c a d</code> and <code>B = a c c b a d c b</code>: e.g. <code>ad, ac, bac, acad</code>.</p>
+<p><strong>Longest common subsequence of A and B:</strong> <code>a c a d</code>.</p>
+<h3 id="recurrence">Recurrence</h3>
+<p>Let <code>A = a₁ a₂ … a_m</code> and <code>B = b₁ b₂ … b_n</code>.
+Let <code>L_{i,j}</code> = length of the LCS of the prefixes <code>a₁…aᵢ</code> and <code>b₁…bⱼ</code>.</p>
+<pre><code>            ┌ L_{i-1, j-1} + 1                  if aᵢ = bⱼ
+L_{i,j} =   │
+            └ max{ L_{i-1, j}, L_{i, j-1} }     if aᵢ ≠ bⱼ
+</code></pre>
+<p><strong>Boundary:</strong> <code>L_{0,0} = L_{0,j} = L_{i,0} = 0</code> for <code>1 ≤ i ≤ m</code>, <code>1 ≤ j ≤ n</code>.</p>
+<p>(Reference: Fig. 8-17, "The Dynamic Programming Approach to Solve the Longest Common Subsequence Problem.")</p>
+<p><strong>Recovering the subsequence.</strong> After all <code>L_{i,j}</code> are filled in (for <code>A = b a c a d</code>, <code>B = a c c b a d c b</code>), <strong>trace back</strong> through the table to recover the actual LCS (<code>a c a d</code>).</p>
+<p><strong>The L table (slide 29, verified).</strong> Rows = <code>A = b a c a d</code> (plus a 0-row), columns = <code>B = a c c b a d c b</code> (plus a 0-column):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>A \ B</th>
+<th style="text-align: right;"></th>
+<th style="text-align: right;">a</th>
+<th style="text-align: right;">c</th>
+<th style="text-align: right;">c</th>
+<th style="text-align: right;">b</th>
+<th style="text-align: right;">a</th>
+<th style="text-align: right;">d</th>
+<th style="text-align: right;">c</th>
+<th style="text-align: right;">b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td><strong>b</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td><strong>a</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td><strong>c</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td><strong>a</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td><strong>d</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+</tr>
+</tbody>
+</table></div>
+<p>The slide circles the trace-back cells <code>1 → 2 → 3 → 4</code> (the <code>a</code>, <code>c</code>, <code>a</code>, <code>d</code> matches), giving LCS = <code>a c a d</code> (length 4 = bottom-right cell).</p>
+<hr />
+<h2 id="12-01-knapsack-as-a-multistage-graph">12. 0/1 Knapsack as a Multistage Graph</h2>
+<p>The same 0/1 knapsack problem of §6 can be drawn as a multistage graph.</p>
+<pre><code>n objects, weights  W₁, W₂, …, Wₙ
+           profits   P₁, P₂, …, Pₙ
+           capacity  M
+
+maximize    Σ Pᵢ·xᵢ
+subject to  Σ Wᵢ·xᵢ ≤ M
+            xᵢ = 0 or 1,   1 ≤ i ≤ n
+</code></pre>
+<p><strong>Deck example data (slide 30).</strong> <code>M = 10</code>, three objects:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>i</th>
+<th style="text-align: right;">Wᵢ</th>
+<th style="text-align: right;">Pᵢ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">40</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">30</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>The staged graph (slide 31).</strong> Nodes are labeled by the partial decision vector. <code>S</code> branches on <code>x₁</code>: <code>S →(x₁=1, weight 40) "1"</code> and <code>S →(x₁=0, weight 0) "0"</code>. Each node then branches on <code>x₂</code> (edge weight <code>P₂=20</code> if <code>x₂=1</code>, else 0), then on <code>x₃</code> (edge weight <code>P₃=30</code> if <code>x₃=1</code>, else 0), then a weight-0 edge to <code>T</code>. (Infeasible high-capacity branches are pruned — e.g. taking object 1 at weight 10 leaves no room.)</p>
+<p>The <strong>longest path</strong> (max profit) from S to T in this multistage graph is the optimal solution. Deck answer (slides 31–32):</p>
+<pre><code>x₁ = 0, x₂ = 1, x₃ = 1   →   20 + 30 = 50
+</code></pre>
+<h3 id="recurrence-prefix-form">Recurrence (prefix form)</h3>
+<p>Let <code>fᵢ(Q)</code> = the value of an optimal solution using objects <code>1, 2, …, i</code> with capacity <code>Q</code>.</p>
+<pre><code>fᵢ(Q) = max{ f_{i-1}(Q),  f_{i-1}(Q − Wᵢ) + Pᵢ }
+</code></pre>
+<p>The optimal answer is <code>fₙ(M)</code>.
+<em>(This is the backward-approach formulation of the same knapsack recurrence from §6/§7.)</em></p>
+<hr />
+<h2 id="13-optimal-binary-search-trees-obst">13. Optimal Binary Search Trees (OBST)</h2>
+<h3 id="setup">Setup</h3>
+<ul>
+<li><code>n</code> identifiers in sorted order: <code>a₁ &lt; a₂ &lt; a₃ &lt; … &lt; aₙ</code>.</li>
+<li><code>Pᵢ</code>, <code>1 ≤ i ≤ n</code>: probability that <code>aᵢ</code> is searched (<strong>successful</strong> search → internal node).</li>
+<li><code>Qᵢ</code>, <code>0 ≤ i ≤ n</code>: probability that a search key <code>x</code> falls strictly between neighbors, <code>aᵢ &lt; x &lt; a_{i+1}</code> (<strong>unsuccessful</strong> search → external node), with sentinels <code>a₀ = −∞</code>, <code>a_{n+1} = +∞</code>.</li>
+</ul>
+<p>Examples of identifier sets used in the deck: <code>{3, 7, 9, 12}</code> (slide 33, four candidate BSTs) and <code>{4, 5, 8, 10, 11, 12, 14}</code> (slide 35, the worked tree with external nodes). ✅ Verified against slides 33–35.</p>
+<h3 id="expected-cost-of-a-binary-search-tree">Expected cost of a binary search tree</h3>
+<p>With the root at level 1, the expected cost is:</p>
+<pre><code>Cost =  Σᵢ Pᵢ · level(aᵢ)  +  Σᵢ Qᵢ · ( level(Eᵢ) − 1 )
+</code></pre>
+<p>where <code>Eᵢ</code> are the external (failure) nodes. (See Fig. "A Binary Tree with Added External Nodes" — slide 35, drawn for identifiers <code>4,5,8,10,11,12,14</code>.)</p>
+<blockquote>
+<p>✅ Verified against slide 35. The slide prints <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>, with "The level of the root : 1". The lower index on the <code>P</code> sum is <code>i=1</code>, on the <code>Q</code> sum is <code>i=0</code> (external nodes <code>E₀ … Eₙ</code>). Slide 34 also confirms the probability normalization <code>Σ_{i=1}^{n} Pᵢ + Σ_{i=0}^{n} Qᵢ = 1</code>.</p>
+</blockquote>
+<p><strong>The example tree (slide 35).</strong> For identifiers <code>4,5,8,10,11,12,14</code>, the drawn BST has root <code>10</code>; left child <code>5</code> (with children <code>4</code> and <code>8</code>), right child <code>14</code> (left child <code>11</code>, which has right child <code>12</code>; <code>14</code>'s right is external <code>E₇</code>). External (failure) nodes <code>E₀…E₆</code> hang off the leaves, <code>E₅,E₆</code> off node <code>12</code>. Slide 33 also shows four candidate BSTs (a)–(d) for the smaller set <code>3,7,9,12</code>.</p>
+<h3 id="recurrence_1">Recurrence</h3>
+<p>Let <code>C(i, j)</code> = cost of an <strong>optimal</strong> BST containing <code>aᵢ, …, aⱼ</code>.</p>
+<p>For the full tree, choosing root <code>a_k</code>:</p>
+<pre><code>C(1, n) = min_k { Pk + [ Q₀ + (cost of left subtree weights) + C(1, k−1) ]
+                       + [ Qk + (cost of right subtree weights) + C(k+1, n) ] }
+</code></pre>
+<p><strong>General formula</strong> (subtree on <code>aᵢ … aⱼ</code>, trying each <code>a_k</code> as root):</p>
+<pre><code>C(i, j) = min_{i ≤ k ≤ j} { Pk
+                          + [ Q_{i-1} + … + C(i, k−1) ]
+                          + [ Qk      + … + C(k+1, j) ] }
+
+        = min_{i ≤ k ≤ j} { C(i, k−1) + C(k+1, j) + W(i, j) }
+</code></pre>
+<p>where <code>W(i, j) = Q_{i-1} + Σ_{l=i}^{j}(P_l + Q_l)</code> is the total weight of the subtree (the <code>Q_{i-1} + …</code> term). The <code>+ W(i,j)</code> accounts for every node in the subtree dropping one level deeper when the subtree gains a root.</p>
+<blockquote>
+<p>✅ Verified against slides 36–37. Slide 36 prints the root-<code>aₖ</code> form
+<code>C(1,n) = min_{1≤k≤n} { Pₖ + [Q₀ + Σ_{i=1}^{k-1}(Pᵢ+Qᵢ) + C(1,k−1)] + [Qₖ + Σ_{i=k+1}^{?}(Pᵢ+Qᵢ) + C(k+1,n)] }</code>.
+Slide 37 prints the general form <code>C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1} + Σ_{l=i}^{k-1}(P_l+Q_l) + C(i,k−1)] + [Qₖ + Σ_{l=k+1}^{j}(P_l+Q_l) + C(k+1,j)] }</code> and collapses it to <code>= min { C(i,k−1) + C(k+1,j) + Σ_{l=i}^{j}(P_l+Q_l) + Q_{i-1} }</code> — i.e. <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>. Both slides include the triangle diagram (root <code>aₖ</code>, left subtree <code>C(1,k−1)</code>/<code>a₁…a_{k-1}</code> with weights <code>P₁…P_{k-1}, Q₀…Q_{k-1}</code>, right subtree <code>C(k+1,n)</code>/<code>a_{k+1}…aₙ</code> with <code>P_{k+1}…Pₙ, Qₖ…Qₙ</code>).</p>
+<p>Note: slides 36–37 are heavily overlapped (formula and diagram collide), so the exact upper limit of the second inner sum on slide 36 is obscured; the slide-37 general form makes it unambiguous (it is <code>j</code>, here <code>n</code>). No numeric <code>n=4</code> <em>value</em> table appears — slide 38's "E.g. n=4" is a <strong>dependency diagram</strong>, not a cost table (see below).</p>
+</blockquote>
+<h3 id="time-complexity">Time complexity</h3>
+<pre><code>O(n³)
+</code></pre>
+<p>Reasoning (slide 38, verbatim):
+- When <code>j − i = m</code>, there are <code>(n − m)</code> values <code>C(i, j)</code> to compute.
+- Each <code>C(i, j)</code> with <code>j − i = m</code> is computed in <code>O(m)</code> time (trying <code>m+1</code> candidate roots).
+- Summing over all <code>m</code>: <code>O( Σ_{1≤m&lt;n} m·(n − m) ) = O(n³)</code>.</p>
+<p>(See Fig. "Computation Relationships of Subtrees", slide 38.) ✅ Verified against slide 38: it shows the <code>n=4</code> dependency DAG — <code>C(1,2),C(2,3),C(3,4)</code> feed <code>C(1,3),C(2,4)</code>, which feed <code>C(1,4)</code> — and the closed sum <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</p>
+<hr />
+<h2 id="verification-log-resolved-against-full-slide-renders">✅ Verification log (resolved against full slide renders)</h2>
+<p>All items previously flagged as reconstructed have now been checked against the per-slide PNG renders in <code>/home/brant/finals_study/algo/render/A07full/</code> (38 slides, vision pass 2026-06-13):</p>
+<ol>
+<li><strong>Multistage-graph edge weights (§2).</strong> ✅ <strong>Verified against slide 5.</strong> The full figure was read directly; every edge matches the prior reconstruction (see verdict in Appendix A).</li>
+<li><strong><code>d(S,F)</code> predecessors (§4).</strong> ✅ <strong>Resolved (slide 9).</strong> Result <code>d(S,F)=7</code> confirmed. The slide's term-labels read <code>d(S,A)+d(A,F), d(S,B)+d(B,F)</code> but the graph has no such edges; the correct labels are <code>d(S,B)+d(B,F)=2+16</code> and <code>d(S,C)+d(C,F)=5+2</code>. The slide itself has a label typo; numbers are right.</li>
+<li><strong>Resource-allocation figure (§9).</strong> ✅ <strong>Verified (slides 19–21).</strong> Profit table, node labeling, S-stage edges, and winning path <code>S→C→H→L→T = 8+5 = 13</code> all confirmed.</li>
+<li><strong>TSP recurrences and complexity (§10).</strong> ✅ <strong>Verified (slides 22–25).</strong> Cost matrix, tour multistage graph, both Held–Karp recurrences, base case, and the explicit complexity sum <code>= O(n²·2ⁿ)</code> all read off the slides.</li>
+<li><strong>OBST expected-cost summations (§13).</strong> ✅ <strong>Verified (slides 34–35).</strong> <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>.</li>
+<li><strong>OBST recurrence weight terms (§13).</strong> ✅ <strong>Verified (slides 36–37).</strong> Both forms and the <code>+W(i,j)</code> collapse confirmed. The "n=4" item (slide 38) is a dependency DAG, not a numeric cost table.</li>
+<li><strong>LCS / knapsack-multistage tables (§11, §12).</strong> ✅ <strong>Verified.</strong> Full LCS <code>L</code> table (slide 29), knapsack <code>W/P</code> table + staged graph (slides 30–31), answer <code>50</code> (slide 32).</li>
+</ol>
+<hr />
+<h2 id="appendix-a-figures-transcribed-from-full-slide-renders">Appendix A — Figures (transcribed from full slide renders)</h2>
+<p><strong>Source directory:</strong> <code>/home/brant/finals_study/algo/render/A07full/</code> (per-slide PNG renders, 38 slides)
+<strong>Extraction date:</strong> 2026-06-13 (vision pass over clean full-slide renders)</p>
+<p>The earlier carve (<code>render/A07/</code>) recovered only two decorative clip-art images (a cartoon angel, a red rose bud — both appear as slide decoration on slides 1 and 14) and <strong>no diagrams</strong>, because the DP figures were authored as native PowerPoint vector shapes. The full per-slide renders below now make every figure legible. Text-only slides are omitted.</p>
+<h3 id="slide-3-multistage-greedy-motivating-graph-linear">Slide 3 — Multistage greedy motivating graph (linear)</h3>
+<p>Linear 4-node chain <code>S → A → B → T</code> with parallel edges. Weights: <code>S→A</code>: top arc 3, bottom arc 5, straight 1. <code>A→B</code>: top arc 2, straight 4, bottom arc 6. <code>B→T</code>: top arc 7, straight 5. Greedy "shortest" sum shown: <code>1 + 2 + 5 = 8</code>.</p>
+<h3 id="slide-5-the-running-multistage-graph-full-with-numeric-weights">Slide 5 — THE running multistage graph (full, with numeric weights)</h3>
+<p>Stages: <code>S</code> | <code>A,B,C</code> | <code>D,E,F</code> | <code>T</code>. Edge list read directly:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Edge</th>
+<th style="text-align: right;">w</th>
+<th>Edge</th>
+<th style="text-align: right;">w</th>
+<th>Edge</th>
+<th style="text-align: right;">w</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S→A</td>
+<td style="text-align: right;">1</td>
+<td>A→D</td>
+<td style="text-align: right;">4</td>
+<td>D→T</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr>
+<td>S→B</td>
+<td style="text-align: right;">2</td>
+<td>A→E</td>
+<td style="text-align: right;">11</td>
+<td>E→T</td>
+<td style="text-align: right;">13</td>
+</tr>
+<tr>
+<td>S→C</td>
+<td style="text-align: right;">5</td>
+<td>B→D</td>
+<td style="text-align: right;">9</td>
+<td>F→T</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: right;"></td>
+<td>B→E</td>
+<td style="text-align: right;">5</td>
+<td></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: right;"></td>
+<td>B→F</td>
+<td style="text-align: right;">16</td>
+<td></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: right;"></td>
+<td>C→F</td>
+<td style="text-align: right;">2</td>
+<td></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table></div>
+<p>Captions: "greedy … S A D T 1+4+18 = 23"; "shortest path … S C F T 5+2+2 = 9."</p>
+<h3 id="slide-6-abstract-backward-figure-sabct">Slide 6 — Abstract backward figure <code>S→{A,B,C}→T</code></h3>
+<p><code>S→A=1, S→B=2, S→C=5</code>, dashed <code>d(A,T), d(B,T), d(C,T)</code> into <code>T</code>. Eqn <code>d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}</code>.</p>
+<h3 id="slide-7-abstract-figure-adet">Slide 7 — Abstract figure <code>A→{D,E}→T</code></h3>
+<p><code>A→D=4, A→E=11</code>, dashed <code>d(D,T), d(E,T)</code>. <code>d(A,T)=min{4+18,11+13}=22</code>.</p>
+<h3 id="slide-19-resource-allocation-profit-table">Slide 19 — Resource allocation profit table</h3>
+<p><code>m</code> resources, <code>n</code> projects, profit <code>p(i,j)</code>. Table (rows project 1–4, cols 1–3 resources): row1 <code>2,8,9</code>; row2 <code>5,6,7</code>; row3 <code>4,4,4</code>; row4 <code>2,4,5</code>.</p>
+<h3 id="slide-20-resource-allocation-as-a-multi-stage-graph">Slide 20 — Resource Allocation as a Multi-Stage Graph</h3>
+<p>5 stages. Stage 2 <code>A=(0,1),B=(1,1),C=(2,1),D=(3,1)</code>; stage 3 <code>E=(0,2),F=(1,2),G=(2,2),H=(3,2)</code>; stage 4 <code>I=(0,3),J=(1,3),K=(2,3),L=(3,3)</code>; <code>S</code>,<code>T</code> singletons. S-edges: <code>S→A=0, S→B=2, S→C=8, S→D=9</code>. Dense interior labels (the profit increments) overlap; the S-edges and winning path are read with confidence.</p>
+<h3 id="slide-21-resource-allocation-answer">Slide 21 — Resource allocation answer</h3>
+<p><code>S —8→ C —5→ H —0→ L —0→ T</code>, <code>8+5=13</code>. Allocation: 2 resources to project 1, 1 to project 2, 0 to projects 3 &amp; 4.</p>
+<h3 id="slide-22-tsp-directed-graph-cost-matrix">Slide 22 — TSP directed graph + cost matrix</h3>
+<p>4-vertex directed graph. Cost matrix (from→to), <code>∞</code> on diagonal:
+<code>1: [∞,2,10,5]  2: [2,∞,9,∞]  3: [4,3,∞,4]  4: [6,8,7,∞]</code>.</p>
+<h3 id="slide-23-tsp-all-possible-tours-multistage-graph">Slide 23 — TSP "all possible tours" multistage graph</h3>
+<p>Root <code>(1)</code> → <code>(1,2)</code>=2, <code>(1,3)</code>=10, <code>(1,4)</code>=5; expands to the 3rd then 4th vertex then back to <code>1</code>. Optimal branch <code>(1)→(1,4)→(1,4,3)→(1,4,3,2)→1</code> = <code>5+7+3+2=17</code>. Caption: "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed graph." Answer: <code>1,4,3,2,1 = 17</code>.</p>
+<h3 id="slide-24-tsp-node-merging-illustration">Slide 24 — TSP node-merging illustration</h3>
+<p><code>(1,3,2)→(1,3,2,4)</code> and <code>(1,2,3)→(1,2,3,4)</code> merge (last vertex 3, remaining {4,5,6} same) into one node; shown as <code>(2),(4,5,6)</code> &amp; <code>(3),(4,5,6)</code> → <code>(4),(5,6)</code>.</p>
+<h3 id="slide-25-tsp-recurrences-complexity">Slide 25 — TSP recurrences + complexity</h3>
+<p><code>g(1,V−{1}) = min_{2≤k≤n}{c_{1k} + g(k,V−{1,k})}</code>; <code>g(i,S) = min_{j∈S}{c_{ij} + g(j,S−{j})}</code>; complexity <code>n + Σ_{k=2}^{n-1}(n−1)·C(n−2,n−k)·(n−k) = O(n²·2ⁿ)</code>.</p>
+<h3 id="slide-28-lcs-dp-dependency-diagram-fig-8-17">Slide 28 — LCS DP dependency diagram (Fig. 8-17)</h3>
+<p>Grid of <code>L_{i,j}</code> cells with arrows right, down, and diagonal-down (the three recurrence dependencies), flowing toward <code>L_{m,n}</code>.</p>
+<h3 id="slide-29-lcs-l-table-abacad-baccbadcb">Slide 29 — LCS L table (A=bacad, B=accbadcb)</h3>
+<p>See the full table in §11. Trace-back circles <code>1→2→3→4</code> give LCS = <code>a c a d</code>.</p>
+<h3 id="slide-30-01-knapsack-data">Slide 30 — 0/1 knapsack data</h3>
+<p><code>M=10</code>; objects <code>(i, Wᵢ, Pᵢ)</code>: <code>(1,10,40), (2,3,20), (3,5,30)</code>.</p>
+<h3 id="slide-31-01-knapsack-as-a-multistage-graph">Slide 31 — 0/1 knapsack as a multistage graph</h3>
+<p><code>S</code> branches <code>x₁=1</code>(w 40) / <code>x₁=0</code>(w 0); each branches <code>x₂</code> (w 20 if 1) then <code>x₃</code> (w 30 if 1) then weight-0 edges to <code>T</code>. Node labels are partial decision strings (<code>1</code>,<code>0</code>,<code>10</code>,<code>01</code>,<code>00</code>,<code>100</code>,<code>011</code>,<code>010</code>,<code>001</code>,<code>000</code>).</p>
+<h3 3_7_9_12="3,7,9,12" id="slide-33-four-candidate-bsts-for">Slide 33 — Four candidate BSTs for</h3>
+<p>(a) right-going chain <code>3→7→9→12</code>; (b) root 7, children 3 &amp; 12, 12's left child 9; (c) root 7, children 3 &amp; 9, 9's right child 12; (d) left-going-ish <code>12→9→3→7</code>.</p>
+<h3 id="slide-35-obst-example-tree-fig-a-binary-tree-with-added-external-nodes">Slide 35 — OBST example tree (Fig. A Binary Tree with Added External Nodes)</h3>
+<p>Identifiers <code>4,5,8,10,11,12,14</code>. Root <code>10</code>; left <code>5</code> (children <code>4</code>,<code>8</code>), right <code>14</code> (left <code>11</code> with right child <code>12</code>; right external <code>E₇</code>). External nodes <code>E₀…E₆</code> at the leaves (<code>E₅,E₆</code> under <code>12</code>). Cost formula <code>Σ_{i=1}^{n}Pᵢ·level(aᵢ) + Σ_{i=0}^{n}Qᵢ·(level(Eᵢ)−1)</code>, root at level 1.</p>
+<h3 id="slide-36-37-obst-recurrence-subtree-triangle-diagram">Slide 36 / 37 — OBST recurrence + subtree triangle diagram</h3>
+<p>Root-<code>aₖ</code> form (36) and general <code>C(i,j)</code> form (37); both with the split-at-root triangle: left <code>C(i,k−1)</code> over <code>a₁…a_{k-1}</code> (weights <code>P₁…P_{k-1},Q₀…Q_{k-1}</code>), right <code>C(k+1,n)</code> over <code>a_{k+1}…aₙ</code> (weights <code>P_{k+1}…Pₙ,Qₖ…Qₙ</code>). Collapses to <code>C(i,j)=min_k{C(i,k−1)+C(k+1,j)+W(i,j)}</code>.</p>
+<h3 id="slide-38-obst-computation-relationships-dag-n4">Slide 38 — OBST computation-relationships DAG (n=4)</h3>
+<p><code>C(1,2),C(2,3),C(3,4)</code> → <code>C(1,3),C(2,4)</code> → <code>C(1,4)</code>. Complexity <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</p>
+<h3 id="multistage-edge-weight-verdict">Multistage edge-weight verdict</h3>
+<p>The note's reconstructed set
+<code>S→A=1, S→B=2, S→C=5, A→D=4, A→E=11, B→D=9, B→E=5, B→F=16, C→F=2, D→T=18, E→T=13, F→T=2</code>
+<strong>✅ MATCHES slide 5 exactly</strong> — every edge weight confirmed by direct reading of the rendered figure. All dependent results hold: <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(S,T)=9</code>, <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>.</p>
+<hr>
+<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+</div></body></html>

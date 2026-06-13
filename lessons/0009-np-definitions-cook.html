@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 9 — NP-Completeness I: Definitions, Nondeterminism, Cook</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 9 · Ch8 NP-Completeness I</div>
+<h1>P, NP, and Cook's Theorem</h1>
+<div class="mission">Exam goal: this chapter is <strong>short-answer / definition</strong> heavy. Win = state the four classes without swapping them, get the <em>direction</em> of a reduction right, and explain a nondeterministic algorithm as <strong>guess then check</strong>. Master those and the QA points are free.</div>
+
+<h2>0 · What is this even about?</h2>
+<p>This chapter is a vocabulary for sorting problems into <em>easy</em> and <em>seemingly-hard</em>. Before any of the famous letters (P, NP, …) mean anything, you need five plain ideas. Read this section slowly — everything after it is just these ideas dressed up.</p>
+
+<p><strong>Decision problem vs. optimization problem.</strong> A <strong>decision problem</strong> is any question whose answer is just <strong>Yes or No</strong>. An <strong>optimization problem</strong> asks for the <em>best</em> value — the smallest, cheapest, or largest something. Optimization is harder, because "best" implies you also know the answer is achievable. The whole NP theory is built only on <em>decision</em> problems, so we always rephrase an optimization problem as a Yes/No one.</p>
+<p>Concrete example — the <strong>Travelling Salesperson Problem (TSP)</strong>: a salesperson must visit every city exactly once and return to the start; each leg between two cities has a cost (distance), and a full round-trip is called a <strong>tour</strong>.</p>
+<table>
+<tr><th>Flavour</th><th>The question it asks</th></tr>
+<tr><td><strong>Optimization</strong></td><td>What is the <strong>cheapest</strong> tour? (give me the number / the route)</td></tr>
+<tr><td><strong>Decision</strong></td><td>Is there a tour of total cost <strong>≤ C</strong>? (just Yes or No)</td></tr>
+</table>
+
+<p><strong>Polynomial time = "efficient/tractable".</strong> When we say an algorithm runs in <strong>polynomial time</strong>, we mean its running time grows like a fixed <em>power</em> of the input size n — <code>n</code>, <code>n²</code>, <code>n³</code>, … As n doubles, the cost goes up by a constant factor. This is what we informally call <strong>efficient</strong> or <strong>tractable</strong>: it scales. By contrast, <strong>exponential time</strong> means the cost grows like <code>2ⁿ</code> — every extra element <em>doubles</em> the work, so it <strong>blows up</strong> and becomes hopeless even for modest n. "Hard" in this chapter means "seems to need exponential time."</p>
+<div class="tree">n = input size      polynomial n²        exponential 2ⁿ
+   10                    100                  1,024
+   20                    400              1,048,576
+   40                  1,600     1,099,511,627,776   ← blows up</div>
+
+<p><strong>P — problems a normal algorithm solves efficiently.</strong> <strong>P</strong> is the family of decision problems that an ordinary, step-by-step (<em>deterministic</em>) algorithm can solve in polynomial time. "Deterministic" just means the usual kind of algorithm: at each step exactly one thing happens. P = the genuinely easy problems.</p>
+
+<p><strong>NP — problems you can <em>check</em> efficiently given the answer.</strong> A decision problem is in <strong>NP</strong> if, when someone hands you a <em>candidate answer</em> — called a <strong>certificate</strong> (e.g. an actual tour, or an actual truth assignment) — you can <em>verify</em> in polynomial time whether it really works. You might have no fast way to <em>find</em> the answer, but you can <em>check</em> a proposed one fast. The catchy phrase: NP = <strong>"guess, then check."</strong></p>
+
+<p><strong>Nondeterministic algorithm = magically guess, then verify.</strong> This is the formal version of "guess then check." A <strong>nondeterministic algorithm</strong> runs in two stages: a <strong>guessing</strong> stage that <em>magically</em> picks a candidate (imagine an oracle that always guesses a working answer if one exists), and a <strong>checking</strong> stage that verifies it like a normal algorithm. If the checking stage is polynomial, the problem is in NP. (The "magic" is a thought-experiment, not a real machine — it is what the "N" in NP stands for: <em>non</em>deterministic.)</p>
+
+<p><strong>Reduction A → B = "B is at least as hard as A".</strong> A <strong>reduction</strong> from problem A to problem B (written <strong>A → B</strong>) means: <em>if I had a fast solver for B, I could use it as a subroutine to solve A fast too.</em> So a fast B gives a fast A — which makes <strong>B at least as hard as A</strong> (B can't be easier, or A would be easy via B). Getting this <em>direction</em> right is the single most-tested idea in the chapter, so reread it: the arrow points <em>from</em> the easier-or-equal problem <em>to</em> the at-least-as-hard one.</p>
+
+<div class="note"><strong>The payoff (read once, it ties everything together):</strong> some decision problems are so central that <em>every</em> problem in NP reduces to them — these are <strong>NP-hard</strong>. The ones that are NP-hard <em>and</em> themselves sit in NP are <strong>NP-complete</strong>: the hardest problems that are still "checkable." <strong>Cook's theorem</strong> found the very first such problem — <strong>SAT</strong> — and everything else is proven hard by reducing SAT (or its descendants) to it. The rest of this lesson formalizes exactly these terms.</p></div>
+
+<h2>1 · The four classes (do not swap them)</h2>
+<table>
+<tr><th>Class</th><th>Definition</th></tr>
+<tr><td><strong>P</strong></td><td>Solvable by a <strong>deterministic</strong> polynomial-time algorithm.</td></tr>
+<tr><td><strong>NP</strong></td><td><strong>Decision</strong> problems solvable by a <strong>nondeterministic</strong> poly-time algorithm = <em>guess</em> a certificate, then <strong>check</strong> it in poly time.</td></tr>
+<tr><td><strong>NP-hard</strong></td><td>Problems to which <strong>every</strong> NP problem reduces. (Need <em>not</em> be in NP.)</td></tr>
+<tr><td><strong>NP-complete (NPC)</strong></td><td>NP-hard <strong>and</strong> in NP — the hardest problems that are still NP.</td></tr>
+</table>
+<div class="note"><strong>The big theorem:</strong> if <em>any one</em> NPC problem is in P, then <strong>P = NP</strong> (all NP problems become poly-time). No one has found such an algorithm, so NPC problems "seem" to need exponential time in the worst case. Note: not every NP problem is hard — <strong>MST</strong> is in NP yet poly-time solvable.</div>
+
+<h2>2 · Reduction — and its direction</h2>
+<p>Write <strong>A&nbsp;→&nbsp;B</strong> ("A reduces to B"): A can be solved by a deterministic poly-time algorithm that calls, as a subroutine, a poly-time algorithm for <strong>B</strong>.</p>
+<div class="note"><strong>Direction is the trap.</strong> <code>A → B</code> means <strong>B is at least as hard as A</strong> — "A is <em>no harder</em> than B." If you can solve B fast, you get A for free. To prove a new problem <code>A</code> is NP-hard you show a <em>known</em> hard problem reduces <em>to</em> it (<code>known → A</code>), pinning A's hardness from below. (If A, B are both NPC then <code>A → B</code> and <code>B → A</code> — all NPC problems are equally hard.)</p></div>
+
+<h2>3 · Decision vs. optimization — and why decision is enough</h2>
+<p>NP-completeness is defined only on <strong>decision</strong> problems (Yes/No answers); optimization is harder (§0). Recall the two flavours of <strong>TSP</strong>:</p>
+<table>
+<tr><th>Version</th><th>Question</th></tr>
+<tr><td>Optimization</td><td>Find the <strong>shortest</strong> tour.</td></tr>
+<tr><td>Decision</td><td>Is there a tour of total length <strong>≤ C</strong>?</td></tr>
+</table>
+<p>You can get the optimum from a decision oracle: <strong>binary-search the bound C</strong>. Range is <code>1 … K</code> where K = sum of all edge weights. Each test is one decision call, so <code>O(log K)</code> calls give the optimum — an efficient decision algorithm yields an efficient optimization algorithm.</p>
+
+<h2>4 · Nondeterministic algorithms — guess then check</h2>
+<p>A nondeterministic algorithm has two stages: a <strong>guessing</strong> phase (magically pick a candidate via <code>Choice</code>) and a <strong>checking</strong> phase (verify it deterministically). The problem is in <strong>NP iff the check runs in polynomial time.</strong></p>
+<p>Nondeterministic SAT — guess each variable, then evaluate the formula:</p>
+<div class="tree">for i = 1 to n do                 // GUESS
+    xᵢ ← Choice(true, false)
+
+if E(x₁, x₂, …, xₙ) is true       // CHECK
+   then Success
+   else Failure</div>
+<p>Guessing all n variables is O(n) <code>Choice</code> calls; evaluating the CNF formula <code>E</code> is polynomial. So SAT is an NP problem. (Same shape as nondeterministic <em>searching</em>: <code>j ← Choice(1:n); if A(j)=x then Success</code>.)</p>
+<div class="note"><strong>Caution — NP-hard ≠ NP-complete.</strong> The <strong>halting problem</strong> ("will this program terminate?") is NP-hard (every NP problem reduces to it) but it is <strong>undecidable</strong>, so it is <em>not</em> in NP. NP-hard is a strictly bigger set than NP-complete.</div>
+
+<h2>5 · Cook's Theorem</h2>
+<p>The seed of the whole theory:</p>
+<div class="note"><strong>Cook's Theorem:</strong> <code>NP = P iff SAT ∈ P</code>. Consequences: <strong>SAT is NP-complete</strong> — the <em>first</em> NPC problem — and <strong>every NP problem reduces to SAT</strong>.</div>
+<p>Why? Every NP problem has a nondeterministic poly-time algorithm, and that algorithm can be transformed in poly time into a SAT instance that is <em>satisfiable iff the original answer is "Yes."</em> So every NP problem → SAT, making SAT NP-hard; SAT is also in NP (Section 4) ⇒ NP-complete.</p>
+<details><summary>Recipe: how to prove a new problem A is NP-complete</summary>
+<p><strong>(I)</strong> Show <code>A ∈ NP</code> — give a guess-and-poly-check algorithm.<br>
+<strong>(II)</strong> Show some known <code>B ∈ NPC</code> reduces to A, i.e. <code>B → A</code> (A is at least as hard as B ⇒ NP-hard).<br>
+(I) + (II) ⇒ A is NP-complete. That second step is Lesson 10's reduction chain, all seeded by SAT.</p></details>
+
+<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 6 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="3" data-explain="A problem is in <b>NP</b> when a guessed certificate can be <b>checked in poly time</b> — so searching, sorting (as a decision problem), and SAT all qualify. The <b>halting problem</b> is undecidable: no algorithm, deterministic or not, decides it, so there is nothing to check and it is <b>not in NP</b> (it is NP-hard, which is a different thing). If you picked sorting you confused 'no fast solver known' with 'unverifiable' — sorting verifies trivially.">
+  <div class="q">Q1. Three of these problems are in NP. Which one is <em>not</em>?</div>
+  <button class="opt">Searching: is value <code>x</code> in array <code>A</code>?</button>
+  <button class="opt">SAT: is this CNF formula satisfiable?</button>
+  <button class="opt">Sorting (decision): is there a permutation with cost &lt; C?</button>
+  <button class="opt">Halting: will this program ever terminate?</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="<b>In NP and every NP problem reduces to it = NP-hard AND in NP = NP-complete.</b> 'Every NP problem reduces to X' is exactly the definition of NP-hard; adding 'X is in NP' lands you in the intersection, NPC. Answering 'NP-hard' (B) is the classic half-answer — it drops the in-NP part. SAT is the textbook example: Cook proved both halves.">
+  <div class="q">Q2. Problem X is in NP, and every problem in NP reduces to X. What is X, most precisely?</div>
+  <button class="opt">NP-complete</button>
+  <button class="opt">NP-hard</button>
+  <button class="opt">in P</button>
+  <button class="opt">undecidable</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="<b>A → B</b> means A is solved by calling a solver for B. So a fast (poly-time) algorithm for B gives you a fast algorithm for A — <b>A is now poly-time</b>. It says nothing about B's hardness on its own. Picking 'B is poly-time' (C) reverses the arrow: you'd need B → A for that. The arrow points from the easier-or-equal problem to the at-least-as-hard one.">
+  <div class="q">Q3. You have a poly-time algorithm for problem B, and you know <code>A → B</code> (A reduces to B). What follows?</div>
+  <button class="opt">Nothing follows about A's running time</button>
+  <button class="opt">A can now be solved in poly time too</button>
+  <button class="opt">B can now be solved in poly time too</button>
+  <button class="opt">A must be strictly harder than B</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="To prove a new problem A is NP-hard you reduce a <b>known</b> hard problem <em>to</em> A: <b>known NPC → A</b>, which says A is at least as hard as the known one. Picking 'A → SAT' (B) reverses the arrow — that only shows A is no harder than SAT (true of every NP problem, proves nothing). 'A → A' is vacuous. The in-NP step is separate; it does not establish hardness.">
+  <div class="q">Q4. You want to prove a new problem A is NP-hard, knowing SAT is NP-complete. Which reduction do you build?</div>
+  <button class="opt">Show A is in NP by guess-and-check</button>
+  <button class="opt">Reduce A to SAT (<code>A → SAT</code>)</button>
+  <button class="opt">Reduce SAT to A (<code>SAT → A</code>)</button>
+  <button class="opt">Reduce A to itself (<code>A → A</code>)</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Cook's theorem: <b>NP = P iff SAT ∈ P</b> — it makes SAT the first NPC problem because <b>every NP problem reduces to SAT</b> (every NP → SAT). 'SAT reduces to every NP problem' (B) is the reversed arrow. 'P ≠ NP, proven' (C) is the famous trap: P vs NP is <em>open</em>, not settled. Cook gives an 'iff', not a poly-time solver for SAT.">
+  <div class="q">Q5. Which statement about Cook's theorem is correct?</div>
+  <button class="opt">It proves SAT is solvable in poly time</button>
+  <button class="opt">It shows SAT reduces to every NP problem</button>
+  <button class="opt">It proves P ≠ NP once and for all</button>
+  <button class="opt">It shows every NP problem reduces to SAT</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="The optimum lies in <b>1…K</b> where K = sum of all edge weights = 100. With only a Yes/No oracle ('tour ≤ C?') you <b>binary-search C over that range</b>, costing <b>O(log K) ≈ log₂100 ≈ 7</b> calls — not ~100 linear calls (B), and certainly not exponential. One call at C=100 (D) only confirms a tour exists; it doesn't pin the minimum. This is exactly how an efficient decision algorithm yields an efficient optimization algorithm.">
+  <div class="q">Q6. A TSP <em>decision</em> oracle answers "is there a tour of length ≤ C?". The edge weights sum to 100. To find the shortest tour's exact length, about how many oracle calls do you need, and how?</div>
+  <button class="opt">~7 calls: binary-search C over 1…100</button>
+  <button class="opt">~100 calls: try C = 1, 2, 3, … upward</button>
+  <button class="opt">~2¹⁰⁰ calls: test every possible tour</button>
+  <button class="opt">1 call: ask with C = 100 and read it off</button>
+  <div class="fb"></div>
+</div>
+
+<h2>7 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 §"The Theory of NP-Completeness" (your <code>Alg08</code> slides, slides 2–20 + 34). Re-read the Cook's-theorem statement (slide 20) and the nondeterministic SAT pseudocode (slide 19).</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch8</a> for the one-line class definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for every reduction.</p>
+
+<div class="note"><strong>Next up — Lesson 10:</strong> NP-Completeness II — the <em>reduction chain</em>. Starting from SAT we walk SAT → 3-SAT → … → Clique → Node Cover and SAT → Directed Hamiltonian Cycle → TSP, the exact "B → A" arrows that prove each new problem NP-complete.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on which way a reduction points? Want me to drill the halting-problem caution, or walk the SAT→SAT encoding of searching from the slides? Just say so.</p>
+  <p>Score this lesson out of 6 to yourself. 5–6 → on to Lesson 10. ≤4 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

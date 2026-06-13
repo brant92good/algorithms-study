@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 5 — Linear-Time Selection (Median of Medians)</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 5 · Prune-and-Search</div>
+<h1>Linear-Time Selection</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> the 3-way partition to find a k-th smallest element, and recite why groups of 5 give <code>O(n)</code>. Sorting finds the median in <code>O(n log n)</code> — this lesson's single tangible win is finding it in <strong>O(n)</strong>, by never sorting the whole set, only pruning a guaranteed fraction each round.</div>
+
+<h2>1 · What are we even solving?</h2>
+<p>The <strong>selection problem</strong>: you're given a set of <code>n</code> numbers (in no particular order) and a rank <code>k</code>, and you must return the <strong>k-th smallest</strong> element — the value that <em>would</em> sit in position <code>k</code> if you sorted the set, but found <em>without</em> fully sorting. The <strong>median</strong> is the middle one: the special case <code>k ≈ n/2</code> (precisely the <code>⌈n/2⌉</code>-th smallest).</p>
+<div class="tree">S = {7, 2, 9, 4, 5}   (n = 5)
+sorted →  2  4  5  7  9      ← we never actually do this
+          1  2  3  4  5  ← rank k
+k = 1 → 2 (smallest)   k = 3 → 5 (the median)   k = 5 → 9 (largest)</div>
+<p>The obvious recipe is: <strong>sort</strong> the whole set, then read off position <code>k</code>. Sorting costs <code>O(n log n)</code>. But we only want <em>one</em> element, not the whole order — so fully sorting is wasteful. The single win of this lesson is finding the answer in <strong>O(n)</strong> (linear — work proportional to <code>n</code>, no <code>log n</code> factor), by never sorting the whole set.</p>
+
+<div class="note"><strong>The idea behind that win — prune-and-search.</strong> Think of how <strong>binary search</strong> finds a value in a sorted array: each step throws away <em>half</em> the array (the half that can't contain the target) and repeats on the rest. <strong>Prune-and-search</strong> generalizes this to unsorted data: each round, <em>prove</em> that some constant fraction of the elements <strong>cannot</strong> be the answer, throw them away ("prune"), and repeat on what survives. Because each round discards a fixed slice, the survivors shrink geometrically and the total work stays small.</p></div>
+
+<p>To prune, we need to split the set. We pick one element as the <strong>pivot</strong> <code>p</code> (a reference value we compare everything against) and do a <strong>partition</strong> — one linear sweep that drops every element into one of three buckets: those <em>smaller</em> than <code>p</code>, those <em>equal</em> to <code>p</code>, and those <em>larger</em> than <code>p</code>. Knowing how many fall below <code>p</code> tells us immediately which bucket the k-th smallest lives in, so we can discard the other two. Sections 2–3 make this precise; sections 4–5 show how to choose <code>p</code> so the pruning is guaranteed.</p>
+
+<h2>2 · The prune-and-search method</h2>
+<p>Binary search runs in many iterations; each one throws away a fixed fraction <code>f</code> of the data and recurses on the rest. <strong>Prune-and-search</strong> generalizes that: prune a fraction <code>f</code>, recurse on the remaining <code>(1−f)·n</code> elements, until the survivor is small enough to solve directly. If each iteration's work is <code>O(nᵏ)</code>, then:</p>
+<div class="tree">T(n) = T((1 − f)·n) + O(nᵏ)   ⇒   T(n) = O(nᵏ)</div>
+<div class="note"><strong>Why the first iteration dominates:</strong> unrolling gives <code>c·nᵏ·(1 + (1−f)ᵏ + (1−f)²ᵏ + …)</code>. Since <code>1−f &lt; 1</code>, that bracket is a convergent <strong>geometric series</strong> — a constant. So the total cost is just a constant times the first iteration's <code>nᵏ</code>. The whole process is the same order as one pass.</div>
+
+<h2>3 · The 3-way partition</h2>
+<p>Pick a pivot <code>p</code> and split <code>S</code> into three buckets (the partition), then recurse into only one. <code>|S₁|</code> means "the number of elements in <code>S₁</code>".</p>
+<table>
+<tr><th>Bucket</th><th>Holds</th></tr>
+<tr><td><code>S₁</code></td><td>everything <strong>&lt; p</strong></td></tr>
+<tr><td><code>S₂</code></td><td>everything <strong>= p</strong></td></tr>
+<tr><td><code>S₃</code></td><td>everything <strong>&gt; p</strong></td></tr>
+</table>
+<p>To find the k-th smallest, compare <code>k</code> against the bucket sizes:</p>
+<div class="tree">if |S₁| ≥ k          → answer is in S₁; recurse on S₁ with same k
+else if |S₁|+|S₂| ≥ k → answer is p itself; DONE
+else                 → answer is the (k − |S₁| − |S₂|)-th smallest of S₃; recurse on S₃</div>
+
+<h2>4 · Trace it yourself</h2>
+<p>Let <code>S = {7, 2, 9, 4, 5, 1, 8, 3}</code> (n = 8). Find the <strong>4th smallest</strong> (k = 4). Suppose this round's pivot is <code>p = 5</code>. Work the partition and the branch on paper, then reveal.</p>
+
+<details><summary>Step 1 — build the three buckets around p = 5</summary>
+<p><code>S₁ = {2, 4, 1, 3}</code> (the four elements &lt; 5) &nbsp;|&nbsp; <code>S₂ = {5}</code> &nbsp;|&nbsp; <code>S₃ = {7, 9, 8}</code>.<br>
+So <code>|S₁| = 4</code>, <code>|S₂| = 1</code>, <code>|S₃| = 3</code>.</p></details>
+
+<details><summary>Step 2 — which bucket do we recurse into?</summary>
+<p>Test <code>|S₁| ≥ k</code> → <code>4 ≥ 4</code> ✓. The 4th smallest lies in <code>S₁</code>. <strong>Prune <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁ = {2, 4, 1, 3}</code> with the <em>same</em> k = 4.<br>
+(Sorted, <code>S₁</code> is <code>1,2,3,4</code> — its 4th smallest is <code>4</code>, which is indeed the 4th smallest of the original set. ✓)</p></details>
+
+<details><summary>What if instead k = 5?</summary>
+<p><code>|S₁| ≥ 5</code>? <code>4 ≥ 5</code> ✗. Then <code>|S₁|+|S₂| ≥ 5</code>? <code>5 ≥ 5</code> ✓ → the answer is <strong>p = 5</strong> itself. Done, no recursion.<br>
+And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 − 4 − 1) = 1</code>st smallest of <code>{7,9,8}</code>, which is <code>7</code>. ✓</p></details>
+
+<h2>5 · Median of medians — the pivot trick</h2>
+<p>A bad pivot prunes almost nothing (worst case <code>O(n²)</code>). We need a pivot guaranteed "central enough" <em>regardless of input</em>:</p>
+<div class="tree">1. Split S into ⌈n/5⌉ groups of 5.
+2. Sort each group of 5; its median is the 3rd element.
+3. p = the median of those ⌈n/5⌉ group-medians.</div>
+<p>The grid below is slide 7. Each <strong>column</strong> is one sorted group of 5 (smallest on top). The middle row <code>M</code> is the group-medians; <code>P</code> is their median.</p>
+<div class="tree">  sorted ↓     each column = one sorted 5-element group
+            ┌───────────────────────────┐
+        ·   │ ·     ·     ·     ·  │  ·    ·     ·
+        ·   │ ·     ·     ·     ·  │  ·    ·     ·
+  M →   ·     ·   [·]──P  ·     ·  │  ·    ·     ·    ← median row M
+        ·     ·     ·     ·  │  ·    ·     ·     ·
+        ·     ·     ·     ·  │  ·    ·     ·     ·
+                            └────────────────────┘
+   upper-left block: ≥ ¼ of S is ≤ P
+   lower-right block: ≥ ¼ of S is ≥ P</div>
+<div class="note"><strong>The guarantee:</strong> about half the groups have median <code>≤ P</code>; in each such group the median plus the two above it (3 of 5) are <code>≤ P</code>. That forces <strong>at least n/4 elements ≤ P</strong>, and symmetrically <strong>at least n/4 ≥ P</strong>. So <strong>at least n/4 are pruned</strong> every iteration and <strong>at most 3n/4 survive</strong>.</div>
+
+<h2>6 · Why it's O(n)</h2>
+<p>The 5-step algorithm: (1) group by 5, (2) sort each group, (3) recursively find the median of the <code>n/5</code> medians = the pivot <code>p</code>, (4) partition into <code>S₁,S₂,S₃</code> around <code>p</code>, (5) the 3-way recurse on at most <code>3n/4</code> survivors. Steps 1, 2, 4 are each <code>O(n)</code>; step 3 costs <code>T(n/5)</code>; step 5 costs <code>T(3n/4)</code>. Hence:</p>
+<div class="tree">T(n) = T(3n/4) + T(n/5) + O(n)</div>
+<p>The two fractions sum to <code>3/4 + 1/5 = 19/20 &lt; 1</code> — that slack under 1 is exactly why this stays linear.</p>
+
+<details><summary>The substitution proof (algebra)</summary>
+<p>Assume <code>T</code> is bounded by a polynomial. Comparing coefficients of the two recursive terms against <code>T(19n/20)</code>: the linear parts match (<code>3/4 + 1/5 = 19/20</code>) and the quadratic part of the sum is <em>smaller</em> (<code>9/16 + 1/25 = 241/400 &lt; 361/400</code>). So <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code>, collapsing the recurrence to a single term:</p>
+<div class="tree">T(n) ≤ cn + T(19n/20)
+
+     ≤ cn·(1 + 19/20 + (19/20)² + …)
+     = cn · 1/(1 − 19/20)
+     = cn · 20
+     = 20cn
+
+∴  T(n) ≤ 20cn + b = O(n)</div>
+<p>The geometric series with ratio <code>19/20</code> sums to <code>20</code>. The constant <code>20</code> is fixed, while the sort's <code>log n</code> grows without bound — that's the asymptotic win.</p></details>
+
+<h2 class="qa-head">7 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="0" data-explain="Test in order: |S₁| ≥ k? <b>6 ≥ 4</b> ✓ — so the 4th smallest is already among the elements below p; discard S₂,S₃ and recurse on S₁ with the <b>same</b> k = 4. Picking S₃ recurses into the wrong third (those are all &gt; p, far too big). 'p is the answer' would need |S₁| &lt; k ≤ |S₁|+|S₂|, which fails here since |S₁| = 6 already exceeds k.">
+  <div class="q">Q1. After partitioning around pivot p you get |S₁| = 6, |S₂| = 2, |S₃| = 5 (n = 13), and you want the k = 4th smallest. You recurse into…</div>
+  <button class="opt">S₁ with k = 4 (same k)</button>
+  <button class="opt">S₃ with k = 4</button>
+  <button class="opt">S₃ with k = 4 − 6 − 2</button>
+  <button class="opt">nothing — p is the 4th smallest</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Both |S₁| ≥ k (3 ≥ 7? no) and |S₁|+|S₂| ≥ k (3+2=5 ≥ 7? no) fail, so the answer is in S₃ at adjusted rank <b>k′ = k − |S₁| − |S₂| = 7 − 3 − 2 = 2</b>. Forgetting to subtract |S₁|+|S₂| (keeping k = 7) is the classic error — S₃ only has 4 elements, so rank 7 is meaningless. Subtracting only |S₁| (k = 4) double-counts nothing but skips the equal-to-p block S₂.">
+  <div class="q">Q2. Partitioning gives |S₁| = 3, |S₂| = 2, |S₃| = 4 (n = 9) and you want the k = 7th smallest. You recurse into…</div>
+  <button class="opt">S₃ with k = 7 (unchanged)</button>
+  <button class="opt">S₃ with k = 7 − 3 = 4</button>
+  <button class="opt">S₁ with k = 7</button>
+  <button class="opt">S₃ with k = 7 − 3 − 2 = 2</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The boundary is <b>|S₁| ≥ k</b>, not |S₁| &gt; k. Here |S₁| = 5 and k = 5, so 5 ≥ 5 ✓ — the answer lies in S₁ (recurse, same k). If you used strict &gt; (5 &gt; 5 is false) you would wrongly fall through and conclude p is the answer. That off-by-one is exactly the inconsistency between the deck's two slides; the ≥ form is the correct one.">
+  <div class="q">Q3. |S₁| = 5, |S₂| = 1, |S₃| = 4 and k = 5. Using the correct boundary test, where is the 5th smallest?</div>
+  <button class="opt">p is the answer (since |S₁| &lt; k)</button>
+  <button class="opt">in S₁ — recurse on S₁ with k = 5</button>
+  <button class="opt">in S₃ with k = 5 − 5 − 1 = −1</button>
+  <button class="opt">in S₃ with k = 5</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="The median of medians guarantees ≥ n/4 elements are ≤ p AND ≥ n/4 are ≥ p, so <b>at least n/4 are pruned</b> and at most 3n/4 survive each round. 'n/2 pruned' overstates the guarantee; n/5 confuses the group-of-5 split with the prune fraction; 'only when already sorted' describes a bad arbitrary pivot, which is exactly what median-of-medians avoids.">
+  <div class="q">Q4. What does the median-of-medians pivot guarantee about each iteration?</div>
+  <button class="opt">at least n/2 elements are pruned</button>
+  <button class="opt">at least n/5 elements are pruned</button>
+  <button class="opt">at least n/4 elements are pruned (≤ 3n/4 survive)</button>
+  <button class="opt">n/4 pruned only if the input is already sorted</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="It solves to <b>O(n)</b> because 3/4 + 1/5 = 19/20 &lt; 1: the two subproblems together are strictly smaller than the input, so unrolling gives a geometric series 1/(1−19/20) = 20, i.e. T(n) ≤ 20cn. The tempting wrong answer is O(n log n) — students assume the per-group sorting makes it log-linear, but sorting groups of <i>constant</i> size 5 is O(n) total, not O(n log n). O(n²) would arise only with a bad pivot that fails the 1/4 guarantee.">
+  <div class="q">Q5. T(n) = T(3n/4) + T(n/5) + O(n) solves to which bound, and why?</div>
+  <button class="opt">O(n²), because there are two recursive calls</button>
+  <button class="opt">O(log n), like binary search, since we prune each round</button>
+  <button class="opt">O(n log n), because each round sorts the groups</button>
+  <button class="opt">O(n), because 3/4 + 1/5 = 19/20 &lt; 1</button>
+  <div class="fb"></div>
+</div>
+
+<h2>8 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, the <strong>Prune-and-Search</strong> chapter (your <code>A06</code> slide deck, "The General Method" + "The Selection Problem"). Re-draw the slide-7 median-of-medians grid and re-trace the n/4 guarantee from it.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary</a> and the <a href="../notes-html/A06-prune-and-search.html">full chapter note</a> (general method, selection, median-of-medians, the O(n) proof).</p>
+
+<div class="note"><strong>Next up — Lesson 6:</strong> Prune-and-Search applied to <strong>two-variable linear programming</strong>. Same skeleton — pair up the constraints, take the median intersection as the test abscissa <code>xₘ</code>, decide which side the optimum is on, and prune a quarter of the constraints each round for another <code>O(n)</code>.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on why exactly 3 of 5 land below the median? Want a fresh set and k to trace cold? Want me to walk the substitution proof line by line? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 6. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

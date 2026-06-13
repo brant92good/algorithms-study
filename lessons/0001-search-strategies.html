@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — The Four Search Strategies</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 1 · Ch6 Searching Strategies</div>
+<h1>The Four Search Strategies</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> a search and name the strategy. All four below are the same loop with one knob turned — <em>which open node do I expand next?</em> Master that knob and you can trace any of them, and tell them apart in a short-answer question.</div>
+
+<h2>0 · What are we even searching?</h2>
+<p>Start with nothing assumed. A <strong>hard problem</strong> is one where you can't just compute the answer in one shot — you have to <em>try possibilities</em>. The standard trick is to turn the problem into a tree of partial decisions and search it.</p>
+<p>That tree is called a <strong>solution tree</strong> (or <strong>state-space tree</strong>): each node is one <em>state</em> of the problem — a snapshot of "here's what I've decided so far." The <strong>root</strong> is "nothing decided yet." Going down one level means making one more decision, which produces a new state. A <strong>leaf</strong> at the bottom is a fully-decided candidate. A <strong>goal node</strong> is a state that solves the problem; solving = finding a goal node. We turn hard problems into trees because once it's a tree, the only question left is the easy-sounding <em>"which node do I look at next?"</em> — and that single choice is the whole game.</p>
+
+<p>Two pieces of vocabulary you'll see everywhere:</p>
+<ul>
+<li><strong>Expanding a node</strong> = take a node, generate all its children (the states reachable by making one more decision), and put those children into your to-do list. "Expand A" means "produce A's children."</li>
+<li>The <strong>open list</strong> = the to-do list of nodes that have been <em>discovered but not yet expanded</em>. The search loop keeps pulling one node off this list, checking if it's the goal, and if not, expanding it (which adds its children back to the open list).</li>
+</ul>
+
+<div class="note"><strong>The evaluation function <code>f(n)</code>.</strong> Some strategies need to judge how promising a node looks. <code>f(n)</code> is a number we attach to each node <code>n</code> that <em>estimates</em> how good it is — here, lower means more promising (think "estimated distance still to go"). It's only an estimate, computed cheaply from the state; the strategy uses it to decide which open node to pick.</div>
+
+<h3 style="font-weight:600;font-size:1.05rem;margin-top:1.6rem">A concrete problem: the 8-puzzle</h3>
+<p>The classic example is the <strong>8-puzzle</strong>: a <code>3×3</code> board holding 8 numbered tiles (1–8) and one <strong>blank</strong> square. A move <em>slides</em> a tile that's next to the blank into the blank's spot (equivalently, the blank swaps with an adjacent tile). You start from some scrambled board and want to reach a fixed <strong>goal</strong> arrangement.</p>
+<div class="tree">  start            goal
+ 2 8 3           1 2 3
+ 1 _ 4    →      8 _ 4
+ 7 6 5           7 6 5
+(_ = blank; slide a neighbour of the blank into it)</div>
+<p>Each board is a <em>state</em>; expanding a board produces the boards you can reach in one slide. For the 8-puzzle the evaluation function is</p>
+<div class="tree">f(n) = d(n) + w(n)
+   d(n) = depth of n   = number of slides made to reach this board
+   w(n) = number of tiles sitting in the wrong place vs the goal</div>
+<p>So <code>f</code> rewards being close to the goal (few misplaced tiles) without having wandered too far (shallow depth). Lower <code>f</code> = more promising. This is the exact <code>f(n)</code> you'll see hill-climbing and best-first use below.</p>
+
+<h2>1 · Everything is a tree walk</h2>
+<p>Now the unifying picture. Whatever the problem — SAT, the 8-puzzle, a tour — it becomes that same <strong>solution tree</strong>: the root is "nothing decided," each level fixes one more decision, each leaf is a full candidate, and solving means reaching a goal node. <span class="mono">Every strategy keeps the open list of discovered-but-not-yet-expanded nodes and repeats:</span></p>
+<div class="tree">repeat:
+   pick one open node n        &larr;  THE KNOB
+   if n is a goal &rarr; stop
+   else expand n: add its children to the open list</div>
+<p>The four strategies differ <em>only</em> in "pick one open node."</p>
+
+<h2>2 · The knob</h2>
+<table>
+<tr><th>Strategy</th><th>Picks…</th><th>Structure</th><th>View</th></tr>
+<tr><td><strong>DFS</strong></td><td>deepest open node</td><td><code>stack</code></td><td>local</td></tr>
+<tr><td><strong>BFS</strong></td><td>shallowest open node</td><td><code>queue</code></td><td>local</td></tr>
+<tr><td><strong>Hill climbing</strong></td><td>best <em>child</em> of current (greedy DFS)</td><td><code>stack</code></td><td>local</td></tr>
+<tr><td><strong>Best-first</strong></td><td>best node among <em>all</em> open</td><td><code>sorted list</code></td><td><strong>global</strong></td></tr>
+</table>
+<div class="note"><strong>Key contrast for the exam:</strong> hill climbing only ever looks at the children of where it is now — so it can march into a dead end and get stuck. Best-first keeps <em>every</em> open node on the table and always jumps to the globally most promising one, so it recovers. Both use the estimate <code>f(n)</code>; only their <em>scope</em> differs.</div>
+
+<h2>3 · Trace it yourself</h2>
+<p>Tree below. Numbers in <code>(…)</code> are <code>f(n)</code> — <strong>lower = more promising</strong>. Children are listed left-to-right. <strong>Goal = G.</strong></p>
+<div class="tree">              A
+        ┌─────┼─────┐
+      B(5)   C(2)   D(4)
+      ┌─┐            ┌─┐
+    E(6)F(3)       G(1)H(7)   &larr; G is the goal</div>
+
+<p>Work each out on paper, then open the answer. Give the <strong>order nodes are expanded</strong>.</p>
+
+<details><summary>DFS (deepest first, left-to-right)</summary>
+<p><code>A → B → E → F → C → D → G ✓</code><br>
+Dives down the leftmost branch fully (B,E,F) before ever touching C or D. Ignores the f-values entirely.</p></details>
+
+<details><summary>BFS (shallowest first)</summary>
+<p><code>A → B → C → D → E → F → G ✓</code><br>
+Clears a whole level before the next. Also ignores f-values. Finds G after finishing level 1.</p></details>
+
+<details><summary>Hill climbing (greedy, children only)</summary>
+<p><code>A → C … stuck.</code><br>
+From A the best child is C(2). Expand C — it's a leaf and not the goal. Hill climbing has no other open nodes in view, so it dead-ends (must backtrack/restart). The greedy step toward C(2) was a <em>local</em> trap.</p></details>
+
+<details><summary>Best-first (global best open node)</summary>
+<p><code>A → C → D → G ✓</code><br>
+Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}; take D4 → adds G1,H7 → open {B5,G1,H7}; take G1 = goal. It explored C just like hill climbing, but kept B and D on the list and recovered. <strong>Fewest expansions here.</strong></p></details>
+
+<h2 class="qa-head">4 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="2" data-explain="Best-first sorts the <b>whole</b> open list, so right after expanding A the open nodes are {B(5),C(2),D(4)} and the smallest f is C(2) — it jumps straight to C even though C sits to the right. DFS would take B (deepest/leftmost pushed, ignoring f); hill-climbing also picks C(2) here, but only because C is a <i>child of A</i> — it never compares across the whole list the way best-first does.">
+  <div class="q">Q1. Tree: root <code>A</code> has children <code>B(5) C(2) D(4)</code> (left→right); the <code>(…)</code> are f, lower = better. After expanding A, <strong>best-first</strong> expands which node next?</div>
+  <button class="opt">B — it is the leftmost child</button>
+  <button class="opt">D — its subtree hides the goal</button>
+  <button class="opt">C — it has the smallest f</button>
+  <button class="opt">A — re-expand the root first</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="DFS uses a <b>stack</b> (LIFO): it expands the deepest open node, diving down one branch before backtracking. The trap is C — a <b>queue</b> (FIFO) is what gives BFS, the level-by-level order. A heap/sorted list would order nodes by f, which is best-first, not DFS.">
+  <div class="q">Q2. DFS dives down one branch as deep as possible, then backtracks. Which open-list structure produces exactly that LIFO order?</div>
+  <button class="opt">A queue (first-in, first-out)</button>
+  <button class="opt">A stack (last-in, first-out)</button>
+  <button class="opt">A heap ordered by f(n)</button>
+  <button class="opt">A sorted list, smallest f first</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Hill-climbing only sees the <b>children of its current node</b>. From A its best child is C(2), so it commits to C; C is a leaf and not the goal, and hill-climbing has no other open nodes on a list to fall back to, so it stalls. Best-first picks C too, but keeps B and D open and recovers — the difference is a <i>local</i> vs <i>global</i> view, not the f-value used.">
+  <div class="q">Q3. Tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; <code>C</code> is a leaf; the goal <code>G</code> lives under <code>D</code>. Why does <strong>hill-climbing</strong> stall here?</div>
+  <button class="opt">It expands every level fully and runs out of memory</button>
+  <button class="opt">It needs a sorted queue it does not have</button>
+  <button class="opt">It chose B(5) and B has no goal beneath it</button>
+  <button class="opt">It commits to best child C(2), a dead leaf, with nothing else open</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="DFS goes deepest-first, left-to-right, ignoring f: A, then down the leftmost branch B,E,F fully, then C, then D, then G. If you answered <b>A→B→C→D→E→F→G</b> you traced <i>BFS</i> (level order); if you picked the f-sorted order you traced best-first. DFS never looks at the f-values.">
+  <div class="q">Q4. Same tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; under B are <code>E(6) F(3)</code>; under D are <code>G(1) H(7)</code>, goal G; C is a leaf. Give the <strong>DFS</strong> expansion order (deepest-first, left→right).</div>
+  <button class="opt">A B E F C D G</button>
+  <button class="opt">A B C D E F G</button>
+  <button class="opt">A C D G</button>
+  <button class="opt">A C B D F E G</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="All four here <b>stop at the first goal they reach</b>, which need not be the cheapest — so none guarantees optimality. <b>Branch-and-bound</b> (next lesson) adds a bound that prunes any branch that cannot beat the best solution so far, proving a goal optimal. The trap is D: best-first is still feasibility-only — it has a global view but no bound, so it is <i>not</i> the optimization answer.">
+  <div class="q">Q5. DFS, BFS, hill-climbing and best-first all halt at the <em>first</em> goal they find. Which strategy adds the machinery needed to guarantee an <em>optimal</em> solution?</div>
+  <button class="opt">Breadth-first search, since it finds shallow goals</button>
+  <button class="opt">Hill-climbing, since it greedily takes the best step</button>
+  <button class="opt">Branch-and-bound, since it prunes by a bound</button>
+  <button class="opt">Best-first, since it has a global view</button>
+  <div class="fb"></div>
+</div>
+
+<h2>5 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §6.1–6.3 (your <code>Alg05</code> slides, "The Searching Strategies"). Read the 8-puzzle best-first figure (Fig 6-16) and re-trace it with <code>f(n)=d(n)+w(n)</code>.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> for the one-line definitions.</p>
+
+<div class="note"><strong>Next up — Lesson 2:</strong> branch-and-bound, where the knob becomes "expand best open node, but <em>prune</em> any branch whose bound can't beat the best solution so far." That's the jump from feasibility to optimization, and the reduced-cost-matrix TSP trace is a classic exam item.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Stuck on why hill climbing backtracks? Want a harder tree to trace? Want me to build the 8-puzzle version? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 2. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

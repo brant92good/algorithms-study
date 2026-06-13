@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 3 — A* Search & 0/1-Knapsack Branch-and-Bound</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 3 · Ch6 Searching Strategies</div>
+<h1>A* Search & 0/1-Knapsack Branch-and-Bound</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> an A* expansion with full <code>g/h/f</code> bookkeeping, and read the <strong>bounds</strong> off a knapsack branch-and-bound. Two optimization tools, one shared idea — a bound that never overestimates lets the <em>first</em> goal you pull off the list be the optimal one.</div>
+
+<h2>0 · What are these two things?</h2>
+<p>This lesson covers two unrelated-looking problems that share one trick: a <em>bound that never lies in the optimistic direction</em> lets you stop early and still be sure you found the best answer. Before any machinery, here is each problem in plain words.</p>
+
+<p><strong>A* — finding the cheapest route to a goal.</strong> Imagine a road map. You start at one town (the <em>root</em>) and want to reach a destination town (the <em>goal node</em>) along roads, where each road has a cost (miles, money, time). A <strong>least-cost path</strong> is the cheapest way to get there. A* is a method that explores the map outward, always working next on whichever partial route looks most promising, until it can <em>prove</em> it has the cheapest route to the goal.</p>
+<p>"Most promising" is measured by one number per place you could be at, call that place a <strong>node</strong> <code>n</code>:</p>
+<div class="tree">f(n) = g(n) + h(n)
+   g(n) = cost ALREADY SPENT getting from the start to n
+   h(n) = a GUESS of the cost still to go, from n to the goal
+   f(n) = total trip cost if that guess is right</div>
+<div class="note"><strong>Road-trip picture:</strong> you are partway through a drive. <code>g</code> = the miles already on the odometer. <code>h</code> = your guess of the miles left (e.g. straight-line distance to the destination on the map). <code>f = g + h</code> = your guess of the <em>whole</em> trip. A* always works next on the route with the smallest <code>f</code> — the one that looks cheapest end-to-end.</div>
+<p>The guess <code>h(n)</code> is called a <strong>heuristic</strong> (an educated estimate). Write <code>h*(n)</code> for the <em>true</em> cheapest cost from <code>n</code> to the goal — what you'd get if you somehow knew the answer. A heuristic is called <strong>admissible</strong> when it never overestimates: <code>h(n) ≤ h*(n)</code> for every node. (Straight-line distance is admissible: real roads can only be longer than a straight line, never shorter.)</p>
+<div class="note"><strong>Why admissibility is the whole point.</strong> If <code>h</code> never overestimates, then <code>f(n)</code> is never bigger than the true best total through <code>n</code> — so <code>f</code> is an honest <em>lower bound</em>. Now suppose A* picks a goal node off the list because it has the smallest <code>f</code>. Every other route still waiting has an <code>f</code> at least this big, and its real cost can only be <em>that high or higher</em>. So nothing waiting can beat the goal we just pulled — <strong>the first goal you select for expansion is guaranteed optimal</strong>, and you can stop.</p></div>
+
+<p><strong>The 0/1 knapsack problem — packing a bag for maximum value.</strong> You have a bag (the knapsack) that can hold at most <code>M</code> units of weight. There are several items; each item <code>i</code> has a <em>weight</em> <code>Wᵢ</code> and a <em>profit</em> (value) <code>Pᵢ</code>. You must choose a <strong>subset</strong> of the items to pack so that their total weight stays within <code>M</code> and their total profit is as large as possible. The "<strong>0/1</strong>" part means each item is all-or-nothing: you either take the whole item (<code>Xᵢ = 1</code>) or leave it (<code>Xᵢ = 0</code>) — no cutting it in half.</p>
+<div class="tree">Tiny example:  bag holds M = 10
+   item A:  weight 6,  profit 9
+   item B:  weight 5,  profit 6
+   item C:  weight 5,  profit 5
+A+B weighs 11 > 10  ✗ won't fit together
+Best legal pick: A + C = weight 11? no — A+C = 6+5 = 11 > 10 ✗
+   take A alone     → profit 9   (weight 6)
+   take B + C       → profit 11  (weight 10)  ← best
+So the answer is {B, C}: profit 11.</div>
+<p>Notice you can't just grab the single most valuable item — you must weigh combinations against the capacity. That is what makes it hard.</p>
+
+<p><strong>The fractional relaxation — an easier cousin that bounds the hard one.</strong> "<strong>Relax</strong>" means loosen a rule to make a problem easier. Here we drop the all-or-nothing rule and allow taking <em>fractions</em> of items (<code>0 ≤ Xᵢ ≤ 1</code>) — like pouring out part of a sack of grain. This <strong>fractional knapsack</strong> is easy: sort items by <em>density</em> <code>Pᵢ/Wᵢ</code> (profit per unit weight) and greedily take the best-value-per-pound items first, slicing the last one to fill the bag exactly. Because the relaxed version has strictly more freedom than the 0/1 version, its best profit is always <em>at least as good</em> — so it gives a <strong>bound</strong> (a guaranteed ceiling) on the all-or-nothing answer. That bound is exactly the "never-overestimate" tool A* uses, reused here to prune the search.</p>
+
+<h2>1 · A* — best-first with a price tag</h2>
+<p>A* is plain <strong>best-first search</strong> (Lesson 1's global-view knob: keep <em>all</em> partial routes open and always expand the globally best-looking one) aimed at <em>optimization</em>. Every open node carries a number:</p>
+<div class="tree">f(n) = g(n) + h(n)
+   g(n) = actual cost  root → n      (what you've spent)
+   h(n) = estimated cost n → goal    (what's left, a guess)
+  h*(n) = the TRUE remaining cost n → goal</div>
+<p>Expand the open node with the smallest <code>f</code>. The magic is the <strong>admissibility condition</strong>:</p>
+<div class="note"><strong>Admissibility:</strong> if <code>h(n) ≤ h*(n)</code> for every node (the heuristic <em>never overestimates</em>), then <code>f(n) = g(n)+h(n) ≤ g(n)+h*(n) = f*(n)</code> — so <code>f</code> is a <strong>lower bound</strong> on the best solution through <code>n</code>. Consequence: <strong>the first goal node <em>selected for expansion</em> is optimal</strong>, and you can stop. Reaching a goal that merely sits in the list is <em>not</em> enough — it must be the smallest-<code>f</code> node you pick.</div>
+
+<h2>2 · Trace A* yourself (Fig. 6-36)</h2>
+<p>Here is the actual search tree A* walks (Fig. 6-36, slides 37–42), relabeled <code>R</code> (root) … <code>L</code>. Each <strong>edge carries its cost</strong> (the increment to <code>g</code>) and each <strong>node carries its heuristic <code>h</code></strong> (the small number beside/below it). Build <code>f = g + h</code> from these.</p>
+<img src="../render/A05/png_013.png" alt="A* search tree: root R branches to A (edge a=2), B (edge b=4), C (edge c=3); A branches to D (d=2, h beneath) and E (e=3, h=7); C branches to F (k=2) and G (f=2, h=10); D branches to H (h-edge=1, h=10) and I (i=3); B branches to J (g=2, h=11); F branches to K (h=1, h=11) and L (l=3, h=8). I is the goal." style="background:#fff;padding:.5rem;max-width:100%;border:1px solid var(--rule);border-radius:6px">
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.3rem">Fig. 6-36 — the A* search tree. Edge labels are <code>letter-id, cost</code>; the bare number under each node is its <code>h</code>. (× marks a generated-but-unexpanded leaf.) Goal node is <strong>I</strong>.</p>
+<p>The same graph as a <code>(g, h, f)</code> table — children listed left→right, expand smallest <code>f</code>, ties broken by the note's order:</p>
+<div class="tree">                 R
+        ┌────────┼────────┐
+     A(2,2,4) C(3,2,5) B(4,2,6)
+     ┌──┴──┐   ┌──┴──┐      │
+ D(4,1,5) E   F(5,1,6) G   J(6,5,11)
+ ┌──┴──┐ (5,2,7) ┌─┴─┐ (5,5,10)
+H     I(7,0,7)  K   L(8,0,8)
+(5,5,10)       (6,5,11)
+                              I is the goal node</div>
+<p>Work out the <strong>order nodes are expanded</strong> and which node ends the search, then reveal.</p>
+
+<details><summary>A* expansion order &amp; stopping node</summary>
+<p>Open list always sorted by <code>f</code>; expand the front. Newly added children in <b>bold</b>:</p>
+<div class="tree">start  open = {R}
+exp R  → A(4) C(5) B(6)            open = {A4, C5, B6}
+exp A  → D(5) E(7)                 open = {C5, D5, B6, E7}
+exp C  → F(6) G(10)                open = {D5, F6, B6, E7, G10}
+exp D  → H(10) I(7)                open = {F6, B6, I7, E7, G10, H10}
+exp B  → J(11)                     open = {F6, I7, E7, ...}
+exp F  → K(11) L(8)                open = {I7, E7, L8, ...}
+SELECT I (f = 7) — I is a goal → STOP, optimal</div>
+<p>Expansion order: <code>R → A → C → D → B → F</code>, then the search <strong>terminates by selecting goal node I</strong> (<code>f = g = 7</code>, since <code>h(I)=0</code>). Note the correction: <strong>F is just the last node expanded</strong> — it is <em>not</em> the goal. I is the goal, and because <code>f(I)=7</code> is the smallest open value when selected, that path is provably optimal (cost 7 = <code>S→V₁→V₄→T</code> = 2+2+3).</p></details>
+
+<h2>3 · 0/1-Knapsack by branch-and-bound (Fig. 6-28)</h2>
+<p>Items sorted by density <code>Pᵢ/Wᵢ</code> (non-increasing). Capacity <code>M = 34</code>, <code>n = 6</code>. Maximize <code>Σ PᵢXᵢ</code> with <code>Xᵢ ∈ {0,1}</code>.</p>
+<table>
+<tr><th>i</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+<tr><td><strong>Pᵢ</strong></td><td>6</td><td>10</td><td>4</td><td>5</td><td>6</td><td>4</td></tr>
+<tr><td><strong>Wᵢ</strong></td><td>10</td><td>19</td><td>8</td><td>10</td><td>12</td><td>8</td></tr>
+</table>
+<p>The deck turns this into a <strong>minimization</strong> by negating profit (objective <code>−Σ PᵢXᵢ</code>) so the same lower-bound machinery as TSP/personnel applies — <em>more negative is better</em>. Branch on <code>Xᵢ = 1</code> vs <code>Xᵢ = 0</code> at level <code>i</code>.</p>
+
+<details><summary>Compute the two bounds (upper from feasible, lower from fractional)</summary>
+<p><strong>Upper bound — a feasible integer solution.</strong> Greedily take items 1 and 2:</p>
+<div class="tree">X1 = X2 = 1, rest 0
+weight = W1 + W2 = 10 + 19 = 29 ≤ 34  ✓
+objective = −(P1 + P2) = −(6 + 10) = −16   ← UPPER BOUND</div>
+<p>"Any solution higher than −16 cannot be optimal" — we already have something this good, so −16 caps the search.</p>
+<p><strong>Lower bound — fractional (greedy) relaxation.</strong> Relax <code>Xᵢ ∈ {0,1}</code> to <code>0 ≤ Xᵢ ≤ 1</code>; fill by density until <code>M</code> is exactly full, taking a fraction of the last item:</p>
+<div class="tree">X1 = 1, X2 = 1, X3 = 5/8, rest 0
+weight = 10 + 19 + (5/8)(8) = 10 + 19 + 5 = 34 = M  ✓
+objective = −(P1 + P2 + (5/8)P3) = −(6 + 10 + 2.5) = −18.5</div>
+<p>The fractional optimum is <em>at least as good</em> as any integer solution (it has strictly more freedom), so <code>−18.5</code> is a valid lower bound on the true objective. Since the real 0/1 objective is an <strong>integer</strong>, round inward to <code>−18</code>.</p>
+<div class="tree">bracket:   −18  ≤  optimal  ≤  −16</div></details>
+
+<p>So before searching a single internal node we know the answer lives in <code>[−18, −16]</code>. Branch-and-bound then refines it. Here is the completed search tree (Fig. 6-28): every box is a node in creation order, edges are labeled <code>Xᵢ=1</code> / <code>Xᵢ=0</code>, and each live node carries its <code>U.B.</code> (best feasible found) and <code>L.B.</code> (relaxation bound). The optimum <code>−17</code> is read off the <code>X₁=0</code> sub-branch (node 14, annotated "a good upper bound is found here").</p>
+<img src="../render/A05/png_008.png" alt="0/1 knapsack branch-and-bound tree (Fig. 6-28): root node 0 with U.B.=-16, L.B.=-18 branches on X1=1 (node 1) and X1=0 (node 2). Each node shows U.B./L.B.; many leaves marked infeasible. The -17 optimum appears in the X1=0 subtree at nodes 14-20." style="background:#fff;padding:.5rem;max-width:100%;border:1px solid var(--rule);border-radius:6px">
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.3rem">Fig. 6-28 — 0/1 knapsack solved by branch-and-bound. Root node 0 = (U.B. −16, L.B. −18); the <code>−17</code> optimum surfaces at node 14 on the <code>X₁=0</code> branch.</p>
+<div class="note"><strong>Optimal (read off the completed tree):</strong> <code>X1 = X4 = X5 = 1</code>, rest 0. Weight <code>= W1+W4+W5 = 10+10+12 = 32 ≤ 34</code> ✓, objective <code>= −(P1+P4+P5) = −(6+5+6) = −17</code>. And <code>−18 ≤ −17 ≤ −16</code> — it sits inside the bracket, exactly as the bounds promised. (A good upper bound of −17 first appears at node 14, the <code>X1=0</code> branch.)</p>
+
+<h2 class="qa-head">4 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="0" data-explain="A* always expands the open node with the <b>smallest f = g + h</b>. P has f = 3+4 = 7; Q has f = 5+1 = 6. 6 &lt; 7, so Q goes next. If you picked P you went for the larger f (or focused on g alone); if you read Q as f = 5+5 you swapped in h from the wrong node. f, not g and not h alone, drives the choice.">
+  <div class="q">Q1. Two open nodes are waiting. Node P has g(P)=3, h(P)=4; node Q has g(Q)=5, h(Q)=1. Which does A* expand next?</div>
+  <button class="opt">Q, because f(Q)=6 &lt; f(P)=7</button>
+  <button class="opt">P, because f(P)=7 &lt; f(Q)=6</button>
+  <button class="opt">P, because its h is the larger guess</button>
+  <button class="opt">Q, because it has the larger g spent</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Admissibility means <b>h(n) ≤ h*(n)</b> — the heuristic never overestimates true remaining cost — so f stays a lower bound and the <b>first goal selected for expansion is optimal</b>. If h <i>overestimates</i> (h &gt; h*), f can exceed f*, A* may select a goal before a cheaper path surfaces, and it returns a sub-optimal answer. 'Any heuristic works' is the classic trap: an overestimating h breaks the optimality guarantee.">
+  <div class="q">Q2. Admissibility requires h(n) ≤ h*(n). What does it buy you, and what breaks if h overestimates?</div>
+  <button class="opt">It only speeds A* up; any heuristic still returns the optimum</button>
+  <button class="opt">It guarantees a goal is found; overestimating just slows the search</button>
+  <button class="opt">It keeps f a lower bound so the first goal popped is optimal; overestimating can return a sub-optimal path</button>
+  <button class="opt">It forces h = g; if they differ A* loops forever</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Negating turns max-profit into a min, so the better solution is the <b>more negative</b> one. The feasible integer solution −16 is achievable, so it caps how good we'll settle for: it is the <b>upper bound</b>. The fractional relaxation −18.5 (rounded inward to −18) has more freedom, so it bounds the optimum <b>below</b>: the <b>lower bound</b>. The optimum sits in <b>[−18, −16]</b>. If you flipped them, you used the relaxation (the unreachable −18.5) as the answer — but the optimum can't be that good.">
+  <div class="q">Q3. A feasible pick gives objective −16; the fractional relaxation gives −18.5. Which is the upper bound, which the lower, and what's the bracket?</div>
+  <button class="opt">−16 is the lower bound, −18.5 the upper; bracket [−16, −18.5]</button>
+  <button class="opt">−18.5 is the answer; the optimum equals the relaxation</button>
+  <button class="opt">Both are upper bounds; the true optimum is below −18.5</button>
+  <button class="opt">−16 is the upper bound, −18 (from −18.5) the lower; bracket [−18, −16]</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="Fill greedily by density: take item 1 (W=10) and item 2 (W=19) → 29 used, 5 of capacity 34 left. Item 3 weighs 8, so take the fraction <b>5/8</b>, adding (5/8)·P3 = (5/8)·4 = 2.5 profit. Objective = −(6+10+2.5) = <b>−18.5</b>. Taking all of item 3 would overflow capacity (29+8=37 &gt; 34); taking none leaves capacity idle and isn't the tightest relaxation.">
+  <div class="q">Q4. Capacity M=34. After taking items 1 (W=10) and 2 (W=19), 5 units remain. Item 3 has W₃=8, P₃=4. What fraction of item 3 does the fractional relaxation take, and the resulting objective?</div>
+  <button class="opt">All of item 3 (X₃=1); objective −20</button>
+  <button class="opt">X₃ = 5/8; objective −18.5</button>
+  <button class="opt">X₃ = 8/5; objective −22.4</button>
+  <button class="opt">None of item 3 (X₃=0); objective −16</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="From Lesson 2: row/column-reduce the cost matrix so each row and column has a zero; the <b>total subtracted is a lower bound</b> on the optimal cost of that subproblem. It's the reduced-cost analogue of A*'s h(n) — a never-overestimating bound used to prune.">
+  <div class="q">Q5. (Lesson 2 recall) A reduced-cost lower bound is…</div>
+  <button class="opt">the most expensive arc in the tour</button>
+  <button class="opt">the best feasible tour found so far</button>
+  <button class="opt">the total subtracted while zeroing rows/cols</button>
+  <button class="opt">the number of nodes pruned in the tree</button>
+  <div class="fb"></div>
+</div>
+
+<h2>5 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §6.10 (0/1 knapsack B&amp;B, Fig. 6-27/6-28) and §6.11 (the A* algorithm, <code>f=g+h</code>, Fig. 6-36), your <code>Alg05</code> slides. Re-trace Fig. 6-36 and confirm the goal is <strong>I</strong> (slide 42: "I is a goal node!") — F is only the last node expanded.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> and the full <a href="../notes-html/A05-searching-strategies.html">chapter note (A05)</a> for every per-node bound in Fig. 6-28.</p>
+
+<div class="note"><strong>Next up — Lesson 4:</strong> backtracking solution trees — SAT (the 2ⁿ assignment tree), sum-of-subsets, and the Hamiltonian-circuit search. Same tree-walk skeleton as Lesson 1, but now the focus is <em>pruning a partial assignment the instant it violates a constraint</em>.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to re-run the A* trace step by step, draw the full knapsack tree with every node's bounds, or contrast A*'s h(n) with the reduced-cost bound? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → on to Lesson 4. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

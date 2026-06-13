@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 8 — DP: 0/1 Knapsack & Longest Common Subsequence</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 8 · Ch7 Dynamic Programming</div>
+<h1>0/1 Knapsack & Longest Common Subsequence</h1>
+<div class="mission">Exam goal: <strong>write the recurrence and hand-fill the table.</strong> Both problems are the same DP move — split on one decision, write <code>max{…}</code>, fill a base, then solve. Master knapsack's <code>gᵢ(y)</code> and LCS's <code>L[i,j]</code> and you can produce the recurrence <em>and</em> trace it back to the answer.</div>
+
+<h2>1 · What are these problems? (start here)</h2>
+<p>This lesson solves two classic problems with the same tool — <strong>dynamic programming (DP)</strong>. Before any formula, here is what each problem actually asks, assuming you have never seen them.</p>
+
+<p><strong>The 0/1 knapsack problem.</strong> You have a knapsack (a bag) that can hold a total weight of at most <code>M</code> — its <em>capacity</em>. There are <code>n</code> objects; object <code>i</code> has a <em>weight</em> <code>wᵢ</code> and a <em>profit</em> (value) <code>pᵢ</code>. For each object you make one yes/no choice: take the <strong>whole</strong> object or leave it — you may not take a fraction, hence "0/1". Goal: pick a subset whose total weight stays within <code>M</code> while the total profit is as large as possible.</p>
+<div class="tree">Capacity M = 10
+ object 1:  weight 10, profit 40
+ object 2:  weight  3, profit 20
+ object 3:  weight  5, profit 30
+
+Take object 1 alone:  weight 10 ✓ (fits), profit 40
+Take objects 2 + 3 :  weight 3+5 = 8 ✓ (fits), profit 20+30 = 50  ← better
+Take all three     :  weight 18 ✗ (over capacity, not allowed)
+Best = take 2 and 3, profit 50.</div>
+<p>"Maximize profit while total weight ≤ capacity" is the whole problem. Notice you cannot just grab the most-profitable object (object 1, profit 40) — it eats all the room and blocks the better pair. That is why a careful method is needed.</p>
+
+<p><strong>What is a DP table / recurrence?</strong> A <strong>recurrence</strong> is a formula that defines the answer to a problem in terms of the answers to <em>smaller</em> versions of the same problem. A <strong>DP table</strong> is just a grid where we store each of those smaller answers once, so we never recompute them. The plain idea we will use for knapsack is: <em>"what is the best profit I can get using only objects <code>i…n</code> if the remaining capacity is <code>y</code>?"</em> Answer that for every <code>(i, y)</code>, building up from tiny cases, and the full answer falls out.</p>
+
+<p><strong>What is a subsequence?</strong> A <strong>subsequence</strong> of a string is what you get by deleting zero or more letters while keeping the rest in their original order — you may skip letters, but you may not reorder them. A <strong>substring</strong> is stricter: its letters must be <em>contiguous</em> (a solid run, no gaps).</p>
+<div class="tree">String:  C O M P U T E R
+ "CME"  is a subsequence  (kept order, skipped O, P, U, T, R)
+ "CME"  is NOT a substring (those letters aren't next to each other)
+ "OMP"  is a substring     (a contiguous run) — and also a subsequence
+ "TUP"  is neither         (out of order)</div>
+
+<p><strong>The Longest Common Subsequence (LCS) problem.</strong> Given two strings <code>A</code> and <code>B</code>, find the longest string that is a subsequence of <strong>both</strong>. We use the verified example <code>A = b a c a d</code> and <code>B = a c c b a d c b</code>; their LCS is <code>a c a d</code> (length 4). Check it: reading <code>bacad</code> and skipping the right letters gives <code>a c a d</code>; reading <code>accbadcb</code> and skipping gives <code>a c a d</code> too.</p>
+
+<div class="note"><strong>The one idea behind both:</strong> name the answer to a smaller subproblem, write it as a <code>max</code> over one decision, set a base case, and fill a table in dependency order. Knapsack decides "take this object or not"; LCS decides "do these two letters match." Everything below is that single move applied twice.</p>
+
+<h2>2 · 0/1 knapsack — split on the first decision</h2>
+<p>The whole problem is <code>KNAP(1, n, M)</code>: maximize <code>Σ pᵢxᵢ</code> subject to <code>Σ wᵢxᵢ ≤ M</code>, each <code>xᵢ ∈ {0,1}</code>. DP starts by asking one question: <strong>do I take object 1 or not?</strong> That single decision splits the problem into two smaller ones.</p>
+<div class="tree">y₁ = 0  (skip object 1)   ⇒  solve KNAP(2, n, M)
+y₁ = 1  (take object 1)   ⇒  solve KNAP(2, n, M − w₁)</div>
+<p>By the <strong>principle of optimality</strong> (Lesson 7), whichever branch is optimal, the <em>rest</em> of its decisions must themselves be optimal for the smaller subproblem. So define</p>
+<div class="tree">gᵢ(y) = optimal value of KNAP(i+1, n, y)
+        (best profit using objects i+1 … n with capacity y)</div>
+<p>Then the answer is <code>g₀(M)</code>, and the recurrence just writes "skip vs take" as a max:</p>
+<div class="tree">gᵢ(y) = max{ g_{i+1}(y),  g_{i+1}(y − w_{i+1}) + p_{i+1} }
+
+        │        └ skip object i+1            └ take object i+1: pay w_{i+1}, gain p_{i+1}
+base:   gₙ(y) = 0     for all y
+answer: g₀(M)</div>
+<div class="note"><strong>The exam twist — direction:</strong> this is the <em>forward</em> formulation (decision <code>xᵢ</code> defined via the later objects <code>x_{i+1}…xₙ</code>). Forward-formulated relations are <strong>solved backward</strong>: start from the base <code>gₙ(y)=0</code>, compute <code>g_{n-1}</code>, then <code>g_{n-2}</code>, … up to <code>g₀(M)</code>. Formulation direction and solution direction are always opposite.</p></div>
+
+<h2>3 · Longest Common Subsequence — the L-table</h2>
+<p>Recall (section 1): the LCS is the longest string that is a subsequence of <em>both</em> inputs, where a subsequence keeps order but may skip letters. Let <code>L[i,j]</code> = length of the LCS of prefixes <code>a₁…aᵢ</code> and <code>b₁…bⱼ</code>. Same DP move: the last cell depends on whether the two current letters match.</p>
+<div class="tree">L[i,j] = L[i-1,j-1] + 1                 if aᵢ = bⱼ   (extend the diagonal)
+         max{ L[i-1,j],  L[i,j-1] }     if aᵢ ≠ bⱼ   (drop one letter, take the best)
+
+boundary:  row 0 = col 0 = 0
+answer:    L[m,n]  (bottom-right cell)</div>
+<p>Verified example: <code>A = b a c a d</code> (rows), <code>B = a c c b a d c b</code> (columns).</p>
+
+<p><strong>Before you peek</strong>, fill two cells yourself. The top-left block is started for you; row 0 and column 0 are all 0.</p>
+<div class="tree">  A\B   ""  a  c  c  b  a  d  c  b
+  ""     0  0  0  0  0  0  0  0  0
+  b      0  0  0  0  ?  …
+  a      0  ?  …
+
+? cell 1 = L[b,b]   (aᵢ=b, bⱼ=b  → match?)
+? cell 2 = L[a,a]   (aᵢ=a, bⱼ=a  → match?)</div>
+<details><summary>Reveal those two cells</summary>
+<p><code>L[b, b]</code>: comparing A's <code>b</code> with B's 4th letter <code>b</code> — they <strong>match</strong>, so <code>= L[prev diagonal] + 1 = 0 + 1 = <b>1</b></code>.<br>
+<code>L[a, a]</code>: comparing A's <code>a</code> with B's 1st letter <code>a</code> — they <strong>match</strong>, so <code>= 0 + 1 = <b>1</b></code>.<br>
+A mismatch cell instead takes the larger of the neighbor above and the neighbor to the left.</p></details>
+
+<p>Here is the full filled table. The bottom-right cell is the LCS length.</p>
+<table>
+<tr><th>A \ B</th><th>·</th><th>a</th><th>c</th><th>c</th><th>b</th><th>a</th><th>d</th><th>c</th><th>b</th></tr>
+<tr><th>·</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>b</th><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><th>a</th><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><th>c</th><td>0</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><th>a</th><td>0</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td><td>3</td><td>3</td></tr>
+<tr><th>d</th><td>0</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td><strong>4</strong></td><td>4</td><td>4</td></tr>
+</table>
+
+<details><summary>Trace it back — recover the actual letters</summary>
+<p>Start at the bottom-right (value 4) and walk to the 0 region. On a <em>match</em> cell the value came from the diagonal — record that letter and step diagonally up-left; otherwise step to the larger neighbor. Following the circled chain <code>1 → 2 → 3 → 4</code> picks out the matches <strong>a, c, a, d</strong>.</p>
+<p>LCS = <code>a c a d</code>, length <strong>4</strong>. (Verify: <code>acad</code> is a subsequence of <code>bacad</code> and of <code>accbadcb</code> — read both off, skipping letters.)</p></details>
+
+<div class="note"><strong>Pattern to carry:</strong> every DP here is "name the subproblem value, split on one decision, write <code>max</code>, set a base, fill in dependency order." Knapsack fills along the index <code>i</code>; LCS fills the 2-D table row by row. The trace-back (which decision did each optimal cell take?) recovers the actual solution, not just its value.</div>
+
+<h2 class="qa-head">4 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="2" data-explain="<code>aᵢ=c=bⱼ</code> is a <b>match</b>, so the cell is the <b>diagonal</b> neighbour plus 1: <code>1 + 1 = 2</code>. If you picked <b>3</b> you added 1 to the larger of up/left — but that <code>max{…}+1</code> rule is the <i>mismatch</i> case fused wrongly; on a match you never look at up/left at all. If you picked <b>1</b> you took the diagonal but forgot the <code>+1</code> for the matched letter.">
+  <div class="q">Q1. Filling the LCS table, you reach a cell where A's letter is <code>c</code> and B's letter is <code>c</code>. Its three already-filled neighbours are: diagonal (up-left) <code>= 1</code>, up <code>= 0</code>, left <code>= 1</code>. What value goes in this cell?</div>
+  <button class="opt">1</button>
+  <button class="opt">0</button>
+  <button class="opt">2</button>
+  <button class="opt">3</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="<code>c ≠ b</code> is a <b>mismatch</b>, so the cell is <code>max{ up, left } = max{1, 2} = 2</code> — no <code>+1</code>, because no letter was matched here. Picking <b>3</b> is the classic error of adding 1 on a mismatch (only matches add 1). Picking <b>1</b> takes the smaller neighbour instead of the larger.">
+  <div class="q">Q2. Now you reach a cell where A's letter is <code>c</code> and B's letter is <code>b</code> (they differ). Its neighbours are: up <code>= 1</code>, left <code>= 2</code>, diagonal <code>= 1</code>. What value goes in this cell?</div>
+  <button class="opt">1</button>
+  <button class="opt">2</button>
+  <button class="opt">3</button>
+  <button class="opt">4</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="Object 3 has <code>w₃=5</code> and <code>p₃=30</code>. The <b>take</b> branch is <code>g_{i+1}(y − w₃) + p₃ = g₃(7−5) + 30 = g₃(2) + 30</code>: capacity drops by the item's <i>own</i> weight 5 and you add its <i>own</i> profit 30. Picking <b>g₃(7−10)+40</b> used object 1's <code>w=10, p=40</code> by mistake. Picking <b>g₃(7)</b> with no change is the <i>skip</i> branch, not take.">
+  <div class="q">Q3. Knapsack data: object 1 has <code>(w=10, p=40)</code>, object 2 <code>(w=3, p=20)</code>, object 3 <code>(w=5, p=30)</code>. You are computing <code>g₂(7)</code> and considering the <b>take object 3</b> branch. Which expression is it?</div>
+  <button class="opt">g₃(7 − 5) + 30</button>
+  <button class="opt">g₃(7) + 30</button>
+  <button class="opt">g₃(7 − 10) + 40</button>
+  <button class="opt">g₃(7 − 5) + 20</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="Object 3 alone with capacity 5: base is <code>g₃(y)=0</code>, so <code>g₂(5) = max{ g₃(5), g₃(5−5)+30 } = max{0, 0+30} = 30</code> — taking it wins. Picking <b>0</b> means you used a wrong base or stopped at the skip branch. Picking <b>min{0,30}=0</b> took the <i>min</i> instead of <code>max</code>. Picking <b>50</b> double-counts an object that isn't there.">
+  <div class="q">Q4. Same data (object 3: <code>w=5, p=30</code>), with base <code>g₃(y)=0</code> for all <code>y</code>. Apply the recurrence to get <code>g₂(5) = max{ g₃(5), g₃(5−5)+30 }</code>. What is <code>g₂(5)</code>?</div>
+  <button class="opt">0</button>
+  <button class="opt">5</button>
+  <button class="opt">50</button>
+  <button class="opt">30</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The <b>principle of optimality</b> says any suffix of an optimal decision sequence is itself optimal for its subproblem — that is exactly what licenses writing a recurrence. The greedy-choice property is what greedy relies on; it commits locally and can miss the global optimum (Lesson 7's multistage graph: greedy gave 23, DP found 9).">
+  <div class="q">Q5. (Lesson 7 recall) What property lets us split an optimal solution into optimal subproblems — the thing that makes the knapsack/LCS recurrences valid?</div>
+  <button class="opt">The greedy-choice property</button>
+  <button class="opt">The principle of optimality</button>
+  <button class="opt">A polynomial-time reduction</button>
+  <button class="opt">The pigeonhole principle</button>
+  <div class="fb"></div>
+</div>
+
+<h2>5 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7 (0/1 knapsack via DP) and the LCS application (your <code>A07</code> slides, "Dynamic Programming"). Re-trace the knapsack staged graph (slides 30–32: <code>M=10</code>, objects <code>(10,40),(3,20),(5,30)</code> → optimum <code>x₁=0,x₂=1,x₃=1 = 50</code>) and the LCS L-table (slide 29).</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch7</a> for the one-line definitions, and the <a href="../notes-html/A07-dynamic-programming.html">full chapter note</a> for forward-vs-backward formulation and the multistage-graph view.</p>
+
+<div class="note"><strong>Next up — Lesson 9:</strong> NP-Completeness — the definitions (P, NP, NP-complete), nondeterminism as "guess then verify," and Cook's theorem (SAT is NP-complete). This is where "can we even hope for a fast algorithm?" replaces "how do I write the recurrence?"</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to hand-fill the knapsack <code>gᵢ(y)</code> table for the slide-30 data? Want a second LCS to trace, or the backward-approach version of the recurrence? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 9. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>

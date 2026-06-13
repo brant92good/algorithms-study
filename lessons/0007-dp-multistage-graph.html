@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 7 — Multistage Graphs: Forward & Backward DP</title>
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b6b6b; --rule:#dcd6c8; --bg:#fdfcf8; --accent:#7a1f1f; --good:#1f6b34; --bad:#a12020; --hi:#fbf3d0;}
+  *{box-sizing:border-box}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+       color:var(--ink);background:var(--bg);line-height:1.55;
+       max-width:42rem;margin:3rem auto 6rem;padding:0 1.6rem;}
+  .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  h1{font-weight:600;font-size:2rem;line-height:1.15;margin:.2rem 0 .3rem}
+  .mission{color:var(--mut);font-style:italic;margin-bottom:2rem;border-left:3px solid var(--rule);padding-left:1rem}
+  h2{font-size:1.25rem;font-weight:600;margin-top:2.4rem;border-bottom:1px solid var(--rule);padding-bottom:.25rem}
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#f1ece0;padding:.05em .35em;border-radius:3px}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+  th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+  .tree{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;line-height:1.4;
+        background:#f6f1e4;border:1px solid var(--rule);border-radius:6px;padding:1rem 1.2rem;white-space:pre;overflow-x:auto}
+  .note{background:#f6f1e4;border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:0 6px 6px 0;margin:1.2rem 0}
+  .qa-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  .score{font-size:.78rem;font-weight:700;letter-spacing:.02em;color:var(--mut);
+         border:1px solid var(--rule);border-radius:999px;padding:.2rem .7rem;background:var(--bg)}
+  .quiz{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0;
+        counter-reset:opt;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .q{font-weight:600;margin-bottom:.7rem;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;font:inherit;color:var(--ink);
+       background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.55rem .7rem;margin:.4rem 0;
+       cursor:pointer;transition:.12s}
+  .opt::before{counter-increment:opt;content:counter(opt,upper-alpha);
+       flex:0 0 1.55rem;height:1.55rem;display:inline-flex;align-items:center;justify-content:center;
+       font-size:.78rem;font-weight:700;color:var(--mut);background:#f1ece0;border-radius:6px}
+  .opt:hover:not(:disabled){background:var(--hi);border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--good);background:#eaf5ec;color:var(--good);font-weight:600}
+  .opt.correct::before{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:#f8ecec;color:var(--bad)}
+  .opt.wrong::before{background:var(--bad);color:#fff}
+  .fb{margin-top:.65rem;font-size:.92rem;padding:.55rem .75rem;border-radius:7px;background:var(--hi);line-height:1.45}
+  .fb:empty{display:none}
+  .fb .v{font-weight:700}
+  .fb.ok .v{color:var(--good)} .fb.no .v{color:var(--bad)}
+  details{margin:.6rem 0;border:1px solid var(--rule);border-radius:6px;padding:.3rem .8rem;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  a{color:var(--accent)}
+  .foot{margin-top:3rem;border-top:1px solid var(--rule);padding-top:1rem;font-size:.92rem;color:var(--mut)}
+  .themebtn{position:fixed;top:1rem;right:1rem;z-index:99;font-size:1rem;line-height:1;padding:.4rem .55rem;
+            border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;opacity:.65}
+  .themebtn:hover{opacity:1}
+  :root[data-theme="dark"]{--ink:#e7e4da;--mut:#9f9a8c;--rule:#39362c;--bg:#16150f;--accent:#e6a86f;
+                           --good:#7fcf95;--bad:#e98a8a;--hi:#2e2a1a;}
+  :root[data-theme="dark"] code,:root[data-theme="dark"] .mono{background:#2b291f;}
+  :root[data-theme="dark"] .tree,:root[data-theme="dark"] .note{background:#201e16;}
+  :root[data-theme="dark"] .quiz,:root[data-theme="dark"] details{background:#1c1b14;}
+  :root[data-theme="dark"] .opt::before{background:#2b291f;}
+  :root[data-theme="dark"] .opt.correct{background:#1b2c1f;}
+  :root[data-theme="dark"] .opt.correct::before{background:var(--good);color:#16150f;}
+  :root[data-theme="dark"] .opt.wrong{background:#321f1e;}
+  :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
+  @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
+</style>
+</head>
+<body>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
+function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
+<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+
+<div class="kicker">Lesson 7 · Ch7 Dynamic Programming</div>
+<h1>Multistage Graphs: Forward & Backward</h1>
+<div class="mission">Exam goal: <strong>hand-trace</strong> a shortest path through a staged graph both ways and write every <code>min{…}</code> line. The single win: see <em>why</em> the recurrence beats greedy, and be able to reproduce <code>d(S,T)=9</code> from the same figure forward and backward without notes.</div>
+
+<h2>0 · What is this all about?</h2>
+<p><strong>Dynamic programming (DP)</strong> is a way to solve a problem by viewing it as a <em>sequence of decisions</em>. The trick: break the problem into smaller <strong>subproblems</strong>, solve each one <em>once</em>, store the answer, and reuse it instead of recomputing it. The <strong>greedy</strong> method (the rival) just grabs the locally cheapest choice at each step and never looks back. DP is smarter: it does <em>not</em> commit to a choice that looks cheap right now — it weighs how that choice pays off later. That is why DP can find the true best answer where greedy gets fooled.</p>
+
+<p>Everything here lives on a <strong>graph</strong>. A few words, in plain terms:</p>
+<ul>
+  <li>A <strong>graph</strong> is just dots connected by lines.</li>
+  <li>Each dot is a <strong>vertex</strong> (also called a node).</li>
+  <li>Each line is an <strong>edge</strong> connecting two vertices.</li>
+  <li>A <strong>directed edge</strong> is a one-way arrow: <code>u→v</code> lets you go from <code>u</code> to <code>v</code> but not back.</li>
+  <li>Each edge has a number, its <strong>weight</strong> or cost. A <strong>path</strong> is a chain of edges; its <strong>path cost</strong> is the sum of the weights along it.</li>
+</ul>
+
+<p>A <strong>multistage graph</strong> is a special directed graph. Its vertices are grouped into ordered <strong>stages</strong> (stage 1, stage 2, …), and every edge only goes <em>from one stage to the very next one</em> — never sideways, never skipping ahead. There is exactly one <strong>start</strong> vertex (in the first stage) and one <strong>end</strong> vertex (in the last stage). The goal: find the <strong>cheapest path</strong> from start to end.</p>
+
+<div class="tree">  stage 1   stage 2     stage 3    stage 4
+              ┌── A ──┐    ┌── D ──┐
+   S ─────────┼── B ──┼────┼── E ──┼──── T
+              └── C ──┘    └── F ──┘
+   (start)                          (end)</div>
+<p>Our running example has 4 stages: <code>S</code> alone in stage 1; <code>A, B, C</code> in stage 2; <code>D, E, F</code> in stage 3; <code>T</code> alone in stage 4. We want the cheapest way to get from <code>S</code> to <code>T</code>. The exact edge weights appear in §2; the rest of the lesson is about computing that cheapest path the DP way (and seeing why greedy can't).</p>
+
+<div class="note"><strong>Intuition to hold onto:</strong> picking <em>each</em> step by "what's cheapest right now" can trap you. DP instead asks "from this vertex, what's the cheapest way to <em>finish</em>?" — solving small finish-from-here subproblems once and reusing them. That reuse is the whole point.</div>
+
+<h2>1 · Why greedy fails here</h2>
+<p>Greedy "take the cheapest outgoing edge each stage" looks smart and is <strong>wrong</strong>. From <code>S</code> it grabs <code>S→A</code> (cost 1), then <code>A→D</code> (4), then <code>D→T</code> (18):</p>
+<div class="tree">greedy:   S →A→D→T   =  1 + 4 + 18  =  23
+optimum:  S →C→F→T   =  5 + 2 +  2  =   9</div>
+<p>The true optimum starts with the <em>most expensive-looking</em> first edge, <code>S→C</code> = 5 — because <code>C</code> opens onto <code>C→F</code>=2 and <code>F→T</code>=2, dirt cheap downstream. A locally bad choice that pays off later: that is exactly the situation greedy cannot see and dynamic programming can.</p>
+
+<h2>2 · Multistage graph — the formal definition</h2>
+<p>Now the precise version of the idea from §0. A <strong>multistage graph</strong> <code>G=(V,E)</code> is a <em>directed</em> graph whose vertices split into <code>k≥2</code> disjoint <strong>stages</strong> <code>V₁,…,V_k</code>, where every edge <code>⟨u,v⟩</code> jumps from one stage to the next (<code>u∈Vᵢ, v∈V_{i+1}</code>), and the first and last stages are single vertices: <code>|V₁|=|V_k|=1</code>. The lone <strong>source</strong> (start) is <code>s</code>, the lone <strong>sink</strong> (end) is <code>t</code>. The <strong>problem</strong>: find the minimum-cost <code>s→t</code> path.</p>
+<p>Our running figure has 4 stages, with the verified edge weights below.</p>
+<div class="tree">  V₁      V₂        V₃        V₄
+            ┌──4──→ D ──18──┐
+   ┌──1──→ A ─11─→ E        │
+   │        ├──9──→ D       ├──→ T
+   S ──2──→ B ──5──→ E ─13──┤
+   │        └─16─→ F        │
+   └──5──→ C ──2──→ F ──2───┘
+
+stages:  V₁={S}  V₂={A,B,C}  V₃={D,E,F}  V₄={T}</div>
+<table>
+<tr><th>Edge</th><th>w</th><th>Edge</th><th>w</th><th>Edge</th><th>w</th></tr>
+<tr><td>S→A</td><td>1</td><td>A→D</td><td>4</td><td>D→T</td><td>18</td></tr>
+<tr><td>S→B</td><td>2</td><td>A→E</td><td>11</td><td>E→T</td><td>13</td></tr>
+<tr><td>S→C</td><td>5</td><td>B→D</td><td>9</td><td>F→T</td><td>2</td></tr>
+<tr><td></td><td></td><td>B→E</td><td>5</td><td></td><td></td></tr>
+<tr><td></td><td></td><td>B→F</td><td>16</td><td></td><td></td></tr>
+<tr><td></td><td></td><td>C→F</td><td>2</td><td></td><td></td></tr>
+</table>
+
+<h2>3 · Backward reasoning — trace it yourself</h2>
+<p>Let <code>d(X,T)</code> = cost of the shortest path <strong>from X to the sink T</strong>. Start at the stage just before <code>T</code> (the base cases <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>) and work <em>backward</em> toward <code>S</code>. Compute <code>d(C,T), d(A,T), d(B,T)</code>, then <code>d(S,T)</code> on paper before opening the answer.</p>
+<details><summary>Backward computation (every min line)</summary>
+<div class="tree">d(C,T) = min{ 2 + d(F,T) }
+       = 2 + 2  =  4
+
+d(A,T) = min{ 4 + d(D,T), 11 + d(E,T) }
+       = min{ 4 + 18, 11 + 13 }
+       = min{ 22, 24 }  =  22
+
+d(B,T) = min{ 9 + d(D,T), 5 + d(E,T), 16 + d(F,T) }
+       = min{ 9 + 18, 5 + 13, 16 + 2 }
+       = min{ 27, 18, 18 }  =  18
+
+d(S,T) = min{ 1 + d(A,T), 2 + d(B,T), 5 + d(C,T) }
+       = min{ 1 + 22, 2 + 18, 5 + 4 }
+       = min{ 23, 20, 9 }  =  9</div>
+<p><strong>Answer: <code>d(S,T)=9</code></strong>, achieved by <code>S→C→F→T</code>. Each vertex's optimum is written in terms of vertices <em>closer to the sink</em>, then resolved from the sink back — that is <strong>backward reasoning</strong>.</p></details>
+
+<h2>4 · Forward reasoning — same graph, other direction</h2>
+<p>Now let <code>d(S,X)</code> = cost of the shortest path <strong>from S to X</strong>. Start at the stage just after <code>S</code> and work <em>forward</em>. Base cases are the direct S-edges; then stage 3, then <code>T</code>.</p>
+<div class="tree">d(S,A) = 1
+d(S,B) = 2
+d(S,C) = 5
+
+d(S,D) = min{ d(S,A)+4, d(S,B)+9 }
+       = min{ 1+4, 2+9 } = min{ 5, 11 } = 5
+
+d(S,E) = min{ d(S,A)+11, d(S,B)+5 }
+       = min{ 1+11, 2+5 } = min{ 12, 7 } = 7
+
+d(S,F) = min{ d(S,B)+16, d(S,C)+2 }
+       = min{ 2+16, 5+2 } = min{ 18, 7 } = 7
+
+d(S,T) = min{ d(S,D)+18, d(S,E)+13, d(S,F)+2 }
+       = min{ 5+18, 7+13, 7+2 }
+       = min{ 23, 20, 9 } = 9</div>
+<p>Same optimum <code>d(S,T)=9</code>, reached by expressing each vertex's cost via vertices <em>closer to the source</em>. Two directions, one answer — the recurrence is consistent either way.</p>
+<div class="note"><strong>Key exam insight:</strong> forward and backward are <em>both correct</em> and give the same value. They differ only in <em>what the subproblem is</em>: backward stores "cost from X to sink," forward stores "cost from source to X." Pick whichever the question's figure makes easier to fill — and always write the <code>min{…}</code> lines, that is where the marks are.</p>
+
+<h2>5 · Principle of optimality</h2>
+<p><strong>Statement.</strong> If a problem is solved by a sequence of decisions <code>D₁,…,Dₙ</code> and that sequence is <em>optimal</em>, then for any <code>k</code> the <strong>last <code>k</code> decisions must themselves be optimal</strong> (an optimal solution is built from optimal sub-solutions).</p>
+<p><strong>Shortest-path corollary.</strong> If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>. (If it weren't, swap in a cheaper suffix and the whole path gets cheaper — contradicting that it was shortest.)</p>
+<div class="note">This corollary is what <em>licenses</em> the recurrence <code>d(X,T)=min_v{w(X,v)+d(v,T)}</code>: because every optimal suffix is itself optimal, we may reuse the already-computed <code>d(v,T)</code> instead of re-searching. <strong>Consequence:</strong> any problem expressible as a multistage graph can be solved by dynamic programming.</p>
+
+<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+
+<div class="quiz" data-correct="3" data-explain="Greedy commits to the cheapest outgoing edge each stage: S→A (1), then A→D (4), then D→T (18) = <b>23</b>. The true optimum is S→C→F→T = 5+2+2 = <b>9</b>. Greedy fails because the locally cheapest first edge (S→A=1) leads into expensive downstream edges, while the dearer-looking S→C=5 opens onto C→F=2 and F→T=2. If you picked 8 you summed the wrong greedy chain (1+2+5); if you picked 9 you reported the DP optimum, not what greedy gets.">
+  <div class="q">Q1. Run the greedy "cheapest outgoing edge each stage" rule from <code>S</code>, given <code>S→A=1, A→D=4, D→T=18</code> (and the dearer first edges <code>S→B=2, S→C=5</code>). What total does greedy report?</div>
+  <button class="opt">9 — greedy lands on the true optimum</button>
+  <button class="opt">8 — greedy sums 1 + 2 + 5</button>
+  <button class="opt">18 — greedy keeps only the final sink edge</button>
+  <button class="opt">23 — greedy takes S→A→D→T = 1 + 4 + 18</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="2" data-explain="Backward base cases are d(D,T)=18, d(E,T)=13, d(F,T)=2. Then d(A,T) = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{ 22, 24 } = <b>22</b>, via A→D→T. If you picked 24 you chose the larger A→E branch; if you picked 15 you took 4+11 (the two A-edge weights) instead of adding each to its successor's d(·,T).">
+  <div class="q">Q2. With <code>A→D=4, A→E=11</code> and successor costs <code>d(D,T)=18, d(E,T)=13</code>, compute <code>d(A,T)</code>.</div>
+  <button class="opt">15 — add the two outgoing A-edge weights</button>
+  <button class="opt">24 — the 11 + d(E,T) branch</button>
+  <button class="opt">22 — min of 22 and 24</button>
+  <button class="opt">18 — copy d(D,T) straight through</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="0" data-explain="d(B,T) = min{ 9+d(D,T), 5+d(E,T), 16+d(F,T) } = min{ 9+18, 5+13, 16+2 } = min{ 27, 18, 18 } = <b>18</b> (a tie, realized by B→E→T and B→F→T). If you picked 27 you followed the B→D branch (the largest); if you picked 7 you took min of the raw edge weights 9, 5, 16 without adding the successor costs.">
+  <div class="q">Q3. With B's edges <code>B→D=9, B→E=5, B→F=16</code> and successor costs <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>, compute <code>d(B,T)</code>.</div>
+  <button class="opt">18 — min of 27, 18, 18</button>
+  <button class="opt">27 — follow the B→D branch</button>
+  <button class="opt">7 — min of the raw edge weights 9, 5, 16</button>
+  <button class="opt">13 — copy d(E,T) directly</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="1" data-explain="The principle of optimality: in an optimal sequence of decisions, the last k decisions are themselves optimal — equivalently, <b>every suffix of a shortest path is itself a shortest path</b>. That is exactly what licenses reusing the already-computed d(v,T) in d(X,T)=min_v{w(X,v)+d(v,T)}. Option 'the cheapest first edge starts the optimum' is the greedy fallacy (S→A=1 is cheapest yet wrong here); 'a problem with optimal subproblems is greedy-solvable' confuses DP's licence with greedy correctness.">
+  <div class="q">Q4. Which statement correctly expresses the principle of optimality (the property that licenses the DP recurrence)?</div>
+  <button class="opt">The cheapest first edge always starts the optimal path</button>
+  <button class="opt">Every suffix of a shortest path is itself a shortest path</button>
+  <button class="opt">Any problem with optimal subproblems can be solved greedily</button>
+  <button class="opt">The optimum is the average of all stage-by-stage minima</button>
+  <div class="fb"></div>
+</div>
+
+<div class="quiz" data-correct="3" data-explain="<b>Backward</b> reasoning defines the subproblem as d(X,T) = cost from X to the sink T and resolves from the sink back toward S. Forward reasoning defines d(S,X) = cost from the source S to X and resolves from S outward. Both yield d(S,T)=9. If you picked 'd(S,X): from source to X' you reversed the two definitions; the f(n)/w(u,v) options are unrelated (heuristic estimate and a single edge weight).">
+  <div class="q">Q5. In <em>backward</em> reasoning, what does the subproblem value <code>d(X,T)</code> mean?</div>
+  <button class="opt">w(u,v): the weight of the single edge into X</button>
+  <button class="opt">f(n): an estimated total cost through node X</button>
+  <button class="opt">d(S,X): cost of the shortest path from the source S to X</button>
+  <button class="opt">cost of the shortest path from X to the sink T</button>
+  <div class="fb"></div>
+</div>
+
+<h2>7 · Go deeper</h2>
+<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.1–7.2 (your <code>Alg07</code> slides, "Dynamic Programming"). Re-trace the slide-5 multistage figure both directions, and check your <code>min{…}</code> lines against slides 6–9.</p>
+<p>See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A07-dynamic-programming.html">chapter note</a> for the recurrence statements.</p>
+
+<div class="note"><strong>Next up — Lesson 8:</strong> DP applied to <strong>0/1 knapsack</strong> (the <code>gᵢ(y)=max{g_{i+1}(y), g_{i+1}(y−wᵢ)+pᵢ}</code> recurrence, plus knapsack drawn as a multistage graph) and the <strong>longest common subsequence</strong> table — the classic fill-the-matrix-and-trace-back exam item.</div>
+
+<div class="foot">
+  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to scramble the edge weights and quiz you live? Confused why forward and backward agree? Want the knapsack-as-multistage-graph preview now? Just say so.</p>
+  <p>Score this lesson out of 5 to yourself. 4–5 → on to Lesson 8. ≤3 → tell me which question and we drill it.</p>
+</div>
+
+<script>
+(function(){
+  var quizzes = document.querySelectorAll('.quiz');
+  var total = quizzes.length, answered = 0, right = 0;
+  var scoreEl = document.getElementById('score');
+  function updateScore(){
+    scoreEl.textContent = right + ' / ' + total + (answered<total ? ' · ' + answered + ' answered' : ' — done');
+  }
+  quizzes.forEach(function(q){
+    var correct = +q.dataset.correct;
+    var explain = q.dataset.explain || '';
+    var opts = q.querySelectorAll('.opt');
+    var fb = q.querySelector('.fb');
+    opts.forEach(function(o,i){
+      o.addEventListener('click',function(){
+        if(q.dataset.done) return;
+        q.dataset.done = '1'; answered++;
+        opts.forEach(function(x){x.disabled=true;});
+        if(i===correct){
+          o.classList.add('correct'); right++;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+        } else {
+          o.classList.add('wrong'); opts[correct].classList.add('correct');
+          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+        }
+        updateScore();
+      });
+    });
+  });
+  updateScore();
+})();
+</script>
+</body>
+</html>
