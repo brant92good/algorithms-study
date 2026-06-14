@@ -13,62 +13,63 @@
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
-<h1 id="chapter-8-the-theory-of-np-completeness">Chapter 8 — The Theory of NP-Completeness</h1>
+<h1 id="chapter-8-the-theory-of-np-completeness"><span data-tr="en">Chapter 8 — The Theory of NP-Completeness</span><span data-tr="zh">第 8 章 — NP-Completeness 理論</span></h1>
 <blockquote>
-<p>Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>.
-Slide-deck companion (69 slides). This is the proof/QA-heavy final topic: <strong>the reductions are the core exam material.</strong></p>
-<p><strong>Notation legend</strong> (the slides render these as plain glyphs; restored here):
+<p><span data-tr="en">Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>.
+Slide-deck companion (69 slides). This is the proof/QA-heavy final topic: <strong>the reductions are the core exam material.</strong></span><span data-tr="zh">課程：R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>。這是配合投影片（共 69 張）的筆記。期末就考這一塊，證明跟問答超多：<strong>那些 reduction 才是考試重點。</strong></span></p>
+<p><span data-tr="en"><strong>Notation legend</strong> (the slides render these as plain glyphs; restored here):
 <code>∨</code> = OR, <code>∧</code>/<code>&amp;</code> = AND, <code>¬x</code> (written <code>-x</code> in the deck) = NOT x, <code>→</code> = implies, <code>⇔</code>/<code>iff</code> = if-and-only-if, <code>≤ ≥ ≠ ∈ ∉ ⊆ ∪ Σ</code> as usual, <code>□</code> = the empty clause, <code>xᵢ</code> subscripts, <code>(k+1)ⁱ</code> superscripts.
-Markers like <em>"Lab. N"</em> in the raw dump are slide numbers; cited below as <strong>(slide N)</strong>.</p>
+Markers like <em>"Lab. N"</em> in the raw dump are slide numbers; cited below as <strong>(slide N)</strong>.</span><span data-tr="zh"><strong>符號對照</strong>（投影片把這些畫成一般符號，這裡幫你還原）：
+<code>∨</code> = OR、<code>∧</code>/<code>&amp;</code> = AND、<code>¬x</code>（投影片裡寫成 <code>-x</code>）= NOT x、<code>→</code> = implies、<code>⇔</code>/<code>iff</code> = 若且唯若、<code>≤ ≥ ≠ ∈ ∉ ⊆ ∪ Σ</code> 照一般用法、<code>□</code> = 空 clause、<code>xᵢ</code> 是下標、<code>(k+1)ⁱ</code> 是上標。原始檔裡像 <em>「Lab. N」</em> 這種標記其實是投影片編號，下面都用 <strong>(slide N)</strong> 來標。</span></p>
 </blockquote>
 <hr />
-<h2 id="overview">Overview</h2>
-<p>The chapter builds the theory of <strong>intractability</strong>: a large family of problems (the NP-complete, NPC, problems) for which no polynomial-time algorithm is known, and for which a polynomial algorithm for <em>any one</em> of them would yield one for <em>all</em> of them (collapsing NP into P).</p>
-<p>Core class definitions <strong>(slide 2)</strong>:</p>
+<h2 id="overview"><span data-tr="en">Overview</span><span data-tr="zh">總覽</span></h2>
+<p><span data-tr="en">The chapter builds the theory of <strong>intractability</strong>: a large family of problems (the NP-complete, NPC, problems) for which no polynomial-time algorithm is known, and for which a polynomial algorithm for <em>any one</em> of them would yield one for <em>all</em> of them (collapsing NP into P).</span><span data-tr="zh">這一章在講 <strong>intractability</strong>（難解性）：有一大票問題（也就是 NP-complete、NPC 這群），到現在都沒人找得到 polynomial-time 演算法。而且重點是——只要你能幫<em>其中任何一個</em>找到 polynomial 演算法，<em>全部</em>就都解開了（NP 直接塌縮成 P）。</span></p>
+<p><span data-tr="en">Core class definitions <strong>(slide 2)</strong>:</span><span data-tr="zh">幾個核心類別的定義 <strong>(slide 2)</strong>：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Class</th>
-<th>Definition</th>
+<th><span data-tr="en">Class</span><span data-tr="zh">類別</span></th>
+<th><span data-tr="en">Definition</span><span data-tr="zh">定義</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>P</strong></td>
-<td>Problems solvable by a <strong>deterministic</strong> polynomial-time algorithm.</td>
+<td><span data-tr="en">Problems solvable by a <strong>deterministic</strong> polynomial-time algorithm.</span><span data-tr="zh">能用 <strong>deterministic</strong>（確定性）polynomial-time 演算法解掉的問題。</span></td>
 </tr>
 <tr>
 <td><strong>NP</strong></td>
-<td><strong>Decision</strong> problems solvable by a <strong>non-deterministic</strong> polynomial-time algorithm (guess + polynomial-time check).</td>
+<td><span data-tr="en"><strong>Decision</strong> problems solvable by a <strong>non-deterministic</strong> polynomial-time algorithm (guess + polynomial-time check).</span><span data-tr="zh">能用 <strong>non-deterministic</strong>（非確定性）polynomial-time 演算法解的 <strong>decision</strong> 問題（先猜一個答案，再用 polynomial 時間檢查）。</span></td>
 </tr>
 <tr>
 <td><strong>NP-hard</strong></td>
-<td>Problems to which <strong>every</strong> NP problem reduces. (Need not be in NP themselves.)</td>
+<td><span data-tr="en">Problems to which <strong>every</strong> NP problem reduces. (Need not be in NP themselves.)</span><span data-tr="zh"><strong>每一個</strong> NP 問題都能 reduce 到它的那些問題。（它自己不一定要在 NP 裡。）</span></td>
 </tr>
 <tr>
 <td><strong>NP-complete (NPC)</strong></td>
-<td>Problems that are NP-hard <strong>and</strong> belong to NP.</td>
+<td><span data-tr="en">Problems that are NP-hard <strong>and</strong> belong to NP.</span><span data-tr="zh">既是 NP-hard、<strong>又</strong>屬於 NP 的問題。</span></td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Concept of reduction (slide 3).</strong></p>
+<p><span data-tr="en"><strong>Concept of reduction (slide 3).</strong></span><span data-tr="zh"><strong>reduction 的概念 (slide 3)。</strong></span></p>
 <blockquote>
-<p><strong>Def:</strong> Problem A <strong>reduces</strong> to problem B (written <strong>A → B</strong>) iff A can be solved by a deterministic polynomial-time algorithm that uses, as a subroutine, a deterministic polynomial-time algorithm that solves B.</p>
+<p><span data-tr="en"><strong>Def:</strong> Problem A <strong>reduces</strong> to problem B (written <strong>A → B</strong>) iff A can be solved by a deterministic polynomial-time algorithm that uses, as a subroutine, a deterministic polynomial-time algorithm that solves B.</span><span data-tr="zh"><strong>定義：</strong>問題 A <strong>reduce</strong> 到問題 B（寫成 <strong>A → B</strong>），意思是：你可以用一個 deterministic polynomial-time 演算法來解 A，而這個演算法在過程中會去呼叫一個能解 B 的 deterministic polynomial-time 演算法當作子程式。</span></p>
 </blockquote>
-<p>Intuition: "A → B" means <strong>B is at least as hard as A</strong> — if you can solve B fast, you can solve A fast.</p>
-<p><strong>Key concepts (slides 4–5):</strong></p>
+<p><span data-tr="en">Intuition: "A → B" means <strong>B is at least as hard as A</strong> — if you can solve B fast, you can solve A fast.</span><span data-tr="zh">直覺上：「A → B」就是說 <strong>B 至少跟 A 一樣難</strong>——只要你能快速解 B，就能快速解 A。</span></p>
+<p><span data-tr="en"><strong>Key concepts (slides 4–5):</strong></span><span data-tr="zh"><strong>幾個關鍵觀念 (slides 4–5)：</strong></span></p>
 <ul>
-<li>Up to now, <strong>none</strong> of the NPC problems can be solved by a deterministic polynomial-time algorithm in the worst case.</li>
-<li>There does not <em>seem</em> to exist any polynomial-time algorithm for the NPC problems.</li>
-<li>The lower bound of any NPC problem <strong>seems</strong> to be of the order of an <strong>exponential</strong> function.</li>
-<li>The theory of NP-completeness always considers the <strong>worst case</strong>.</li>
-<li><strong>Not all NP problems are difficult</strong> — e.g. the <strong>Minimum Spanning Tree (MST)</strong> problem is an NP problem yet is solvable in polynomial time.</li>
-<li>If <strong>A, B ∈ NPC</strong>, then <strong>A → B and B → A</strong> (all NPC problems are inter-reducible; they are "equally hard").</li>
-<li><strong>The big theorem:</strong> If <strong>any</strong> NPC problem can be solved in polynomial time, then <strong>all</strong> NP problems can be — i.e. <strong>NP = P</strong>.</li>
+<li><span data-tr="en">Up to now, <strong>none</strong> of the NPC problems can be solved by a deterministic polynomial-time algorithm in the worst case.</span><span data-tr="zh">到目前為止，<strong>沒有任何一個</strong> NPC 問題能在 worst case 下用 deterministic polynomial-time 演算法解掉。</span></li>
+<li><span data-tr="en">There does not <em>seem</em> to exist any polynomial-time algorithm for the NPC problems.</span><span data-tr="zh">這些 NPC 問題<em>看起來</em>就是沒有 polynomial-time 演算法。</span></li>
+<li><span data-tr="en">The lower bound of any NPC problem <strong>seems</strong> to be of the order of an <strong>exponential</strong> function.</span><span data-tr="zh">任何 NPC 問題的 lower bound <strong>看起來</strong>都是 <strong>exponential</strong>（指數）等級的。</span></li>
+<li><span data-tr="en">The theory of NP-completeness always considers the <strong>worst case</strong>.</span><span data-tr="zh">NP-completeness 理論討論的永遠是 <strong>worst case</strong>。</span></li>
+<li><span data-tr="en"><strong>Not all NP problems are difficult</strong> — e.g. the <strong>Minimum Spanning Tree (MST)</strong> problem is an NP problem yet is solvable in polynomial time.</span><span data-tr="zh"><strong>不是每個 NP 問題都很難</strong>——舉例來說，<strong>Minimum Spanning Tree (MST)</strong> 就是 NP 問題，但它在 polynomial 時間內就解得出來。</span></li>
+<li><span data-tr="en">If <strong>A, B ∈ NPC</strong>, then <strong>A → B and B → A</strong> (all NPC problems are inter-reducible; they are "equally hard").</span><span data-tr="zh">如果 <strong>A, B ∈ NPC</strong>，那麼 <strong>A → B 而且 B → A</strong>（所有 NPC 問題彼此都能互相 reduce，難度算是「一樣難」）。</span></li>
+<li><span data-tr="en"><strong>The big theorem:</strong> If <strong>any</strong> NPC problem can be solved in polynomial time, then <strong>all</strong> NP problems can be — i.e. <strong>NP = P</strong>.</span><span data-tr="zh"><strong>最關鍵的定理：</strong>只要<strong>任何一個</strong> NPC 問題能在 polynomial 時間內解掉，那麼<strong>所有</strong> NP 問題就都解得出來——也就是 <strong>NP = P</strong>。</span></li>
 </ul>
 <hr />
-<h2 id="the-reduction-map">The Reduction Map</h2>
-<p>Every reduction shown in the deck. An edge <code>X → Y</code> means <em>"X reduces to Y"</em> and is used to prove *<em>Y is NP-complete given X is."</em> Cook's theorem seeds the chain with SAT.</p>
+<h2 id="the-reduction-map"><span data-tr="en">The Reduction Map</span><span data-tr="zh">Reduction 全圖</span></h2>
+<p><span data-tr="en">Every reduction shown in the deck. An edge <code>X → Y</code> means <em>"X reduces to Y"</em> and is used to prove *<em>Y is NP-complete given X is."</em> Cook's theorem seeds the chain with SAT.</span><span data-tr="zh">這是投影片裡出現過的每一條 reduction。圖上一條邊 <code>X → Y</code> 代表 <em>「X reduce 到 Y」</em>，用來證明 <em>「已知 X 是 NPC，那 Y 也是 NP-complete」</em>。整條鏈是靠 Cook's theorem 從 SAT 開頭接出來的。</span></p>
 <pre><code>                          [ Cook's Theorem ]
                   every NP problem → SAT ; SAT is the first NPC problem
                                      |
@@ -99,94 +100,94 @@ Markers like <em>"Lab. N"</em> in the raw dump are slide numbers; cited below as
         │
    (3-SAT is itself NPC; SATY = &quot;satisfiability with ≤ 3 literals/clause&quot; feeds CN)
 </code></pre>
-<p><strong>Reductions covered (13 total):</strong></p>
+<p><span data-tr="en"><strong>Reductions covered (13 total):</strong></span><span data-tr="zh"><strong>這份筆記涵蓋的 reduction（總共 13 條）：</strong></span></p>
 <ol>
-<li>SAT → 3-SAT</li>
-<li>SATY (≤3 literals/clause) → Chromatic Number (CN)</li>
-<li>(Node cover → SAT) — the nondeterministic-construction direction, proving node cover ∈ NP / how to encode it as SAT</li>
-<li>CN → Exact Cover</li>
-<li>Exact Cover → Sum of Subsets</li>
-<li>Sum of Subsets → Partition</li>
-<li>Partition → Bin Packing</li>
-<li>Bin Packing → VLSI Discrete Layout</li>
-<li>SAT → Clique decision</li>
-<li>Clique decision → Node cover decision</li>
-<li>SAT → Directed Hamiltonian Cycle</li>
-<li>Directed Hamiltonian Cycle → TSP decision</li>
-<li>Partition → 0/1 Knapsack decision</li>
+<li><span data-tr="en">SAT → 3-SAT</span><span data-tr="zh">SAT → 3-SAT</span></li>
+<li><span data-tr="en">SATY (≤3 literals/clause) → Chromatic Number (CN)</span><span data-tr="zh">SATY（每個 clause ≤3 個 literal）→ Chromatic Number (CN)</span></li>
+<li><span data-tr="en">(Node cover → SAT) — the nondeterministic-construction direction, proving node cover ∈ NP / how to encode it as SAT</span><span data-tr="zh">（Node cover → SAT）——這是 nondeterministic 建構的那個方向，用來證明 node cover ∈ NP，也就是怎麼把它編碼成 SAT</span></li>
+<li><span data-tr="en">CN → Exact Cover</span><span data-tr="zh">CN → Exact Cover</span></li>
+<li><span data-tr="en">Exact Cover → Sum of Subsets</span><span data-tr="zh">Exact Cover → Sum of Subsets</span></li>
+<li><span data-tr="en">Sum of Subsets → Partition</span><span data-tr="zh">Sum of Subsets → Partition</span></li>
+<li><span data-tr="en">Partition → Bin Packing</span><span data-tr="zh">Partition → Bin Packing</span></li>
+<li><span data-tr="en">Bin Packing → VLSI Discrete Layout</span><span data-tr="zh">Bin Packing → VLSI Discrete Layout</span></li>
+<li><span data-tr="en">SAT → Clique decision</span><span data-tr="zh">SAT → Clique decision</span></li>
+<li><span data-tr="en">Clique decision → Node cover decision</span><span data-tr="zh">Clique decision → Node cover decision</span></li>
+<li><span data-tr="en">SAT → Directed Hamiltonian Cycle</span><span data-tr="zh">SAT → Directed Hamiltonian Cycle</span></li>
+<li><span data-tr="en">Directed Hamiltonian Cycle → TSP decision</span><span data-tr="zh">Directed Hamiltonian Cycle → TSP decision</span></li>
+<li><span data-tr="en">Partition → 0/1 Knapsack decision</span><span data-tr="zh">Partition → 0/1 Knapsack decision</span></li>
 </ol>
-<p><em>(Plus Cook's theorem: every NP problem → SAT.)</em></p>
+<p><span data-tr="en"><em>(Plus Cook's theorem: every NP problem → SAT.)</em></span><span data-tr="zh"><em>（再加上 Cook's theorem：每個 NP 問題 → SAT。）</em></span></p>
 <hr />
-<h2 id="decision-vs-optimization-problems-slides-67">Decision vs. Optimization Problems (slides 6–7)</h2>
+<h2 id="decision-vs-optimization-problems-slides-67"><span data-tr="en">Decision vs. Optimization Problems (slides 6–7)</span><span data-tr="zh">Decision 問題 vs. Optimization 問題 (slides 6–7)</span></h2>
 <ul>
-<li>A <strong>decision problem</strong> has a Yes/No answer.</li>
-<li>An <strong>optimization problem</strong> is harder (asks for the best value/solution).</li>
-<li>NP-completeness is defined on <strong>decision</strong> problems.</li>
+<li><span data-tr="en">A <strong>decision problem</strong> has a Yes/No answer.</span><span data-tr="zh"><strong>decision problem</strong> 的答案是 Yes/No。</span></li>
+<li><span data-tr="en">An <strong>optimization problem</strong> is harder (asks for the best value/solution).</span><span data-tr="zh"><strong>optimization problem</strong> 比較難，它要的是最佳值或最佳解。</span></li>
+<li><span data-tr="en">NP-completeness is defined on <strong>decision</strong> problems.</span><span data-tr="zh">NP-completeness 是定義在 <strong>decision</strong> 問題上的。</span></li>
 </ul>
-<p><strong>Example — Traveling Salesperson Problem (TSP):</strong></p>
+<p><span data-tr="en"><strong>Example — Traveling Salesperson Problem (TSP):</strong></span><span data-tr="zh"><strong>例子 — Traveling Salesperson Problem (TSP)：</strong></span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Version</th>
-<th>Question</th>
+<th><span data-tr="en">Version</span><span data-tr="zh">版本</span></th>
+<th><span data-tr="en">Question</span><span data-tr="zh">問什麼</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Optimization</td>
-<td>Find the <strong>shortest</strong> tour.</td>
+<td><span data-tr="en">Optimization</span><span data-tr="zh">Optimization</span></td>
+<td><span data-tr="en">Find the <strong>shortest</strong> tour.</span><span data-tr="zh">找出<strong>最短</strong>的那條 tour。</span></td>
 </tr>
 <tr>
-<td>Decision</td>
-<td>Is there a tour whose total length <strong>≤ C</strong> for a constant C?</td>
+<td><span data-tr="en">Decision</span><span data-tr="zh">Decision</span></td>
+<td><span data-tr="en">Is there a tour whose total length <strong>≤ C</strong> for a constant C?</span><span data-tr="zh">給一個常數 C，存不存在一條 tour 的總長度 <strong>≤ C</strong>？</span></td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Solving the optimization problem via the decision algorithm (slide 7):</strong></p>
-<p>Repeatedly call the decision algorithm with different bounds and <strong>binary-search</strong> on C:</p>
+<p><span data-tr="en"><strong>Solving the optimization problem via the decision algorithm (slide 7):</strong></span><span data-tr="zh"><strong>用 decision 演算法來解 optimization 問題 (slide 7)：</strong></span></p>
+<p><span data-tr="en">Repeatedly call the decision algorithm with different bounds and <strong>binary-search</strong> on C:</span><span data-tr="zh">你就拿不同的界限一直去呼叫 decision 演算法，對 C 做 <strong>binary-search</strong>：</span></p>
 <pre><code>Give c1 and test (Yes/No)
 Give c2 and test
    ⋮
 Give cn and test
 </code></pre>
-<p>Decide each cᵢ by <strong>binary search</strong> over the range <code>1 … K</code>, where K can be taken as the <strong>sum of all edge weights</strong> (or obtained from a heuristic / approximation algorithm — Chapter 9). Each test is one decision-algorithm call; binary search uses O(log K) calls, so an efficient decision algorithm yields an efficient optimization algorithm.</p>
+<p><span data-tr="en">Decide each cᵢ by <strong>binary search</strong> over the range <code>1 … K</code>, where K can be taken as the <strong>sum of all edge weights</strong> (or obtained from a heuristic / approximation algorithm — Chapter 9). Each test is one decision-algorithm call; binary search uses O(log K) calls, so an efficient decision algorithm yields an efficient optimization algorithm.</span><span data-tr="zh">每個 cᵢ 都在 <code>1 … K</code> 這個範圍裡用 <strong>binary search</strong> 來決定，這裡的 K 可以直接取<strong>所有邊權重的總和</strong>（或是用 heuristic／approximation 演算法去估——第 9 章會講）。每測一次就是呼叫一次 decision 演算法，binary search 總共只要 O(log K) 次，所以只要 decision 演算法夠快，optimization 演算法也就跟著夠快。</span></p>
 <hr />
-<h2 id="the-satisfiability-problem-sat-slides-813">The Satisfiability Problem (SAT) (slides 8–13)</h2>
-<p><strong>Building blocks (slide 10):</strong></p>
+<h2 id="the-satisfiability-problem-sat-slides-813"><span data-tr="en">The Satisfiability Problem (SAT) (slides 8–13)</span><span data-tr="zh">The Satisfiability Problem (SAT) (slides 8–13)</span></h2>
+<p><span data-tr="en"><strong>Building blocks (slide 10):</strong></span><span data-tr="zh"><strong>基本元件 (slide 10)：</strong></span></p>
 <ul>
-<li><strong>Literal:</strong> <code>xᵢ</code> or <code>¬xᵢ</code>.</li>
-<li><strong>Clause:</strong> a disjunction (OR) of literals, e.g. <code>cᵢ = x₁ ∨ x₂ ∨ ¬x₃</code>.</li>
-<li><strong>Formula (CNF, conjunctive normal form):</strong> a conjunction (AND) of clauses, <code>C₁ ∧ C₂ ∧ … ∧ Cₘ</code>.</li>
+<li><span data-tr="en"><strong>Literal:</strong> <code>xᵢ</code> or <code>¬xᵢ</code>.</span><span data-tr="zh"><strong>Literal（文字）：</strong>就是 <code>xᵢ</code> 或 <code>¬xᵢ</code>。</span></li>
+<li><span data-tr="en"><strong>Clause:</strong> a disjunction (OR) of literals, e.g. <code>cᵢ = x₁ ∨ x₂ ∨ ¬x₃</code>.</span><span data-tr="zh"><strong>Clause（子句）：</strong>把幾個 literal 用 OR 串起來，例如 <code>cᵢ = x₁ ∨ x₂ ∨ ¬x₃</code>。</span></li>
+<li><span data-tr="en"><strong>Formula (CNF, conjunctive normal form):</strong> a conjunction (AND) of clauses, <code>C₁ ∧ C₂ ∧ … ∧ Cₘ</code>.</span><span data-tr="zh"><strong>Formula（CNF，合取範式）：</strong>再把幾個 clause 用 AND 串起來，<code>C₁ ∧ C₂ ∧ … ∧ Cₘ</code>。</span></li>
 </ul>
 <blockquote>
-<p><strong>Def (SAT):</strong> Given a Boolean formula (in CNF), determine whether it is <strong>satisfiable</strong> — i.e. whether some truth assignment makes the whole formula true.</p>
+<p><span data-tr="en"><strong>Def (SAT):</strong> Given a Boolean formula (in CNF), determine whether it is <strong>satisfiable</strong> — i.e. whether some truth assignment makes the whole formula true.</span><span data-tr="zh"><strong>定義 (SAT)：</strong>給你一個（CNF 形式的）布林 formula，判斷它是不是 <strong>satisfiable</strong>——也就是說，有沒有一組真假值的指派能讓整個 formula 為真。</span></p>
 </blockquote>
-<p><strong>Satisfiable example (slide 8):</strong></p>
+<p><span data-tr="en"><strong>Satisfiable example (slide 8):</strong></span><span data-tr="zh"><strong>satisfiable 的例子 (slide 8)：</strong></span></p>
 <pre><code>   x₁ ∨ x₂ ∨ x₃
  ∧ ¬x₁
  ∧ ¬x₂
 </code></pre>
-<p>The assignment <code>x₁ ← F, x₂ ← F, x₃ ← T</code> makes the formula <strong>true</strong>. (Notation: writing <code>(¬x₁, ¬x₂, x₃)</code> denotes exactly this assignment <code>x₁←F, x₂←F, x₃←T</code>.)</p>
-<p><strong>Definition of satisfiable (slide 9):</strong> If there is <strong>at least one</strong> assignment satisfying the formula, the formula is <strong>satisfiable</strong>; otherwise it is <strong>unsatisfiable</strong>.</p>
-<p><strong>Unsatisfiable example (slide 9):</strong></p>
+<p><span data-tr="en">The assignment <code>x₁ ← F, x₂ ← F, x₃ ← T</code> makes the formula <strong>true</strong>. (Notation: writing <code>(¬x₁, ¬x₂, x₃)</code> denotes exactly this assignment <code>x₁←F, x₂←F, x₃←T</code>.)</span><span data-tr="zh">把 <code>x₁ ← F, x₂ ← F, x₃ ← T</code> 這組指派代進去，整個 formula 就<strong>為真</strong>了。（記法說明：寫成 <code>(¬x₁, ¬x₂, x₃)</code> 指的就是這組指派 <code>x₁←F, x₂←F, x₃←T</code>。）</span></p>
+<p><span data-tr="en"><strong>Definition of satisfiable (slide 9):</strong> If there is <strong>at least one</strong> assignment satisfying the formula, the formula is <strong>satisfiable</strong>; otherwise it is <strong>unsatisfiable</strong>.</span><span data-tr="zh"><strong>satisfiable 的定義 (slide 9)：</strong>只要<strong>至少有一組</strong>指派能滿足這個 formula，它就是 <strong>satisfiable</strong>；否則就是 <strong>unsatisfiable</strong>。</span></p>
+<p><span data-tr="en"><strong>Unsatisfiable example (slide 9):</strong></span><span data-tr="zh"><strong>unsatisfiable 的例子 (slide 9)：</strong></span></p>
 <pre><code>   x₁ ∨ x₂
  ∧ x₁ ∨ ¬x₂
  ∧ ¬x₁ ∨ x₂
  ∧ ¬x₁ ∨ ¬x₂
 </code></pre>
-<p>All four combinations of <code>(x₁, x₂)</code> falsify one clause, so this is unsatisfiable.</p>
-<h3 id="the-resolution-principle-slides-1112">The Resolution Principle (slides 11–12)</h3>
-<p><strong>Resolvent rule:</strong> from two clauses containing complementary literals, derive a new clause (the <strong>resolvent</strong>) consisting of all the <em>other</em> literals:</p>
+<p><span data-tr="en">All four combinations of <code>(x₁, x₂)</code> falsify one clause, so this is unsatisfiable.</span><span data-tr="zh"><code>(x₁, x₂)</code> 的四種組合，每一種都會弄垮其中一個 clause，所以這個 formula 是 unsatisfiable。</span></p>
+<h3 id="the-resolution-principle-slides-1112"><span data-tr="en">The Resolution Principle (slides 11–12)</span><span data-tr="zh">The Resolution Principle (slides 11–12)</span></h3>
+<p><span data-tr="en"><strong>Resolvent rule:</strong> from two clauses containing complementary literals, derive a new clause (the <strong>resolvent</strong>) consisting of all the <em>other</em> literals:</span><span data-tr="zh"><strong>resolvent 規則：</strong>拿兩個 clause，如果它們含有互補的 literal（一個 <code>xᵢ</code> 一個 <code>¬xᵢ</code>），就把<em>剩下的</em> literal 全部合起來，推出一個新的 clause（叫做 <strong>resolvent</strong>）：</span></p>
 <pre><code>c₁ : ¬x₁ ∨ ¬x₂ ∨ x₃
 c₂ : x₁ ∨ x₄
 ─────────────────────────────  (resolve on x₁ / ¬x₁)
 c₃ : ¬x₂ ∨ x₃ ∨ x₄   (resolvent)
 </code></pre>
 <ul>
-<li>If <strong>no new clauses</strong> can be deduced ⇒ the formula is <strong>satisfiable</strong>.</li>
-<li>If the <strong>empty clause <code>□</code></strong> is deduced ⇒ the formula is <strong>unsatisfiable</strong>.</li>
+<li><span data-tr="en">If <strong>no new clauses</strong> can be deduced ⇒ the formula is <strong>satisfiable</strong>.</span><span data-tr="zh">如果<strong>推不出任何新的 clause</strong> ⇒ 這個 formula 是 <strong>satisfiable</strong>。</span></li>
+<li><span data-tr="en">If the <strong>empty clause <code>□</code></strong> is deduced ⇒ the formula is <strong>unsatisfiable</strong>.</span><span data-tr="zh">如果推出了<strong>空 clause <code>□</code></strong> ⇒ 這個 formula 是 <strong>unsatisfiable</strong>。</span></li>
 </ul>
-<p><strong>Worked deduction — satisfiable (slide 11):</strong></p>
+<p><span data-tr="en"><strong>Worked deduction — satisfiable (slide 11):</strong></span><span data-tr="zh"><strong>實際推一遍 — satisfiable (slide 11)：</strong></span></p>
 <pre><code>   ¬x₁ ∨ ¬x₂ ∨ x₃          (1)
    x₁                       (2)
    x₂                       (3)
@@ -194,8 +195,8 @@ c₃ : ¬x₂ ∨ x₃ ∨ x₄   (resolvent)
 (4)&amp;(3)  ⊢  x₃              (5)
 (1)&amp;(3)  ⊢  ¬x₁ ∨ x₃        (6)
 </code></pre>
-<p>No empty clause arises ⇒ <strong>satisfiable</strong>.</p>
-<p><strong>Worked deduction — unsatisfiable, deriving <code>□</code> (slide 12):</strong></p>
+<p><span data-tr="en">No empty clause arises ⇒ <strong>satisfiable</strong>.</span><span data-tr="zh">推到最後都沒出現空 clause ⇒ <strong>satisfiable</strong>。</span></p>
+<p><span data-tr="en"><strong>Worked deduction — unsatisfiable, deriving <code>□</code> (slide 12):</strong></span><span data-tr="zh"><strong>實際推一遍 — unsatisfiable，最後推出 <code>□</code> (slide 12)：</strong></span></p>
 <pre><code>   ¬x₁ ∨ ¬x₂ ∨ x₃          (1)
    x₁ ∨ ¬x₂                 (2)
    x₂                       (3)
@@ -205,42 +206,42 @@ c₃ : ¬x₂ ∨ x₃ ∨ x₄   (resolvent)
 (4)&amp;(5)  ⊢  ¬x₂             (6)
 (6)&amp;(3)  ⊢  □               (7)   ← empty clause
 </code></pre>
-<p>Empty clause <code>□</code> derived ⇒ <strong>unsatisfiable</strong>.</p>
-<h3 id="semantic-tree-slide-13">Semantic Tree (slide 13)</h3>
+<p><span data-tr="en">Empty clause <code>□</code> derived ⇒ <strong>unsatisfiable</strong>.</span><span data-tr="zh">推出了空 clause <code>□</code> ⇒ <strong>unsatisfiable</strong>。</span></p>
+<h3 id="semantic-tree-slide-13"><span data-tr="en">Semantic Tree (slide 13)</span><span data-tr="zh">Semantic Tree (slide 13)</span></h3>
 <p><img class="figure" src="../render/A08/slide-13.png" alt="Semantic tree for the unsatisfiable formula: a binary tree branching on x2, x3, x1; every leaf is attached to a falsifying clause (1)-(7)"></p>
-<figcaption>Slide 13 — Semantic tree for the slide-12 unsatisfiable example. Every leaf is falsified by some clause ⇒ unsatisfiable.</figcaption>
+<figcaption><span data-tr="en">Slide 13 — Semantic tree for the slide-12 unsatisfiable example. Every leaf is falsified by some clause ⇒ unsatisfiable.</span><span data-tr="zh">Slide 13 — slide-12 那個 unsatisfiable 例子的 semantic tree。每個葉子都被某個 clause 弄垮 ⇒ unsatisfiable。</span></figcaption>
 
 <ul>
-<li>In a <strong>semantic tree</strong>, each <strong>path from root to a leaf</strong> represents a <em>class of truth assignments</em> (each level branches on one variable: true vs. false).</li>
-<li>If <strong>every leaf node</strong> can be attached (falsified by) some clause of the formula, then the formula is <strong>unsatisfiable</strong> (no assignment escapes contradiction).</li>
+<li><span data-tr="en">In a <strong>semantic tree</strong>, each <strong>path from root to a leaf</strong> represents a <em>class of truth assignments</em> (each level branches on one variable: true vs. false).</span><span data-tr="zh">在 <strong>semantic tree</strong> 裡，每一條<strong>從根到葉子的路徑</strong>就代表<em>一類真假值指派</em>（每往下一層就對一個變數分岔：true 還是 false）。</span></li>
+<li><span data-tr="en">If <strong>every leaf node</strong> can be attached (falsified by) some clause of the formula, then the formula is <strong>unsatisfiable</strong> (no assignment escapes contradiction).</span><span data-tr="zh">如果<strong>每一個葉節點</strong>都能掛上（被弄垮於）formula 裡的某個 clause，那這個 formula 就是 <strong>unsatisfiable</strong>——代表沒有任何一組指派躲得掉矛盾。</span></li>
 </ul>
 <hr />
-<h2 id="nondeterministic-algorithms-slides-1419">Nondeterministic Algorithms (slides 14–19)</h2>
-<p>A <strong>nondeterministic algorithm</strong> has two stages:</p>
+<h2 id="nondeterministic-algorithms-slides-1419"><span data-tr="en">Nondeterministic Algorithms (slides 14–19)</span><span data-tr="zh">Nondeterministic 演算法 (slides 14–19)</span></h2>
+<p><span data-tr="en">A <strong>nondeterministic algorithm</strong> has two stages:</span><span data-tr="zh">一個 <strong>nondeterministic 演算法</strong>分成兩個階段：</span></p>
 <ol>
-<li><strong>Guessing</strong> — magically choose a candidate solution.</li>
-<li><strong>Checking</strong> — verify the guess deterministically.</li>
+<li><span data-tr="en"><strong>Guessing</strong> — magically choose a candidate solution.</span><span data-tr="zh"><strong>Guessing（猜）</strong>——像變魔術一樣直接挑出一個候選解。</span></li>
+<li><span data-tr="en"><strong>Checking</strong> — verify the guess deterministically.</span><span data-tr="zh"><strong>Checking（檢查）</strong>——用 deterministic 的方式驗證剛剛猜的對不對。</span></li>
 </ol>
 <blockquote>
-<p>If the <strong>checking</strong> stage runs in <strong>polynomial time</strong>, the algorithm is an <strong>NP (nondeterministic polynomial)</strong> algorithm.</p>
+<p><span data-tr="en">If the <strong>checking</strong> stage runs in <strong>polynomial time</strong>, the algorithm is an <strong>NP (nondeterministic polynomial)</strong> algorithm.</span><span data-tr="zh">只要 <strong>checking</strong> 階段能在 <strong>polynomial time</strong> 內跑完，這個演算法就是 <strong>NP (nondeterministic polynomial)</strong> 演算法。</span></p>
 </blockquote>
-<p><strong>NP problems are decision problems.</strong> Examples (slide 14): searching, MST, sorting, the satisfiability problem (SAT), the traveling salesperson problem (TSP).</p>
-<p><strong>Primitives (Horowitz &amp; Sahni 1998, slide 16):</strong></p>
+<p><span data-tr="en"><strong>NP problems are decision problems.</strong> Examples (slide 14): searching, MST, sorting, the satisfiability problem (SAT), the traveling salesperson problem (TSP).</span><span data-tr="zh"><strong>NP 問題都是 decision 問題。</strong>例子 (slide 14)：searching、MST、sorting、satisfiability problem (SAT)、traveling salesperson problem (TSP)。</span></p>
+<p><span data-tr="en"><strong>Primitives (Horowitz &amp; Sahni 1998, slide 16):</strong></span><span data-tr="zh"><strong>幾個基本指令 (Horowitz &amp; Sahni 1998, slide 16)：</strong></span></p>
 <ul>
-<li><code>Choice(S)</code> — arbitrarily chooses one element of set S. <em>(Time O(1).)</em></li>
-<li><code>Failure</code> — signals an unsuccessful completion.</li>
-<li><code>Success</code> — signals a successful completion.</li>
+<li><span data-tr="en"><code>Choice(S)</code> — arbitrarily chooses one element of set S. <em>(Time O(1).)</em></span><span data-tr="zh"><code>Choice(S)</code> — 從集合 S 裡隨便挑一個元素出來。<em>（O(1) 時間。）</em></span></li>
+<li><span data-tr="en"><code>Failure</code> — signals an unsuccessful completion.</span><span data-tr="zh"><code>Failure</code> — 代表這條路失敗收場。</span></li>
+<li><span data-tr="en"><code>Success</code> — signals a successful completion.</span><span data-tr="zh"><code>Success</code> — 代表這條路成功收場。</span></li>
 </ul>
 <blockquote>
-<p>A nondeterministic algorithm <strong>terminates unsuccessfully iff there exists no set of choices</strong> leading to a <code>Success</code> signal. A deterministic interpretation can be made by allowing <strong>unbounded parallelism</strong> (explore all choice paths at once).</p>
+<p><span data-tr="en">A nondeterministic algorithm <strong>terminates unsuccessfully iff there exists no set of choices</strong> leading to a <code>Success</code> signal. A deterministic interpretation can be made by allowing <strong>unbounded parallelism</strong> (explore all choice paths at once).</span><span data-tr="zh">一個 nondeterministic 演算法<strong>會以失敗收場，若且唯若沒有任何一組 choice</strong> 能走到 <code>Success</code>。你也可以用 deterministic 的角度來想它：只要假設有<strong>無限多的平行能力</strong>，把所有 choice 的路徑一次全部展開來跑就行了。</span></p>
 </blockquote>
-<h3 id="nondeterministic-searching-slide-17">Nondeterministic Searching (slide 17)</h3>
+<h3 id="nondeterministic-searching-slide-17"><span data-tr="en">Nondeterministic Searching (slide 17)</span><span data-tr="zh">Nondeterministic Searching (slide 17)</span></h3>
 <pre><code>j ← Choice(1 : n)            /* guess  */
 if A(j) = x then Success     /* check  */
             else Failure
 </code></pre>
-<p><code>Choice(1:n)</code> is O(1); the check is O(1) ⇒ polynomial. So searching is an NP problem.</p>
-<h3 id="nondeterministic-sorting-slide-18">Nondeterministic Sorting (slide 18)</h3>
+<p><span data-tr="en"><code>Choice(1:n)</code> is O(1); the check is O(1) ⇒ polynomial. So searching is an NP problem.</span><span data-tr="zh"><code>Choice(1:n)</code> 是 O(1)，檢查也是 O(1) ⇒ 整個是 polynomial。所以 searching 是 NP 問題。</span></p>
+<h3 id="nondeterministic-sorting-slide-18"><span data-tr="en">Nondeterministic Sorting (slide 18)</span><span data-tr="zh">Nondeterministic Sorting (slide 18)</span></h3>
 <pre><code>B ← 0
 for i = 1 to n do                 // Guessing: scatter A into B by guessed positions
     j ← Choice(1 : n)
@@ -251,7 +252,7 @@ for i = 1 to n-1 do               // Checking: verify B is sorted
     if B[i] &gt; B[i+1] then Failure
 Success
 </code></pre>
-<h3 id="nondeterministic-sat-slide-19">Nondeterministic SAT (slide 19)</h3>
+<h3 id="nondeterministic-sat-slide-19"><span data-tr="en">Nondeterministic SAT (slide 19)</span><span data-tr="zh">Nondeterministic SAT (slide 19)</span></h3>
 <pre><code>for i = 1 to n do                          // Guessing
     xᵢ ← Choice(true, false)
 
@@ -259,40 +260,40 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
    then Success
    else Failure
 </code></pre>
-<h3 id="decision-version-of-sorting-slide-15">Decision version of sorting (slide 15)</h3>
+<h3 id="decision-version-of-sorting-slide-15"><span data-tr="en">Decision version of sorting (slide 15)</span><span data-tr="zh">sorting 的 decision 版本 (slide 15)</span></h3>
 <blockquote>
-<p>Given <code>a₁, a₂, …, aₙ</code> and <code>C</code>, is there a permutation <code>(a₁, a₂, …, aₙ)</code> such that
-<code>|a₂ − a₁| + |a₃ − a₂| + … + |aₙ − a_{n−1}| &lt; C</code> ?</p>
+<p><span data-tr="en">Given <code>a₁, a₂, …, aₙ</code> and <code>C</code>, is there a permutation <code>(a₁, a₂, …, aₙ)</code> such that
+<code>|a₂ − a₁| + |a₃ − a₂| + … + |aₙ − a_{n−1}| &lt; C</code> ?</span><span data-tr="zh">給你 <code>a₁, a₂, …, aₙ</code> 和一個 <code>C</code>，存不存在一種排列 <code>(a₁, a₂, …, aₙ)</code> 讓 <code>|a₂ − a₁| + |a₃ − a₂| + … + |aₙ − a_{n−1}| &lt; C</code>？</span></p>
 </blockquote>
-<h3 id="not-all-decision-problems-are-np-the-halting-problem-slide-15">Not all decision problems are NP — the Halting Problem (slide 15)</h3>
+<h3 id="not-all-decision-problems-are-np-the-halting-problem-slide-15"><span data-tr="en">Not all decision problems are NP — the Halting Problem (slide 15)</span><span data-tr="zh">不是每個 decision 問題都是 NP — Halting Problem (slide 15)</span></h3>
 <blockquote>
-<p><strong>Halting problem:</strong> Given a program with certain input data, will the program terminate or not?</p>
+<p><span data-tr="en"><strong>Halting problem:</strong> Given a program with certain input data, will the program terminate or not?</span><span data-tr="zh"><strong>Halting problem：</strong>給你一個程式加上某組輸入資料，問這個程式到底會不會停下來？</span></p>
 </blockquote>
 <ul>
-<li>It is <strong>NP-hard</strong> (every NP problem reduces to it).</li>
-<li>It is <strong>undecidable</strong> — so it is <strong>not</strong> in NP (no algorithm, deterministic or not, decides it). This shows NP-hard ⊋ NP-complete: a problem can be NP-hard yet lie outside NP.</li>
+<li><span data-tr="en">It is <strong>NP-hard</strong> (every NP problem reduces to it).</span><span data-tr="zh">它是 <strong>NP-hard</strong>（每個 NP 問題都能 reduce 到它）。</span></li>
+<li><span data-tr="en">It is <strong>undecidable</strong> — so it is <strong>not</strong> in NP (no algorithm, deterministic or not, decides it). This shows NP-hard ⊋ NP-complete: a problem can be NP-hard yet lie outside NP.</span><span data-tr="zh">但它是 <strong>undecidable</strong>（不可判定）——所以它<strong>不</strong>在 NP 裡（不管 deterministic 還是 nondeterministic，根本沒有演算法能判定它）。這正好說明了 NP-hard ⊋ NP-complete：一個問題可以是 NP-hard，卻落在 NP 之外。</span></li>
 </ul>
 <hr />
-<h2 id="cooks-theorem-slide-20">Cook's Theorem (slide 20)</h2>
+<h2 id="cooks-theorem-slide-20"><span data-tr="en">Cook's Theorem (slide 20)</span><span data-tr="zh">Cook's Theorem (slide 20)</span></h2>
 <blockquote>
-<p><strong>Cook's Theorem:</strong> <strong>NP = P iff the satisfiability problem is a P problem.</strong></p>
+<p><span data-tr="en"><strong>Cook's Theorem:</strong> <strong>NP = P iff the satisfiability problem is a P problem.</strong></span><span data-tr="zh"><strong>Cook's Theorem：</strong><strong>NP = P 若且唯若 satisfiability problem 是一個 P 問題。</strong></span></p>
 </blockquote>
-<p>Consequences:</p>
+<p><span data-tr="en">Consequences:</span><span data-tr="zh">由此可以推出：</span></p>
 <ul>
-<li><strong>SAT is NP-complete.</strong></li>
-<li>It is the <strong>first</strong> NP-complete problem.</li>
-<li><strong>Every NP problem reduces to SAT</strong> (every NP problem → SAT).</li>
+<li><span data-tr="en"><strong>SAT is NP-complete.</strong></span><span data-tr="zh"><strong>SAT 是 NP-complete。</strong></span></li>
+<li><span data-tr="en">It is the <strong>first</strong> NP-complete problem.</span><span data-tr="zh">它是<strong>第一個</strong>被證出來的 NP-complete 問題。</span></li>
+<li><span data-tr="en"><strong>Every NP problem reduces to SAT</strong> (every NP problem → SAT).</span><span data-tr="zh"><strong>每個 NP 問題都能 reduce 到 SAT</strong>（every NP problem → SAT）。</span></li>
 </ul>
-<h3 id="why-every-np-problem-sat-slides-34">Why every NP problem → SAT (slides 34)</h3>
+<h3 id="why-every-np-problem-sat-slides-34"><span data-tr="en">Why every NP problem → SAT (slides 34)</span><span data-tr="zh">為什麼每個 NP 問題都 → SAT (slides 34)</span></h3>
 <ul>
-<li>Every NP problem can be solved by an NP (nondeterministic polynomial) algorithm.</li>
-<li>Every NP algorithm can be <strong>transformed in polynomial time into a SAT instance</strong> (Horowitz &amp; Sahni 1998)…</li>
-<li>…such that the <strong>SAT instance is satisfiable iff the answer to the original NP problem is "Yes."</strong></li>
-<li>Therefore every NP problem → SAT, hence <strong>SAT is NP-complete.</strong></li>
+<li><span data-tr="en">Every NP problem can be solved by an NP (nondeterministic polynomial) algorithm.</span><span data-tr="zh">每個 NP 問題都能用一個 NP（nondeterministic polynomial）演算法來解。</span></li>
+<li><span data-tr="en">Every NP algorithm can be <strong>transformed in polynomial time into a SAT instance</strong> (Horowitz &amp; Sahni 1998)…</span><span data-tr="zh">而每個 NP 演算法都能在 <strong>polynomial 時間內轉成一個 SAT instance</strong>（Horowitz &amp; Sahni 1998）……</span></li>
+<li><span data-tr="en">…such that the <strong>SAT instance is satisfiable iff the answer to the original NP problem is "Yes."</strong></span><span data-tr="zh">……而且轉出來的這個 <strong>SAT instance 是 satisfiable，若且唯若原本那個 NP 問題的答案是「Yes」。</strong></span></li>
+<li><span data-tr="en">Therefore every NP problem → SAT, hence <strong>SAT is NP-complete.</strong></span><span data-tr="zh">所以每個 NP 問題 → SAT，於是 <strong>SAT 就是 NP-complete。</strong></span></li>
 </ul>
-<h3 id="worked-example-transforming-searching-into-sat-slides-2124">Worked Example — Transforming Searching into SAT (slides 21–24)</h3>
-<p><strong>Problem:</strong> Does there exist a number in <code>{ x(1), x(2), …, x(n) }</code> equal to <strong>7</strong>? Take <strong>n = 2</strong>.</p>
-<p>The nondeterministic search algorithm is encoded as a Boolean formula. Logical form <strong>(slide 22)</strong>:</p>
+<h3 id="worked-example-transforming-searching-into-sat-slides-2124"><span data-tr="en">Worked Example — Transforming Searching into SAT (slides 21–24)</span><span data-tr="zh">實例 — 把 Searching 轉成 SAT (slides 21–24)</span></h3>
+<p><span data-tr="en"><strong>Problem:</strong> Does there exist a number in <code>{ x(1), x(2), …, x(n) }</code> equal to <strong>7</strong>? Take <strong>n = 2</strong>.</span><span data-tr="zh"><strong>問題：</strong>在 <code>{ x(1), x(2), …, x(n) }</code> 裡有沒有一個數等於 <strong>7</strong>？這裡取 <strong>n = 2</strong>。</span></p>
+<p><span data-tr="en">The nondeterministic search algorithm is encoded as a Boolean formula. Logical form <strong>(slide 22)</strong>:</span><span data-tr="zh">我們把 nondeterministic 的 search 演算法編碼成一個布林 formula。邏輯式長這樣 <strong>(slide 22)</strong>：</span></p>
 <pre><code>   i=1 ∨ i=2
  ∧ i=1 → i≠2
  ∧ i=2 → i≠1
@@ -305,7 +306,7 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
  ∧ x(1)=7                  (input data)
  ∧ x(2)≠7                  (input data)
 </code></pre>
-<p>Rewritten as <strong>CNF (slide 23)</strong> — using <code>(A → B) ≡ (¬A ∨ B)</code>:</p>
+<p><span data-tr="en">Rewritten as <strong>CNF (slide 23)</strong> — using <code>(A → B) ≡ (¬A ∨ B)</code>:</span><span data-tr="zh">用 <code>(A → B) ≡ (¬A ∨ B)</code> 改寫成 <strong>CNF (slide 23)</strong>：</span></p>
 <pre><code>   i=1 ∨ i=2                          (1)
    i≠1 ∨ i≠2                          (2)
    x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
@@ -317,12 +318,12 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
    x(1)=7                             (9)
    x(2)≠7                            (10)
 </code></pre>
-<p><strong>Satisfying assignment (slide 24):</strong></p>
+<p><span data-tr="en"><strong>Satisfying assignment (slide 24):</strong></span><span data-tr="zh"><strong>滿足這個 formula 的指派 (slide 24)：</strong></span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Assign</th>
-<th>Satisfies clauses</th>
+<th><span data-tr="en">Assign</span><span data-tr="zh">指派</span></th>
+<th><span data-tr="en">Satisfies clauses</span><span data-tr="zh">滿足哪些 clause</span></th>
 </tr>
 </thead>
 <tbody>
@@ -352,9 +353,9 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
 </tr>
 </tbody>
 </table></div>
-<p>The formula is <strong>satisfiable</strong> ⇒ "Yes, 7 is present" (it is x(1)).</p>
-<h4 id="variant-a-both-inputs-7-unsatisfiable-via-resolution-slides-2627">Variant A — both inputs ≠ 7 ⇒ unsatisfiable via resolution (slides 26–27)</h4>
-<p>Searching for 7 but <code>x(1)≠7, x(2)≠7</code>. CNF (note clauses (9),(10) flip to <code>x(1)≠7</code>, <code>x(2)≠7</code>, and (7)=<code>SUCCESS</code>, (8)=<code>¬SUCCESS ∨ ¬FAILURE</code>):</p>
+<p><span data-tr="en">The formula is <strong>satisfiable</strong> ⇒ "Yes, 7 is present" (it is x(1)).</span><span data-tr="zh">這個 formula 是 <strong>satisfiable</strong> ⇒ 「有，7 在裡面」（就是 x(1)）。</span></p>
+<h4 id="variant-a-both-inputs-7-unsatisfiable-via-resolution-slides-2627"><span data-tr="en">Variant A — both inputs ≠ 7 ⇒ unsatisfiable via resolution (slides 26–27)</span><span data-tr="zh">變形 A — 兩個輸入都 ≠ 7 ⇒ 用 resolution 證 unsatisfiable (slides 26–27)</span></h4>
+<p><span data-tr="en">Searching for 7 but <code>x(1)≠7, x(2)≠7</code>. CNF (note clauses (9),(10) flip to <code>x(1)≠7</code>, <code>x(2)≠7</code>, and (7)=<code>SUCCESS</code>, (8)=<code>¬SUCCESS ∨ ¬FAILURE</code>):</span><span data-tr="zh">一樣找 7，但這次 <code>x(1)≠7, x(2)≠7</code>。CNF（注意 clause (9)、(10) 翻成 <code>x(1)≠7</code>、<code>x(2)≠7</code>，而且 (7)=<code>SUCCESS</code>、(8)=<code>¬SUCCESS ∨ ¬FAILURE</code>）：</span></p>
 <pre><code>   i=1 ∨ i=2                          (1)
    i≠1 ∨ i≠2                          (2)
    x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
@@ -367,9 +368,9 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
    x(2)≠7                            (10)
 </code></pre>
 <p><img class="figure" src="../render/A08/slide-25.png" alt="Semantic tree for searching-to-SAT with both inputs not equal to 7: a right-leaning chain branching on SUCCESS, FAILURE, X(1)=7, X(2)=7, i; every leaf labelled by a falsifying clause"></p>
-<figcaption>Slide 25 — Semantic tree for the "both inputs ≠ 7" CNF. Every leaf is attached to a clause ⇒ unsatisfiable ⇒ 7 is absent.</figcaption>
+<figcaption><span data-tr="en">Slide 25 — Semantic tree for the "both inputs ≠ 7" CNF. Every leaf is attached to a clause ⇒ unsatisfiable ⇒ 7 is absent.</span><span data-tr="zh">Slide 25 — 「兩個輸入都 ≠ 7」這個 CNF 的 semantic tree。每個葉子都掛到某個 clause ⇒ unsatisfiable ⇒ 7 不在裡面。</span></figcaption>
 
-<p><strong>Apply resolution (slide 27):</strong></p>
+<p><span data-tr="en"><strong>Apply resolution (slide 27):</strong></span><span data-tr="zh"><strong>套用 resolution (slide 27)：</strong></span></p>
 <pre><code>(9)&amp;(5)   ⊢  i≠1 ∨ FAILURE            (11)
 (10)&amp;(6)  ⊢  i≠2 ∨ FAILURE            (12)
 (7)&amp;(8)   ⊢  ¬FAILURE                 (13)
@@ -378,12 +379,12 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
 (14)&amp;(1)  ⊢  i=2                      (16)
 (15)&amp;(16) ⊢  □                        (17)
 </code></pre>
-<p>Empty clause <code>□</code> ⇒ <strong>unsatisfiable</strong> ⇒ <strong>7 does not exist</strong> in x(1) or x(2). Correct.</p>
+<p><span data-tr="en">Empty clause <code>□</code> ⇒ <strong>unsatisfiable</strong> ⇒ <strong>7 does not exist</strong> in x(1) or x(2). Correct.</span><span data-tr="zh">推出空 clause <code>□</code> ⇒ <strong>unsatisfiable</strong> ⇒ x(1)、x(2) 裡<strong>都沒有 7</strong>。答案正確。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: the dump labels two derived lines both "(11)" and then "(16)"; per the deduction chain the lines are renumbered (11)–(17) as above (slide 27).</p>
+<p><span data-tr="en">⚠️ Reconstructed: the dump labels two derived lines both "(11)" and then "(16)"; per the deduction chain the lines are renumbered (11)–(17) as above (slide 27).</span><span data-tr="zh">⚠️ 重建說明：原始檔把兩條推導出來的式子都標成「(11)」、又都標成「(16)」；這裡依照推導的順序把它們重新編號成上面的 (11)–(17)（slide 27）。</span></p>
 </blockquote>
-<h4 id="variant-b-both-inputs-7-satisfiable-both-i1-and-i2-work-slides-2829">Variant B — both inputs = 7 ⇒ satisfiable, both i=1 and i=2 work (slides 28–29)</h4>
-<p>Searching for 7 where <code>x(1)=7, x(2)=7</code>. CNF:</p>
+<h4 id="variant-b-both-inputs-7-satisfiable-both-i1-and-i2-work-slides-2829"><span data-tr="en">Variant B — both inputs = 7 ⇒ satisfiable, both i=1 and i=2 work (slides 28–29)</span><span data-tr="zh">變形 B — 兩個輸入都 = 7 ⇒ satisfiable，i=1 跟 i=2 都行 (slides 28–29)</span></h4>
+<p><span data-tr="en">Searching for 7 where <code>x(1)=7, x(2)=7</code>. CNF:</span><span data-tr="zh">一樣找 7，但這次 <code>x(1)=7, x(2)=7</code>。CNF：</span></p>
 <pre><code>   i=1 ∨ i=2                          (1)
    i≠1 ∨ i≠2                          (2)
    x(1)≠7 ∨ i≠1 ∨ SUCCESS             (3)
@@ -395,39 +396,39 @@ if E(x₁, x₂, …, xₙ) is true                // Checking
    x(1)=7                             (9)
    x(2)=7                            (10)
 </code></pre>
-<p>The semantic tree shows <strong>both</strong> assignments (<code>i=1</code> and <code>i=2</code>) satisfy the clauses — either index witnesses the answer "Yes."</p>
+<p><span data-tr="en">The semantic tree shows <strong>both</strong> assignments (<code>i=1</code> and <code>i=2</code>) satisfy the clauses — either index witnesses the answer "Yes."</span><span data-tr="zh">semantic tree 顯示 <code>i=1</code> 跟 <code>i=2</code> <strong>兩種</strong>指派都能滿足所有 clause——隨便哪個 index 都能當作答案「Yes」的見證。</span></p>
 <p><img class="figure" src="../render/A08/slide-29.png" alt="Semantic tree for searching-to-SAT with both inputs equal to 7: branch order X(1)=7, X(2)=7, SUCCESS, FAILURE, i; two root-to-leaf paths survive without contradiction"></p>
-<figcaption>Slide 29 — Semantic tree for the "both inputs = 7" CNF. Caption (red): "It implies that both assignments (i=1, i=2) satisfy the clauses." ⇒ satisfiable.</figcaption>
+<figcaption><span data-tr="en">Slide 29 — Semantic tree for the "both inputs = 7" CNF. Caption (red): "It implies that both assignments (i=1, i=2) satisfy the clauses." ⇒ satisfiable.</span><span data-tr="zh">Slide 29 — 「兩個輸入都 = 7」這個 CNF 的 semantic tree。投影片紅字寫：「這代表 i=1 跟 i=2 這兩種指派都能滿足所有 clause。」⇒ satisfiable。</span></figcaption>
 
 <hr />
-<h2 id="proving-a-problem-a-is-np-complete-slide-35">Proving a problem A is NP-complete (slide 35)</h2>
-<p>To show <strong>A is NP-complete:</strong></p>
+<h2 id="proving-a-problem-a-is-np-complete-slide-35"><span data-tr="en">Proving a problem A is NP-complete (slide 35)</span><span data-tr="zh">怎麼證明一個問題 A 是 NP-complete (slide 35)</span></h2>
+<p><span data-tr="en">To show <strong>A is NP-complete:</strong></span><span data-tr="zh">要證明 <strong>A 是 NP-complete</strong>，你要做兩件事：</span></p>
 <ol>
-<li><strong>(I)</strong> Prove <strong>A ∈ NP</strong> (give a nondeterministic polynomial algorithm / poly-time checker).</li>
-<li><strong>(II)</strong> Prove that <strong>some known B ∈ NPC reduces to A</strong>, i.e. <strong>B → A</strong>.</li>
+<li><span data-tr="en"><strong>(I)</strong> Prove <strong>A ∈ NP</strong> (give a nondeterministic polynomial algorithm / poly-time checker).</span><span data-tr="zh"><strong>(I)</strong> 證明 <strong>A ∈ NP</strong>（給一個 nondeterministic polynomial 演算法，或一個 poly-time 的檢查器）。</span></li>
+<li><span data-tr="en"><strong>(II)</strong> Prove that <strong>some known B ∈ NPC reduces to A</strong>, i.e. <strong>B → A</strong>.</span><span data-tr="zh"><strong>(II)</strong> 證明<strong>某個已知的 B ∈ NPC 能 reduce 到 A</strong>，也就是 <strong>B → A</strong>。</span></li>
 </ol>
-<p>Then <strong>A ∈ NPC</strong>.</p>
-<p><strong>Why this works:</strong> (II) shows A is <strong>at least as hard as</strong> an already-hardest problem B, so A is NP-hard; (I) places it inside NP. Together ⇒ NP-complete.</p>
+<p><span data-tr="en">Then <strong>A ∈ NPC</strong>.</span><span data-tr="zh">這樣就能得到 <strong>A ∈ NPC</strong>。</span></p>
+<p><span data-tr="en"><strong>Why this works:</strong> (II) shows A is <strong>at least as hard as</strong> an already-hardest problem B, so A is NP-hard; (I) places it inside NP. Together ⇒ NP-complete.</span><span data-tr="zh"><strong>為什麼這樣就成立：</strong>(II) 說明 A <strong>至少跟</strong>一個本來就最難的問題 B <strong>一樣難</strong>，所以 A 是 NP-hard；(I) 把它擺進 NP 裡。兩個合起來 ⇒ NP-complete。</span></p>
 <blockquote>
-<p><strong>Caution (slide 43):</strong> If a problem is NP-complete, its <strong>special cases may or may not</strong> be NP-complete.</p>
+<p><span data-tr="en"><strong>Caution (slide 43):</strong> If a problem is NP-complete, its <strong>special cases may or may not</strong> be NP-complete.</span><span data-tr="zh"><strong>小心 (slide 43)：</strong>一個問題就算是 NP-complete，它的<strong>特例不見得</strong>也是 NP-complete（可能是、也可能不是）。</span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-1-sat-3-sat-slides-3642">Reduction 1 — SAT → 3-SAT (slides 36–42)</h2>
-<p><strong>3-SAT:</strong> SAT where <strong>each clause has exactly three literals.</strong></p>
-<p><strong>(I) 3-SAT ∈ NP</strong> — obvious (it is a restricted SAT; guess + check in poly time).</p>
-<p><strong>(II) SAT → 3-SAT — Construction.</strong> Convert each clause of a SAT instance into a set of 3-literal clauses by <strong>padding with new variables yᵢ</strong>, by clause size:</p>
-<p><strong>1 literal <code>L₁</code></strong> → 4 clauses with 2 fresh variables <code>y₁, y₂</code> (all four sign combos):</p>
+<h2 id="reduction-1-sat-3-sat-slides-3642"><span data-tr="en">Reduction 1 — SAT → 3-SAT (slides 36–42)</span><span data-tr="zh">Reduction 1 — SAT → 3-SAT (slides 36–42)</span></h2>
+<p><span data-tr="en"><strong>3-SAT:</strong> SAT where <strong>each clause has exactly three literals.</strong></span><span data-tr="zh"><strong>3-SAT：</strong>就是限制<strong>每個 clause 剛好有三個 literal</strong> 的 SAT。</span></p>
+<p><span data-tr="en"><strong>(I) 3-SAT ∈ NP</strong> — obvious (it is a restricted SAT; guess + check in poly time).</span><span data-tr="zh"><strong>(I) 3-SAT ∈ NP</strong> — 這很明顯（它就是被限制過的 SAT；一樣猜一組再用 poly 時間檢查）。</span></p>
+<p><span data-tr="en"><strong>(II) SAT → 3-SAT — Construction.</strong> Convert each clause of a SAT instance into a set of 3-literal clauses by <strong>padding with new variables yᵢ</strong>, by clause size:</span><span data-tr="zh"><strong>(II) SAT → 3-SAT — 建構方法。</strong>把 SAT instance 裡的每個 clause 都改寫成一組「剛好三個 literal」的 clause，做法是<strong>塞進新變數 yᵢ</strong> 來補位，依 clause 大小分情況：</span></p>
+<p><span data-tr="en"><strong>1 literal <code>L₁</code></strong> → 4 clauses with 2 fresh variables <code>y₁, y₂</code> (all four sign combos):</span><span data-tr="zh"><strong>只有 1 個 literal <code>L₁</code></strong> → 用 2 個新變數 <code>y₁, y₂</code> 拆成 4 個 clause（正負號四種組合都來一遍）：</span></p>
 <pre><code>L₁ ∨  y₁ ∨  y₂
 L₁ ∨ ¬y₁ ∨  y₂
 L₁ ∨  y₁ ∨ ¬y₂
 L₁ ∨ ¬y₁ ∨ ¬y₂
 </code></pre>
-<p><strong>2 literals <code>L₁, L₂</code></strong> → 2 clauses with 1 fresh variable <code>y₁</code>:</p>
+<p><span data-tr="en"><strong>2 literals <code>L₁, L₂</code></strong> → 2 clauses with 1 fresh variable <code>y₁</code>:</span><span data-tr="zh"><strong>2 個 literal <code>L₁, L₂</code></strong> → 用 1 個新變數 <code>y₁</code> 拆成 2 個 clause：</span></p>
 <pre><code>L₁ ∨ L₂ ∨  y₁
 L₁ ∨ L₂ ∨ ¬y₁
 </code></pre>
-<p><strong>3 literals</strong> → <strong>unchanged.</strong></p>
-<p><strong>More than 3 literals <code>L₁, L₂, …, Lₖ</code></strong> → chain with <code>k−3</code> fresh variables <code>y₁ … y_{k−3}</code>:</p>
+<p><span data-tr="en"><strong>3 literals</strong> → <strong>unchanged.</strong></span><span data-tr="zh"><strong>3 個 literal</strong> → <strong>原封不動。</strong></span></p>
+<p><span data-tr="en"><strong>More than 3 literals <code>L₁, L₂, …, Lₖ</code></strong> → chain with <code>k−3</code> fresh variables <code>y₁ … y_{k−3}</code>:</span><span data-tr="zh"><strong>超過 3 個 literal <code>L₁, L₂, …, Lₖ</code></strong> → 用 <code>k−3</code> 個新變數 <code>y₁ … y_{k−3}</code> 串成一條鏈：</span></p>
 <pre><code>L₁    ∨ L₂   ∨  y₁
 L₃    ∨ ¬y₁  ∨  y₂
 L₄    ∨ ¬y₂  ∨  y₃
@@ -435,12 +436,12 @@ L₄    ∨ ¬y₂  ∨  y₃
 L_{k−2} ∨ ¬y_{k−4} ∨ y_{k−3}
 L_{k−1} ∨ Lₖ ∨ ¬y_{k−3}
 </code></pre>
-<p><strong>Worked example (slides 39).</strong> SAT instance:</p>
+<p><span data-tr="en"><strong>Worked example (slides 39).</strong> SAT instance:</span><span data-tr="zh"><strong>實際例子 (slides 39)。</strong>SAT instance：</span></p>
 <pre><code>x₁ ∨ x₂
 ¬x₃
 x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅
 </code></pre>
-<p>Transformed 3-SAT instance:</p>
+<p><span data-tr="en">Transformed 3-SAT instance:</span><span data-tr="zh">轉出來的 3-SAT instance：</span></p>
 <pre><code> x₁ ∨ x₂ ∨  y₁          (from 2-literal clause)
  x₁ ∨ x₂ ∨ ¬y₁
 
@@ -453,38 +454,38 @@ x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅
  x₃ ∨ ¬y₄ ∨  y₅
 ¬x₄ ∨  x₅ ∨ ¬y₅
 </code></pre>
-<p><strong>Correctness — S satisfiable ⇔ S′ satisfiable (slides 40–42).</strong></p>
+<p><span data-tr="en"><strong>Correctness — S satisfiable ⇔ S′ satisfiable (slides 40–42).</strong></span><span data-tr="zh"><strong>正確性 — S satisfiable ⇔ S′ satisfiable (slides 40–42)。</strong></span></p>
 <ul>
-<li><strong>(⇒)</strong> Given a satisfying assignment of the original clause <code>S = L₁ ∨ … ∨ Lₖ</code> (k ≥ 4), at least one <code>Lᵢ = T</code>. Assign the chain variables so the new clauses are all satisfied:</li>
-<li>set <code>y_{i−1} = F</code>,</li>
-<li>set <code>yⱼ = T</code> for <code>j ≤ i−1</code>... <em>(reconstructed reading; see note)</em> — concretely, set <code>yⱼ = T</code> for the clauses <strong>before</strong> Lᵢ's clause and <code>yⱼ = F</code> for those <strong>after</strong>, which is exactly what is needed because the clause containing <code>Lᵢ</code> is <code>Lᵢ ∨ ¬y_{i−2} ∨ y_{i−1}</code> and <code>Lᵢ = T</code> already satisfies it. Hence S′ is satisfiable.</li>
-<li>(3-literal and shorter clauses are trivial: any satisfying literal carries over; the fresh y's can be set freely.)</li>
-<li><strong>(⇐)</strong> If S′ is satisfiable, a satisfying assignment <strong>cannot</strong> rely on the <code>yᵢ</code>'s alone — because the chain forces a contradiction (resolving the chain on all the <code>yᵢ</code>'s yields <code>L₁ ∨ … ∨ Lₖ</code>, the empty padding cancels). Therefore at least one original <code>Lᵢ</code> must be true, so S is satisfiable. <em>(The resolution principle can also be applied to show this.)</em></li>
+<li><span data-tr="en"><strong>(⇒)</strong> Given a satisfying assignment of the original clause <code>S = L₁ ∨ … ∨ Lₖ</code> (k ≥ 4), at least one <code>Lᵢ = T</code>. Assign the chain variables so the new clauses are all satisfied:</span><span data-tr="zh"><strong>(⇒)</strong> 假設原本那個 clause <code>S = L₁ ∨ … ∨ Lₖ</code>（k ≥ 4）有一組滿足的指派，那至少有一個 <code>Lᵢ = T</code>。我們就把鏈上的變數設成讓所有新 clause 都被滿足：</span></li>
+<li><span data-tr="en">set <code>y_{i−1} = F</code>,</span><span data-tr="zh">設 <code>y_{i−1} = F</code>，</span></li>
+<li><span data-tr="en">set <code>yⱼ = T</code> for <code>j ≤ i−1</code>... <em>(reconstructed reading; see note)</em> — concretely, set <code>yⱼ = T</code> for the clauses <strong>before</strong> Lᵢ's clause and <code>yⱼ = F</code> for those <strong>after</strong>, which is exactly what is needed because the clause containing <code>Lᵢ</code> is <code>Lᵢ ∨ ¬y_{i−2} ∨ y_{i−1}</code> and <code>Lᵢ = T</code> already satisfies it. Hence S′ is satisfiable.</span><span data-tr="zh">設 <code>yⱼ = T</code>（當 <code>j ≤ i−1</code>）……<em>（這是重建的讀法，見下方說明）</em>——具體講，就是 Lᵢ 所在那個 clause <strong>之前</strong>的 <code>yⱼ</code> 全設 T、<strong>之後</strong>的全設 F。這樣剛好夠用，因為含 <code>Lᵢ</code> 的那個 clause 是 <code>Lᵢ ∨ ¬y_{i−2} ∨ y_{i−1}</code>，而 <code>Lᵢ = T</code> 本身就已經把它滿足了。所以 S′ 是 satisfiable。</span></li>
+<li><span data-tr="en">(3-literal and shorter clauses are trivial: any satisfying literal carries over; the fresh y's can be set freely.)</span><span data-tr="zh">（3 個以下 literal 的 clause 很簡單：原本滿足的 literal 直接照搬過來，新加的 y 隨便設都行。）</span></li>
+<li><span data-tr="en"><strong>(⇐)</strong> If S′ is satisfiable, a satisfying assignment <strong>cannot</strong> rely on the <code>yᵢ</code>'s alone — because the chain forces a contradiction (resolving the chain on all the <code>yᵢ</code>'s yields <code>L₁ ∨ … ∨ Lₖ</code>, the empty padding cancels). Therefore at least one original <code>Lᵢ</code> must be true, so S is satisfiable. <em>(The resolution principle can also be applied to show this.)</em></span><span data-tr="zh"><strong>(⇐)</strong> 反過來，如果 S′ 是 satisfiable，那滿足它的指派<strong>不可能</strong>只靠 <code>yᵢ</code> 撐——因為整條鏈會逼出矛盾（把鏈上所有 <code>yᵢ</code> 做 resolution，補位的部分會互相抵消，最後留下 <code>L₁ ∨ … ∨ Lₖ</code>）。所以一定有某個原本的 <code>Lᵢ</code> 為真，於是 S 也是 satisfiable。<em>（這點也可以用 resolution principle 來證。）</em></span></li>
 </ul>
-<p>⇒ <strong>3-SAT is NP-complete.</strong></p>
+<p><span data-tr="en">⇒ <strong>3-SAT is NP-complete.</strong></span><span data-tr="zh">⇒ <strong>3-SAT 是 NP-complete。</strong></span></p>
 <blockquote>
-<p>⚠️ Reconstructed: the (⇒) chain-variable assignment on slide 41 is heavily garbled in the dump (<code>yi-1=F</code>, <code>yj=T ∀j≤i-1</code>, <code>yj=F ∀j&gt;i-1</code> with a <code>(∵ Li ∨ ¬yi-2 ∨ yi-1)</code> hint). The reconstruction above (set y's true before, false after the true-literal's clause) is the standard textbook argument; <strong>validate against slide 41.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: the (⇒) chain-variable assignment on slide 41 is heavily garbled in the dump (<code>yi-1=F</code>, <code>yj=T ∀j≤i-1</code>, <code>yj=F ∀j&gt;i-1</code> with a <code>(∵ Li ∨ ¬yi-2 ∨ yi-1)</code> hint). The reconstruction above (set y's true before, false after the true-literal's clause) is the standard textbook argument; <strong>validate against slide 41.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 41 上 (⇒) 那段鏈變數的指派在原始檔裡爛得很嚴重（只剩 <code>yi-1=F</code>、<code>yj=T ∀j≤i-1</code>、<code>yj=F ∀j&gt;i-1</code> 加上一個 <code>(∵ Li ∨ ¬yi-2 ∨ yi-1)</code> 的提示）。上面這個重建（真 literal 那個 clause 之前的 y 設真、之後設假）是課本標準論證；<strong>記得對照 slide 41 確認一下。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-2-saty-3-literalsclause-chromatic-number-cn-slides-4449">Reduction 2 — SATY (≤ 3 literals/clause) → Chromatic Number (CN) (slides 44–49)</h2>
-<p><strong>Coloring / Chromatic Number (slides 44–45).</strong> A <strong>coloring</strong> of <code>G=(V,E)</code> is <code>f : V → {1,…,k}</code> with <code>f(u) ≠ f(v)</code> whenever <code>(u,v) ∈ E</code>. The <strong>CN decision problem:</strong> does G have a coloring with k colors?</p>
+<h2 id="reduction-2-saty-3-literalsclause-chromatic-number-cn-slides-4449"><span data-tr="en">Reduction 2 — SATY (≤ 3 literals/clause) → Chromatic Number (CN) (slides 44–49)</span><span data-tr="zh">Reduction 2 — SATY（每個 clause ≤ 3 個 literal）→ Chromatic Number (CN) (slides 44–49)</span></h2>
+<p><span data-tr="en"><strong>Coloring / Chromatic Number (slides 44–45).</strong> A <strong>coloring</strong> of <code>G=(V,E)</code> is <code>f : V → {1,…,k}</code> with <code>f(u) ≠ f(v)</code> whenever <code>(u,v) ∈ E</code>. The <strong>CN decision problem:</strong> does G have a coloring with k colors?</span><span data-tr="zh"><strong>Coloring / Chromatic Number (slides 44–45)。</strong>對圖 <code>G=(V,E)</code> 的一個 <strong>coloring（著色）</strong>就是一個函數 <code>f : V → {1,…,k}</code>，而且只要 <code>(u,v) ∈ E</code>（兩點相鄰）就要 <code>f(u) ≠ f(v)</code>（顏色不同）。<strong>CN decision 問題：</strong>G 能不能用 k 種顏色著色？</span></p>
 <blockquote>
-<p>Example (slide 45): a graph is 3-colorable with <code>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</code>.</p>
+<p><span data-tr="en">Example (slide 45): a graph is 3-colorable with <code>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</code>.</span><span data-tr="zh">例子 (slide 45)：這個圖用 <code>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</code> 就能 3 色著色。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-45.png" alt="Chromatic-number example: 5-vertex graph a,b,c,d,e (a 5-cycle) 3-colored with f(a)=1,f(b)=2,f(c)=1,f(d)=2,f(e)=3"></p>
-<figcaption>Slide 45 — Chromatic-number example graph, 3-colorable.</figcaption>
+<figcaption><span data-tr="en">Slide 45 — Chromatic-number example graph, 3-colorable.</span><span data-tr="zh">Slide 45 — Chromatic-number 例子圖，可 3 色著色。</span></figcaption>
 
 <blockquote>
-<p><strong>Theorem:</strong> Satisfiability with <strong>at most 3 literals per clause (SATY)</strong> → CN.</p>
+<p><span data-tr="en"><strong>Theorem:</strong> Satisfiability with <strong>at most 3 literals per clause (SATY)</strong> → CN.</span><span data-tr="zh"><strong>定理：</strong><strong>每個 clause 最多 3 個 literal 的 satisfiability（SATY）</strong> → CN。</span></p>
 </blockquote>
-<p><strong>Construction (slide 46).</strong> Instance of SATY: variables <code>x₁,…,xₙ</code> (with <strong>n ≥ 4</strong>), clauses <code>c₁,…,c_r</code>. Build graph <code>G=(V,E)</code>:</p>
-<p><strong>Vertices:</strong></p>
+<p><span data-tr="en"><strong>Construction (slide 46).</strong> Instance of SATY: variables <code>x₁,…,xₙ</code> (with <strong>n ≥ 4</strong>), clauses <code>c₁,…,c_r</code>. Build graph <code>G=(V,E)</code>:</span><span data-tr="zh"><strong>建構方法 (slide 46)。</strong>給一個 SATY instance：變數 <code>x₁,…,xₙ</code>（其中 <strong>n ≥ 4</strong>），clause <code>c₁,…,c_r</code>。我們蓋一個圖 <code>G=(V,E)</code>：</span></p>
+<p><span data-tr="en"><strong>Vertices:</strong></span><span data-tr="zh"><strong>點：</strong></span></p>
 <pre><code>V = { x₁, …, xₙ }              (positive-literal vertices)
   ∪ { ¬x₁, …, ¬xₙ }            (negative-literal vertices)
   ∪ { y₁, …, yₙ }              (newly added &quot;palette&quot; vertices)
   ∪ { c₁, …, c_r }             (clause vertices)
 </code></pre>
-<p><strong>Edges:</strong></p>
+<p><span data-tr="en"><strong>Edges:</strong></span><span data-tr="zh"><strong>邊：</strong></span></p>
 <pre><code>E = { (xᵢ, ¬xᵢ)        | 1 ≤ i ≤ n }          // a variable and its negation conflict
   ∪ { (yᵢ, yⱼ)         | i ≠ j }              // all yᵢ mutually adjacent (form a clique)
   ∪ { (yᵢ, xⱼ)         | i ≠ j }              // yᵢ adjacent to every xⱼ except xᵢ
@@ -493,36 +494,44 @@ x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅
   ∪ { (¬xᵢ, cⱼ)        | ¬xᵢ ∉ cⱼ }
 </code></pre>
 <blockquote>
-<p>✅ Verified against slides 46 &amp; 47. Slide 46 prints the edge set verbatim: <code>E = {(xᵢ,¬xᵢ)|1≤i≤n} ∪ {(yᵢ,yⱼ)|i≠j} ∪ {(yᵢ,xⱼ)|i≠j} ∪ {(yᵢ,¬xⱼ)|i≠j} ∪ {(xᵢ,cⱼ)|xᵢ∉cⱼ} ∪ {(¬xᵢ,cⱼ)|¬xᵢ∉cⱼ}</code>. The clause-vertex edges use <strong><code>∉</code></strong> (joined to literals NOT in the clause) exactly as reconstructed. Slide 47's drawn graph + 5-coloring confirms the worked instance. See Appendix A — Slide 47.</p>
-<p>✅ Worked example (slide 47, verified): clauses <code>(1) x₁ ∨ x₂ ∨ x₃</code> and <code>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</code>, <strong>n=4</strong>. The deck draws the resulting graph (8 literal vertices, the y₁..y₄ clique, clause nodes c₁,c₂ wired to non-member literals) with a 5-coloring: x₁=1, x₂=5, x₃=5, x₄=4, ¬x₁=5, ¬x₂=2, ¬x₃=3, ¬x₄=5, y₁..y₄=1..4, c₁=1, c₂=3 — encoding the assignment x₁=T, x₂=F, x₃=F, x₄=T. <strong>Full transcription + edge list in Appendix A — Slide 47.</strong></p>
+<p><span data-tr="en">✅ Verified against slides 46 &amp; 47. Slide 46 prints the edge set verbatim: <code>E = {(xᵢ,¬xᵢ)|1≤i≤n} ∪ {(yᵢ,yⱼ)|i≠j} ∪ {(yᵢ,xⱼ)|i≠j} ∪ {(yᵢ,¬xⱼ)|i≠j} ∪ {(xᵢ,cⱼ)|xᵢ∉cⱼ} ∪ {(¬xᵢ,cⱼ)|¬xᵢ∉cⱼ}</code>. The clause-vertex edges use <strong><code>∉</code></strong> (joined to literals NOT in the clause) exactly as reconstructed. Slide 47's drawn graph + 5-coloring confirms the worked instance. See Appendix A — Slide 47.</span><span data-tr="zh">✅ 已對照 slide 46 跟 47。slide 46 一字不差地印出了邊集合：<code>E = {(xᵢ,¬xᵢ)|1≤i≤n} ∪ {(yᵢ,yⱼ)|i≠j} ∪ {(yᵢ,xⱼ)|i≠j} ∪ {(yᵢ,¬xⱼ)|i≠j} ∪ {(xᵢ,cⱼ)|xᵢ∉cⱼ} ∪ {(¬xᵢ,cⱼ)|¬xᵢ∉cⱼ}</code>。clause 點的邊用的是 <strong><code>∉</code></strong>（連到那些<strong>不</strong>在該 clause 裡的 literal），跟我們重建的完全一樣。slide 47 畫的圖加上 5 色著色也印證了這個實例。見 Appendix A — Slide 47。</span></p>
+<p><span data-tr="en">✅ Worked example (slide 47, verified): clauses <code>(1) x₁ ∨ x₂ ∨ x₃</code> and <code>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</code>, <strong>n=4</strong>. The deck draws the resulting graph (8 literal vertices, the y₁..y₄ clique, clause nodes c₁,c₂ wired to non-member literals) with a 5-coloring: x₁=1, x₂=5, x₃=5, x₄=4, ¬x₁=5, ¬x₂=2, ¬x₃=3, ¬x₄=5, y₁..y₄=1..4, c₁=1, c₂=3 — encoding the assignment x₁=T, x₂=F, x₃=F, x₄=T. <strong>Full transcription + edge list in Appendix A — Slide 47.</strong></span><span data-tr="zh">✅ 實際例子（slide 47，已驗證）：clause <code>(1) x₁ ∨ x₂ ∨ x₃</code> 和 <code>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</code>，<strong>n=4</strong>。投影片畫出對應的圖（8 個 literal 點、y₁..y₄ 構成的 clique、clause 點 c₁,c₂ 連到非成員的 literal），並給了一個 5 色著色：x₁=1, x₂=5, x₃=5, x₄=4, ¬x₁=5, ¬x₂=2, ¬x₃=3, ¬x₄=5, y₁..y₄=1..4, c₁=1, c₂=3——這正好編碼出指派 x₁=T, x₂=F, x₃=F, x₄=T。<strong>完整轉錄＋邊清單在 Appendix A — Slide 47。</strong></span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-47.png" alt="SATY-to-CN graph for clauses (x1∨x2∨x3) and (¬x3∨¬x4∨x2), n=4: top row of 8 literal vertices, bottom row of y1..y4 clique and clause vertices c1,c2, with the (n+1)=5-coloring labels"></p>
-<figcaption>Slide 47 — SATY→CN construction (worked instance). Numeric labels are the 5-coloring; it reads off the satisfying assignment x₁=T, x₂=F, x₃=F, x₄=T.</figcaption>
+<figcaption><span data-tr="en">Slide 47 — SATY→CN construction (worked instance). Numeric labels are the 5-coloring; it reads off the satisfying assignment x₁=T, x₂=F, x₃=F, x₄=T.</span><span data-tr="zh">Slide 47 — SATY→CN 建構（實際例子）。數字標籤就是那個 5 色著色；從它可以直接讀出滿足的指派 x₁=T, x₂=F, x₃=F, x₄=T。</span></figcaption>
 
-<p><strong>Claim: satisfiable ⇔ (n+1)-colorable.</strong></p>
-<p><strong>(⇒) Satisfiable → (n+1)-colorable (slide 48).</strong> Given a satisfying assignment, color:
+<p><span data-tr="en"><strong>Claim: satisfiable ⇔ (n+1)-colorable.</strong></span><span data-tr="zh"><strong>主張：satisfiable ⇔ 可 (n+1) 色著色。</strong></span></p>
+<p><span data-tr="en"><strong>(⇒) Satisfiable → (n+1)-colorable (slide 48).</strong> Given a satisfying assignment, color:
 1. <code>f(yᵢ) = i</code>.
 2. If <code>xᵢ = T</code> then <code>f(xᵢ) = i, f(¬xᵢ) = n+1</code>; else <code>f(xᵢ) = n+1, f(¬xᵢ) = i</code>.
-3. For each clause <code>cⱼ</code>: pick a literal in <code>cⱼ</code> that is true. If <code>xᵢ ∈ cⱼ</code> and <code>xᵢ = T</code>, set <code>f(cⱼ) = f(xᵢ)</code>; if <code>¬xᵢ ∈ cⱼ</code> and <code>¬xᵢ = T</code>, set <code>f(cⱼ) = f(¬xᵢ)</code>. (A satisfied clause has <strong>at least one</strong> such true literal.)</p>
-<p>This uses colors <code>{1,…,n+1}</code> and respects all edges ⇒ <strong>(n+1)-colorable</strong>.</p>
-<p><strong>(⇐) (n+1)-colorable → Satisfiable (slide 49).</strong> Given an (n+1)-coloring:
+3. For each clause <code>cⱼ</code>: pick a literal in <code>cⱼ</code> that is true. If <code>xᵢ ∈ cⱼ</code> and <code>xᵢ = T</code>, set <code>f(cⱼ) = f(xᵢ)</code>; if <code>¬xᵢ ∈ cⱼ</code> and <code>¬xᵢ = T</code>, set <code>f(cⱼ) = f(¬xᵢ)</code>. (A satisfied clause has <strong>at least one</strong> such true literal.)</span><span data-tr="zh"><strong>(⇒) Satisfiable → 可 (n+1) 色著色 (slide 48)。</strong>拿到一組滿足的指派後，這樣著色：
+1. <code>f(yᵢ) = i</code>。
+2. 如果 <code>xᵢ = T</code> 就設 <code>f(xᵢ) = i, f(¬xᵢ) = n+1</code>；否則 <code>f(xᵢ) = n+1, f(¬xᵢ) = i</code>。
+3. 每個 clause <code>cⱼ</code>：挑一個在 <code>cⱼ</code> 裡為真的 literal。若 <code>xᵢ ∈ cⱼ</code> 且 <code>xᵢ = T</code>，設 <code>f(cⱼ) = f(xᵢ)</code>；若 <code>¬xᵢ ∈ cⱼ</code> 且 <code>¬xᵢ = T</code>，設 <code>f(cⱼ) = f(¬xᵢ)</code>。（一個被滿足的 clause <strong>至少有一個</strong>這種為真的 literal。）</span></p>
+<p><span data-tr="en">This uses colors <code>{1,…,n+1}</code> and respects all edges ⇒ <strong>(n+1)-colorable</strong>.</span><span data-tr="zh">這只用到 <code>{1,…,n+1}</code> 這些顏色，而且每條邊都沒衝突 ⇒ <strong>可 (n+1) 色著色</strong>。</span></p>
+<p><span data-tr="en"><strong>(⇐) (n+1)-colorable → Satisfiable (slide 49).</strong> Given an (n+1)-coloring:
 1. Each <code>yᵢ</code> must get color <code>i</code> (the y's form a clique adjacent to all literals except their own index, forcing the palette).
 2. <code>f(xᵢ) ≠ f(¬xᵢ)</code> (they are adjacent); so for each i either <code>f(xᵢ)=i, f(¬xᵢ)=n+1</code> <strong>or</strong> <code>f(xᵢ)=n+1, f(¬xᵢ)=i</code>.
 3. Each clause has at most 3 literals and <code>n ≥ 4</code>, so there is <strong>at least one variable xᵢ with neither xᵢ nor ¬xᵢ in cⱼ</strong>; hence <code>cⱼ</code> is adjacent to both <code>xᵢ</code> and <code>¬xᵢ</code>, one of which has color <code>n+1</code> ⇒ <strong><code>f(cⱼ) ≠ n+1</code></strong>, so <code>f(cⱼ) = i</code> for some <code>i ≤ n</code>.
 4. Read off the assignment: if <code>f(cⱼ) = i = f(xᵢ)</code>, set <code>xᵢ = T</code>; if <code>f(cⱼ) = i = f(¬xᵢ)</code>, set <code>¬xᵢ = T</code>.
-5. Since <code>f(cⱼ)=i=f(xᵢ)</code> means <code>(cⱼ, xᵢ) ∉ E</code>, i.e. <code>xᵢ ∈ cⱼ</code>, the chosen literal is actually <strong>in</strong> <code>cⱼ</code> and is true ⇒ <code>cⱼ</code> is satisfied. (Symmetric for <code>¬xᵢ</code>.)</p>
-<p>⇒ the formula is satisfiable. Hence <strong>CN is NP-complete.</strong> ∎</p>
+5. Since <code>f(cⱼ)=i=f(xᵢ)</code> means <code>(cⱼ, xᵢ) ∉ E</code>, i.e. <code>xᵢ ∈ cⱼ</code>, the chosen literal is actually <strong>in</strong> <code>cⱼ</code> and is true ⇒ <code>cⱼ</code> is satisfied. (Symmetric for <code>¬xᵢ</code>.)</span><span data-tr="zh"><strong>(⇐) 可 (n+1) 色著色 → Satisfiable (slide 49)。</strong>拿到一個 (n+1) 色著色後：
+1. 每個 <code>yᵢ</code> 一定是顏色 <code>i</code>（這些 y 構成一個 clique，而且各自跟除了自己索引以外的所有 literal 相鄰，這就把調色盤逼定了）。
+2. <code>f(xᵢ) ≠ f(¬xᵢ)</code>（它們相鄰）；所以對每個 i，要嘛 <code>f(xᵢ)=i, f(¬xᵢ)=n+1</code>，<strong>要嘛</strong> <code>f(xᵢ)=n+1, f(¬xᵢ)=i</code>。
+3. 每個 clause 最多 3 個 literal，而 <code>n ≥ 4</code>，所以<strong>至少有一個變數 xᵢ，它的 xᵢ 跟 ¬xᵢ 都不在 cⱼ 裡</strong>；因此 <code>cⱼ</code> 同時跟 <code>xᵢ</code> 和 <code>¬xᵢ</code> 相鄰，這兩個之中有一個顏色是 <code>n+1</code> ⇒ <strong><code>f(cⱼ) ≠ n+1</code></strong>，所以 <code>f(cⱼ) = i</code>（某個 <code>i ≤ n</code>）。
+4. 讀出指派：若 <code>f(cⱼ) = i = f(xᵢ)</code>，設 <code>xᵢ = T</code>；若 <code>f(cⱼ) = i = f(¬xᵢ)</code>，設 <code>¬xᵢ = T</code>。
+5. 因為 <code>f(cⱼ)=i=f(xᵢ)</code> 就代表 <code>(cⱼ, xᵢ) ∉ E</code>，也就是 <code>xᵢ ∈ cⱼ</code>，所以挑到的 literal 真的<strong>在</strong> <code>cⱼ</code> 裡而且為真 ⇒ <code>cⱼ</code> 被滿足。（<code>¬xᵢ</code> 的情況對稱。）</span></p>
+<p><span data-tr="en">⇒ the formula is satisfiable. Hence <strong>CN is NP-complete.</strong> ∎</span><span data-tr="zh">⇒ 這個 formula 是 satisfiable。於是 <strong>CN 是 NP-complete。</strong>∎</span></p>
 <hr />
-<h2 id="reduction-3-node-cover-sat-slides-3033">Reduction 3 — Node Cover → SAT (slides 30–33)</h2>
-<p>This shows how the <strong>node cover</strong> decision problem is encoded as a SAT instance (it is the "every NP problem → SAT" recipe applied concretely to node cover; equivalently it certifies node cover ∈ NP).</p>
-<p><strong>Node cover (slide 30).</strong> Given <code>G=(V,E)</code>, <code>S ⊆ V</code> is a <strong>node cover</strong> if for every edge <code>(u,v) ∈ E</code>, <code>u ∈ S</code> or <code>v ∈ S</code>. <strong>Decision version:</strong> does there exist S with <strong>|S| ≤ K</strong>?</p>
+<h2 id="reduction-3-node-cover-sat-slides-3033"><span data-tr="en">Reduction 3 — Node Cover → SAT (slides 30–33)</span><span data-tr="zh">Reduction 3 — Node Cover → SAT (slides 30–33)</span></h2>
+<p><span data-tr="en">This shows how the <strong>node cover</strong> decision problem is encoded as a SAT instance (it is the "every NP problem → SAT" recipe applied concretely to node cover; equivalently it certifies node cover ∈ NP).</span><span data-tr="zh">這一段示範怎麼把 <strong>node cover</strong> decision 問題編碼成一個 SAT instance（其實就是把「every NP problem → SAT」那套配方實際套在 node cover 上；換句話說，這也等於證明了 node cover ∈ NP）。</span></p>
+<p><span data-tr="en"><strong>Node cover (slide 30).</strong> Given <code>G=(V,E)</code>, <code>S ⊆ V</code> is a <strong>node cover</strong> if for every edge <code>(u,v) ∈ E</code>, <code>u ∈ S</code> or <code>v ∈ S</code>. <strong>Decision version:</strong> does there exist S with <strong>|S| ≤ K</strong>?</span><span data-tr="zh"><strong>Node cover (slide 30)。</strong>給一個圖 <code>G=(V,E)</code>，若對每條邊 <code>(u,v) ∈ E</code> 都有 <code>u ∈ S</code> 或 <code>v ∈ S</code>，那 <code>S ⊆ V</code> 就是一個 <strong>node cover</strong>（簡單講就是每條邊至少有一端被 S 蓋到）。<strong>Decision 版本：</strong>存不存在一個 S 滿足 <strong>|S| ≤ K</strong>？</span></p>
 <blockquote>
-<p>Example (slide 30): node covers <code>{1,3}</code> and <code>{5,2,4}</code>.</p>
+<p><span data-tr="en">Example (slide 30): node covers <code>{1,3}</code> and <code>{5,2,4}</code>.</span><span data-tr="zh">例子 (slide 30)：node cover 有 <code>{1,3}</code> 和 <code>{5,2,4}</code>。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-30.png" alt="Node cover example: undirected graph on vertices 1-5 with edges (1,2),(1,5),(2,3),(3,4); node covers {1,3} and {5,2,4}"></p>
-<figcaption>Slide 30 — Node cover example graph (5 vertices). Node covers shown: {1,3} and {5,2,4}.</figcaption>
+<figcaption><span data-tr="en">Slide 30 — Node cover example graph (5 vertices). Node covers shown: {1,3} and {5,2,4}.</span><span data-tr="zh">Slide 30 — Node cover 例子圖（5 個點）。圖中標出的 node cover：{1,3} 和 {5,2,4}。</span></figcaption>
 
-<p><strong>Nondeterministic construction (slide 31)</strong> — guess K vertices, check every edge is covered:</p>
+<p><span data-tr="en"><strong>Nondeterministic construction (slide 31)</strong> — guess K vertices, check every edge is covered:</span><span data-tr="zh"><strong>Nondeterministic 建構 (slide 31)</strong>——先猜 K 個點，再檢查每條邊都被蓋到：</span></p>
 <pre><code>BEGIN
    i₁ ← Choice({1, 2, …, n})
    i₂ ← Choice({1, 2, …, n} − {i₁})
@@ -536,7 +545,7 @@ x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅
    SUCCESS
 END
 </code></pre>
-<p><strong>The corresponding CNF (slides 32–33).</strong> Encode "the t-th chosen vertex iₜ equals some value in 1..n", "the choices are distinct", "every edge is covered, else FAILURE", and the success/failure bookkeeping:</p>
+<p><span data-tr="en"><strong>The corresponding CNF (slides 32–33).</strong> Encode "the t-th chosen vertex iₜ equals some value in 1..n", "the choices are distinct", "every edge is covered, else FAILURE", and the success/failure bookkeeping:</span><span data-tr="zh"><strong>對應的 CNF (slides 32–33)。</strong>把這幾件事編碼進去：「第 t 個挑到的點 iₜ 取到 1..n 裡某個值」、「每次挑的都不重複」、「每條邊都要被蓋到，否則 FAILURE」，再加上 success/failure 的記帳：</span></p>
 <pre><code>(A) Each iₜ takes some value (one clause per t):
     i₁=1 ∨ i₁=2 ∨ … ∨ i₁=n
     i₂=1 ∨ i₂=2 ∨ … ∨ i₂=n
@@ -566,355 +575,371 @@ END
               ⋮
     r_m ∈ e_m , s_m ∈ e_m
 </code></pre>
-<p>The SAT instance is satisfiable <strong>iff</strong> there is a choice of k vertices covering all edges <strong>iff</strong> G has a node cover of size ≤ k. This is the per-problem instance of Cook's "every NP problem → SAT."</p>
+<p><span data-tr="en">The SAT instance is satisfiable <strong>iff</strong> there is a choice of k vertices covering all edges <strong>iff</strong> G has a node cover of size ≤ k. This is the per-problem instance of Cook's "every NP problem → SAT."</span><span data-tr="zh">這個 SAT instance 是 satisfiable，<strong>若且唯若</strong>能挑出 k 個點蓋住所有邊，<strong>也就是</strong> G 有一個大小 ≤ k 的 node cover。這就是 Cook 那句「every NP problem → SAT」套在單一問題上的實例。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: the entire CNF on slides 31–33 is fragmentary in the dump (the <code>=</code>, <code>≠</code>, <code>∈</code>, <code>∉</code> glyphs are dropped; the "r/s ∈ e" lines on slide 33 are bare). The grouping (A)–(D) and the intended meanings above are reconstructed from the nondeterministic pseudocode and the standard encoding; <strong>validate clause-by-clause against slides 31–33.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: the entire CNF on slides 31–33 is fragmentary in the dump (the <code>=</code>, <code>≠</code>, <code>∈</code>, <code>∉</code> glyphs are dropped; the "r/s ∈ e" lines on slide 33 are bare). The grouping (A)–(D) and the intended meanings above are reconstructed from the nondeterministic pseudocode and the standard encoding; <strong>validate clause-by-clause against slides 31–33.</strong></span><span data-tr="zh">⚠️ 重建說明：slides 31–33 上的整段 CNF 在原始檔裡都破碎不全（<code>=</code>、<code>≠</code>、<code>∈</code>、<code>∉</code> 這些符號都掉了；slide 33 上「r/s ∈ e」那幾行只剩光禿禿的字母）。上面的 (A)–(D) 分組跟各自的意思，是我依照 nondeterministic 虛擬碼加上標準編碼重建出來的；<strong>記得逐條對照 slides 31–33 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-4-cn-exact-cover-slides-5051">Reduction 4 — CN → Exact Cover (slides 50–51)</h2>
-<p><strong>Set cover decision problem (slide 50).</strong> A family <code>F = {S₁, S₂, …, S_k}</code> over universe <code>⋃_{Sᵢ∈F} Sᵢ = {u₁, u₂, …, uₙ}</code>. <code>T ⊆ F</code> is a <strong>set cover</strong> if <code>⋃_{Sᵢ∈T} Sᵢ = ⋃_{Sᵢ∈F} Sᵢ</code>. <strong>Decision:</strong> does F have a cover T with <strong>≤ C</strong> sets?</p>
+<h2 id="reduction-4-cn-exact-cover-slides-5051"><span data-tr="en">Reduction 4 — CN → Exact Cover (slides 50–51)</span><span data-tr="zh">Reduction 4 — CN → Exact Cover (slides 50–51)</span></h2>
+<p><span data-tr="en"><strong>Set cover decision problem (slide 50).</strong> A family <code>F = {S₁, S₂, …, S_k}</code> over universe <code>⋃_{Sᵢ∈F} Sᵢ = {u₁, u₂, …, uₙ}</code>. <code>T ⊆ F</code> is a <strong>set cover</strong> if <code>⋃_{Sᵢ∈T} Sᵢ = ⋃_{Sᵢ∈F} Sᵢ</code>. <strong>Decision:</strong> does F have a cover T with <strong>≤ C</strong> sets?</span><span data-tr="zh"><strong>Set cover decision 問題 (slide 50)。</strong>有一族集合 <code>F = {S₁, S₂, …, S_k}</code>，全集是 <code>⋃_{Sᵢ∈F} Sᵢ = {u₁, u₂, …, uₙ}</code>。若 <code>⋃_{Sᵢ∈T} Sᵢ = ⋃_{Sᵢ∈F} Sᵢ</code>，則 <code>T ⊆ F</code> 是一個 <strong>set cover</strong>（也就是 T 裡的集合聯集起來能蓋住全集）。<strong>Decision：</strong>F 有沒有一個只用 <strong>≤ C</strong> 個集合的 cover T？</span></p>
 <blockquote>
-<p>Example: <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)} = {s₁, s₂, s₃, s₄}</code>.
+<p><span data-tr="en">Example: <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)} = {s₁, s₂, s₃, s₄}</code>.
 <code>T = {s₁, s₃, s₄}</code> is a set cover.
-<code>T = {s₁, s₂}</code> is a set cover <strong>and an exact cover</strong> (disjoint, covers everything).</p>
+<code>T = {s₁, s₂}</code> is a set cover <strong>and an exact cover</strong> (disjoint, covers everything).</span><span data-tr="zh">例子：<code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)} = {s₁, s₂, s₃, s₄}</code>。
+<code>T = {s₁, s₃, s₄}</code> 是一個 set cover。
+<code>T = {s₁, s₂}</code> 既是 set cover、<strong>又是 exact cover</strong>（彼此不相交、又蓋住全部）。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-50.png" alt="Set cover decision problem example: F={(a1,a3),(a2,a4),(a2,a3),(a4)}=s1..s4; T={s1,s3,s4} is a set cover; T={s1,s2} is a set cover and exact cover"></p>
-<figcaption>Slide 50 — Set cover decision problem with worked example. {s₁,s₂} is both a set cover and an exact cover.</figcaption>
+<figcaption><span data-tr="en">Slide 50 — Set cover decision problem with worked example. {s₁,s₂} is both a set cover and an exact cover.</span><span data-tr="zh">Slide 50 — Set cover decision 問題加上實例。{s₁,s₂} 同時是 set cover 也是 exact cover。</span></figcaption>
 
-<p><strong>Exact cover problem (slide 51).</strong> Same notation. Determine if F has an <strong>exact cover</strong> T: a cover of F whose sets are <strong>pairwise disjoint</strong>.</p>
+<p><span data-tr="en"><strong>Exact cover problem (slide 51).</strong> Same notation. Determine if F has an <strong>exact cover</strong> T: a cover of F whose sets are <strong>pairwise disjoint</strong>.</span><span data-tr="zh"><strong>Exact cover 問題 (slide 51)。</strong>符號一樣。問 F 有沒有一個 <strong>exact cover</strong> T：一個能蓋住全部、而且裡面的集合<strong>兩兩不相交</strong>的 cover。</span></p>
 <blockquote>
-<p><strong>Theorem: CN → exact cover.</strong> <em>(The deck states the theorem; the construction details are not expanded in the dump — see flagged items.)</em></p>
-<p>⚠️ Reconstructed/Not fully shown: slide 51 only states "CN → exact cover" as a theorem with <strong>no construction in the dump</strong>. <strong>Validate whether slide 51 (or an animation) carries a construction; the deck appears to leave it as a stated result.</strong></p>
+<p><span data-tr="en"><strong>Theorem: CN → exact cover.</strong> <em>(The deck states the theorem; the construction details are not expanded in the dump — see flagged items.)</em></span><span data-tr="zh"><strong>定理：CN → exact cover。</strong><em>（投影片只丟出這個定理；建構細節在原始檔裡沒展開——見下面標註的項目。）</em></span></p>
+<p><span data-tr="en">⚠️ Reconstructed/Not fully shown: slide 51 only states "CN → exact cover" as a theorem with <strong>no construction in the dump</strong>. <strong>Validate whether slide 51 (or an animation) carries a construction; the deck appears to leave it as a stated result.</strong></span><span data-tr="zh">⚠️ 重建／沒完整呈現：slide 51 只把「CN → exact cover」當定理講出來，<strong>原始檔裡沒有建構過程</strong>。<strong>請確認一下 slide 51（或某段動畫）是不是有附建構；看起來投影片就只把它當作一個結論寫著。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-5-exact-cover-sum-of-subsets-slides-5254">Reduction 5 — Exact Cover → Sum of Subsets (slides 52–54)</h2>
-<p><strong>Sum of subsets problem (slide 52).</strong> Given positive numbers <code>A = {a₁, …, aₙ}</code> and a constant <code>C</code>, determine if some subset <code>A′ ⊆ A</code> has <code>Σ_{aᵢ∈A′} aᵢ = C</code>.</p>
+<h2 id="reduction-5-exact-cover-sum-of-subsets-slides-5254"><span data-tr="en">Reduction 5 — Exact Cover → Sum of Subsets (slides 52–54)</span><span data-tr="zh">Reduction 5 — Exact Cover → Sum of Subsets (slides 52–54)</span></h2>
+<p><span data-tr="en"><strong>Sum of subsets problem (slide 52).</strong> Given positive numbers <code>A = {a₁, …, aₙ}</code> and a constant <code>C</code>, determine if some subset <code>A′ ⊆ A</code> has <code>Σ_{aᵢ∈A′} aᵢ = C</code>.</span><span data-tr="zh"><strong>Sum of subsets 問題 (slide 52)。</strong>給一堆正數 <code>A = {a₁, …, aₙ}</code> 和一個常數 <code>C</code>，問能不能從 A 裡挑一個子集 <code>A′ ⊆ A</code> 讓 <code>Σ_{aᵢ∈A′} aᵢ = C</code>。</span></p>
 <blockquote>
-<p>Example (slide 52): <code>A = {7, 5, 19, 1, 12, 8, 14}</code>. For <code>C=21</code>, <code>A′={7,14}</code> works. For <code>C=11</code>, no solution.</p>
-<p><strong>Theorem: Exact cover → sum of subsets.</strong></p>
+<p><span data-tr="en">Example (slide 52): <code>A = {7, 5, 19, 1, 12, 8, 14}</code>. For <code>C=21</code>, <code>A′={7,14}</code> works. For <code>C=11</code>, no solution.</span><span data-tr="zh">例子 (slide 52)：<code>A = {7, 5, 19, 1, 12, 8, 14}</code>。<code>C=21</code> 時 <code>A′={7,14}</code> 就行。<code>C=11</code> 時則無解。</span></p>
+<p><span data-tr="en"><strong>Theorem: Exact cover → sum of subsets.</strong></span><span data-tr="zh"><strong>定理：Exact cover → sum of subsets。</strong></span></p>
 </blockquote>
-<p><strong>Construction (slide 53).</strong> Instance of exact cover: <code>F = {S₁,…,S_k}</code> over universe <code>{u₁,…,uₙ}</code>. Build a sum-of-subsets instance <code>A = {a₁,…,a_k}</code> by encoding each set Sⱼ as a <strong>base-(k+1) number</strong> whose digit in position i flags membership of uᵢ:</p>
+<p><span data-tr="en"><strong>Construction (slide 53).</strong> Instance of exact cover: <code>F = {S₁,…,S_k}</code> over universe <code>{u₁,…,uₙ}</code>. Build a sum-of-subsets instance <code>A = {a₁,…,a_k}</code> by encoding each set Sⱼ as a <strong>base-(k+1) number</strong> whose digit in position i flags membership of uᵢ:</span><span data-tr="zh"><strong>建構方法 (slide 53)。</strong>給一個 exact cover instance：<code>F = {S₁,…,S_k}</code>，全集 <code>{u₁,…,uₙ}</code>。我們蓋一個 sum-of-subsets instance <code>A = {a₁,…,a_k}</code>，做法是把每個集合 Sⱼ 編成一個 <strong>base-(k+1) 的數</strong>，第 i 位數字用來標記 uᵢ 在不在 Sⱼ 裡：</span></p>
 <pre><code>aⱼ = Σ_{i=1..n}  eⱼᵢ · (k+1)^{i−1},   where  eⱼᵢ = 1 if uᵢ ∈ Sⱼ, else 0
 
 C = Σ_{i=0..n−1} (k+1)^i = ((k+1)ⁿ − 1) / k     (all-ones in base k+1)
 </code></pre>
-<p><strong>Why base (k+1)?</strong> There are k sets, so any subset of them sums <strong>at most k</strong> ones into any single digit position. Using base <strong>k+1</strong> guarantees <strong>no carries</strong> across digit positions: a subset of A sums to C (the all-ones number) <strong>iff</strong> every universe element uᵢ is covered <strong>exactly once</strong> ⇒ exactly an <strong>exact cover.</strong> A smaller base could let carries fake a sum.</p>
-<p><strong>Worked example (slide 54).</strong> <code>u₁=1, u₂=2, u₃=3</code>, <code>n=3</code>.</p>
+<p><span data-tr="en"><strong>Why base (k+1)?</strong> There are k sets, so any subset of them sums <strong>at most k</strong> ones into any single digit position. Using base <strong>k+1</strong> guarantees <strong>no carries</strong> across digit positions: a subset of A sums to C (the all-ones number) <strong>iff</strong> every universe element uᵢ is covered <strong>exactly once</strong> ⇒ exactly an <strong>exact cover.</strong> A smaller base could let carries fake a sum.</span><span data-tr="zh"><strong>為什麼要用 base (k+1)？</strong>因為總共只有 k 個集合，所以隨便挑一個子集，同一位數最多也只會疊上 <strong>k 個</strong>「1」。用 <strong>k+1</strong> 進位就保證<strong>不會進位</strong>到別的位數：A 的某個子集加起來剛好等於 C（那個全是 1 的數），<strong>若且唯若</strong>每個全集元素 uᵢ 都<strong>剛好被蓋一次</strong> ⇒ 這正好就是 <strong>exact cover。</strong>如果 base 取太小，進位就可能假造出一個剛好的總和，騙過你。</span></p>
+<p><span data-tr="en"><strong>Worked example (slide 54).</strong> <code>u₁=1, u₂=2, u₃=3</code>, <code>n=3</code>.</span><span data-tr="zh"><strong>實際例子 (slide 54)。</strong><code>u₁=1, u₂=2, u₃=3</code>，<code>n=3</code>。</span></p>
 <p><img class="figure" src="../render/A08/slide-54.png" alt="Exact cover to sum of subsets worked example: left variant base 4 with a1=5,a2=16,a3=17,C=21; right variant base 2 with a1=3,a2=2,a3=2,a4=6,C=7"></p>
-<figcaption>Slide 54 — Exact cover → sum of subsets. Left: proper base k+1=4. Right: deliberately too-small base 2 (the set list prints "S₃" twice — a slide typo for S₄={1,3}).</figcaption>
+<figcaption><span data-tr="en">Slide 54 — Exact cover → sum of subsets. Left: proper base k+1=4. Right: deliberately too-small base 2 (the set list prints "S₃" twice — a slide typo for S₄={1,3}).</span><span data-tr="zh">Slide 54 — Exact cover → sum of subsets。左邊：正確的 base k+1=4。右邊：故意取太小的 base 2（集合清單把「S₃」印了兩次——這是投影片的 typo，本來該是 S₄={1,3}）。</span></figcaption>
 
-<p><em>Variant E (k=3 sets):</em> <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F = {u₁,u₂,u₃} = {1,2,3}</code>. Base <code>k+1 = 4</code>:</p>
+<p><span data-tr="en"><em>Variant E (k=3 sets):</em> <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F = {u₁,u₂,u₃} = {1,2,3}</code>. Base <code>k+1 = 4</code>:</span><span data-tr="zh"><em>變形 E（k=3 個集合）：</em><code>S₁={1,2}, S₂={3}, S₃={1,3}</code>，<code>F = {u₁,u₂,u₃} = {1,2,3}</code>。Base <code>k+1 = 4</code>：</span></p>
 <pre><code>a₁ = 4⁰ + 4¹ = 5          (S₁ covers u₁,u₂)
 a₂ = 4²    = 16           (S₂ covers u₃)
 a₃ = 4⁰ + 4² = 17         (S₃ covers u₁,u₃)
 C  = 4⁰ + 4¹ + 4² = 21
 </code></pre>
-<p><code>a₁ + a₃ = 5 + 17 = 22 ≠ 21</code> and <code>a₂ + ...</code> — the exact cover <code>{S₁, S₂}</code> gives <code>5 + 16 = 21 = C</code>. ✓ (sets disjoint, cover all)</p>
-<p><em>Variant (k chosen so k+1 = 2+1 = 3; 4 sets):</em> <code>S₁={1,2}, S₂={2}, S₃={2}, S₄={1,3}</code>. Here the deck uses base <code>k+1</code> with the indicated value:</p>
+<p><span data-tr="en"><code>a₁ + a₃ = 5 + 17 = 22 ≠ 21</code> and <code>a₂ + ...</code> — the exact cover <code>{S₁, S₂}</code> gives <code>5 + 16 = 21 = C</code>. ✓ (sets disjoint, cover all)</span><span data-tr="zh"><code>a₁ + a₃ = 5 + 17 = 22 ≠ 21</code>，而 exact cover <code>{S₁, S₂}</code> 則是 <code>5 + 16 = 21 = C</code>。✓（集合不相交、又蓋住全部）</span></p>
+<p><span data-tr="en"><em>Variant (k chosen so k+1 = 2+1 = 3; 4 sets):</em> <code>S₁={1,2}, S₂={2}, S₃={2}, S₄={1,3}</code>. Here the deck uses base <code>k+1</code> with the indicated value:</span><span data-tr="zh"><em>變形（這次 k 選成讓 k+1 = 2+1 = 3；4 個集合）：</em><code>S₁={1,2}, S₂={2}, S₃={2}, S₄={1,3}</code>。投影片這邊用了標示的那個 base <code>k+1</code> 值：</span></p>
 <pre><code>a₁ = 2⁰ + 2¹ = 3
 a₂ = 2¹     = 2
 a₃ = 2¹     = 2
 a₄ = 2¹ + 2² = 6
 C  = 2⁰ + 2¹ + 2² = 7
 </code></pre>
-<p>Illustrates the role of the base (this variant deliberately uses a too-small base to show how collisions/carries arise).</p>
+<p><span data-tr="en">Illustrates the role of the base (this variant deliberately uses a too-small base to show how collisions/carries arise).</span><span data-tr="zh">這個變形是在示範 base 的作用（它故意用太小的 base，讓你看到碰撞／進位是怎麼跑出來的）。</span></p>
 <blockquote>
-<p>✅ Verified against slide 54. Exponent restorations are correct (<code>4⁰+4¹</code>, <code>4²</code>, base 4 in variant 1; base 2 in variant 2). The duplicated "S₃" in variant 2 is a <strong>typo on the slide itself</strong> (the 4th set is meant to be S₄={1,3}). The key takeaways (the formula and "why k+1") are confirmed. See Appendix A — Slide 54.</p>
+<p><span data-tr="en">✅ Verified against slide 54. Exponent restorations are correct (<code>4⁰+4¹</code>, <code>4²</code>, base 4 in variant 1; base 2 in variant 2). The duplicated "S₃" in variant 2 is a <strong>typo on the slide itself</strong> (the 4th set is meant to be S₄={1,3}). The key takeaways (the formula and "why k+1") are confirmed. See Appendix A — Slide 54.</span><span data-tr="zh">✅ 已對照 slide 54。指數的還原是對的（變形 1 用 base 4 的 <code>4⁰+4¹</code>、<code>4²</code>；變形 2 用 base 2）。變形 2 裡重複的「S₃」是<strong>投影片本身的 typo</strong>（第 4 個集合本來該是 S₄={1,3}）。最關鍵的重點（那條公式跟「為什麼是 k+1」）都確認無誤。見 Appendix A — Slide 54。</span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-6-sum-of-subsets-partition-slides-5557">Reduction 6 — Sum of Subsets → Partition (slides 55–57)</h2>
-<p><strong>Partition problem (slide 55).</strong> Given positive numbers <code>A = {a₁,…,aₙ}</code>, determine if there is a partition <code>P</code> with <code>Σ_{i∈P} aᵢ = Σ_{i∉P} aᵢ</code> (split A into two equal-sum halves).</p>
+<h2 id="reduction-6-sum-of-subsets-partition-slides-5557"><span data-tr="en">Reduction 6 — Sum of Subsets → Partition (slides 55–57)</span><span data-tr="zh">Reduction 6 — Sum of Subsets → Partition (slides 55–57)</span></h2>
+<p><span data-tr="en"><strong>Partition problem (slide 55).</strong> Given positive numbers <code>A = {a₁,…,aₙ}</code>, determine if there is a partition <code>P</code> with <code>Σ_{i∈P} aᵢ = Σ_{i∉P} aᵢ</code> (split A into two equal-sum halves).</span><span data-tr="zh"><strong>Partition 問題 (slide 55)。</strong>給一堆正數 <code>A = {a₁,…,aₙ}</code>，問能不能把它分成 <code>P</code> 跟其餘兩堆，使得 <code>Σ_{i∈P} aᵢ = Σ_{i∉P} aᵢ</code>（也就是切成兩半、兩邊總和相等）。</span></p>
 <blockquote>
-<p>Example: <code>A = {1,3,8,4,10}</code> partitions into <code>{1,8,4}</code> (sum 13) and <code>{3,10}</code> (sum 13).</p>
-<p><strong>Theorem: sum of subsets → partition.</strong></p>
+<p><span data-tr="en">Example: <code>A = {1,3,8,4,10}</code> partitions into <code>{1,8,4}</code> (sum 13) and <code>{3,10}</code> (sum 13).</span><span data-tr="zh">例子：<code>A = {1,3,8,4,10}</code> 可以分成 <code>{1,8,4}</code>（和 13）跟 <code>{3,10}</code>（和 13）。</span></p>
+<p><span data-tr="en"><strong>Theorem: sum of subsets → partition.</strong></span><span data-tr="zh"><strong>定理：sum of subsets → partition。</strong></span></p>
 </blockquote>
-<p><strong>Construction (slide 56).</strong> Instance of sum of subsets: <code>A = {a₁,…,aₙ}, C</code>. Build a partition instance <code>B = {b₁,…,b_{n+2}}</code>:</p>
+<p><span data-tr="en"><strong>Construction (slide 56).</strong> Instance of sum of subsets: <code>A = {a₁,…,aₙ}, C</code>. Build a partition instance <code>B = {b₁,…,b_{n+2}}</code>:</span><span data-tr="zh"><strong>建構方法 (slide 56)。</strong>給一個 sum of subsets instance：<code>A = {a₁,…,aₙ}, C</code>。我們蓋一個 partition instance <code>B = {b₁,…,b_{n+2}}</code>：</span></p>
 <pre><code>bᵢ      = aᵢ        for 1 ≤ i ≤ n
 b_{n+1} = C + 1
 b_{n+2} = (Σ_{1≤i≤n} aᵢ) + 1 − C
 </code></pre>
-<p>Let <code>Tsum = Σ aᵢ</code>. Then <code>Σ B = Tsum + (C+1) + (Tsum + 1 − C) = 2·Tsum + 2</code>, so each side of a partition must sum to <code>Tsum + 1</code>.</p>
-<p><strong>Correctness.</strong> A subset <code>S ⊆ A</code> with <code>Σ_S aᵢ = C</code> exists <strong>iff</strong> B has a balanced partition:
+<p><span data-tr="en">Let <code>Tsum = Σ aᵢ</code>. Then <code>Σ B = Tsum + (C+1) + (Tsum + 1 − C) = 2·Tsum + 2</code>, so each side of a partition must sum to <code>Tsum + 1</code>.</span><span data-tr="zh">令 <code>Tsum = Σ aᵢ</code>。那麼 <code>Σ B = Tsum + (C+1) + (Tsum + 1 − C) = 2·Tsum + 2</code>，所以 partition 的每一邊都要加到 <code>Tsum + 1</code>。</span></p>
+<p><span data-tr="en"><strong>Correctness.</strong> A subset <code>S ⊆ A</code> with <code>Σ_S aᵢ = C</code> exists <strong>iff</strong> B has a balanced partition:
 - Put <code>S ∪ {b_{n+2}}</code> on one side: sum <code>= C + (Tsum + 1 − C) = Tsum + 1</code>. ✓
-- The other side is <code>(A∖S) ∪ {b_{n+1}}</code>: sum <code>= (Tsum − C) + (C+1) = Tsum + 1</code>. ✓</p>
-<p>So the partition is <code>{ bᵢ | aᵢ ∈ S } ∪ {b_{n+2}}</code> and <code>{ bᵢ | aᵢ ∉ S } ∪ {b_{n+1}}</code>.</p>
-<p><strong>Why <code>b_{n+1} = C+1</code> and not <code>C</code>? (slide 57).</strong> To <strong>force <code>b_{n+1}</code> and <code>b_{n+2}</code> into different subsets.</strong> With the +1 offsets, <code>b_{n+1} + b_{n+2} = (C+1) + (Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they <strong>cannot both</strong> be on the same side. This pins down the structure so a balanced partition of B corresponds exactly to a subset of A summing to C. (If we used <code>C</code> directly, the two padding numbers could land together and break the correspondence.)</p>
+- The other side is <code>(A∖S) ∪ {b_{n+1}}</code>: sum <code>= (Tsum − C) + (C+1) = Tsum + 1</code>. ✓</span><span data-tr="zh"><strong>正確性。</strong>存在一個子集 <code>S ⊆ A</code> 滿足 <code>Σ_S aᵢ = C</code>，<strong>若且唯若</strong> B 有一個對半平分的 partition：
+- 把 <code>S ∪ {b_{n+2}}</code> 放一邊：和 <code>= C + (Tsum + 1 − C) = Tsum + 1</code>。✓
+- 另一邊是 <code>(A∖S) ∪ {b_{n+1}}</code>：和 <code>= (Tsum − C) + (C+1) = Tsum + 1</code>。✓</span></p>
+<p><span data-tr="en">So the partition is <code>{ bᵢ | aᵢ ∈ S } ∪ {b_{n+2}}</code> and <code>{ bᵢ | aᵢ ∉ S } ∪ {b_{n+1}}</code>.</span><span data-tr="zh">所以這個 partition 就是 <code>{ bᵢ | aᵢ ∈ S } ∪ {b_{n+2}}</code> 跟 <code>{ bᵢ | aᵢ ∉ S } ∪ {b_{n+1}}</code>。</span></p>
+<p><span data-tr="en"><strong>Why <code>b_{n+1} = C+1</code> and not <code>C</code>? (slide 57).</strong> To <strong>force <code>b_{n+1}</code> and <code>b_{n+2}</code> into different subsets.</strong> With the +1 offsets, <code>b_{n+1} + b_{n+2} = (C+1) + (Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they <strong>cannot both</strong> be on the same side. This pins down the structure so a balanced partition of B corresponds exactly to a subset of A summing to C. (If we used <code>C</code> directly, the two padding numbers could land together and break the correspondence.)</span><span data-tr="zh"><strong>為什麼 <code>b_{n+1} = C+1</code> 而不是 <code>C</code>？(slide 57)</strong>就是為了<strong>逼 <code>b_{n+1}</code> 跟 <code>b_{n+2}</code> 一定要分到不同堆。</strong>加了 +1 之後，<code>b_{n+1} + b_{n+2} = (C+1) + (Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>，所以它們<strong>不可能</strong>同時擺在同一邊。這樣就把結構釘死，讓 B 的平分 partition 剛好對應到「A 裡某個子集加起來等於 C」。（如果直接用 <code>C</code>，這兩個補位的數就可能跑到同一堆，整個對應關係就壞了。）</span></p>
 <hr />
-<h2 id="reduction-7-partition-bin-packing-slide-58">Reduction 7 — Partition → Bin Packing (slide 58)</h2>
-<p><strong>Bin packing problem (slide 58).</strong> <code>n</code> items, each of size <code>cᵢ &gt; 0</code>; bin capacity <code>C</code>. Determine if the items can be assigned into <code>k</code> bins with <code>Σ_{i∈binⱼ} cᵢ ≤ C</code> for every <code>1 ≤ j ≤ k</code>.</p>
+<h2 id="reduction-7-partition-bin-packing-slide-58"><span data-tr="en">Reduction 7 — Partition → Bin Packing (slide 58)</span><span data-tr="zh">Reduction 7 — Partition → Bin Packing (slide 58)</span></h2>
+<p><span data-tr="en"><strong>Bin packing problem (slide 58).</strong> <code>n</code> items, each of size <code>cᵢ &gt; 0</code>; bin capacity <code>C</code>. Determine if the items can be assigned into <code>k</code> bins with <code>Σ_{i∈binⱼ} cᵢ ≤ C</code> for every <code>1 ≤ j ≤ k</code>.</span><span data-tr="zh"><strong>Bin packing 問題 (slide 58)。</strong>有 <code>n</code> 個物品，每個大小 <code>cᵢ &gt; 0</code>；每個 bin 的容量是 <code>C</code>。問能不能把這些物品塞進 <code>k</code> 個 bin，使得每個 bin <code>1 ≤ j ≤ k</code> 都滿足 <code>Σ_{i∈binⱼ} cᵢ ≤ C</code>。</span></p>
 <blockquote>
-<p><strong>Theorem: partition → bin packing.</strong></p>
+<p><span data-tr="en"><strong>Theorem: partition → bin packing.</strong></span><span data-tr="zh"><strong>定理：partition → bin packing。</strong></span></p>
 </blockquote>
-<p><strong>Construction <em>(reconstructed)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with total <code>Tsum = Σ aᵢ</code>, build a bin-packing instance with the <strong>same item sizes</strong> <code>cᵢ = aᵢ</code>, bin capacity <code>C = Tsum / 2</code>, and <code>k = 2</code> bins.</p>
-<p><strong>Correctness <em>(reconstructed)</em>.</strong> A is partitionable into two equal halves (each summing to <code>Tsum/2</code>) <strong>iff</strong> the n items fit into <strong>2 bins</strong> each of capacity <code>Tsum/2</code> (each bin must be exactly full, forcing an equal split).</p>
+<p><span data-tr="en"><strong>Construction <em>(reconstructed)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with total <code>Tsum = Σ aᵢ</code>, build a bin-packing instance with the <strong>same item sizes</strong> <code>cᵢ = aᵢ</code>, bin capacity <code>C = Tsum / 2</code>, and <code>k = 2</code> bins.</span><span data-tr="zh"><strong>建構方法 <em>（重建）</em>。</strong>給一個 partition instance <code>A = {a₁,…,aₙ}</code>，總和 <code>Tsum = Σ aᵢ</code>，我們蓋一個 bin-packing instance：物品大小<strong>照搬</strong> <code>cᵢ = aᵢ</code>，bin 容量 <code>C = Tsum / 2</code>，用 <code>k = 2</code> 個 bin。</span></p>
+<p><span data-tr="en"><strong>Correctness <em>(reconstructed)</em>.</strong> A is partitionable into two equal halves (each summing to <code>Tsum/2</code>) <strong>iff</strong> the n items fit into <strong>2 bins</strong> each of capacity <code>Tsum/2</code> (each bin must be exactly full, forcing an equal split).</span><span data-tr="zh"><strong>正確性 <em>（重建）</em>。</strong>A 能對半平分成兩堆（各加到 <code>Tsum/2</code>），<strong>若且唯若</strong>這 n 個物品塞得進<strong>兩個</strong>容量都是 <code>Tsum/2</code> 的 bin（每個 bin 都得剛好裝滿，這就逼出對半切）。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 58 states only the theorem "partition → bin packing"; <strong>the dump shows no construction.</strong> The 2-bins / capacity-Tsum/2 construction above is the standard one; <strong>validate against slide 58.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 58 states only the theorem "partition → bin packing"; <strong>the dump shows no construction.</strong> The 2-bins / capacity-Tsum/2 construction above is the standard one; <strong>validate against slide 58.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 58 只寫了「partition → bin packing」這個定理；<strong>原始檔裡沒有建構過程。</strong>上面那個「2 個 bin、容量 Tsum/2」是標準做法；<strong>記得對照 slide 58 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-8-bin-packing-vlsi-discrete-layout-slides-5960">Reduction 8 — Bin Packing → VLSI Discrete Layout (slides 59–60)</h2>
-<p><strong>VLSI discrete layout problem (slide 59).</strong> Given <code>n</code> rectangles, each with integer height <code>hᵢ</code> and width <code>wᵢ</code>, and an area <code>A</code>, determine if there is a placement of the n rectangles within A obeying the <strong>4 placement rules</strong>:</p>
+<h2 id="reduction-8-bin-packing-vlsi-discrete-layout-slides-5960"><span data-tr="en">Reduction 8 — Bin Packing → VLSI Discrete Layout (slides 59–60)</span><span data-tr="zh">Reduction 8 — Bin Packing → VLSI Discrete Layout (slides 59–60)</span></h2>
+<p><span data-tr="en"><strong>VLSI discrete layout problem (slide 59).</strong> Given <code>n</code> rectangles, each with integer height <code>hᵢ</code> and width <code>wᵢ</code>, and an area <code>A</code>, determine if there is a placement of the n rectangles within A obeying the <strong>4 placement rules</strong>:</span><span data-tr="zh"><strong>VLSI discrete layout 問題 (slide 59)。</strong>給 <code>n</code> 個矩形，每個有整數高 <code>hᵢ</code> 和整數寬 <code>wᵢ</code>，再給一塊面積 <code>A</code>，問能不能把這 n 個矩形擺進 A 裡，而且遵守這 <strong>4 條擺放規則</strong>：</span></p>
 <ol>
-<li>Boundaries of rectangles are <strong>parallel to the x-axis or y-axis</strong> (axis-aligned).</li>
-<li><strong>Corners lie on integer points.</strong></li>
-<li><strong>No two rectangles overlap.</strong></li>
-<li>Two rectangles are <strong>separated by at least a unit distance.</strong></li>
+<li><span data-tr="en">Boundaries of rectangles are <strong>parallel to the x-axis or y-axis</strong> (axis-aligned).</span><span data-tr="zh">矩形的邊要<strong>平行於 x 軸或 y 軸</strong>（沿著座標軸擺，不能歪）。</span></li>
+<li><span data-tr="en"><strong>Corners lie on integer points.</strong></span><span data-tr="zh"><strong>四個角都要落在整數點上。</strong></span></li>
+<li><span data-tr="en"><strong>No two rectangles overlap.</strong></span><span data-tr="zh"><strong>任兩個矩形不能重疊。</strong></span></li>
+<li><span data-tr="en">Two rectangles are <strong>separated by at least a unit distance.</strong></span><span data-tr="zh">任兩個矩形之間<strong>至少要隔一個單位距離。</strong></span></li>
 </ol>
 <blockquote>
-<p>The deck illustrates "A Successful Placement" (slide 60).</p>
-<p><strong>Theorem: bin packing → VLSI discrete layout.</strong></p>
+<p><span data-tr="en">The deck illustrates "A Successful Placement" (slide 60).</span><span data-tr="zh">投影片畫了一個「成功擺放的範例」(slide 60)。</span></p>
+<p><span data-tr="en"><strong>Theorem: bin packing → VLSI discrete layout.</strong></span><span data-tr="zh"><strong>定理：bin packing → VLSI discrete layout。</strong></span></p>
 </blockquote>
-<p><strong>Idea <em>(reconstructed)</em>.</strong> Encode each bin-packing item of size <code>cᵢ</code> as a rectangle (e.g. <code>1 × cᵢ</code>), and the bins/capacity as the layout area A, so that a valid non-overlapping unit-separated placement exists iff the items pack into the bins. The discrete (integer-corner) + unit-separation rules make placement equivalent to discrete packing.</p>
+<p><span data-tr="en"><strong>Idea <em>(reconstructed)</em>.</strong> Encode each bin-packing item of size <code>cᵢ</code> as a rectangle (e.g. <code>1 × cᵢ</code>), and the bins/capacity as the layout area A, so that a valid non-overlapping unit-separated placement exists iff the items pack into the bins. The discrete (integer-corner) + unit-separation rules make placement equivalent to discrete packing.</span><span data-tr="zh"><strong>想法 <em>（重建）</em>。</strong>把每個大小 <code>cᵢ</code> 的 bin-packing 物品編成一個矩形（例如 <code>1 × cᵢ</code>），再把 bin／容量編成 layout 面積 A，這樣一來，存在一個合法、不重疊、又隔開一個單位的擺放，就剛好對應到那些物品塞得進 bin。整數角加上單位間隔這兩條規則，正好讓「擺放」等價於「離散的裝箱」。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 60 states only the theorem; <strong>no construction in the dump.</strong> The rectangle-per-item encoding is the standard intuition; <strong>validate against slide 60.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 60 states only the theorem; <strong>no construction in the dump.</strong> The rectangle-per-item encoding is the standard intuition; <strong>validate against slide 60.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 60 只寫了定理；<strong>原始檔裡沒有建構過程。</strong>「一個物品配一個矩形」是標準直覺；<strong>記得對照 slide 60 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-9-sat-clique-decision-slide-61">Reduction 9 — SAT → Clique Decision (slide 61)</h2>
-<p><strong>Max clique / clique (slide 61).</strong> A <strong>maximal complete subgraph</strong> of <code>G=(V,E)</code> is a <strong>clique</strong>. The <strong>max (maximum) clique problem</strong> asks for the size of the largest clique in G.</p>
+<h2 id="reduction-9-sat-clique-decision-slide-61"><span data-tr="en">Reduction 9 — SAT → Clique Decision (slide 61)</span><span data-tr="zh">Reduction 9 — SAT → Clique Decision (slide 61)</span></h2>
+<p><span data-tr="en"><strong>Max clique / clique (slide 61).</strong> A <strong>maximal complete subgraph</strong> of <code>G=(V,E)</code> is a <strong>clique</strong>. The <strong>max (maximum) clique problem</strong> asks for the size of the largest clique in G.</span><span data-tr="zh"><strong>Max clique / clique (slide 61)。</strong>圖 <code>G=(V,E)</code> 裡的一個 <strong>maximal complete subgraph</strong>（極大完全子圖）就叫做 <strong>clique</strong>。<strong>max（maximum）clique 問題</strong>就是在問 G 裡最大的 clique 有多大。</span></p>
 <blockquote>
-<p>Example: maximal cliques <code>{a,b}, {a,c,d}, {c,d,e,f}</code>; <strong>maximum</strong> clique <code>{c,d,e,f}</code>.</p>
+<p><span data-tr="en">Example: maximal cliques <code>{a,b}, {a,c,d}, {c,d,e,f}</code>; <strong>maximum</strong> clique <code>{c,d,e,f}</code>.</span><span data-tr="zh">例子：maximal clique 有 <code>{a,b}, {a,c,d}, {c,d,e,f}</code>；其中 <strong>maximum</strong> clique 是 <code>{c,d,e,f}</code>。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-61.png" alt="Max clique example: 6-vertex graph a,b,c,d,e,f with b a pendant on a; maximal cliques {a,b},{a,c,d},{c,d,e,f}; maximum clique {c,d,e,f}"></p>
-<figcaption>Slide 61 — Max clique example graph. Maximum clique {c,d,e,f} (a 4-clique).</figcaption>
+<figcaption><span data-tr="en">Slide 61 — Max clique example graph. Maximum clique {c,d,e,f} (a 4-clique).</span><span data-tr="zh">Slide 61 — Max clique 例子圖。Maximum clique 是 {c,d,e,f}（一個 4-clique）。</span></figcaption>
 
-<p>The <strong>clique decision problem:</strong> does G have a clique of size ≥ k?</p>
+<p><span data-tr="en">The <strong>clique decision problem:</strong> does G have a clique of size ≥ k?</span><span data-tr="zh"><strong>Clique decision 問題：</strong>G 有沒有一個大小 ≥ k 的 clique？</span></p>
 <blockquote>
-<p><strong>Theorem: SAT → clique decision problem.</strong></p>
+<p><span data-tr="en"><strong>Theorem: SAT → clique decision problem.</strong></span><span data-tr="zh"><strong>定理：SAT → clique decision problem。</strong></span></p>
 </blockquote>
-<p><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a CNF formula with clauses <code>c₁,…,c_m</code>:
+<p><span data-tr="en"><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a CNF formula with clauses <code>c₁,…,c_m</code>:
 - Create a vertex for <strong>each literal occurrence</strong> in each clause.
 - Add an edge between two literal-vertices iff they are in <strong>different clauses</strong> and are <strong>not complementary</strong> (not <code>xᵢ</code> vs <code>¬xᵢ</code>).
-- Ask for a clique of size <strong>k = m</strong> (number of clauses).</p>
-<p><strong>Correctness <em>(reconstructed)</em>.</strong> A clique of size m must pick exactly one literal from each clause, all mutually consistent (no variable and its negation) ⇒ a satisfying assignment; and conversely a satisfying assignment yields one true literal per clause forming an m-clique. So the formula is satisfiable iff G has an m-clique.</p>
+- Ask for a clique of size <strong>k = m</strong> (number of clauses).</span><span data-tr="zh"><strong>建構方法 <em>（重建，標準做法）</em>。</strong>給一個 CNF formula，clause 是 <code>c₁,…,c_m</code>：
+- 每個 clause 裡<strong>每一次出現的 literal</strong> 都開一個點。
+- 兩個 literal 點之間連一條邊，若且唯若它們在<strong>不同 clause</strong>、而且<strong>不互補</strong>（不是 <code>xᵢ</code> 對上 <code>¬xᵢ</code>）。
+- 然後問有沒有大小 <strong>k = m</strong>（clause 數）的 clique。</span></p>
+<p><span data-tr="en"><strong>Correctness <em>(reconstructed)</em>.</strong> A clique of size m must pick exactly one literal from each clause, all mutually consistent (no variable and its negation) ⇒ a satisfying assignment; and conversely a satisfying assignment yields one true literal per clause forming an m-clique. So the formula is satisfiable iff G has an m-clique.</span><span data-tr="zh"><strong>正確性 <em>（重建）</em>。</strong>一個大小 m 的 clique 一定是從每個 clause 各挑剛好一個 literal，而且彼此都相容（不會同時含某變數跟它的否定）⇒ 這就湊出一組滿足的指派；反過來，一組滿足的指派會讓每個 clause 各有一個為真的 literal，這些 literal 剛好構成一個 m-clique。所以 formula satisfiable，若且唯若 G 有一個 m-clique。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 61 states only the theorem (with the max-clique example); <strong>no construction in the dump.</strong> The literal-vertex / inter-clause-non-conflict construction is the standard Cook/Karp one; <strong>validate against slide 61.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 61 states only the theorem (with the max-clique example); <strong>no construction in the dump.</strong> The literal-vertex / inter-clause-non-conflict construction is the standard Cook/Karp one; <strong>validate against slide 61.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 61 只寫了定理（加上 max-clique 的例子）；<strong>原始檔裡沒有建構過程。</strong>「literal 當點、跨 clause 不衝突就連邊」是標準的 Cook/Karp 做法；<strong>記得對照 slide 61 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-10-clique-decision-node-cover-decision-slides-6263">Reduction 10 — Clique Decision → Node Cover Decision (slides 62–63)</h2>
-<p><strong>Node cover decision problem (slide 62).</strong> <code>S ⊆ V</code> is a <strong>node cover</strong> of <code>G=(V,E)</code> iff every edge of E is incident to at least one vertex of S. <strong>Decision:</strong> does there exist S with <code>|S| ≤ K</code>?</p>
+<h2 id="reduction-10-clique-decision-node-cover-decision-slides-6263"><span data-tr="en">Reduction 10 — Clique Decision → Node Cover Decision (slides 62–63)</span><span data-tr="zh">Reduction 10 — Clique Decision → Node Cover Decision (slides 62–63)</span></h2>
+<p><span data-tr="en"><strong>Node cover decision problem (slide 62).</strong> <code>S ⊆ V</code> is a <strong>node cover</strong> of <code>G=(V,E)</code> iff every edge of E is incident to at least one vertex of S. <strong>Decision:</strong> does there exist S with <code>|S| ≤ K</code>?</span><span data-tr="zh"><strong>Node cover decision 問題 (slide 62)。</strong><code>S ⊆ V</code> 是 <code>G=(V,E)</code> 的一個 <strong>node cover</strong>，若且唯若 E 的每條邊都至少碰到 S 裡的一個點。<strong>Decision：</strong>存不存在一個 S 滿足 <code>|S| ≤ K</code>？</span></p>
 <blockquote>
-<p><strong>Theorem: clique decision problem → node cover decision problem.</strong></p>
+<p><span data-tr="en"><strong>Theorem: clique decision problem → node cover decision problem.</strong></span><span data-tr="zh"><strong>定理：clique decision problem → node cover decision problem。</strong></span></p>
 </blockquote>
-<p><strong>Construction (slide 63).</strong> Given <code>G=(V,E)</code> with <code>|V| = n</code>, form the <strong>complement graph</strong> <code>G′ = (V, E′)</code> where <code>E′ = { (u,v) | (u,v) ∉ E }</code>.</p>
-<p><strong>Key fact:</strong></p>
+<p><span data-tr="en"><strong>Construction (slide 63).</strong> Given <code>G=(V,E)</code> with <code>|V| = n</code>, form the <strong>complement graph</strong> <code>G′ = (V, E′)</code> where <code>E′ = { (u,v) | (u,v) ∉ E }</code>.</span><span data-tr="zh"><strong>建構方法 (slide 63)。</strong>給一個 <code>G=(V,E)</code>，<code>|V| = n</code>，取它的 <strong>complement graph（補圖）</strong> <code>G′ = (V, E′)</code>，其中 <code>E′ = { (u,v) | (u,v) ∉ E }</code>。</span></p>
+<p><span data-tr="en"><strong>Key fact:</strong></span><span data-tr="zh"><strong>關鍵事實：</strong></span></p>
 <blockquote>
-<p><strong>G has a clique of size k ⇔ G′ has a node cover of size n − k.</strong></p>
+<p><span data-tr="en"><strong>G has a clique of size k ⇔ G′ has a node cover of size n − k.</strong></span><span data-tr="zh"><strong>G 有一個大小 k 的 clique ⇔ G′ 有一個大小 n − k 的 node cover。</strong></span></p>
 </blockquote>
-<p><strong>Correctness.</strong> If <code>K ⊆ V</code> is a clique of size k in G, then <strong>no edge of G′</strong> has both endpoints in K (clique edges are absent from G′), so every edge of G′ touches <code>V∖K</code> ⇒ <code>V∖K</code> (size n−k) is a node cover of G′. Conversely, if <code>S</code> is a node cover of size n−k in G′, then <code>V∖S</code> (size k) is an <strong>independent set</strong> in G′ ⇒ a <strong>clique</strong> in G. So the two questions are equivalent under <code>K ↔ n−K</code>.</p>
+<p><span data-tr="en"><strong>Correctness.</strong> If <code>K ⊆ V</code> is a clique of size k in G, then <strong>no edge of G′</strong> has both endpoints in K (clique edges are absent from G′), so every edge of G′ touches <code>V∖K</code> ⇒ <code>V∖K</code> (size n−k) is a node cover of G′. Conversely, if <code>S</code> is a node cover of size n−k in G′, then <code>V∖S</code> (size k) is an <strong>independent set</strong> in G′ ⇒ a <strong>clique</strong> in G. So the two questions are equivalent under <code>K ↔ n−K</code>.</span><span data-tr="zh"><strong>正確性。</strong>如果 <code>K ⊆ V</code> 是 G 裡一個大小 k 的 clique，那 G′ 裡<strong>沒有任何一條邊</strong>的兩端都在 K 裡（因為 clique 內部那些邊在 G′ 裡都不見了），所以 G′ 的每條邊都會碰到 <code>V∖K</code> ⇒ <code>V∖K</code>（大小 n−k）就是 G′ 的一個 node cover。反過來，如果 <code>S</code> 是 G′ 裡大小 n−k 的 node cover，那 <code>V∖S</code>（大小 k）在 G′ 裡就是一個 <strong>independent set</strong> ⇒ 在 G 裡就是一個 <strong>clique</strong>。所以這兩個問題透過 <code>K ↔ n−K</code> 完全等價。</span></p>
 <blockquote>
-<p>Worked example (slide 63): vertices <code>{a,b,c,d,e,f}</code>. The deck draws G with a clique and its complement G′ with the corresponding node cover <code>V∖clique</code>. (G's clique of size k ⇔ G′'s node cover of size n−k = 6−k.)</p>
+<p><span data-tr="en">Worked example (slide 63): vertices <code>{a,b,c,d,e,f}</code>. The deck draws G with a clique and its complement G′ with the corresponding node cover <code>V∖clique</code>. (G's clique of size k ⇔ G′'s node cover of size n−k = 6−k.)</span><span data-tr="zh">實際例子 (slide 63)：點是 <code>{a,b,c,d,e,f}</code>。投影片畫了帶 clique 的 G，跟它的補圖 G′ 以及對應的 node cover <code>V∖clique</code>。（G 的大小 k clique ⇔ G′ 的大小 n−k = 6−k 的 node cover。）</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-63.png" alt="Clique-to-node-cover: left graph G with clique {c,d,e,f} highlighted yellow; right complement graph G' on the same 6 vertices with node cover {a,b} (size n-k=2)"></p>
-<figcaption>Slide 63 — G (left) with clique {c,d,e,f} of size k=4 ⇔ complement G′ (right) with node cover {a,b} of size n−k=2.</figcaption>
+<figcaption><span data-tr="en">Slide 63 — G (left) with clique {c,d,e,f} of size k=4 ⇔ complement G′ (right) with node cover {a,b} of size n−k=2.</span><span data-tr="zh">Slide 63 — 左邊 G 有一個大小 k=4 的 clique {c,d,e,f} ⇔ 右邊補圖 G′ 有一個大小 n−k=2 的 node cover {a,b}。</span></figcaption>
 
-<p>⇒ <strong>Node cover decision is NP-complete.</strong></p>
+<p><span data-tr="en">⇒ <strong>Node cover decision is NP-complete.</strong></span><span data-tr="zh">⇒ <strong>Node cover decision 是 NP-complete。</strong></span></p>
 <hr />
-<h2 id="reduction-11-sat-directed-hamiltonian-cycle-slide-64">Reduction 11 — SAT → Directed Hamiltonian Cycle (slide 64)</h2>
-<p><strong>Hamiltonian cycle problem (slide 64).</strong> A <strong>Hamiltonian cycle</strong> is a round-trip path along n edges of G that <strong>visits every vertex exactly once</strong> and returns to its start.</p>
+<h2 id="reduction-11-sat-directed-hamiltonian-cycle-slide-64"><span data-tr="en">Reduction 11 — SAT → Directed Hamiltonian Cycle (slide 64)</span><span data-tr="zh">Reduction 11 — SAT → Directed Hamiltonian Cycle (slide 64)</span></h2>
+<p><span data-tr="en"><strong>Hamiltonian cycle problem (slide 64).</strong> A <strong>Hamiltonian cycle</strong> is a round-trip path along n edges of G that <strong>visits every vertex exactly once</strong> and returns to its start.</span><span data-tr="zh"><strong>Hamiltonian cycle 問題 (slide 64)。</strong>一個 <strong>Hamiltonian cycle</strong> 就是沿著 G 的 n 條邊走一圈的路徑，<strong>每個點剛好經過一次</strong>，最後回到出發點。</span></p>
 <blockquote>
-<p>Example: Hamiltonian cycle <code>1, 2, 8, 7, 6, 5, 4, 3, 1</code>.</p>
+<p><span data-tr="en">Example: Hamiltonian cycle <code>1, 2, 8, 7, 6, 5, 4, 3, 1</code>.</span><span data-tr="zh">例子：Hamiltonian cycle <code>1, 2, 8, 7, 6, 5, 4, 3, 1</code>。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A08/slide-64.png" alt="Hamiltonian cycle example: 8-vertex undirected graph in two rows (top 1,2,3,4; bottom 8,7,6,5) with crossing diagonals; Hamiltonian cycle 1,2,8,7,6,5,4,3,1"></p>
-<figcaption>Slide 64 — Hamiltonian cycle example graph. Cycle drawn: 1, 2, 8, 7, 6, 5, 4, 3, 1.</figcaption>
+<figcaption><span data-tr="en">Slide 64 — Hamiltonian cycle example graph. Cycle drawn: 1, 2, 8, 7, 6, 5, 4, 3, 1.</span><span data-tr="zh">Slide 64 — Hamiltonian cycle 例子圖。圖上畫的 cycle：1, 2, 8, 7, 6, 5, 4, 3, 1。</span></figcaption>
 
 <blockquote>
-<p><strong>Theorem: SAT → directed Hamiltonian cycle</strong> (in a <strong>directed</strong> graph).</p>
+<p><span data-tr="en"><strong>Theorem: SAT → directed Hamiltonian cycle</strong> (in a <strong>directed</strong> graph).</span><span data-tr="zh"><strong>定理：SAT → directed Hamiltonian cycle</strong>（在一個<strong>有向</strong>圖裡）。</span></p>
 </blockquote>
-<p><strong>Idea <em>(reconstructed, standard)</em>.</strong> Build a directed graph with a "diamond/gadget" chain per variable (traversed left→right for <code>xᵢ=T</code>, right→left for <code>xᵢ=F</code>) and a vertex per clause; route the clause vertex through the variable gadgets so a Hamiltonian cycle exists iff each clause can be visited by some true literal. Formula satisfiable ⇔ directed Hamiltonian cycle exists.</p>
+<p><span data-tr="en"><strong>Idea <em>(reconstructed, standard)</em>.</strong> Build a directed graph with a "diamond/gadget" chain per variable (traversed left→right for <code>xᵢ=T</code>, right→left for <code>xᵢ=F</code>) and a vertex per clause; route the clause vertex through the variable gadgets so a Hamiltonian cycle exists iff each clause can be visited by some true literal. Formula satisfiable ⇔ directed Hamiltonian cycle exists.</span><span data-tr="zh"><strong>想法 <em>（重建，標準做法）</em>。</strong>蓋一個有向圖：每個變數配一條「鑽石／gadget」鏈（從左往右走代表 <code>xᵢ=T</code>，從右往左走代表 <code>xᵢ=F</code>），每個 clause 配一個點；再把 clause 點接進變數 gadget 裡，讓 Hamiltonian cycle 存在，若且唯若每個 clause 都能被某個為真的 literal 經過。於是 formula satisfiable ⇔ directed Hamiltonian cycle 存在。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 64 states only the theorem (plus the undirected example); <strong>no gadget construction in the dump.</strong> The variable-gadget / clause-vertex construction is the standard one; <strong>validate against slide 64.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 64 states only the theorem (plus the undirected example); <strong>no gadget construction in the dump.</strong> The variable-gadget / clause-vertex construction is the standard one; <strong>validate against slide 64.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 64 只寫了定理（加上那個無向圖的例子）；<strong>原始檔裡沒有 gadget 建構。</strong>「變數 gadget／clause 點」是標準做法；<strong>記得對照 slide 64 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-12-directed-hamiltonian-cycle-tsp-decision-slides-6566">Reduction 12 — Directed Hamiltonian Cycle → TSP Decision (slides 65–66)</h2>
-<p><strong>Traveling salesperson problem (slide 65).</strong> A <strong>tour</strong> of a directed graph <code>G=(V,E)</code> is a directed cycle that includes every vertex in V. The problem: find a <strong>minimum-cost</strong> tour.</p>
+<h2 id="reduction-12-directed-hamiltonian-cycle-tsp-decision-slides-6566"><span data-tr="en">Reduction 12 — Directed Hamiltonian Cycle → TSP Decision (slides 65–66)</span><span data-tr="zh">Reduction 12 — Directed Hamiltonian Cycle → TSP Decision (slides 65–66)</span></h2>
+<p><span data-tr="en"><strong>Traveling salesperson problem (slide 65).</strong> A <strong>tour</strong> of a directed graph <code>G=(V,E)</code> is a directed cycle that includes every vertex in V. The problem: find a <strong>minimum-cost</strong> tour.</span><span data-tr="zh"><strong>Traveling salesperson 問題 (slide 65)。</strong>有向圖 <code>G=(V,E)</code> 的一個 <strong>tour</strong> 就是一個包含 V 裡每個點的有向 cycle。問題是：找一條 <strong>cost 最小</strong>的 tour。</span></p>
 <blockquote>
-<p><strong>Theorem: Directed Hamiltonian cycle → traveling salesperson decision problem.</strong></p>
+<p><span data-tr="en"><strong>Theorem: Directed Hamiltonian cycle → traveling salesperson decision problem.</strong></span><span data-tr="zh"><strong>定理：Directed Hamiltonian cycle → traveling salesperson decision problem。</strong></span></p>
 </blockquote>
-<p><strong>Construction (slide 66).</strong></p>
+<p><span data-tr="en"><strong>Construction (slide 66).</strong></span><span data-tr="zh"><strong>建構方法 (slide 66)。</strong></span></p>
 <p><img class="figure" src="../render/A08/slide-66.png" alt="Directed Hamiltonian-to-TSP gadget: left, the original sparse graph G on 7 vertices (edges cost 1); right, the completed graph with added edges in blue labelled cost 2"></p>
-<figcaption>Slide 66 — TSP gadget. Left: original G (black edges, cost 1). Right: completed graph; edges added to complete it (blue) have cost 2. A tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G.</figcaption>
+<figcaption><span data-tr="en">Slide 66 — TSP gadget. Left: original G (black edges, cost 1). Right: completed graph; edges added to complete it (blue) have cost 2. A tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G.</span><span data-tr="zh">Slide 66 — TSP gadget。左邊：原圖 G（黑邊，cost 1）。右邊：補成完全圖；為了補滿而加上去的邊（藍色）cost 是 2。一條 cost ≤ n 的 tour 只能用 cost-1 的邊 ⇒ 它就是 G 的一個 Hamiltonian cycle。</span></figcaption>
 
-<p>Given directed graph <code>G=(V,E)</code> (a Hamiltonian-cycle instance), build a complete weighted directed graph on the same vertices with edge weights:</p>
+<p><span data-tr="en">Given directed graph <code>G=(V,E)</code> (a Hamiltonian-cycle instance), build a complete weighted directed graph on the same vertices with edge weights:</span><span data-tr="zh">給一個有向圖 <code>G=(V,E)</code>（一個 Hamiltonian-cycle instance），在同樣那些點上蓋一個帶權重的完全有向圖，邊權重這樣設：</span></p>
 <pre><code>cost(u,v) = 1   if (u,v) ∈ E
 cost(u,v) = 2   if (u,v) ∉ E      (a larger value; &quot;2&quot; per the slide)
 </code></pre>
-<p>Ask the TSP <strong>decision</strong> question with bound <code>C = n</code> (= |V|).</p>
-<p><strong>Correctness.</strong> A tour of total cost <strong>≤ n</strong> can only use cost-1 edges (any cost-2 edge pushes the total above n), i.e. it uses <strong>only edges of G</strong> ⇒ it is a <strong>directed Hamiltonian cycle</strong> of G. Conversely a Hamiltonian cycle of G has cost exactly n. So G has a directed Hamiltonian cycle ⇔ the TSP tour cost ≤ n.</p>
+<p><span data-tr="en">Ask the TSP <strong>decision</strong> question with bound <code>C = n</code> (= |V|).</span><span data-tr="zh">然後問 TSP 的 <strong>decision</strong> 問題，界限取 <code>C = n</code>（= |V|）。</span></p>
+<p><span data-tr="en"><strong>Correctness.</strong> A tour of total cost <strong>≤ n</strong> can only use cost-1 edges (any cost-2 edge pushes the total above n), i.e. it uses <strong>only edges of G</strong> ⇒ it is a <strong>directed Hamiltonian cycle</strong> of G. Conversely a Hamiltonian cycle of G has cost exactly n. So G has a directed Hamiltonian cycle ⇔ the TSP tour cost ≤ n.</span><span data-tr="zh"><strong>正確性。</strong>一條總 cost <strong>≤ n</strong> 的 tour 只能用 cost-1 的邊（只要用到一條 cost-2 的邊，總和就超過 n 了），也就是它<strong>只用 G 原本的邊</strong> ⇒ 它就是 G 的一個 <strong>directed Hamiltonian cycle</strong>。反過來，G 的一個 Hamiltonian cycle cost 剛好是 n。所以 G 有 directed Hamiltonian cycle ⇔ TSP tour 的 cost ≤ n。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 66 shows only a small picture with labels "1" and "2"; the weighting <code>1 / 2</code> and bound <code>C = n</code> above are the standard construction reading of those labels; <strong>validate against slide 66.</strong></p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 66 shows only a small picture with labels "1" and "2"; the weighting <code>1 / 2</code> and bound <code>C = n</code> above are the standard construction reading of those labels; <strong>validate against slide 66.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 66 只畫了一張小圖，上面標著「1」跟「2」；上面的 <code>1 / 2</code> 權重和界限 <code>C = n</code> 是依標準建構去解讀那些標籤的；<strong>記得對照 slide 66 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="reduction-13-partition-01-knapsack-decision-slides-6768">Reduction 13 — Partition → 0/1 Knapsack Decision (slides 67–68)</h2>
-<p><strong>0/1 knapsack problem (slide 67).</strong> <code>n</code> objects, each with weight <code>wᵢ &gt; 0</code> and profit <code>pᵢ &gt; 0</code>; knapsack capacity <code>M</code>.</p>
+<h2 id="reduction-13-partition-01-knapsack-decision-slides-6768"><span data-tr="en">Reduction 13 — Partition → 0/1 Knapsack Decision (slides 67–68)</span><span data-tr="zh">Reduction 13 — Partition → 0/1 Knapsack Decision (slides 67–68)</span></h2>
+<p><span data-tr="en"><strong>0/1 knapsack problem (slide 67).</strong> <code>n</code> objects, each with weight <code>wᵢ &gt; 0</code> and profit <code>pᵢ &gt; 0</code>; knapsack capacity <code>M</code>.</span><span data-tr="zh"><strong>0/1 knapsack 問題 (slide 67)。</strong>有 <code>n</code> 個物品，每個有重量 <code>wᵢ &gt; 0</code> 和利潤 <code>pᵢ &gt; 0</code>；背包容量是 <code>M</code>。</span></p>
 <pre><code>Maximize   Σ_{1≤i≤n} pᵢ xᵢ
 Subject to Σ_{1≤i≤n} wᵢ xᵢ ≤ M ,   xᵢ ∈ {0, 1}
 </code></pre>
-<p><strong>Decision version:</strong> given K, is there a 0/1 choice with <code>Σ pᵢ xᵢ ≥ K</code> (subject to the weight constraint)?</p>
+<p><span data-tr="en"><strong>Decision version:</strong> given K, is there a 0/1 choice with <code>Σ pᵢ xᵢ ≥ K</code> (subject to the weight constraint)?</span><span data-tr="zh"><strong>Decision 版本：</strong>給一個 K，存不存在一組 0/1 的取法，在不超重的前提下達到 <code>Σ pᵢ xᵢ ≥ K</code>？</span></p>
 <blockquote>
-<p>(The fractional <strong>knapsack</strong> problem allows <code>0 ≤ xᵢ ≤ 1</code> and is <em>not</em> NP-complete — solvable greedily.)</p>
-<p><strong>Theorem: partition → 0/1 knapsack decision problem.</strong></p>
+<p><span data-tr="en">(The fractional <strong>knapsack</strong> problem allows <code>0 ≤ xᵢ ≤ 1</code> and is <em>not</em> NP-complete — solvable greedily.)</span><span data-tr="zh">（fractional <strong>knapsack</strong> 問題允許 <code>0 ≤ xᵢ ≤ 1</code>，它<em>不是</em> NP-complete——用 greedy 就解得掉。）</span></p>
+<p><span data-tr="en"><strong>Theorem: partition → 0/1 knapsack decision problem.</strong></span><span data-tr="zh"><strong>定理：partition → 0/1 knapsack decision problem。</strong></span></p>
 </blockquote>
-<p><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with <code>Tsum = Σ aᵢ</code>, set <code>wᵢ = pᵢ = aᵢ</code>, capacity <code>M = Tsum/2</code>, and target profit <code>K = Tsum/2</code>. A subset with weight ≤ Tsum/2 and profit ≥ Tsum/2 must have weight = profit = Tsum/2 exactly ⇒ an equal-sum partition. So A is partitionable ⇔ the 0/1 knapsack decision answer is "Yes."</p>
+<p><span data-tr="en"><strong>Construction <em>(reconstructed, standard)</em>.</strong> Given a partition instance <code>A = {a₁,…,aₙ}</code> with <code>Tsum = Σ aᵢ</code>, set <code>wᵢ = pᵢ = aᵢ</code>, capacity <code>M = Tsum/2</code>, and target profit <code>K = Tsum/2</code>. A subset with weight ≤ Tsum/2 and profit ≥ Tsum/2 must have weight = profit = Tsum/2 exactly ⇒ an equal-sum partition. So A is partitionable ⇔ the 0/1 knapsack decision answer is "Yes."</span><span data-tr="zh"><strong>建構方法 <em>（重建，標準做法）</em>。</strong>給一個 partition instance <code>A = {a₁,…,aₙ}</code>，<code>Tsum = Σ aᵢ</code>，就設 <code>wᵢ = pᵢ = aᵢ</code>，容量 <code>M = Tsum/2</code>，目標利潤 <code>K = Tsum/2</code>。一個重量 ≤ Tsum/2、利潤 ≥ Tsum/2 的子集，重量跟利潤就只能都剛好等於 Tsum/2 ⇒ 這正好是一個對半平分的 partition。所以 A 可平分 ⇔ 0/1 knapsack decision 的答案是「Yes」。</span></p>
 <blockquote>
-<p>⚠️ Reconstructed: slide 68 states only the theorem; <strong>no construction in the dump.</strong> The <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code> construction is the standard one; <strong>validate against slide 68.</strong></p>
-</blockquote>
-<hr />
-<h2 id="closing-reference-slide-69">Closing reference (slide 69)</h2>
-<blockquote>
-<p>Refer to <strong>Sec. 11.3, Sec. 11.4</strong> and their exercises of <strong>[Horowitz &amp; Sahni 1998]</strong> for the proofs of more NP-complete problems.</p>
+<p><span data-tr="en">⚠️ Reconstructed: slide 68 states only the theorem; <strong>no construction in the dump.</strong> The <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code> construction is the standard one; <strong>validate against slide 68.</strong></span><span data-tr="zh">⚠️ 重建說明：slide 68 只寫了定理；<strong>原始檔裡沒有建構過程。</strong><code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code> 是標準做法；<strong>記得對照 slide 68 確認。</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="items-i-reconstructed-couldnt-fully-verify">⚠️ Items I reconstructed / couldn't fully verify</h2>
-<p>Validation checklist — confirm each against the cited slide of the PDF (<code>source/Alg08 - 相容模式.pdf</code>). The dump drops the <code>≤ ≥ ≠ ∈ ∉ ⊆ ∨ ¬ □</code> glyphs, so logic/edge symbols were inferred throughout; the items below are the <strong>load-bearing</strong> reconstructions:</p>
+<h2 id="closing-reference-slide-69"><span data-tr="en">Closing reference (slide 69)</span><span data-tr="zh">結尾參考資料 (slide 69)</span></h2>
+<blockquote>
+<p><span data-tr="en">Refer to <strong>Sec. 11.3, Sec. 11.4</strong> and their exercises of <strong>[Horowitz &amp; Sahni 1998]</strong> for the proofs of more NP-complete problems.</span><span data-tr="zh">想看更多 NP-complete 問題的證明，去翻 <strong>[Horowitz &amp; Sahni 1998]</strong> 的 <strong>Sec. 11.3、Sec. 11.4</strong> 還有它們的習題。</span></p>
+</blockquote>
+<hr />
+<h2 id="items-i-reconstructed-couldnt-fully-verify"><span data-tr="en">⚠️ Items I reconstructed / couldn't fully verify</span><span data-tr="zh">⚠️ 我重建過／沒辦法完全確認的項目</span></h2>
+<p><span data-tr="en">Validation checklist — confirm each against the cited slide of the PDF (<code>source/Alg08 - 相容模式.pdf</code>). The dump drops the <code>≤ ≥ ≠ ∈ ∉ ⊆ ∨ ¬ □</code> glyphs, so logic/edge symbols were inferred throughout; the items below are the <strong>load-bearing</strong> reconstructions:</span><span data-tr="zh">驗證清單——每一項都去對照 PDF 上引用的那張投影片（<code>source/Alg08 - 相容模式.pdf</code>）。原始檔把 <code>≤ ≥ ≠ ∈ ∉ ⊆ ∨ ¬ □</code> 這些符號都吃掉了，所以邏輯／邊的符號整份都是推回去的；下面這些是<strong>關鍵</strong>的重建：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
-<th>Slide(s)</th>
-<th>Item</th>
-<th>What was reconstructed</th>
-<th>Risk</th>
+<th><span data-tr="en">Slide(s)</span><span data-tr="zh">Slide(s)</span></th>
+<th><span data-tr="en">Item</span><span data-tr="zh">項目</span></th>
+<th><span data-tr="en">What was reconstructed</span><span data-tr="zh">重建了什麼</span></th>
+<th><span data-tr="en">Risk</span><span data-tr="zh">風險</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1</td>
 <td>27</td>
-<td>Searching→SAT, "both ≠ 7" resolution</td>
-<td>Renumbered the duplicated <code>(11)</code>/<code>(16)</code> derivation lines to (11)–(17)</td>
-<td>Low (chain is clear)</td>
+<td><span data-tr="en">Searching→SAT, "both ≠ 7" resolution</span><span data-tr="zh">Searching→SAT，「兩個都 ≠ 7」的 resolution</span></td>
+<td><span data-tr="en">Renumbered the duplicated <code>(11)</code>/<code>(16)</code> derivation lines to (11)–(17)</span><span data-tr="zh">把重複標的 <code>(11)</code>/<code>(16)</code> 推導行重新編號成 (11)–(17)</span></td>
+<td><span data-tr="en">Low (chain is clear)</span><span data-tr="zh">低（推導鏈很清楚）</span></td>
 </tr>
 <tr>
 <td>2</td>
 <td>41</td>
-<td>SAT→3-SAT (⇒)</td>
-<td>Chain-variable assignment (set yⱼ true before / false after the true literal's clause)</td>
-<td>Medium — slide text garbled</td>
+<td><span data-tr="en">SAT→3-SAT (⇒)</span><span data-tr="zh">SAT→3-SAT (⇒)</span></td>
+<td><span data-tr="en">Chain-variable assignment (set yⱼ true before / false after the true literal's clause)</span><span data-tr="zh">鏈變數的指派（真 literal 那個 clause 之前的 yⱼ 設真、之後設假）</span></td>
+<td><span data-tr="en">Medium — slide text garbled</span><span data-tr="zh">中——投影片文字亂掉</span></td>
 </tr>
 <tr>
 <td>3</td>
 <td>46, 47</td>
-<td>SATY→CN edge set E</td>
-<td>Full edge families, esp. <code>(xᵢ,cⱼ)</code> for <code>xᵢ ∉ cⱼ</code> and <code>(¬xᵢ,cⱼ)</code> for <code>¬xᵢ ∉ cⱼ</code>; the <code>≠ / ∈ / ∉</code> conditions</td>
-<td>✅ <strong>Verified against slide 47</strong> (and edge set printed verbatim on slide 46). <code>∉</code> confirmed. See Appendix A.</td>
+<td><span data-tr="en">SATY→CN edge set E</span><span data-tr="zh">SATY→CN 的邊集合 E</span></td>
+<td><span data-tr="en">Full edge families, esp. <code>(xᵢ,cⱼ)</code> for <code>xᵢ ∉ cⱼ</code> and <code>(¬xᵢ,cⱼ)</code> for <code>¬xᵢ ∉ cⱼ</code>; the <code>≠ / ∈ / ∉</code> conditions</span><span data-tr="zh">完整的邊族，尤其是 <code>xᵢ ∉ cⱼ</code> 時的 <code>(xᵢ,cⱼ)</code> 和 <code>¬xᵢ ∉ cⱼ</code> 時的 <code>(¬xᵢ,cⱼ)</code>；還有 <code>≠ / ∈ / ∉</code> 這些條件</span></td>
+<td><span data-tr="en">✅ <strong>Verified against slide 47</strong> (and edge set printed verbatim on slide 46). <code>∉</code> confirmed. See Appendix A.</span><span data-tr="zh">✅ <strong>已對照 slide 47 驗證</strong>（邊集合在 slide 46 一字不差印出來）。<code>∉</code> 確認無誤。見 Appendix A。</span></td>
 </tr>
 <tr>
 <td>4</td>
 <td>51</td>
-<td>CN → exact cover</td>
-<td><strong>Construction not in dump</strong> — only the theorem is stated</td>
-<td>High — verify if slide carries a construction</td>
+<td><span data-tr="en">CN → exact cover</span><span data-tr="zh">CN → exact cover</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — only the theorem is stated</span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——只寫了定理</span></td>
+<td><span data-tr="en">High — verify if slide carries a construction</span><span data-tr="zh">高——確認投影片有沒有附建構</span></td>
 </tr>
 <tr>
 <td>5</td>
 <td>54</td>
-<td>Exact cover→sum-of-subsets example</td>
-<td>Superscript restorations (<code>4⁰+4¹</code> etc.) and the 2nd variant's base/set list (a duplicated "S₃")</td>
-<td>✅ <strong>Verified against slide 54.</strong> Superscripts correct; the duplicated "S₃" is a <strong>genuine slide typo</strong> (4th set should be S₄={1,3}); 2nd variant uses base 2. See Appendix A.</td>
+<td><span data-tr="en">Exact cover→sum-of-subsets example</span><span data-tr="zh">Exact cover→sum-of-subsets 的例子</span></td>
+<td><span data-tr="en">Superscript restorations (<code>4⁰+4¹</code> etc.) and the 2nd variant's base/set list (a duplicated "S₃")</span><span data-tr="zh">上標的還原（<code>4⁰+4¹</code> 之類）和第 2 個變形的 base／集合清單（重複的「S₃」）</span></td>
+<td><span data-tr="en">✅ <strong>Verified against slide 54.</strong> Superscripts correct; the duplicated "S₃" is a <strong>genuine slide typo</strong> (4th set should be S₄={1,3}); 2nd variant uses base 2. See Appendix A.</span><span data-tr="zh">✅ <strong>已對照 slide 54 驗證。</strong>上標正確；重複的「S₃」是<strong>投影片本身的 typo</strong>（第 4 個集合應該是 S₄={1,3}）；第 2 個變形用 base 2。見 Appendix A。</span></td>
 </tr>
 <tr>
 <td>6</td>
 <td>58</td>
-<td>Partition → bin packing</td>
-<td><strong>Construction not in dump</strong> — used standard 2-bins, capacity Tsum/2</td>
-<td>High</td>
+<td><span data-tr="en">Partition → bin packing</span><span data-tr="zh">Partition → bin packing</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — used standard 2-bins, capacity Tsum/2</span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——用了標準的 2 個 bin、容量 Tsum/2</span></td>
+<td><span data-tr="en">High</span><span data-tr="zh">高</span></td>
 </tr>
 <tr>
 <td>7</td>
 <td>60</td>
-<td>Bin packing → VLSI layout</td>
-<td><strong>Construction not in dump</strong> — rectangle-per-item intuition only</td>
-<td>High</td>
+<td><span data-tr="en">Bin packing → VLSI layout</span><span data-tr="zh">Bin packing → VLSI layout</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — rectangle-per-item intuition only</span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——只有「一個物品配一個矩形」的直覺</span></td>
+<td><span data-tr="en">High</span><span data-tr="zh">高</span></td>
 </tr>
 <tr>
 <td>8</td>
 <td>61</td>
-<td>SAT → clique decision</td>
-<td><strong>Construction not in dump</strong> — used standard literal-vertex / inter-clause-non-conflict, k=m</td>
-<td>High</td>
+<td><span data-tr="en">SAT → clique decision</span><span data-tr="zh">SAT → clique decision</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — used standard literal-vertex / inter-clause-non-conflict, k=m</span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——用了標準的「literal 當點／跨 clause 不衝突」、k=m</span></td>
+<td><span data-tr="en">High</span><span data-tr="zh">高</span></td>
 </tr>
 <tr>
 <td>9</td>
 <td>64</td>
-<td>SAT → directed Hamiltonian cycle</td>
-<td><strong>Construction not in dump</strong> — used standard variable-gadget/clause-vertex idea</td>
-<td>High</td>
+<td><span data-tr="en">SAT → directed Hamiltonian cycle</span><span data-tr="zh">SAT → directed Hamiltonian cycle</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — used standard variable-gadget/clause-vertex idea</span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——用了標準的「變數 gadget／clause 點」想法</span></td>
+<td><span data-tr="en">High</span><span data-tr="zh">高</span></td>
 </tr>
 <tr>
 <td>10</td>
 <td>66</td>
-<td>Dir. Hamiltonian cycle → TSP</td>
-<td>Edge weights <code>1/2</code> and bound <code>C=n</code> inferred from the picture labels "1","2"</td>
-<td>✅ <strong>Edge weights verified against slide 66</strong> (left = original G, edges cost 1; right = completed graph, added edges blue = cost 2). Bound <code>C=n</code> not printed on the slide (implied by construction). See Appendix A.</td>
+<td><span data-tr="en">Dir. Hamiltonian cycle → TSP</span><span data-tr="zh">Dir. Hamiltonian cycle → TSP</span></td>
+<td><span data-tr="en">Edge weights <code>1/2</code> and bound <code>C=n</code> inferred from the picture labels "1","2"</span><span data-tr="zh">邊權重 <code>1/2</code> 和界限 <code>C=n</code> 是從圖上的標籤「1」「2」推回去的</span></td>
+<td><span data-tr="en">✅ <strong>Edge weights verified against slide 66</strong> (left = original G, edges cost 1; right = completed graph, added edges blue = cost 2). Bound <code>C=n</code> not printed on the slide (implied by construction). See Appendix A.</span><span data-tr="zh">✅ <strong>邊權重已對照 slide 66 驗證</strong>（左邊 = 原圖 G，邊 cost 1；右邊 = 補成的完全圖，加上去的藍邊 = cost 2）。界限 <code>C=n</code> 投影片沒印出來（是建構隱含的）。見 Appendix A。</span></td>
 </tr>
 <tr>
 <td>11</td>
 <td>68</td>
-<td>Partition → 0/1 knapsack</td>
-<td><strong>Construction not in dump</strong> — used standard <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code></td>
-<td>High</td>
+<td><span data-tr="en">Partition → 0/1 knapsack</span><span data-tr="zh">Partition → 0/1 knapsack</span></td>
+<td><span data-tr="en"><strong>Construction not in dump</strong> — used standard <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code></span><span data-tr="zh"><strong>原始檔裡沒有建構</strong>——用了標準的 <code>wᵢ=pᵢ=aᵢ, M=K=Tsum/2</code></span></td>
+<td><span data-tr="en">High</span><span data-tr="zh">高</span></td>
 </tr>
 <tr>
 <td>12</td>
 <td>31–33</td>
-<td>Node cover → SAT CNF</td>
-<td>Grouped/restored the (A)–(D) clause families and the <code>= / ≠ / ∈</code> meanings</td>
-<td>Medium-High</td>
+<td><span data-tr="en">Node cover → SAT CNF</span><span data-tr="zh">Node cover → SAT 的 CNF</span></td>
+<td><span data-tr="en">Grouped/restored the (A)–(D) clause families and the <code>= / ≠ / ∈</code> meanings</span><span data-tr="zh">把 (A)–(D) 那幾組 clause 跟 <code>= / ≠ / ∈</code> 的意思分組／還原</span></td>
+<td><span data-tr="en">Medium-High</span><span data-tr="zh">中高</span></td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Note on items 4, 6, 7, 8, 9, 11:</strong> these slides in the deck state the reduction <strong>as a theorem only</strong> (the textbook leaves the construction to Horowitz &amp; Sahni Sec. 11.3–11.4). The constructions given here are the standard textbook ones, supplied so the note is self-contained — but they are <strong>not transcribed from the slides.</strong> Treat them as study aids and confirm scope expectations with the course.</p>
+<p><span data-tr="en"><strong>Note on items 4, 6, 7, 8, 9, 11:</strong> these slides in the deck state the reduction <strong>as a theorem only</strong> (the textbook leaves the construction to Horowitz &amp; Sahni Sec. 11.3–11.4). The constructions given here are the standard textbook ones, supplied so the note is self-contained — but they are <strong>not transcribed from the slides.</strong> Treat them as study aids and confirm scope expectations with the course.</span><span data-tr="zh"><strong>關於第 4、6、7、8、9、11 項：</strong>這幾張投影片<strong>只把 reduction 當定理寫出來</strong>（課本把建構丟給 Horowitz &amp; Sahni Sec. 11.3–11.4）。這裡給的建構是課本標準版本，補上去是為了讓這份筆記能自成一體——但它們<strong>不是從投影片抄下來的。</strong>把它們當複習輔助就好，考試範圍記得跟課程那邊確認。</span></p>
 <hr />
-<h2 id="appendix-a-figures-visually-extracted-from-slide-images">Appendix A — Figures (visually extracted from slide images)</h2>
-<p>Transcribed directly from the rendered slide PNGs (<code>render/A08/slide-NN.png</code>). These are the diagrams the text dump could not recover. Graph edges are listed explicitly; colors/assignments are read off the figures.</p>
-<h3 id="slide-13-semantic-tree-unsatisfiable-formula">Slide 13 — Semantic tree (unsatisfiable formula)</h3>
-<p>A binary tree, branching on variables, whose nodes are annotated with the clause that falsifies that branch. Reading the figure:</p>
+<h2 id="appendix-a-figures-visually-extracted-from-slide-images"><span data-tr="en">Appendix A — Figures (visually extracted from slide images)</span><span data-tr="zh">Appendix A — 圖（從投影片圖片肉眼抓出來的）</span></h2>
+<p><span data-tr="en">Transcribed directly from the rendered slide PNGs (<code>render/A08/slide-NN.png</code>). These are the diagrams the text dump could not recover. Graph edges are listed explicitly; colors/assignments are read off the figures.</span><span data-tr="zh">直接從算好的投影片 PNG（<code>render/A08/slide-NN.png</code>）轉錄出來的。這些是文字檔救不回來的圖。圖的邊都明列出來，顏色／指派則是從圖上讀的。</span></p>
+<h3 id="slide-13-semantic-tree-unsatisfiable-formula"><span data-tr="en">Slide 13 — Semantic tree (unsatisfiable formula)</span><span data-tr="zh">Slide 13 — Semantic tree（unsatisfiable formula）</span></h3>
+<p><span data-tr="en">A binary tree, branching on variables, whose nodes are annotated with the clause that falsifies that branch. Reading the figure:</span><span data-tr="zh">一棵二元樹，每層對一個變數分岔，每個節點都標上把那條分支弄垮的 clause。照圖讀下來：</span></p>
 <ul>
-<li>Root <code>(7)(□)</code> — branches on x₂: left edge labelled <code>x₂ ← T : x₂</code>, right edge labelled <code>-x₂ : x₂ ← F</code>.</li>
-<li>Right child <code>(3)(x₂)</code> — labelled <strong>"become false"</strong> (a leaf; clause (3) <code>x₂</code> falsified when x₂←F).</li>
-<li>Left child <code>(6)(-x₂)</code> — branches on x₃: left edge <code>x₃</code>, right edge <code>-x₃</code>.<ul>
-<li>Left child <code>(4)(-x₃)</code> — leaf.</li>
-<li>Right child <code>(5)(-x₂ ∨ x₃)</code> — branches on x₁: left edge <code>x₁</code>, right edge <code>-x₁</code>.</li>
-<li>Left leaf <code>(1)(-x₁ ∨ -x₂ ∨ x₃)</code>.</li>
-<li>Right leaf <code>(2)(x₁ ∨ -x₂)</code> — labelled <strong>"become false"</strong>.</li>
+<li><span data-tr="en">Root <code>(7)(□)</code> — branches on x₂: left edge labelled <code>x₂ ← T : x₂</code>, right edge labelled <code>-x₂ : x₂ ← F</code>.</span><span data-tr="zh">根 <code>(7)(□)</code> — 對 x₂ 分岔：左邊標 <code>x₂ ← T : x₂</code>，右邊標 <code>-x₂ : x₂ ← F</code>。</span></li>
+<li><span data-tr="en">Right child <code>(3)(x₂)</code> — labelled <strong>"become false"</strong> (a leaf; clause (3) <code>x₂</code> falsified when x₂←F).</span><span data-tr="zh">右子節點 <code>(3)(x₂)</code> — 標著 <strong>「become false」</strong>（是葉子；x₂←F 時 clause (3) <code>x₂</code> 被弄垮）。</span></li>
+<li><span data-tr="en">Left child <code>(6)(-x₂)</code> — branches on x₃: left edge <code>x₃</code>, right edge <code>-x₃</code>.</span><span data-tr="zh">左子節點 <code>(6)(-x₂)</code> — 對 x₃ 分岔：左邊 <code>x₃</code>，右邊 <code>-x₃</code>。</span><ul>
+<li><span data-tr="en">Left child <code>(4)(-x₃)</code> — leaf.</span><span data-tr="zh">左子節點 <code>(4)(-x₃)</code> — 葉子。</span></li>
+<li><span data-tr="en">Right child <code>(5)(-x₂ ∨ x₃)</code> — branches on x₁: left edge <code>x₁</code>, right edge <code>-x₁</code>.</span><span data-tr="zh">右子節點 <code>(5)(-x₂ ∨ x₃)</code> — 對 x₁ 分岔：左邊 <code>x₁</code>，右邊 <code>-x₁</code>。</span></li>
+<li><span data-tr="en">Left leaf <code>(1)(-x₁ ∨ -x₂ ∨ x₃)</code>.</span><span data-tr="zh">左葉子 <code>(1)(-x₁ ∨ -x₂ ∨ x₃)</code>。</span></li>
+<li><span data-tr="en">Right leaf <code>(2)(x₁ ∨ -x₂)</code> — labelled <strong>"become false"</strong>.</span><span data-tr="zh">右葉子 <code>(2)(x₁ ∨ -x₂)</code> — 標著 <strong>「become false」</strong>。</span></li>
 </ul>
 </li>
 </ul>
-<p>Every leaf is attached to (falsified by) some clause ⇒ the formula is <strong>unsatisfiable</strong>. (This is the figure for the slide-12 unsatisfiable example.)</p>
-<h3 id="slide-25-semantic-tree-for-searchingsat-both-inputs-7-unsatisfiable">Slide 25 — Semantic tree for Searching→SAT, "both inputs ≠ 7" (unsatisfiable)</h3>
-<p>A single descending (right-leaning) chain of decision nodes; each internal node branches into a leaf labelled by the clause it falsifies and a child that continues the chain. Top-to-bottom:</p>
+<p><span data-tr="en">Every leaf is attached to (falsified by) some clause ⇒ the formula is <strong>unsatisfiable</strong>. (This is the figure for the slide-12 unsatisfiable example.)</span><span data-tr="zh">每個葉子都掛上（被弄垮於）某個 clause ⇒ 這個 formula 是 <strong>unsatisfiable</strong>。（這就是 slide-12 那個 unsatisfiable 例子的圖。）</span></p>
+<h3 id="slide-25-semantic-tree-for-searchingsat-both-inputs-7-unsatisfiable"><span data-tr="en">Slide 25 — Semantic tree for Searching→SAT, "both inputs ≠ 7" (unsatisfiable)</span><span data-tr="zh">Slide 25 — Searching→SAT「兩個輸入都 ≠ 7」的 semantic tree（unsatisfiable）</span></h3>
+<p><span data-tr="en">A single descending (right-leaning) chain of decision nodes; each internal node branches into a leaf labelled by the clause it falsifies and a child that continues the chain. Top-to-bottom:</span><span data-tr="zh">就是一條往下、偏右的決策節點鏈；每個內部節點分出一個葉子（標著它弄垮的 clause）跟一個繼續往下接的子節點。由上到下：</span></p>
 <ul>
-<li>Root branches on SUCCESS: left <code>SUCCESS</code> → child; right <code>-SUCCESS</code> → leaf <strong>(8)</strong>.</li>
-<li>Next node branches on FAILURE: left <code>FAILURE</code> → leaf <strong>(7)</strong>; right <code>-FAILURE</code> → child.</li>
-<li>branch <code>X(1)=7</code> → child / <code>X(1)≠7</code> → leaf <strong>(9)</strong>.</li>
-<li>branch <code>X(2)=7</code> → leaf <strong>(10)</strong> / <code>X(2)≠7</code> → child.</li>
-<li>branch on i: <code>i=1</code> → child / <code>i≠1</code> → child.</li>
-<li>under <code>i=1</code>: <code>i=2</code> → leaf <strong>(2)</strong> / <code>i≠2</code> → leaf (closes).</li>
-<li>under <code>i≠1</code>: <code>i=2</code> → leaf <strong>(6)</strong> / <code>i≠2</code> → leaf <strong>(1)</strong>.</li>
+<li><span data-tr="en">Root branches on SUCCESS: left <code>SUCCESS</code> → child; right <code>-SUCCESS</code> → leaf <strong>(8)</strong>.</span><span data-tr="zh">根對 SUCCESS 分岔：左 <code>SUCCESS</code> → 子節點；右 <code>-SUCCESS</code> → 葉子 <strong>(8)</strong>。</span></li>
+<li><span data-tr="en">Next node branches on FAILURE: left <code>FAILURE</code> → leaf <strong>(7)</strong>; right <code>-FAILURE</code> → child.</span><span data-tr="zh">下一個節點對 FAILURE 分岔：左 <code>FAILURE</code> → 葉子 <strong>(7)</strong>；右 <code>-FAILURE</code> → 子節點。</span></li>
+<li><span data-tr="en">branch <code>X(1)=7</code> → child / <code>X(1)≠7</code> → leaf <strong>(9)</strong>.</span><span data-tr="zh">分岔 <code>X(1)=7</code> → 子節點／<code>X(1)≠7</code> → 葉子 <strong>(9)</strong>。</span></li>
+<li><span data-tr="en">branch <code>X(2)=7</code> → leaf <strong>(10)</strong> / <code>X(2)≠7</code> → child.</span><span data-tr="zh">分岔 <code>X(2)=7</code> → 葉子 <strong>(10)</strong>／<code>X(2)≠7</code> → 子節點。</span></li>
+<li><span data-tr="en">branch on i: <code>i=1</code> → child / <code>i≠1</code> → child.</span><span data-tr="zh">對 i 分岔：<code>i=1</code> → 子節點／<code>i≠1</code> → 子節點。</span></li>
+<li><span data-tr="en">under <code>i=1</code>: <code>i=2</code> → leaf <strong>(2)</strong> / <code>i≠2</code> → leaf (closes).</span><span data-tr="zh"><code>i=1</code> 底下：<code>i=2</code> → 葉子 <strong>(2)</strong>／<code>i≠2</code> → 葉子（收尾）。</span></li>
+<li><span data-tr="en">under <code>i≠1</code>: <code>i=2</code> → leaf <strong>(6)</strong> / <code>i≠2</code> → leaf <strong>(1)</strong>.</span><span data-tr="zh"><code>i≠1</code> 底下：<code>i=2</code> → 葉子 <strong>(6)</strong>／<code>i≠2</code> → 葉子 <strong>(1)</strong>。</span></li>
 </ul>
-<p>Each leaf is attached to a clause of the CNF (slide 26) ⇒ no escaping assignment ⇒ <strong>unsatisfiable</strong> ⇒ 7 is absent. (Clause numbers match the slide-26 CNF.)</p>
-<h3 id="slide-29-semantic-tree-for-searchingsat-both-inputs-7-satisfiable">Slide 29 — Semantic tree for Searching→SAT, "both inputs = 7" (satisfiable)</h3>
-<p>Same shape as slide 25 but the branch order is <code>X(1)=7 → X(2)=7 → SUCCESS → -FAILURE → i</code>. Leaves are labelled with clause numbers <code>(9),(10),(7),(8),(2),(1)</code> and <code>(6)</code>. Two root-to-leaf paths survive without hitting a contradiction. Slide caption (red): <strong>"It implies that both assignments (i=1, i=2) satisfy the clauses."</strong> ⇒ formula <strong>satisfiable</strong>; either index witnesses "7 is present."</p>
-<h3 id="slide-30-node-cover-example-graph">Slide 30 — Node cover example graph</h3>
-<p>Undirected graph, 5 vertices <code>{1,2,3,4,5}</code>.
+<p><span data-tr="en">Each leaf is attached to a clause of the CNF (slide 26) ⇒ no escaping assignment ⇒ <strong>unsatisfiable</strong> ⇒ 7 is absent. (Clause numbers match the slide-26 CNF.)</span><span data-tr="zh">每個葉子都掛到 CNF（slide 26）的某個 clause ⇒ 沒有任何指派躲得掉 ⇒ <strong>unsatisfiable</strong> ⇒ 7 不在裡面。（clause 編號跟 slide-26 的 CNF 對得上。）</span></p>
+<h3 id="slide-29-semantic-tree-for-searchingsat-both-inputs-7-satisfiable"><span data-tr="en">Slide 29 — Semantic tree for Searching→SAT, "both inputs = 7" (satisfiable)</span><span data-tr="zh">Slide 29 — Searching→SAT「兩個輸入都 = 7」的 semantic tree（satisfiable）</span></h3>
+<p><span data-tr="en">Same shape as slide 25 but the branch order is <code>X(1)=7 → X(2)=7 → SUCCESS → -FAILURE → i</code>. Leaves are labelled with clause numbers <code>(9),(10),(7),(8),(2),(1)</code> and <code>(6)</code>. Two root-to-leaf paths survive without hitting a contradiction. Slide caption (red): <strong>"It implies that both assignments (i=1, i=2) satisfy the clauses."</strong> ⇒ formula <strong>satisfiable</strong>; either index witnesses "7 is present."</span><span data-tr="zh">形狀跟 slide 25 一樣，但分岔順序是 <code>X(1)=7 → X(2)=7 → SUCCESS → -FAILURE → i</code>。葉子標的 clause 編號是 <code>(9),(10),(7),(8),(2),(1)</code> 跟 <code>(6)</code>。有兩條從根到葉子的路徑沒撞到矛盾、活了下來。投影片紅字：<strong>「這代表 i=1 跟 i=2 兩種指派都能滿足所有 clause。」</strong>⇒ formula <strong>satisfiable</strong>；隨便哪個 index 都能見證「7 在裡面」。</span></p>
+<h3 id="slide-30-node-cover-example-graph"><span data-tr="en">Slide 30 — Node cover example graph</span><span data-tr="zh">Slide 30 — Node cover 例子圖</span></h3>
+<p><span data-tr="en">Undirected graph, 5 vertices <code>{1,2,3,4,5}</code>.
 Edge list: <strong>(1,2), (1,5), (2,3), (3,4)</strong>.
 Layout: 1 top-left, 2 top-right, 3 middle, 4 bottom-right, 5 bottom-left. Vertex 1 connects right to 2 and down to 5; vertex 2 connects down-left to 3; vertex 3 connects down-right to 4.
-Node covers shown: <strong>{1,3}</strong> and <strong>{5,2,4}</strong>.</p>
-<h3 id="slide-45-chromatic-number-example-graph-3-colorable">Slide 45 — Chromatic-number example graph (3-colorable)</h3>
-<p>Undirected graph, 5 vertices <code>{a,b,c,d,e}</code>.
+Node covers shown: <strong>{1,3}</strong> and <strong>{5,2,4}</strong>.</span><span data-tr="zh">無向圖，5 個點 <code>{1,2,3,4,5}</code>。
+邊清單：<strong>(1,2), (1,5), (2,3), (3,4)</strong>。
+擺位：1 左上、2 右上、3 中間、4 右下、5 左下。點 1 往右連 2、往下連 5；點 2 往左下連 3；點 3 往右下連 4。
+圖中標出的 node cover：<strong>{1,3}</strong> 和 <strong>{5,2,4}</strong>。</span></p>
+<h3 id="slide-45-chromatic-number-example-graph-3-colorable"><span data-tr="en">Slide 45 — Chromatic-number example graph (3-colorable)</span><span data-tr="zh">Slide 45 — Chromatic-number 例子圖（可 3 色著色）</span></h3>
+<p><span data-tr="en">Undirected graph, 5 vertices <code>{a,b,c,d,e}</code>.
 Edge list: <strong>(a,b), (a,d), (b,c), (d,e), (c,e)</strong> (a 5-cycle a-b-c-e-d-a).
 Layout: a top-left, b top-right, d middle-right, c-area; e at the bottom apex.
 Coloring (k=3): <strong>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</strong>.
-Colors drawn: a = green(1), b = red(2), c = green(1), d = red(2), e = yellow(3). 3-colorable.</p>
-<h3 id="slide-47-satycn-graph-construction-the-worked-example-critical">Slide 47 — SATY→CN graph construction (the worked example) — CRITICAL</h3>
-<p>SATY instance, <strong>n = 4</strong>, clauses: <strong>(1) x₁ ∨ x₂ ∨ x₃</strong> and <strong>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</strong>.</p>
-<p><strong>Vertices (two rows):</strong>
+Colors drawn: a = green(1), b = red(2), c = green(1), d = red(2), e = yellow(3). 3-colorable.</span><span data-tr="zh">無向圖，5 個點 <code>{a,b,c,d,e}</code>。
+邊清單：<strong>(a,b), (a,d), (b,c), (d,e), (c,e)</strong>（一個 5-cycle a-b-c-e-d-a）。
+擺位：a 左上、b 右上、d 右中、c 一帶；e 在最下方的頂點。
+著色 (k=3)：<strong>f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3</strong>。
+圖上畫的顏色：a = 綠(1)、b = 紅(2)、c = 綠(1)、d = 紅(2)、e = 黃(3)。可 3 色著色。</span></p>
+<h3 id="slide-47-satycn-graph-construction-the-worked-example-critical"><span data-tr="en">Slide 47 — SATY→CN graph construction (the worked example) — CRITICAL</span><span data-tr="zh">Slide 47 — SATY→CN 圖建構（實際例子）— 重點</span></h3>
+<p><span data-tr="en">SATY instance, <strong>n = 4</strong>, clauses: <strong>(1) x₁ ∨ x₂ ∨ x₃</strong> and <strong>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</strong>.</span><span data-tr="zh">SATY instance，<strong>n = 4</strong>，clause：<strong>(1) x₁ ∨ x₂ ∨ x₃</strong> 和 <strong>(2) ¬x₃ ∨ ¬x₄ ∨ x₂</strong>。</span></p>
+<p><span data-tr="en"><strong>Vertices (two rows):</strong>
 - Top row (8 literal vertices), left→right: <code>x₁, x₂, x₃, x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</code>.
-- Bottom row: the y-clique <code>y₁, y₂, y₃, y₄</code> then the two clause vertices <code>c₁, c₂</code>.</p>
-<p><strong>Coloring shown above/below each vertex (an (n+1)=5-coloring):</strong></p>
+- Bottom row: the y-clique <code>y₁, y₂, y₃, y₄</code> then the two clause vertices <code>c₁, c₂</code>.</span><span data-tr="zh"><strong>點（兩排）：</strong>
+- 上排（8 個 literal 點），由左到右：<code>x₁, x₂, x₃, x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</code>。
+- 下排：y-clique <code>y₁, y₂, y₃, y₄</code>，接著是兩個 clause 點 <code>c₁, c₂</code>。</span></p>
+<p><span data-tr="en"><strong>Coloring shown above/below each vertex (an (n+1)=5-coloring):</strong></span><span data-tr="zh"><strong>每個點上下標的著色（一個 (n+1)=5 色著色）：</strong></span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>vertex</th>
+<th><span data-tr="en">vertex</span><span data-tr="zh">點</span></th>
 <th>x₁</th>
 <th>x₂</th>
 <th>x₃</th>
@@ -933,7 +958,7 @@ Colors drawn: a = green(1), b = red(2), c = green(1), d = red(2), e = yellow(3).
 </thead>
 <tbody>
 <tr>
-<td>color</td>
+<td><span data-tr="en">color</span><span data-tr="zh">顏色</span></td>
 <td>1</td>
 <td>5</td>
 <td>5</td>
@@ -951,70 +976,96 @@ Colors drawn: a = green(1), b = red(2), c = green(1), d = red(2), e = yellow(3).
 </tr>
 </tbody>
 </table></div>
-<p>Vertex fill colors observed: x₁ black, x₂ yellow, x₃/x₄/¬x₁/¬x₂ white/open, ¬x₃ teal, ¬x₄ blue; y₁ black, y₂ yellow, y₃ teal, y₄ blue; c₁ black, c₂ teal. (Fill colors are decorative; the numeric labels are the coloring.)</p>
-<p><strong>Edges (per the slide-46 construction, instantiated for n=4, the two clauses):</strong>
+<p><span data-tr="en">Vertex fill colors observed: x₁ black, x₂ yellow, x₃/x₄/¬x₁/¬x₂ white/open, ¬x₃ teal, ¬x₄ blue; y₁ black, y₂ yellow, y₃ teal, y₄ blue; c₁ black, c₂ teal. (Fill colors are decorative; the numeric labels are the coloring.)</span><span data-tr="zh">觀察到的點填色：x₁ 黑、x₂ 黃、x₃/x₄/¬x₁/¬x₂ 白／空心、¬x₃ 青、¬x₄ 藍；y₁ 黑、y₂ 黃、y₃ 青、y₄ 藍；c₁ 黑、c₂ 青。（這些填色只是裝飾用；真正的著色是那些數字標籤。）</span></p>
+<p><span data-tr="en"><strong>Edges (per the slide-46 construction, instantiated for n=4, the two clauses):</strong>
 - Conflict edges (xᵢ,¬xᵢ): (x₁,¬x₁), (x₂,¬x₂), (x₃,¬x₃), (x₄,¬x₄).
 - y-clique (yᵢ,yⱼ) i≠j: all 6 pairs among {y₁,y₂,y₃,y₄}.
 - (yᵢ, xⱼ) i≠j and (yᵢ, ¬xⱼ) i≠j: each yᵢ joins every literal vertex <strong>except</strong> xᵢ and ¬xᵢ (so yᵢ touches 6 of the 8 literal vertices). This is the dense web from each yᵢ up to the literal row.
 - (xᵢ, cⱼ) for xᵢ ∉ cⱼ and (¬xᵢ, cⱼ) for ¬xᵢ ∉ cⱼ:
   - c₁ = {x₁,x₂,x₃} → c₁ joins the literals <strong>not</strong> in it: <strong>x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</strong> (5 edges).
-  - c₂ = {¬x₃,¬x₄,x₂} → c₂ joins: <strong>x₁, x₃, x₄, ¬x₁, ¬x₂</strong> (5 edges).</p>
-<p><strong>Verification of the coloring (reads off a satisfying assignment):</strong> yᵢ=i ✓. x₁=T (f(x₁)=1, f(¬x₁)=5=n+1) ✓; x₂=F (f(¬x₂)=2, f(x₂)=5) ✓; x₃=F (f(¬x₃)=3, f(x₃)=5) ✓; x₄=T (f(x₄)=4, f(¬x₄)=5) ✓. Clause colors: f(c₁)=1=f(x₁) ⇒ x₁∈c₁ true ✓; f(c₂)=3=f(¬x₃) ⇒ ¬x₃∈c₂ true ✓. Uses colors {1..5} and respects every edge ⇒ 5-colorable ⇔ satisfiable.</p>
-<p><strong>SATY→CN VERDICT:</strong> The note's reconstructed construction (V and the six edge families) is <strong>CONFIRMED</strong> — it matches slide 46's edge set verbatim and slide 47's drawn graph + coloring. The critical condition is <strong><code>(literal, cⱼ)</code> whenever the literal is NOT in cⱼ</strong> (i.e. <code>∉</code>), exactly as the note states. No correction needed.</p>
-<h3 id="slide-50-set-cover-example">Slide 50 — Set cover example</h3>
-<p>Family <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)}</code>, named <code>s₁=(a₁,a₃), s₂=(a₂,a₄), s₃=(a₂,a₃), s₄=(a₄)</code>. Universe <code>{a₁,a₂,a₃,a₄}</code>.
+  - c₂ = {¬x₃,¬x₄,x₂} → c₂ joins: <strong>x₁, x₃, x₄, ¬x₁, ¬x₂</strong> (5 edges).</span><span data-tr="zh"><strong>邊（依 slide-46 的建構，套在 n=4、這兩個 clause 上）：</strong>
+- 衝突邊 (xᵢ,¬xᵢ)：(x₁,¬x₁), (x₂,¬x₂), (x₃,¬x₃), (x₄,¬x₄)。
+- y-clique (yᵢ,yⱼ) i≠j：{y₁,y₂,y₃,y₄} 之間全部 6 對。
+- (yᵢ, xⱼ) i≠j 和 (yᵢ, ¬xⱼ) i≠j：每個 yᵢ 連到<strong>除了</strong> xᵢ 跟 ¬xᵢ 以外的每個 literal 點（所以 yᵢ 碰到 8 個 literal 點裡的 6 個）。這就是每個 yᵢ 往上連到 literal 那排的那張密網。
+- xᵢ ∉ cⱼ 時的 (xᵢ, cⱼ) 和 ¬xᵢ ∉ cⱼ 時的 (¬xᵢ, cⱼ)：
+  - c₁ = {x₁,x₂,x₃} → c₁ 連到<strong>不</strong>在它裡面的 literal：<strong>x₄, ¬x₁, ¬x₂, ¬x₃, ¬x₄</strong>（5 條邊）。
+  - c₂ = {¬x₃,¬x₄,x₂} → c₂ 連到：<strong>x₁, x₃, x₄, ¬x₁, ¬x₂</strong>（5 條邊）。</span></p>
+<p><span data-tr="en"><strong>Verification of the coloring (reads off a satisfying assignment):</strong> yᵢ=i ✓. x₁=T (f(x₁)=1, f(¬x₁)=5=n+1) ✓; x₂=F (f(¬x₂)=2, f(x₂)=5) ✓; x₃=F (f(¬x₃)=3, f(x₃)=5) ✓; x₄=T (f(x₄)=4, f(¬x₄)=5) ✓. Clause colors: f(c₁)=1=f(x₁) ⇒ x₁∈c₁ true ✓; f(c₂)=3=f(¬x₃) ⇒ ¬x₃∈c₂ true ✓. Uses colors {1..5} and respects every edge ⇒ 5-colorable ⇔ satisfiable.</span><span data-tr="zh"><strong>驗證這個著色（直接讀出一組滿足的指派）：</strong>yᵢ=i ✓。x₁=T (f(x₁)=1, f(¬x₁)=5=n+1) ✓；x₂=F (f(¬x₂)=2, f(x₂)=5) ✓；x₃=F (f(¬x₃)=3, f(x₃)=5) ✓；x₄=T (f(x₄)=4, f(¬x₄)=5) ✓。clause 顏色：f(c₁)=1=f(x₁) ⇒ x₁∈c₁ 為真 ✓；f(c₂)=3=f(¬x₃) ⇒ ¬x₃∈c₂ 為真 ✓。只用到 {1..5} 這些顏色、每條邊都不衝突 ⇒ 可 5 色著色 ⇔ satisfiable。</span></p>
+<p><span data-tr="en"><strong>SATY→CN VERDICT:</strong> The note's reconstructed construction (V and the six edge families) is <strong>CONFIRMED</strong> — it matches slide 46's edge set verbatim and slide 47's drawn graph + coloring. The critical condition is <strong><code>(literal, cⱼ)</code> whenever the literal is NOT in cⱼ</strong> (i.e. <code>∉</code>), exactly as the note states. No correction needed.</span><span data-tr="zh"><strong>SATY→CN 結論：</strong>這份筆記重建的建構（V 加上那六族邊）<strong>已確認無誤</strong>——它跟 slide 46 的邊集合一字不差、也吻合 slide 47 畫的圖加上著色。關鍵條件是 <strong>literal 不在 cⱼ 裡時才連 <code>(literal, cⱼ)</code></strong>（也就是 <code>∉</code>），跟筆記寫的完全一樣。不用修正。</span></p>
+<h3 id="slide-50-set-cover-example"><span data-tr="en">Slide 50 — Set cover example</span><span data-tr="zh">Slide 50 — Set cover 例子</span></h3>
+<p><span data-tr="en">Family <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)}</code>, named <code>s₁=(a₁,a₃), s₂=(a₂,a₄), s₃=(a₂,a₃), s₄=(a₄)</code>. Universe <code>{a₁,a₂,a₃,a₄}</code>.
 - <code>T = {s₁, s₃, s₄}</code> — a <strong>set cover</strong> (covers a₁,a₃,a₂,a₄; not disjoint since a₃ repeats).
-- <code>T = {s₁, s₂}</code> — a <strong>set cover AND exact cover</strong> (s₁={a₁,a₃}, s₂={a₂,a₄}, disjoint, cover all).</p>
-<h3 id="slide-54-exact-cover-sum-of-subsets-worked-example-two-variants">Slide 54 — Exact cover → sum of subsets, worked example (two variants)</h3>
-<p><strong>Left variant (proper, base k+1 = 4, k = 3 sets):</strong>
-Universe <code>u₁=1, u₂=2, u₃=3</code> (n=3). Sets <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F={1,2,3}</code>.</p>
+- <code>T = {s₁, s₂}</code> — a <strong>set cover AND exact cover</strong> (s₁={a₁,a₃}, s₂={a₂,a₄}, disjoint, cover all).</span><span data-tr="zh">集合族 <code>F = {(a₁,a₃), (a₂,a₄), (a₂,a₃), (a₄)}</code>，分別命名為 <code>s₁=(a₁,a₃), s₂=(a₂,a₄), s₃=(a₂,a₃), s₄=(a₄)</code>。全集 <code>{a₁,a₂,a₃,a₄}</code>。
+- <code>T = {s₁, s₃, s₄}</code> — 是一個 <strong>set cover</strong>（蓋住 a₁,a₃,a₂,a₄；但因為 a₃ 重複所以不相交）。
+- <code>T = {s₁, s₂}</code> — <strong>既是 set cover 也是 exact cover</strong>（s₁={a₁,a₃}, s₂={a₂,a₄}，不相交又蓋住全部）。</span></p>
+<h3 id="slide-54-exact-cover-sum-of-subsets-worked-example-two-variants"><span data-tr="en">Slide 54 — Exact cover → sum of subsets, worked example (two variants)</span><span data-tr="zh">Slide 54 — Exact cover → sum of subsets，實際例子（兩個變形）</span></h3>
+<p><span data-tr="en"><strong>Left variant (proper, base k+1 = 4, k = 3 sets):</strong>
+Universe <code>u₁=1, u₂=2, u₃=3</code> (n=3). Sets <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>, <code>F={1,2,3}</code>.</span><span data-tr="zh"><strong>左邊變形（正確版，base k+1 = 4，k = 3 個集合）：</strong>
+全集 <code>u₁=1, u₂=2, u₃=3</code>（n=3）。集合 <code>S₁={1,2}, S₂={3}, S₃={1,3}</code>，<code>F={1,2,3}</code>。</span></p>
 <pre><code>a₁ = 4⁰ + 4¹ = 5     (S₁ has u₁,u₂)
 a₂ = 4²      = 16    (S₂ has u₃)
 a₃ = 4⁰ + 4² = 17    (S₃ has u₁,u₃)
 C  = 4⁰ + 4¹ + 4² = 21
 </code></pre>
-<p>Exact cover {S₁,S₂} ⇒ 5 + 16 = 21 = C. ✓</p>
-<p><strong>Right variant (base 2 — the deliberately too-small base, "k−1=2 is selected"):</strong>
-The slide's set list reads <code>S₁={1,2}, S₂={2}, S₃={2}, S₃={1,3}</code> — <strong>the slide itself prints "S₃" twice</strong>; the fourth set is clearly meant to be S₄={1,3} (this is a slide typo, not a transcription error).</p>
+<p><span data-tr="en">Exact cover {S₁,S₂} ⇒ 5 + 16 = 21 = C. ✓</span><span data-tr="zh">Exact cover {S₁,S₂} ⇒ 5 + 16 = 21 = C。✓</span></p>
+<p><span data-tr="en"><strong>Right variant (base 2 — the deliberately too-small base, "k−1=2 is selected"):</strong>
+The slide's set list reads <code>S₁={1,2}, S₂={2}, S₃={2}, S₃={1,3}</code> — <strong>the slide itself prints "S₃" twice</strong>; the fourth set is clearly meant to be S₄={1,3} (this is a slide typo, not a transcription error).</span><span data-tr="zh"><strong>右邊變形（base 2——故意取太小的 base，「k−1=2 is selected」）：</strong>
+投影片的集合清單寫的是 <code>S₁={1,2}, S₂={2}, S₃={2}, S₃={1,3}</code>——<strong>投影片自己把「S₃」印了兩次</strong>；第 4 個集合明顯該是 S₄={1,3}（這是投影片的 typo，不是轉錄錯誤）。</span></p>
 <pre><code>a₁ = 2⁰ + 2¹ = 3
 a₂ = 2¹      = 2
 a₃ = 2¹      = 2
 a₄ = 2¹ + 2² = 6
 C  = 2⁰ + 2¹ + 2² = 7
 </code></pre>
-<p>Demonstrates that with too small a base, carries/collisions can occur. (Slide annotates "k−1=2 is selected" — i.e. the base used here is 2.)</p>
-<h3 id="slide-61-max-clique-example-graph">Slide 61 — Max clique example graph</h3>
-<p>Undirected graph, 6 vertices <code>{a,b,c,d,e,f}</code>.
+<p><span data-tr="en">Demonstrates that with too small a base, carries/collisions can occur. (Slide annotates "k−1=2 is selected" — i.e. the base used here is 2.)</span><span data-tr="zh">這示範了 base 取太小時，進位／碰撞就可能發生。（投影片註記「k−1=2 is selected」——也就是這裡用的 base 是 2。）</span></p>
+<h3 id="slide-61-max-clique-example-graph"><span data-tr="en">Slide 61 — Max clique example graph</span><span data-tr="zh">Slide 61 — Max clique 例子圖</span></h3>
+<p><span data-tr="en">Undirected graph, 6 vertices <code>{a,b,c,d,e,f}</code>.
 Layout: a top, b top-right (pendant), c/d middle row, e/f bottom row.
 Edge list: <strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>.
 (Note <code>b</code> is a pendant vertex, edge only to <code>a</code>.) {c,d,e,f} is a 4-clique (all 6 internal edges present).
 - Maximal cliques: <strong>{a,b}, {a,c,d}, {c,d,e,f}</strong>.
-- Maximum clique: <strong>{c,d,e,f}</strong>.</p>
-<h3 id="slide-63-clique-node-cover-g-and-its-complement-g">Slide 63 — Clique → node cover (G and its complement G′)</h3>
-<p>Same 6 vertices <code>{a,b,c,d,e,f}</code> in both graphs.</p>
-<p><strong>G</strong> (left) — identical to the slide-61 graph:
+- Maximum clique: <strong>{c,d,e,f}</strong>.</span><span data-tr="zh">無向圖，6 個點 <code>{a,b,c,d,e,f}</code>。
+擺位：a 在上、b 右上（懸掛點）、c/d 中間排、e/f 底排。
+邊清單：<strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>。
+（注意 <code>b</code> 是懸掛點，只跟 <code>a</code> 有邊。）{c,d,e,f} 是一個 4-clique（內部 6 條邊全在）。
+- Maximal clique：<strong>{a,b}, {a,c,d}, {c,d,e,f}</strong>。
+- Maximum clique：<strong>{c,d,e,f}</strong>。</span></p>
+<h3 id="slide-63-clique-node-cover-g-and-its-complement-g"><span data-tr="en">Slide 63 — Clique → node cover (G and its complement G′)</span><span data-tr="zh">Slide 63 — Clique → node cover（G 跟它的補圖 G′）</span></h3>
+<p><span data-tr="en">Same 6 vertices <code>{a,b,c,d,e,f}</code> in both graphs.</span><span data-tr="zh">兩張圖都是同樣這 6 個點 <code>{a,b,c,d,e,f}</code>。</span></p>
+<p><span data-tr="en"><strong>G</strong> (left) — identical to the slide-61 graph:
 Edge list: <strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>.
-Clique highlighted: <code>{c,d,e,f}</code> (size k=4); these four vertices drawn yellow.</p>
-<p><strong>G′</strong> (right) — the complement on the same 6 vertices (E′ = non-edges of G):
+Clique highlighted: <code>{c,d,e,f}</code> (size k=4); these four vertices drawn yellow.</span><span data-tr="zh"><strong>G</strong>（左）——跟 slide-61 那張圖一模一樣：
+邊清單：<strong>(a,b), (a,c), (a,d), (c,d), (c,e), (c,f), (d,e), (d,f), (e,f)</strong>。
+標出來的 clique：<code>{c,d,e,f}</code>（大小 k=4）；這四個點畫成黃色。</span></p>
+<p><span data-tr="en"><strong>G′</strong> (right) — the complement on the same 6 vertices (E′ = non-edges of G):
 G has 9 edges; K₆ has 15; so G′ has <strong>6 edges</strong>.
 Edge list of G′: <strong>(a,e), (a,f), (b,c), (b,d), (b,e), (b,f)</strong>.
 (Check: a's non-neighbors in G are e,f → (a,e),(a,f); b's non-neighbors are c,d,e,f → 4 edges; c,d,e,f are mutually complete in G so no further G′ edges. Total 6. ✓ The drawing shows a and b at top each fanning down to lower vertices.)
-Node cover of G′ = V∖clique = <strong>{a,b}</strong> (size n−k = 6−4 = 2). Every G′ edge is incident to a or b. ✓</p>
-<h3 id="slide-64-hamiltonian-cycle-example-graph">Slide 64 — Hamiltonian cycle example graph</h3>
-<p>Undirected graph, 8 vertices <code>{1,…,8}</code> in two rows: top <code>1,2,3,4</code> (left→right), bottom <code>8,7,6,5</code> (left→right, so 8 under 1, 5 under 4).
+Node cover of G′ = V∖clique = <strong>{a,b}</strong> (size n−k = 6−4 = 2). Every G′ edge is incident to a or b. ✓</span><span data-tr="zh"><strong>G′</strong>（右）——同樣 6 個點上的補圖（E′ = G 的非邊）：
+G 有 9 條邊；K₆ 有 15 條；所以 G′ 有 <strong>6 條邊</strong>。
+G′ 的邊清單：<strong>(a,e), (a,f), (b,c), (b,d), (b,e), (b,f)</strong>。
+（驗算：a 在 G 裡的非鄰居是 e,f → (a,e),(a,f)；b 的非鄰居是 c,d,e,f → 4 條邊；c,d,e,f 在 G 裡彼此完全相連，所以 G′ 裡沒有更多邊。總共 6 條。✓ 圖上畫的是 a 跟 b 在上方，各自往下面那些點散開。）
+G′ 的 node cover = V∖clique = <strong>{a,b}</strong>（大小 n−k = 6−4 = 2）。G′ 的每條邊都碰到 a 或 b。✓</span></p>
+<h3 id="slide-64-hamiltonian-cycle-example-graph"><span data-tr="en">Slide 64 — Hamiltonian cycle example graph</span><span data-tr="zh">Slide 64 — Hamiltonian cycle 例子圖</span></h3>
+<p><span data-tr="en">Undirected graph, 8 vertices <code>{1,…,8}</code> in two rows: top <code>1,2,3,4</code> (left→right), bottom <code>8,7,6,5</code> (left→right, so 8 under 1, 5 under 4).
 Edge list: <strong>(1,2), (2,3), (3,4), (1,3) [the curved top arc], (1,6), (2,7) [the two crossing diagonals], (8,7), (7,6), (6,5), (4,5), (3,6)</strong>.
 (The crossing "X" in the middle is edges (1,6) and (2,7); the long curved arc over the top connects 1 and 3.)
-Hamiltonian cycle drawn: <strong>1, 2, 8, 7, 6, 5, 4, 3, 1</strong>.</p>
+Hamiltonian cycle drawn: <strong>1, 2, 8, 7, 6, 5, 4, 3, 1</strong>.</span><span data-tr="zh">無向圖，8 個點 <code>{1,…,8}</code> 排成兩排：上排 <code>1,2,3,4</code>（左→右），下排 <code>8,7,6,5</code>（左→右，所以 8 在 1 底下、5 在 4 底下）。
+邊清單：<strong>(1,2), (2,3), (3,4), (1,3)〔頂端那條彎弧〕, (1,6), (2,7)〔中間那兩條交叉斜線〕, (8,7), (7,6), (6,5), (4,5), (3,6)</strong>。
+（中間那個交叉的「X」是邊 (1,6) 跟 (2,7)；頂端那條長彎弧連的是 1 和 3。）
+圖上畫的 Hamiltonian cycle：<strong>1, 2, 8, 7, 6, 5, 4, 3, 1</strong>。</span></p>
 <blockquote>
-<p>Note: edge (2,8) is required by the stated cycle (2→8); the figure's lower-left region is slightly ambiguous, but the cycle 1-2-8-7-6-5-4-3-1 implies edges (2,8) and (3,1) exist. Treat the cycle as authoritative.</p>
+<p><span data-tr="en">Note: edge (2,8) is required by the stated cycle (2→8); the figure's lower-left region is slightly ambiguous, but the cycle 1-2-8-7-6-5-4-3-1 implies edges (2,8) and (3,1) exist. Treat the cycle as authoritative.</span><span data-tr="zh">註：標出的 cycle (2→8) 需要邊 (2,8)；圖的左下角有點模糊，但 cycle 1-2-8-7-6-5-4-3-1 隱含邊 (2,8) 跟 (3,1) 存在。以這個 cycle 為準就對了。</span></p>
 </blockquote>
-<h3 id="slide-66-directed-hamiltonian-tsp-proof-gadget">Slide 66 — Directed Hamiltonian → TSP proof gadget</h3>
-<p>Two drawings of the <strong>same 7-vertex</strong> graph (heptagon layout).
+<h3 id="slide-66-directed-hamiltonian-tsp-proof-gadget"><span data-tr="en">Slide 66 — Directed Hamiltonian → TSP proof gadget</span><span data-tr="zh">Slide 66 — Directed Hamiltonian → TSP 證明 gadget</span></h3>
+<p><span data-tr="en">Two drawings of the <strong>same 7-vertex</strong> graph (heptagon layout).
 - <strong>Left:</strong> the original Hamiltonian-cycle instance G — only its actual edges drawn (black), forming the sparse graph.
-- <strong>Right:</strong> the TSP instance — the <strong>complete</strong> graph on the same 7 vertices. Edges that <strong>were in G</strong> are black and labelled cost <strong>"1"</strong>; edges <strong>added to complete the graph</strong> (not in G) are drawn in <strong>blue</strong> and labelled cost <strong>"2"</strong>.</p>
-<p>This confirms the note's weighting: <strong>cost = 1 for original edges, cost = 2 for added (non-)edges</strong>, and a TSP tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G. (The slide shows only the "1"/"2" labels and the two graphs; the bound C = n is implied by the construction, not printed.)</p>
+- <strong>Right:</strong> the TSP instance — the <strong>complete</strong> graph on the same 7 vertices. Edges that <strong>were in G</strong> are black and labelled cost <strong>"1"</strong>; edges <strong>added to complete the graph</strong> (not in G) are drawn in <strong>blue</strong> and labelled cost <strong>"2"</strong>.</span><span data-tr="zh"><strong>同一張 7 個點</strong>的圖畫了兩次（七邊形擺位）。
+- <strong>左：</strong>原本的 Hamiltonian-cycle instance G——只畫它實際有的邊（黑色），形成那張稀疏的圖。
+- <strong>右：</strong>TSP instance——同樣 7 個點上的<strong>完全</strong>圖。<strong>原本在 G 裡</strong>的邊是黑色、標 cost <strong>「1」</strong>；<strong>為了補成完全圖才加上去</strong>（不在 G 裡）的邊畫成<strong>藍色</strong>、標 cost <strong>「2」</strong>。</span></p>
+<p><span data-tr="en">This confirms the note's weighting: <strong>cost = 1 for original edges, cost = 2 for added (non-)edges</strong>, and a TSP tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G. (The slide shows only the "1"/"2" labels and the two graphs; the bound C = n is implied by the construction, not printed.)</span><span data-tr="zh">這印證了筆記裡的權重設法：<strong>原本的邊 cost = 1，補上去的（非）邊 cost = 2</strong>，而一條 cost ≤ n 的 TSP tour 只能用 cost-1 的邊 ⇒ 它就是 G 的一個 Hamiltonian cycle。（投影片只畫了「1」「2」標籤跟兩張圖；界限 C = n 是建構隱含的，沒印出來。）</span></p>
 <hr>
-<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
-The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+<p class="lede"><span data-tr="en">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</span><span data-tr="zh">這裡有任何看不懂的地方嗎？直接問你的老師（agent）——我就是幹這個的。原始投影片都算成圖片放在 <code>render/</code> 裡，方便你用眼睛核對。</span></p>
 </div><script src="../assets/i18n.js"></script>
 </body></html>

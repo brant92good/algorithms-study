@@ -13,58 +13,64 @@
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
-<h1 id="chapter-7-dynamic-programming">Chapter 7 — Dynamic Programming</h1>
-<h2 id="overview">Overview</h2>
-<p><strong>Dynamic Programming (DP)</strong> is an algorithm-design method used when the solution to a problem can be viewed as <strong>the result of a sequence of decisions</strong>. Instead of committing to a locally best choice at every step (as the greedy method does), DP records the optimal values of subproblems and combines them, guaranteeing a globally optimal answer.</p>
-<p>Key ideas this chapter develops:</p>
+<h1 id="chapter-7-dynamic-programming"><span data-tr="en">Chapter 7 — Dynamic Programming</span><span data-tr="zh">第 7 章 — Dynamic Programming</span></h1>
+<h2 id="overview"><span data-tr="en">Overview</span><span data-tr="zh">總覽</span></h2>
+<p><span data-tr="en"><strong>Dynamic Programming (DP)</strong> is an algorithm-design method used when the solution to a problem can be viewed as <strong>the result of a sequence of decisions</strong>. Instead of committing to a locally best choice at every step (as the greedy method does), DP records the optimal values of subproblems and combines them, guaranteeing a globally optimal answer.</span><span data-tr="zh"><strong>Dynamic Programming (DP)</strong> 是一種設計演算法的方法，適合用在「整個解可以看成<strong>一連串決策的結果</strong>」的問題上。它跟 greedy 不一樣：greedy 每一步都只挑當下看起來最好的；DP 則是把各個子問題的最佳解記下來，再把它們組合起來，這樣才保證拿到的是全域最佳解。</span></p>
+<p><span data-tr="en">Key ideas this chapter develops:</span><span data-tr="zh">這一章會帶你建立的幾個重點：</span></p>
 <ul>
-<li>A problem is solved as a <strong>sequence of decisions</strong> D₁, D₂, …, Dₙ.</li>
-<li>The <strong>Principle of Optimality</strong> lets us write a <strong>recurrence relation</strong> linking a subproblem's optimum to smaller subproblems' optima.</li>
-<li>Many such problems can equivalently be expressed as finding a <strong>min-cost (or max-profit) path through a multistage graph</strong>.</li>
-<li>The two routes to a DP solution:
+<li><span data-tr="en">A problem is solved as a <strong>sequence of decisions</strong> D₁, D₂, …, Dₙ.</span><span data-tr="zh">把問題拆成<strong>一連串決策</strong> D₁, D₂, …, Dₙ 來解。</span></li>
+<li><span data-tr="en">The <strong>Principle of Optimality</strong> lets us write a <strong>recurrence relation</strong> linking a subproblem's optimum to smaller subproblems' optima.</span><span data-tr="zh"><strong>Principle of Optimality</strong> 讓你能寫出一條 <strong>recurrence relation</strong>，把一個子問題的最佳解跟更小子問題的最佳解串起來。</span></li>
+<li><span data-tr="en">Many such problems can equivalently be expressed as finding a <strong>min-cost (or max-profit) path through a multistage graph</strong>.</span><span data-tr="zh">很多這類問題其實都可以改寫成：在一張 <strong>multistage graph 上找最小成本（或最大利潤）的路徑</strong>。</span></li>
+<li><span data-tr="en">The two routes to a DP solution:
   1. <strong>Find the recurrence relations</strong>, or
   2. <strong>Represent the problem by a multistage graph</strong>.
-  (In the textbook these are shown to be equivalent.)</li>
+  (In the textbook these are shown to be equivalent.)</span><span data-tr="zh">解 DP 有兩條路：
+  1. <strong>找出 recurrence relation</strong>，或
+  2. <strong>把問題畫成 multistage graph</strong>。
+  （課本會證明這兩種其實是等價的。）</span></li>
 </ul>
-<p>Topics covered: multistage graph &amp; shortest path (forward/backward reasoning), principle of optimality, 0/1 knapsack, forward vs. backward approach, plus further DP applications — resource allocation, traveling salesperson, longest common subsequence, 0/1 knapsack as a multistage graph, and optimal binary search trees.</p>
+<p><span data-tr="en">Topics covered: multistage graph &amp; shortest path (forward/backward reasoning), principle of optimality, 0/1 knapsack, forward vs. backward approach, plus further DP applications — resource allocation, traveling salesperson, longest common subsequence, 0/1 knapsack as a multistage graph, and optimal binary search trees.</span><span data-tr="zh">這章會講到：multistage graph 與最短路徑（forward／backward reasoning）、principle of optimality、0/1 knapsack、forward vs. backward approach，再加上幾個 DP 的經典應用 — resource allocation、traveling salesperson、longest common subsequence、把 0/1 knapsack 畫成 multistage graph，還有 optimal binary search trees。</span></p>
 <hr />
-<h2 id="1-why-not-greedy-motivating-example">1. Why Not Greedy? — Motivating Example</h2>
-<p>To find a shortest path in a multistage graph, the greedy method makes the cheapest decision at each stage. This can fail.</p>
+<h2 id="1-why-not-greedy-motivating-example"><span data-tr="en">1. Why Not Greedy? — Motivating Example</span><span data-tr="zh">1. 為什麼不能用 Greedy？— 開場範例</span></h2>
+<p><span data-tr="en">To find a shortest path in a multistage graph, the greedy method makes the cheapest decision at each stage. This can fail.</span><span data-tr="zh">想在 multistage graph 上找最短路徑，greedy 的做法是每一個 stage 都挑當下最便宜的那條邊。問題是，這樣會出包。</span></p>
 <ul>
-<li>Naïve greedy (always take the cheapest outgoing edge):
-  <code>1 + 2 + 5 = 8</code> — the greedy choice. <em>(The slide states only this sum. Greedy is not guaranteed optimal on a multistage graph — see below, where greedy gives 23 but the true optimum is 9.)</em></li>
-<li>Greedy starting <code>S → A → D → T</code>:
-  <code>1 + 4 + 18 = 23</code> — far from optimal.</li>
-<li>The <strong>true shortest path</strong> is:
-  <code>S → C → F → T = 5 + 2 + 2 = 9</code>.</li>
+<li><span data-tr="en">Naïve greedy (always take the cheapest outgoing edge):
+  <code>1 + 2 + 5 = 8</code> — the greedy choice. <em>(The slide states only this sum. Greedy is not guaranteed optimal on a multistage graph — see below, where greedy gives 23 but the true optimum is 9.)</em></span><span data-tr="zh">最直觀的 greedy（每次都挑出去最便宜的邊）：
+  <code>1 + 2 + 5 = 8</code> — 這就是 greedy 給的。<em>（投影片只列了這個總和。在 multistage graph 上 greedy 不保證最佳 — 看下面：greedy 給 23，但真正的最佳解是 9。）</em></span></li>
+<li><span data-tr="en">Greedy starting <code>S → A → D → T</code>:
+  <code>1 + 4 + 18 = 23</code> — far from optimal.</span><span data-tr="zh">從 <code>S → A → D → T</code> 走的 greedy：
+  <code>1 + 4 + 18 = 23</code> — 離最佳差很遠。</span></li>
+<li><span data-tr="en">The <strong>true shortest path</strong> is:
+  <code>S → C → F → T = 5 + 2 + 2 = 9</code>.</span><span data-tr="zh">真正的<strong>最短路徑</strong>是：
+  <code>S → C → F → T = 5 + 2 + 2 = 9</code>。</span></li>
 </ul>
-<p>So greedy gives 23 while the optimum is 9. DP is needed because the right early decision (go to C, an expensive-looking first edge of cost 5) only pays off later.</p>
+<p><span data-tr="en">So greedy gives 23 while the optimum is 9. DP is needed because the right early decision (go to C, an expensive-looking first edge of cost 5) only pays off later.</span><span data-tr="zh">所以 greedy 給 23，最佳卻是 9。會需要 DP 是因為：正確的第一步（走去 C，第一條邊看起來很貴、要 5）其實要到後面才會回本。</span></p>
 <hr />
-<h2 id="2-multistage-graph">2. Multistage Graph</h2>
-<h3 id="formal-definition">Formal definition</h3>
-<p>A <strong>multistage graph</strong> <code>G = (V, E)</code> is a <strong>directed</strong> graph in which:</p>
+<h2 id="2-multistage-graph"><span data-tr="en">2. Multistage Graph</span><span data-tr="zh">2. Multistage Graph</span></h2>
+<h3 id="formal-definition"><span data-tr="en">Formal definition</span><span data-tr="zh">正式定義</span></h3>
+<p><span data-tr="en">A <strong>multistage graph</strong> <code>G = (V, E)</code> is a <strong>directed</strong> graph in which:</span><span data-tr="zh">一張 <strong>multistage graph</strong> <code>G = (V, E)</code>是一張<strong>有向圖</strong>，它滿足：</span></p>
 <ul>
-<li>The vertices are partitioned into <code>k ≥ 2</code> disjoint sets <code>V₁, V₂, …, V_k</code> (with <code>1 ≤ i ≤ k</code>).</li>
-<li>Every edge <code>⟨u, v⟩ ∈ E</code> goes <strong>from one stage to the next</strong>: <code>u ∈ Vᵢ</code> and <code>v ∈ V_{i+1}</code> for some <code>i</code>, <code>1 ≤ i &lt; k</code>.</li>
-<li>The first and last stages are singletons: <code>|V₁| = |V_k| = 1</code>. Call the lone source <code>s ∈ V₁</code> and the lone sink <code>t ∈ V_k</code>.</li>
+<li><span data-tr="en">The vertices are partitioned into <code>k ≥ 2</code> disjoint sets <code>V₁, V₂, …, V_k</code> (with <code>1 ≤ i ≤ k</code>).</span><span data-tr="zh">所有節點被切成 <code>k ≥ 2</code> 個互不相交的集合 <code>V₁, V₂, …, V_k</code>（<code>1 ≤ i ≤ k</code>）。</span></li>
+<li><span data-tr="en">Every edge <code>⟨u, v⟩ ∈ E</code> goes <strong>from one stage to the next</strong>: <code>u ∈ Vᵢ</code> and <code>v ∈ V_{i+1}</code> for some <code>i</code>, <code>1 ≤ i &lt; k</code>.</span><span data-tr="zh">每條邊 <code>⟨u, v⟩ ∈ E</code> 都是<strong>從某個 stage 連到下一個 stage</strong>：存在某個 <code>i</code> 使得 <code>u ∈ Vᵢ</code>、<code>v ∈ V_{i+1}</code>，<code>1 ≤ i &lt; k</code>。</span></li>
+<li><span data-tr="en">The first and last stages are singletons: <code>|V₁| = |V_k| = 1</code>. Call the lone source <code>s ∈ V₁</code> and the lone sink <code>t ∈ V_k</code>.</span><span data-tr="zh">第一個跟最後一個 stage 都只有一個節點：<code>|V₁| = |V_k| = 1</code>。把這唯一的起點叫 source <code>s ∈ V₁</code>，唯一的終點叫 sink <code>t ∈ V_k</code>。</span></li>
 </ul>
-<p>Each set <code>Vᵢ</code> defines a <strong>stage</strong> of the graph.</p>
-<p><strong>The multistage-graph problem:</strong> find a <strong>minimum-cost path</strong> from <code>s</code> (in <code>V₁</code>) to <code>t</code> (in <code>V_k</code>).</p>
-<h3 id="the-running-example-graph">The running example graph</h3>
-<p>The slides use a 4-stage graph with vertices <code>S</code> (stage 1); <code>A, B, C</code> (stage 2); <code>D, E, F</code> (stage 3); <code>T</code> (stage 4). The edge weights below are <strong>consistent with every numeric result in the deck</strong> (e.g. <code>d(S,T)=9</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(C,T)=4</code>).</p>
+<p><span data-tr="en">Each set <code>Vᵢ</code> defines a <strong>stage</strong> of the graph.</span><span data-tr="zh">每個集合 <code>Vᵢ</code> 就構成圖的一個 <strong>stage</strong>。</span></p>
+<p><span data-tr="en"><strong>The multistage-graph problem:</strong> find a <strong>minimum-cost path</strong> from <code>s</code> (in <code>V₁</code>) to <code>t</code> (in <code>V_k</code>).</span><span data-tr="zh"><strong>multistage-graph 問題：</strong>找一條從 <code>s</code>（在 <code>V₁</code>）到 <code>t</code>（在 <code>V_k</code>）的<strong>最小成本路徑</strong>。</span></p>
+<h3 id="the-running-example-graph"><span data-tr="en">The running example graph</span><span data-tr="zh">會一直用到的範例圖</span></h3>
+<p><span data-tr="en">The slides use a 4-stage graph with vertices <code>S</code> (stage 1); <code>A, B, C</code> (stage 2); <code>D, E, F</code> (stage 3); <code>T</code> (stage 4). The edge weights below are <strong>consistent with every numeric result in the deck</strong> (e.g. <code>d(S,T)=9</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(C,T)=4</code>).</span><span data-tr="zh">投影片用的是一張 4 個 stage 的圖：節點 <code>S</code>（stage 1）；<code>A, B, C</code>（stage 2）；<code>D, E, F</code>（stage 3）；<code>T</code>（stage 4）。下面這些邊的權重，跟投影片裡每一個算出來的數字都對得起來（例如 <code>d(S,T)=9</code>、<code>d(A,T)=22</code>、<code>d(B,T)=18</code>、<code>d(C,T)=4</code>）。</span></p>
 <p><img class="figure" src="../render/A07full/slide-05.png" alt="The running 4-stage multistage graph with all numeric edge weights: S→A=1, S→B=2, S→C=5, A→D=4, A→E=11, B→D=9, B→E=5, B→F=16, C→F=2, D→T=18, E→T=13, F→T=2"></p>
-<figcaption>Slide 5 — the full multistage graph. Greedy <code>S A D T = 1+4+18 = 23</code>; true shortest path <code>S C F T = 5+2+2 = 9</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 5 — the full multistage graph. Greedy <code>S A D T = 1+4+18 = 23</code>; true shortest path <code>S C F T = 5+2+2 = 9</code>.</span><span data-tr="zh">投影片 5 — 完整的 multistage graph。Greedy <code>S A D T = 1+4+18 = 23</code>；真正的最短路徑 <code>S C F T = 5+2+2 = 9</code>。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 5 (the full multistage-graph figure). Every edge weight below was read directly off the rendered slide and matches exactly. The companion abstract figures on slide 6 (<code>S→{A,B,C}→T</code>) and slide 7 (<code>A→{D,E}→T</code>) confirm <code>S→A=1, S→B=2, S→C=5</code> and <code>A→D=4, A→E=11</code>.</p>
+<p><span data-tr="en">✅ Verified against slide 5 (the full multistage-graph figure). Every edge weight below was read directly off the rendered slide and matches exactly. The companion abstract figures on slide 6 (<code>S→{A,B,C}→T</code>) and slide 7 (<code>A→{D,E}→T</code>) confirm <code>S→A=1, S→B=2, S→C=5</code> and <code>A→D=4, A→E=11</code>.</span><span data-tr="zh">✅ 已對照投影片 5（完整的 multistage-graph 圖）核對過。下面每一個邊權重都是直接從算好的投影片讀出來的，完全吻合。投影片 6（<code>S→{A,B,C}→T</code>）和投影片 7（<code>A→{D,E}→T</code>）這兩張示意圖也佐證了 <code>S→A=1, S→B=2, S→C=5</code> 和 <code>A→D=4, A→E=11</code>。</span></p>
 </blockquote>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Edge</th>
-<th style="text-align: right;">Cost</th>
-<th>Edge</th>
-<th style="text-align: right;">Cost</th>
+<th><span data-tr="en">Edge</span><span data-tr="zh">邊</span></th>
+<th style="text-align: right;"><span data-tr="en">Cost</span><span data-tr="zh">成本</span></th>
+<th><span data-tr="en">Edge</span><span data-tr="zh">邊</span></th>
+<th style="text-align: right;"><span data-tr="en">Cost</span><span data-tr="zh">成本</span></th>
 </tr>
 </thead>
 <tbody>
@@ -106,18 +112,18 @@
 </tr>
 </tbody>
 </table></div>
-<p>Stages: <code>V₁={S}</code>, <code>V₂={A,B,C}</code>, <code>V₃={D,E,F}</code>, <code>V₄={T}</code>.</p>
+<p><span data-tr="en">Stages: <code>V₁={S}</code>, <code>V₂={A,B,C}</code>, <code>V₃={D,E,F}</code>, <code>V₄={T}</code>.</span><span data-tr="zh">各個 stage：<code>V₁={S}</code>、<code>V₂={A,B,C}</code>、<code>V₃={D,E,F}</code>、<code>V₄={T}</code>。</span></p>
 <blockquote>
-<p>✅ Verified against slide 5: <code>T</code> is the final singleton stage. The penultimate-stage vertices <code>D, E, F</code> connect directly to <code>T</code> with the weights <code>D→T=18</code>, <code>E→T=13</code>, <code>F→T=2</code>, as drawn on the slide and confirmed by the worked lines <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.</p>
+<p><span data-tr="en">✅ Verified against slide 5: <code>T</code> is the final singleton stage. The penultimate-stage vertices <code>D, E, F</code> connect directly to <code>T</code> with the weights <code>D→T=18</code>, <code>E→T=13</code>, <code>F→T=2</code>, as drawn on the slide and confirmed by the worked lines <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.</span><span data-tr="zh">✅ 已對照投影片 5 核對：<code>T</code> 是最後那個只有一個節點的 stage。倒數第二個 stage 的節點 <code>D, E, F</code> 直接連到 <code>T</code>，權重是 <code>D→T=18</code>、<code>E→T=13</code>、<code>F→T=2</code>，這跟投影片畫的一致，也跟算式 <code>d(D,T)=18</code>、<code>d(E,T)=13</code>、<code>d(F,T)=2</code> 對得上。</span></p>
 </blockquote>
 <hr />
-<h2 id="3-backward-reasoning">3. Backward Reasoning</h2>
-<p>Define <code>d(X, T)</code> = cost of the shortest path <strong>from vertex X to the sink T</strong>. Work <strong>from the sink backward</strong> toward the source. (Base cases at the stage just before <code>T</code>: <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.)</p>
+<h2 id="3-backward-reasoning"><span data-tr="en">3. Backward Reasoning</span><span data-tr="zh">3. Backward Reasoning（往回推）</span></h2>
+<p><span data-tr="en">Define <code>d(X, T)</code> = cost of the shortest path <strong>from vertex X to the sink T</strong>. Work <strong>from the sink backward</strong> toward the source. (Base cases at the stage just before <code>T</code>: <code>d(D,T)=18</code>, <code>d(E,T)=13</code>, <code>d(F,T)=2</code>.)</span><span data-tr="zh">定義 <code>d(X, T)</code> = <strong>從節點 X 到 sink T</strong> 的最短路徑成本。做法是<strong>從 sink 往回推</strong>，一路推回 source。（base case 在 <code>T</code> 前一個 stage：<code>d(D,T)=18</code>、<code>d(E,T)=13</code>、<code>d(F,T)=2</code>。）</span></p>
 <p><img class="figure" src="../render/A07full/slide-06.png" alt="Abstract backward figure: S→A=1, S→B=2, S→C=5 with dashed edges d(A,T), d(B,T), d(C,T) into T; equation d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}"></p>
-<figcaption>Slide 6 — backward reasoning across the first stage: d(S,T) = min{1+d(A,T), 2+d(B,T), 5+d(C,T)}.</figcaption>
+<figcaption><span data-tr="en">Slide 6 — backward reasoning across the first stage: d(S,T) = min{1+d(A,T), 2+d(B,T), 5+d(C,T)}.</span><span data-tr="zh">投影片 6 — 對第一個 stage 做 backward reasoning：d(S,T) = min{1+d(A,T), 2+d(B,T), 5+d(C,T)}。</span></figcaption>
 
 <p><img class="figure" src="../render/A07full/slide-07.png" alt="Abstract backward figure for vertex A: A→D=4, A→E=11 with dashed edges d(D,T), d(E,T); d(A,T)=min{4+18, 11+13}=22"></p>
-<figcaption>Slide 7 — one subproblem expanded: d(A,T) = min{4+d(D,T), 11+d(E,T)} = min{4+18, 11+13} = 22.</figcaption>
+<figcaption><span data-tr="en">Slide 7 — one subproblem expanded: d(A,T) = min{4+d(D,T), 11+d(E,T)} = min{4+18, 11+13} = 22.</span><span data-tr="zh">投影片 7 — 把一個子問題展開來看：d(A,T) = min{4+d(D,T), 11+d(E,T)} = min{4+18, 11+13} = 22。</span></figcaption>
 
 <pre><code>d(C, T) = min{ 2 + d(F, T) }
         = 2 + 2
@@ -138,17 +144,17 @@ d(S, T) = min{ 1 + d(A, T), 2 + d(B, T), 5 + d(C, T) }
         = min{ 23, 20, 9 }
         = 9
 </code></pre>
-<p><strong>Answer:</strong> <code>d(S, T) = 9</code>, achieved via <code>S → C → F → T</code>.</p>
-<p>This style — express each vertex's optimal cost in terms of vertices <strong>closer to the sink</strong>, then resolve from the sink backward — is called <strong>backward reasoning</strong>.</p>
+<p><span data-tr="en"><strong>Answer:</strong> <code>d(S, T) = 9</code>, achieved via <code>S → C → F → T</code>.</span><span data-tr="zh"><strong>答案：</strong><code>d(S, T) = 9</code>，走 <code>S → C → F → T</code> 達成。</span></p>
+<p><span data-tr="en">This style — express each vertex's optimal cost in terms of vertices <strong>closer to the sink</strong>, then resolve from the sink backward — is called <strong>backward reasoning</strong>.</span><span data-tr="zh">這種做法 — 把每個節點的最佳成本，用<strong>更靠近 sink</strong> 的節點來表示，再從 sink 往回解 — 就叫 <strong>backward reasoning</strong>。</span></p>
 <hr />
-<h2 id="4-forward-reasoning">4. Forward Reasoning</h2>
-<p>Define <code>d(S, X)</code> = cost of the shortest path <strong>from the source S to vertex X</strong>. Work <strong>from the source forward</strong> toward the sink.</p>
-<p>Base (stage-2 vertices, directly reachable from S):</p>
+<h2 id="4-forward-reasoning"><span data-tr="en">4. Forward Reasoning</span><span data-tr="zh">4. Forward Reasoning（往前推）</span></h2>
+<p><span data-tr="en">Define <code>d(S, X)</code> = cost of the shortest path <strong>from the source S to vertex X</strong>. Work <strong>from the source forward</strong> toward the sink.</span><span data-tr="zh">定義 <code>d(S, X)</code> = <strong>從 source S 到節點 X</strong> 的最短路徑成本。這次反過來，<strong>從 source 往前推</strong>，一路推到 sink。</span></p>
+<p><span data-tr="en">Base (stage-2 vertices, directly reachable from S):</span><span data-tr="zh">base（stage 2 的節點，從 S 一步就到）：</span></p>
 <pre><code>d(S, A) = 1
 d(S, B) = 2
 d(S, C) = 5
 </code></pre>
-<p>Stage-3 vertices:</p>
+<p><span data-tr="en">Stage-3 vertices:</span><span data-tr="zh">stage 3 的節點：</span></p>
 <pre><code>d(S, D) = min{ d(S, A) + d(A, D), d(S, B) + d(B, D) }
         = min{ 1 + 4, 2 + 9 }
         = min{ 5, 11 }
@@ -165,119 +171,120 @@ d(S, F) = min{ d(S, A) + d(A, F), d(S, B) + d(B, F) }
         = 7
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 9 — with a caveat about the slide itself. The slide literally prints <code>d(S,F)=min{d(S,A)+d(A,F), d(S,B)+d(B,F)} = min{2+16, 5+2} = 7</code>. But the <strong>graph (slide 5) has no edges <code>A→F</code> or <code>B→F</code>'s-pair that produce these constants under those labels</strong>: F's only incoming edges are <code>B→F=16</code> and <code>C→F=2</code>. So the slide's <em>labels</em> are wrong; the <em>numbers</em> are right. The correct reading consistent with the graph is <code>d(S,F)=min{d(S,B)+d(B,F), d(S,C)+d(C,F)} = min{2+16, 5+2} = 7</code>. Result <code>d(S,F)=7</code> is firm; the slide's term-labels (<code>A</code>,<code>B</code>) are a typo for (<code>B</code>,<code>C</code>).</p>
+<p><span data-tr="en">✅ Verified against slide 9 — with a caveat about the slide itself. The slide literally prints <code>d(S,F)=min{d(S,A)+d(A,F), d(S,B)+d(B,F)} = min{2+16, 5+2} = 7</code>. But the <strong>graph (slide 5) has no edges <code>A→F</code> or <code>B→F</code>'s-pair that produce these constants under those labels</strong>: F's only incoming edges are <code>B→F=16</code> and <code>C→F=2</code>. So the slide's <em>labels</em> are wrong; the <em>numbers</em> are right. The correct reading consistent with the graph is <code>d(S,F)=min{d(S,B)+d(B,F), d(S,C)+d(C,F)} = min{2+16, 5+2} = 7</code>. Result <code>d(S,F)=7</code> is firm; the slide's term-labels (<code>A</code>,<code>B</code>) are a typo for (<code>B</code>,<code>C</code>).</span><span data-tr="zh">✅ 已對照投影片 9 核對 — 但投影片本身有個小毛病要提醒。投影片上寫的是 <code>d(S,F)=min{d(S,A)+d(A,F), d(S,B)+d(B,F)} = min{2+16, 5+2} = 7</code>。可是<strong>圖（投影片 5）根本沒有 <code>A→F</code> 這條邊，也湊不出那組標號對應的常數</strong>：F 的入邊只有 <code>B→F=16</code> 和 <code>C→F=2</code>。所以投影片的<em>標號</em>寫錯了，<em>數字</em>是對的。跟圖一致的正確讀法是 <code>d(S,F)=min{d(S,B)+d(B,F), d(S,C)+d(C,F)} = min{2+16, 5+2} = 7</code>。結論 <code>d(S,F)=7</code> 很穩；投影片把標號 (<code>A</code>,<code>B</code>) 打成 (<code>B</code>,<code>C</code>) 的 typo 而已。</span></p>
 </blockquote>
-<p>Final stage:</p>
+<p><span data-tr="en">Final stage:</span><span data-tr="zh">最後一個 stage：</span></p>
 <pre><code>d(S, T) = min{ d(S, D) + d(D, T), d(S, E) + d(E, T), d(S, F) + d(F, T) }
         = min{ 5 + 18, 7 + 13, 7 + 2 }
         = min{ 23, 20, 9 }
         = 9
 </code></pre>
-<p><strong>Answer:</strong> <code>d(S, T) = 9</code> — the same optimum, reached by reasoning <strong>forward</strong>.</p>
-<p>Here each vertex's optimal cost is expressed in terms of vertices <strong>closer to the source</strong>, then resolved from the source forward — <strong>forward reasoning</strong>.</p>
+<p><span data-tr="en"><strong>Answer:</strong> <code>d(S, T) = 9</code> — the same optimum, reached by reasoning <strong>forward</strong>.</span><span data-tr="zh"><strong>答案：</strong><code>d(S, T) = 9</code> — 一樣的最佳解，這次是<strong>往前推</strong>得到的。</span></p>
+<p><span data-tr="en">Here each vertex's optimal cost is expressed in terms of vertices <strong>closer to the source</strong>, then resolved from the source forward — <strong>forward reasoning</strong>.</span><span data-tr="zh">這裡每個節點的最佳成本，是用<strong>更靠近 source</strong> 的節點來表示，再從 source 往前解 — 這就是 <strong>forward reasoning</strong>。</span></p>
 <hr />
-<h2 id="5-principle-of-optimality">5. Principle of Optimality</h2>
-<p><strong>Statement.</strong> Suppose that, in solving a problem, we must make a sequence of decisions <code>D₁, D₂, …, Dₙ</code>. If this sequence is <strong>optimal</strong>, then the <strong>last k decisions</strong> (for any <code>1 ≤ k ≤ n</code>) must themselves be optimal.</p>
-<p><strong>Shortest-path corollary.</strong>
-If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>.</p>
+<h2 id="5-principle-of-optimality"><span data-tr="en">5. Principle of Optimality</span><span data-tr="zh">5. Principle of Optimality（最佳化原則）</span></h2>
+<p><span data-tr="en"><strong>Statement.</strong> Suppose that, in solving a problem, we must make a sequence of decisions <code>D₁, D₂, …, Dₙ</code>. If this sequence is <strong>optimal</strong>, then the <strong>last k decisions</strong> (for any <code>1 ≤ k ≤ n</code>) must themselves be optimal.</span><span data-tr="zh"><strong>敘述。</strong>假設解一個問題時，你得做一連串決策 <code>D₁, D₂, …, Dₙ</code>。如果這整串是<strong>最佳的</strong>，那麼<strong>最後 k 個決策</strong>（對任意 <code>1 ≤ k ≤ n</code>）本身也一定是最佳的。</span></p>
+<p><span data-tr="en"><strong>Shortest-path corollary.</strong>
+If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>.</span><span data-tr="zh"><strong>套到最短路徑上的推論。</strong>如果 <code>i, i₁, i₂, …, j</code> 是從 <code>i</code> 到 <code>j</code> 的最短路徑，那它的後半段 <code>i₁, i₂, …, j</code> 一定也是從 <code>i₁</code> 到 <code>j</code> 的最短路徑。</span></p>
 <blockquote>
-<p>Intuition: if the suffix were not optimal, we could replace it with a cheaper suffix and obtain a cheaper overall path — contradicting optimality of the whole.</p>
+<p><span data-tr="en">Intuition: if the suffix were not optimal, we could replace it with a cheaper suffix and obtain a cheaper overall path — contradicting optimality of the whole.</span><span data-tr="zh">直覺：假如後半段不是最佳，那你就能把它換成更便宜的後半段，整條路就更便宜了 — 這跟「整條是最佳」矛盾，所以後半段一定也是最佳。</span></p>
 </blockquote>
-<p><strong>Consequence:</strong> if a problem can be described by a multistage graph, then it can be solved by dynamic programming.</p>
+<p><span data-tr="en"><strong>Consequence:</strong> if a problem can be described by a multistage graph, then it can be solved by dynamic programming.</span><span data-tr="zh"><strong>結論：</strong>只要一個問題能用 multistage graph 描述，它就能用 dynamic programming 解。</span></p>
 <hr />
-<h2 id="6-01-knapsack-via-dynamic-programming">6. 0/1 Knapsack via Dynamic Programming</h2>
-<h3 id="problem-formulation">Problem formulation</h3>
-<p>Represent the problem as <code>KNAP(k, j, Y)</code>:</p>
+<h2 id="6-01-knapsack-via-dynamic-programming"><span data-tr="en">6. 0/1 Knapsack via Dynamic Programming</span><span data-tr="zh">6. 用 Dynamic Programming 解 0/1 Knapsack</span></h2>
+<h3 id="problem-formulation"><span data-tr="en">Problem formulation</span><span data-tr="zh">問題怎麼寫</span></h3>
+<p><span data-tr="en">Represent the problem as <code>KNAP(k, j, Y)</code>:</span><span data-tr="zh">把問題寫成 <code>KNAP(k, j, Y)</code> 的形式：</span></p>
 <pre><code>maximize     Σ_{i=k}^{j} pᵢ·xᵢ
 subject to   Σ_{i=k}^{j} wᵢ·xᵢ ≤ Y
              xᵢ = 0 or 1,    k ≤ i ≤ j
 </code></pre>
-<p>The full 0/1 knapsack problem is then <code>KNAP(1, n, M)</code> — all <code>n</code> objects, capacity <code>M</code>.</p>
-<h3 id="optimality-argument-split-on-the-first-decision">Optimality argument (split on the first decision)</h3>
-<p>Let <code>y₁, y₂, …, yₙ</code> be an <strong>optimal</strong> sequence of 0/1 values for <code>x₁, x₂, …, xₙ</code>.</p>
+<p><span data-tr="en">The full 0/1 knapsack problem is then <code>KNAP(1, n, M)</code> — all <code>n</code> objects, capacity <code>M</code>.</span><span data-tr="zh">那麼完整的 0/1 knapsack 問題就是 <code>KNAP(1, n, M)</code> — 全部 <code>n</code> 個物品、容量 <code>M</code>。</span></p>
+<h3 id="optimality-argument-split-on-the-first-decision"><span data-tr="en">Optimality argument (split on the first decision)</span><span data-tr="zh">最佳性的論證（從第一個決策切開）</span></h3>
+<p><span data-tr="en">Let <code>y₁, y₂, …, yₙ</code> be an <strong>optimal</strong> sequence of 0/1 values for <code>x₁, x₂, …, xₙ</code>.</span><span data-tr="zh">設 <code>y₁, y₂, …, yₙ</code> 是 <code>x₁, x₂, …, xₙ</code> 的一組<strong>最佳</strong> 0/1 取法。</span></p>
 <ul>
-<li><strong>If <code>y₁ = 0</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M)</code>.
-  <em>(If it weren't, we could improve it and thereby improve the whole — contradiction.)</em></li>
-<li><strong>If <code>y₁ = 1</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M − w₁)</code> (capacity reduced by the weight of object 1), by the principle of optimality.</li>
+<li><span data-tr="en"><strong>If <code>y₁ = 0</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M)</code>.
+  <em>(If it weren't, we could improve it and thereby improve the whole — contradiction.)</em></span><span data-tr="zh"><strong>如果 <code>y₁ = 0</code>：</strong>那 <code>y₂, y₃, …, yₙ</code> 一定是 <code>KNAP(2, n, M)</code> 的最佳取法。
+  <em>（不然的話，你就能改進它、連帶把整體也改得更好 — 矛盾。）</em></span></li>
+<li><span data-tr="en"><strong>If <code>y₁ = 1</code>:</strong> then <code>y₂, y₃, …, yₙ</code> must be an optimal sequence for <code>KNAP(2, n, M − w₁)</code> (capacity reduced by the weight of object 1), by the principle of optimality.</span><span data-tr="zh"><strong>如果 <code>y₁ = 1</code>：</strong>那由 principle of optimality，<code>y₂, y₃, …, yₙ</code> 一定是 <code>KNAP(2, n, M − w₁)</code> 的最佳取法（容量扣掉物品 1 的重量）。</span></li>
 </ul>
-<h3 id="the-recurrence">The recurrence</h3>
-<p>Let <code>gⱼ(y)</code> = the value of an optimal solution to <code>KNAP(j+1, n, y)</code>.</p>
-<p>Then <code>g₀(M)</code> is the value of an optimal solution to the whole problem <code>KNAP(1, n, M)</code>.</p>
-<p>Since <code>x₁</code> can be 0 or 1, the principle of optimality gives:</p>
+<h3 id="the-recurrence"><span data-tr="en">The recurrence</span><span data-tr="zh">recurrence</span></h3>
+<p><span data-tr="en">Let <code>gⱼ(y)</code> = the value of an optimal solution to <code>KNAP(j+1, n, y)</code>.</span><span data-tr="zh">設 <code>gⱼ(y)</code> = <code>KNAP(j+1, n, y)</code> 最佳解的值。</span></p>
+<p><span data-tr="en">Then <code>g₀(M)</code> is the value of an optimal solution to the whole problem <code>KNAP(1, n, M)</code>.</span><span data-tr="zh">那麼 <code>g₀(M)</code> 就是整個問題 <code>KNAP(1, n, M)</code> 最佳解的值。</span></p>
+<p><span data-tr="en">Since <code>x₁</code> can be 0 or 1, the principle of optimality gives:</span><span data-tr="zh">因為 <code>x₁</code> 只能是 0 或 1，由 principle of optimality 得到：</span></p>
 <pre><code>g₀(M) = max{ g₁(M),  g₁(M − w₁) + p₁ }
 </code></pre>
-<p>and in general:</p>
+<p><span data-tr="en">and in general:</span><span data-tr="zh">一般式則是：</span></p>
 <pre><code>gᵢ(y) = max{ g_{i+1}(y),  g_{i+1}(y − w_{i+1}) + p_{i+1} }
 </code></pre>
 <ul>
-<li>First term: skip object <code>i+1</code> (<code>x_{i+1}=0</code>).</li>
-<li>Second term: take object <code>i+1</code> (<code>x_{i+1}=1</code>), gaining profit <code>p_{i+1}</code> and using capacity <code>w_{i+1}</code>.</li>
+<li><span data-tr="en">First term: skip object <code>i+1</code> (<code>x_{i+1}=0</code>).</span><span data-tr="zh">第一項：跳過物品 <code>i+1</code>（<code>x_{i+1}=0</code>）。</span></li>
+<li><span data-tr="en">Second term: take object <code>i+1</code> (<code>x_{i+1}=1</code>), gaining profit <code>p_{i+1}</code> and using capacity <code>w_{i+1}</code>.</span><span data-tr="zh">第二項：拿物品 <code>i+1</code>（<code>x_{i+1}=1</code>），賺到利潤 <code>p_{i+1}</code>，但吃掉容量 <code>w_{i+1}</code>。</span></li>
 </ul>
-<h3 id="base-case-and-solving-direction">Base case and solving direction</h3>
+<h3 id="base-case-and-solving-direction"><span data-tr="en">Base case and solving direction</span><span data-tr="zh">base case 跟求解方向</span></h3>
 <pre><code>gₙ(y) = 0   for all y
 </code></pre>
-<p>Solve <strong>backward through the index</strong> using the recurrence:</p>
+<p><span data-tr="en">Solve <strong>backward through the index</strong> using the recurrence:</span><span data-tr="zh">用這條 recurrence、<strong>沿著 index 由大到小</strong>往回解：</span></p>
 <ol>
-<li>From <code>gₙ(y)</code> obtain <code>g_{n−1}(y)</code> (apply the recurrence with <code>i = n−1</code>).</li>
-<li>From <code>g_{n−1}(y)</code> obtain <code>g_{n−2}(y)</code>.</li>
-<li>Repeat, eventually determining <code>g₁(y)</code> and finally <code>g₀(M)</code> — the answer.</li>
+<li><span data-tr="en">From <code>gₙ(y)</code> obtain <code>g_{n−1}(y)</code> (apply the recurrence with <code>i = n−1</code>).</span><span data-tr="zh">從 <code>gₙ(y)</code> 算出 <code>g_{n−1}(y)</code>（把 recurrence 代入 <code>i = n−1</code>）。</span></li>
+<li><span data-tr="en">From <code>g_{n−1}(y)</code> obtain <code>g_{n−2}(y)</code>.</span><span data-tr="zh">再從 <code>g_{n−1}(y)</code> 算出 <code>g_{n−2}(y)</code>。</span></li>
+<li><span data-tr="en">Repeat, eventually determining <code>g₁(y)</code> and finally <code>g₀(M)</code> — the answer.</span><span data-tr="zh">一直重複下去，最後算到 <code>g₁(y)</code>，再算出 <code>g₀(M)</code> — 就是答案。</span></li>
 </ol>
 <hr />
-<h2 id="7-forward-approach-vs-backward-approach">7. Forward Approach vs. Backward Approach</h2>
-<p>Let <code>x₁, x₂, …, xₙ</code> be the decision variables.</p>
+<h2 id="7-forward-approach-vs-backward-approach"><span data-tr="en">7. Forward Approach vs. Backward Approach</span><span data-tr="zh">7. Forward Approach vs. Backward Approach</span></h2>
+<p><span data-tr="en">Let <code>x₁, x₂, …, xₙ</code> be the decision variables.</span><span data-tr="zh">設 <code>x₁, x₂, …, xₙ</code> 是決策變數。</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Approach</th>
-<th>Decision <code>xᵢ</code> is formulated in terms of…</th>
-<th>Knapsack recurrence</th>
-<th>Boundary</th>
+<th><span data-tr="en">Approach</span><span data-tr="zh">做法</span></th>
+<th><span data-tr="en">Decision <code>xᵢ</code> is formulated in terms of…</span><span data-tr="zh">決策 <code>xᵢ</code> 是用什麼來表示…</span></th>
+<th><span data-tr="en">Knapsack recurrence</span><span data-tr="zh">Knapsack recurrence</span></th>
+<th><span data-tr="en">Boundary</span><span data-tr="zh">邊界條件</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Forward</strong></td>
-<td>optimal decision sequences for <code>x_{i+1}, …, xₙ</code></td>
+<td><span data-tr="en">optimal decision sequences for <code>x_{i+1}, …, xₙ</code></span><span data-tr="zh">後面 <code>x_{i+1}, …, xₙ</code> 的最佳決策序列</span></td>
 <td><code>gᵢ(y) = max{ g_{i+1}(y), g_{i+1}(y − w_{i+1}) + p_{i+1} }</code></td>
 <td><code>g₀(M) = max{ g₁(M), g₁(M − w₁) + p₁ }</code></td>
 </tr>
 <tr>
 <td><strong>Backward</strong></td>
-<td>optimal decision sequences for <code>x₁, …, x_{i−1}</code></td>
+<td><span data-tr="en">optimal decision sequences for <code>x₁, …, x_{i−1}</code></span><span data-tr="zh">前面 <code>x₁, …, x_{i−1}</code> 的最佳決策序列</span></td>
 <td><code>gᵢ(y) = max{ g_{i−1}(y), g_{i−1}(y − wᵢ) + pᵢ }</code></td>
 <td><code>gₙ(M) = max{ g_{n−1}(M), g_{n−1}(M − wₙ) + pₙ }</code></td>
 </tr>
 </tbody>
 </table></div>
-<p>In the backward approach, <code>gᵢ(y)</code> is the optimal value of <code>KNAP(1, i, y)</code>.</p>
-<p><strong>Crucial subtlety about solving direction:</strong></p>
+<p><span data-tr="en">In the backward approach, <code>gᵢ(y)</code> is the optimal value of <code>KNAP(1, i, y)</code>.</span><span data-tr="zh">在 backward approach 裡，<code>gᵢ(y)</code> 就是 <code>KNAP(1, i, y)</code> 的最佳值。</span></p>
+<p><span data-tr="en"><strong>Crucial subtlety about solving direction:</strong></span><span data-tr="zh"><strong>關於求解方向，有個很容易搞混的重點：</strong></span></p>
 <ul>
-<li>If the recurrence is <strong>formulated using the forward approach</strong>, the relations are <strong>solved backwards</strong> — i.e. beginning with the <strong>last</strong> decision.</li>
-<li>If the recurrence is <strong>formulated using the backward approach</strong>, the relations are <strong>solved forwards</strong>.</li>
+<li><span data-tr="en">If the recurrence is <strong>formulated using the forward approach</strong>, the relations are <strong>solved backwards</strong> — i.e. beginning with the <strong>last</strong> decision.</span><span data-tr="zh">如果 recurrence 是用 <strong>forward approach 寫</strong>的，那解的時候要<strong>往回解</strong> — 也就是從<strong>最後</strong>一個決策開始。</span></li>
+<li><span data-tr="en">If the recurrence is <strong>formulated using the backward approach</strong>, the relations are <strong>solved forwards</strong>.</span><span data-tr="zh">如果 recurrence 是用 <strong>backward approach 寫</strong>的，那解的時候反而要<strong>往前解</strong>。</span></li>
 </ul>
-<p>(Formulation direction and solution direction are opposite to one another.)</p>
+<p><span data-tr="en">(Formulation direction and solution direction are opposite to one another.)</span><span data-tr="zh">（寫式子的方向跟解式子的方向，剛好相反。）</span></p>
 <hr />
-<h2 id="8-summary-how-to-solve-a-problem-by-dynamic-programming">8. Summary — How to Solve a Problem by Dynamic Programming</h2>
-<p>To solve a problem by DP, do <strong>either</strong>:</p>
+<h2 id="8-summary-how-to-solve-a-problem-by-dynamic-programming"><span data-tr="en">8. Summary — How to Solve a Problem by Dynamic Programming</span><span data-tr="zh">8. 總結 — 怎麼用 Dynamic Programming 解問題</span></h2>
+<p><span data-tr="en">To solve a problem by DP, do <strong>either</strong>:</span><span data-tr="zh">想用 DP 解問題，<strong>二擇一</strong>就好：</span></p>
 <ol>
-<li><strong>Find the recurrence relations</strong>, or</li>
-<li><strong>Represent the problem by a multistage graph</strong>.</li>
+<li><span data-tr="en"><strong>Find the recurrence relations</strong>, or</span><span data-tr="zh"><strong>找出 recurrence relation</strong>，或</span></li>
+<li><span data-tr="en"><strong>Represent the problem by a multistage graph</strong>.</span><span data-tr="zh"><strong>把問題畫成 multistage graph</strong>。</span></li>
 </ol>
-<p>In the textbook, these two are shown to be <strong>equivalent</strong>.</p>
+<p><span data-tr="en">In the textbook, these two are shown to be <strong>equivalent</strong>.</span><span data-tr="zh">課本裡會證明這兩種其實是<strong>等價</strong>的。</span></p>
 <hr />
-<h1 id="further-dp-applications-also-in-this-deck">Further DP Applications (also in this deck)</h1>
-<p>The remaining slides apply the same machinery to several classic problems.</p>
-<h2 id="9-the-resource-allocation-problem">9. The Resource Allocation Problem</h2>
+<h1 id="further-dp-applications-also-in-this-deck"><span data-tr="en">Further DP Applications (also in this deck)</span><span data-tr="zh">更多 DP 應用（這份投影片也有講）</span></h1>
+<p><span data-tr="en">The remaining slides apply the same machinery to several classic problems.</span><span data-tr="zh">剩下的投影片，就是把同一套工具套到幾個經典問題上。</span></p>
+<h2 id="9-the-resource-allocation-problem"><span data-tr="en">9. The Resource Allocation Problem</span><span data-tr="zh">9. Resource Allocation 問題（資源分配）</span></h2>
 <ul>
-<li><code>m</code> resources, <code>n</code> projects.</li>
-<li><code>p(i, j)</code> = profit when <code>j</code> resources are allocated to project <code>i</code>.</li>
-<li><strong>Goal:</strong> maximize total profit.</li>
+<li><span data-tr="en"><code>m</code> resources, <code>n</code> projects.</span><span data-tr="zh"><code>m</code> 份資源、<code>n</code> 個專案。</span></li>
+<li><span data-tr="en"><code>p(i, j)</code> = profit when <code>j</code> resources are allocated to project <code>i</code>.</span><span data-tr="zh"><code>p(i, j)</code> = 把 <code>j</code> 份資源分給專案 <code>i</code> 時的利潤。</span></li>
+<li><span data-tr="en"><strong>Goal:</strong> maximize total profit.</span><span data-tr="zh"><strong>目標：</strong>讓總利潤最大。</span></li>
 </ul>
-<p><strong>Profit table (deck example, slide 19).</strong> Rows = project <code>i</code>, columns = number of resources <code>j</code>:</p>
+<p><span data-tr="en"><strong>Profit table (deck example, slide 19).</strong> Rows = project <code>i</code>, columns = number of resources <code>j</code>:</span><span data-tr="zh"><strong>利潤表（投影片 19 的範例）。</strong>列 = 專案 <code>i</code>，欄 = 資源份數 <code>j</code>：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Project \ Resources</th>
+<th><span data-tr="en">Project \ Resources</span><span data-tr="zh">專案 \ 資源</span></th>
 <th style="text-align: right;">1</th>
 <th style="text-align: right;">2</th>
 <th style="text-align: right;">3</th>
@@ -311,30 +318,35 @@ subject to   Σ_{i=k}^{j} wᵢ·xᵢ ≤ Y
 </tbody>
 </table></div>
 <p><img class="figure" src="../render/A07full/slide-19.png" alt="Resource allocation profit table p(i,j): rows are projects 1-4, columns are 1-3 resources; values row1 2,8,9; row2 5,6,7; row3 4,4,4; row4 2,4,5"></p>
-<figcaption>Slide 19 — the resource-allocation profit table p(i, j).</figcaption>
+<figcaption><span data-tr="en">Slide 19 — the resource-allocation profit table p(i, j).</span><span data-tr="zh">投影片 19 — resource-allocation 的利潤表 p(i, j)。</span></figcaption>
 
-<p><strong>Multistage-graph model.</strong> A node <code>(i, j)</code> means <em><code>i</code> resources allocated to projects <code>1, 2, …, j</code></em> (i.e. the first <code>j</code> projects collectively use <code>i</code> resources).</p>
+<p><span data-tr="en"><strong>Multistage-graph model.</strong> A node <code>(i, j)</code> means <em><code>i</code> resources allocated to projects <code>1, 2, …, j</code></em> (i.e. the first <code>j</code> projects collectively use <code>i</code> resources).</span><span data-tr="zh"><strong>用 multistage-graph 來建模。</strong>節點 <code>(i, j)</code> 代表<em>把 <code>i</code> 份資源分給專案 <code>1, 2, …, j</code></em>（也就是前 <code>j</code> 個專案合起來用掉 <code>i</code> 份資源）。</span></p>
 <p><img class="figure" src="../render/A07full/slide-20.png" alt="The resource allocation problem as a 5-stage graph: S; stage 2 A=(0,1),B=(1,1),C=(2,1),D=(3,1); stage 3 E=(0,2),F=(1,2),G=(2,2),H=(3,2); stage 4 I=(0,3),J=(1,3),K=(2,3),L=(3,3); T. S-edges S→A=0, S→B=2, S→C=8, S→D=9"></p>
-<figcaption>Slide 20 — the resource-allocation problem described as a multistage graph.</figcaption>
-<p>Example: node <code>H = (3, 2)</code> ⇒ 3 resources allocated across projects 1 and 2.</p>
-<p>The problem becomes <strong>find the longest (max-profit) path from S to T</strong>.</p>
-<p>Worked example from the deck:</p>
+<figcaption><span data-tr="en">Slide 20 — the resource-allocation problem described as a multistage graph.</span><span data-tr="zh">投影片 20 — 把 resource-allocation 問題畫成 multistage graph。</span></figcaption>
+<p><span data-tr="en">Example: node <code>H = (3, 2)</code> ⇒ 3 resources allocated across projects 1 and 2.</span><span data-tr="zh">舉例：節點 <code>H = (3, 2)</code> ⇒ 把 3 份資源分給專案 1 和 2。</span></p>
+<p><span data-tr="en">The problem becomes <strong>find the longest (max-profit) path from S to T</strong>.</span><span data-tr="zh">這樣問題就變成<strong>從 S 到 T 找最長（利潤最大）的路徑</strong>。</span></p>
+<p><span data-tr="en">Worked example from the deck:</span><span data-tr="zh">投影片裡實際算的例子：</span></p>
 <pre><code>S → C → H → L → T,   8 + 5 = 13
 </code></pre>
-<p>with the interpretation:
+<p><span data-tr="en">with the interpretation:
 - 2 resources allocated to project 1,
 - 1 resource allocated to project 2,
-- 0 resources to projects 3 and 4.</p>
+- 0 resources to projects 3 and 4.</span><span data-tr="zh">解讀成：
+- 2 份資源給專案 1，
+- 1 份資源給專案 2，
+- 專案 3 和 4 各分到 0 份。</span></p>
 <blockquote>
-<p>✅ Verified against slides 19–21. Slide 20 shows the full figure "The Resource Allocation Problem Described as a Multi-Stage Graph"; slide 21 states the winning path and allocation verbatim. Node naming on slide 20 (each labeled <code>(i,j)</code> = <code>i</code> resources allocated to the first <code>j</code> projects):
+<p><span data-tr="en">✅ Verified against slides 19–21. Slide 20 shows the full figure "The Resource Allocation Problem Described as a Multi-Stage Graph"; slide 21 states the winning path and allocation verbatim. Node naming on slide 20 (each labeled <code>(i,j)</code> = <code>i</code> resources allocated to the first <code>j</code> projects):
 - Stage 1: <code>S</code>. Stage 2: <code>A=(0,1)</code>, <code>B=(1,1)</code>, <code>C=(2,1)</code>, <code>D=(3,1)</code>. Stage 3: <code>E=(0,2)</code>, <code>F=(1,2)</code>, <code>G=(2,2)</code>, <code>H=(3,2)</code>. Stage 4: <code>I=(0,3)</code>, <code>J=(1,3)</code>, <code>K=(2,3)</code>, <code>L=(3,3)</code>. Stage 5: <code>T</code>.
-- Edge weights are the profit increments from the table above. The S-edges read <code>S→A=0, S→B=2, S→C=8, S→D=9</code> (project-1 profits for 0/1/2/3 resources). The winning path is shown bold on slide 21: <code>S —8→ C —5→ H —0→ L —0→ T</code>, total <code>8+5=13</code>.</p>
-<p>Note: slide 20 is a dense diagram; many interior edge labels overlap and only the S-stage edges and the winning-path edges are read with full confidence. The path, totals, and allocation are confirmed exactly.</p>
+- Edge weights are the profit increments from the table above. The S-edges read <code>S→A=0, S→B=2, S→C=8, S→D=9</code> (project-1 profits for 0/1/2/3 resources). The winning path is shown bold on slide 21: <code>S —8→ C —5→ H —0→ L —0→ T</code>, total <code>8+5=13</code>.</span><span data-tr="zh">✅ 已對照投影片 19–21 核對。投影片 20 是完整的圖「The Resource Allocation Problem Described as a Multi-Stage Graph」；投影片 21 一字不差地列出獲勝路徑跟分配方式。投影片 20 的節點命名（每個標 <code>(i,j)</code> = 分 <code>i</code> 份資源給前 <code>j</code> 個專案）：
+- Stage 1：<code>S</code>。Stage 2：<code>A=(0,1)</code>、<code>B=(1,1)</code>、<code>C=(2,1)</code>、<code>D=(3,1)</code>。Stage 3：<code>E=(0,2)</code>、<code>F=(1,2)</code>、<code>G=(2,2)</code>、<code>H=(3,2)</code>。Stage 4：<code>I=(0,3)</code>、<code>J=(1,3)</code>、<code>K=(2,3)</code>、<code>L=(3,3)</code>。Stage 5：<code>T</code>。
+- 邊的權重就是上面那張表的利潤增量。S 出去的邊是 <code>S→A=0, S→B=2, S→C=8, S→D=9</code>（專案 1 分到 0/1/2/3 份資源的利潤）。獲勝路徑在投影片 21 用粗體標出來：<code>S —8→ C —5→ H —0→ L —0→ T</code>，總和 <code>8+5=13</code>。</span></p>
+<p><span data-tr="en">Note: slide 20 is a dense diagram; many interior edge labels overlap and only the S-stage edges and the winning-path edges are read with full confidence. The path, totals, and allocation are confirmed exactly.</span><span data-tr="zh">注意：投影片 20 這張圖很密，內部很多邊的標號都疊在一起，只有 S 那一個 stage 的邊跟獲勝路徑上的邊能完全確定。路徑、總和、分配方式都已精確核對無誤。</span></p>
 </blockquote>
 <hr />
-<h2 id="10-the-traveling-salesperson-problem-tsp">10. The Traveling Salesperson Problem (TSP)</h2>
-<p>Given a <strong>directed</strong> graph with a <strong>cost matrix</strong>, find the shortest tour that starts at vertex 1, visits every vertex exactly once, and returns to 1.</p>
-<p><strong>Small example (slide 22).</strong> Directed graph on 4 vertices with cost matrix (rows = from, cols = to; <code>∞</code> = no edge):</p>
+<h2 id="10-the-traveling-salesperson-problem-tsp"><span data-tr="en">10. The Traveling Salesperson Problem (TSP)</span><span data-tr="zh">10. Traveling Salesperson Problem (TSP)</span></h2>
+<p><span data-tr="en">Given a <strong>directed</strong> graph with a <strong>cost matrix</strong>, find the shortest tour that starts at vertex 1, visits every vertex exactly once, and returns to 1.</span><span data-tr="zh">給你一張帶 <strong>cost matrix</strong> 的<strong>有向圖</strong>，要找一條最短的 tour：從節點 1 出發，每個節點剛好走一次，最後再回到 1。</span></p>
+<p><span data-tr="en"><strong>Small example (slide 22).</strong> Directed graph on 4 vertices with cost matrix (rows = from, cols = to; <code>∞</code> = no edge):</span><span data-tr="zh"><strong>小範例（投影片 22）。</strong>4 個節點的有向圖，附 cost matrix（列 = 從哪走，欄 = 走到哪；<code>∞</code> = 沒有這條邊）：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -377,56 +389,60 @@ subject to   Σ_{i=k}^{j} wᵢ·xᵢ ≤ Y
 </tbody>
 </table></div>
 <p><img class="figure" src="../render/A07full/slide-22.png" alt="TSP example: directed 4-vertex graph and its cost matrix. Matrix rows from, cols to: 1:[∞,2,10,5] 2:[2,∞,9,∞] 3:[4,3,∞,4] 4:[6,8,7,∞]"></p>
-<figcaption>Slide 22 — the TSP directed graph and cost matrix.</figcaption>
+<figcaption><span data-tr="en">Slide 22 — the TSP directed graph and cost matrix.</span><span data-tr="zh">投影片 22 — TSP 的有向圖跟 cost matrix。</span></figcaption>
 
 <pre><code>Shortest tour: 1, 4, 3, 2, 1   →   5 + 7 + 3 + 2 = 17
 </code></pre>
-<p><strong>Tour multistage graph (slide 23, "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph").</strong></p>
+<p><span data-tr="en"><strong>Tour multistage graph (slide 23, "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph").</strong></span><span data-tr="zh"><strong>把所有 tour 畫成 multistage graph（投影片 23，「Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph」）。</strong></span></p>
 <p><img class="figure" src="../render/A07full/slide-23.png" alt="Multistage graph of all possible TSP tours rooted at (1), branching by first/second/third vertex chosen and returning to 1; optimal branch (1)→(1,4)→(1,4,3)→(1,4,3,2)→1 = 5+7+3+2 = 17"></p>
-<figcaption>Slide 23 — a multistage graph describing all possible tours; optimum 1, 4, 3, 2, 1 = 17.</figcaption>
-<p>Root <code>(1)</code> branches by first vertex chosen, edge costs <code>c(1,k)</code>: <code>(1,2)</code> cost 2, <code>(1,3)</code> cost 10, <code>(1,4)</code> cost 5. Each then expands to the third vertex, then the fourth, then returns to <code>1</code>. The bottom branch realizes the optimum: <code>(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1</code>, total 17.</p>
-<p><strong>Multistage-graph view.</strong> All possible tours form a multistage graph (one stage per "next vertex chosen"). Partial tours that end at the same vertex with the same remaining set can be <strong>merged</strong>:</p>
+<figcaption><span data-tr="en">Slide 23 — a multistage graph describing all possible tours; optimum 1, 4, 3, 2, 1 = 17.</span><span data-tr="zh">投影片 23 — 把所有可能的 tour 畫成 multistage graph；最佳解 1, 4, 3, 2, 1 = 17。</span></figcaption>
+<p><span data-tr="en">Root <code>(1)</code> branches by first vertex chosen, edge costs <code>c(1,k)</code>: <code>(1,2)</code> cost 2, <code>(1,3)</code> cost 10, <code>(1,4)</code> cost 5. Each then expands to the third vertex, then the fourth, then returns to <code>1</code>. The bottom branch realizes the optimum: <code>(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1</code>, total 17.</span><span data-tr="zh">根節點 <code>(1)</code> 依「第一個選哪個節點」分岔，邊的成本是 <code>c(1,k)</code>：<code>(1,2)</code> 花 2、<code>(1,3)</code> 花 10、<code>(1,4)</code> 花 5。接著每條再展開到第三個節點、第四個節點，最後繞回 <code>1</code>。最下面那條分支就是最佳解：<code>(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1</code>，總和 17。</span></p>
+<p><span data-tr="en"><strong>Multistage-graph view.</strong> All possible tours form a multistage graph (one stage per "next vertex chosen"). Partial tours that end at the same vertex with the same remaining set can be <strong>merged</strong>:</span><span data-tr="zh"><strong>用 multistage-graph 的角度看。</strong>所有可能的 tour 合起來就是一張 multistage graph（每「選下一個節點」就是一個 stage）。如果兩段 partial tour 結束在同一個節點、而且剩下要走的節點集合也一樣，就可以<strong>合併</strong>成同一個節點：</span></p>
 <blockquote>
-<p>Suppose 6 vertices. We can combine the partial tours <code>{1, 2, 3, 4}</code> and <code>{1, 3, 2, 4}</code> into one node, because: the last vertex visited is the same (here vertex 3 in the deck's phrasing), and the remaining vertices to visit are the same (<code>4, 5, 6</code>). Their futures are identical, so they share a subproblem.</p>
+<p><span data-tr="en">Suppose 6 vertices. We can combine the partial tours <code>{1, 2, 3, 4}</code> and <code>{1, 3, 2, 4}</code> into one node, because: the last vertex visited is the same (here vertex 3 in the deck's phrasing), and the remaining vertices to visit are the same (<code>4, 5, 6</code>). Their futures are identical, so they share a subproblem.</span><span data-tr="zh">假設有 6 個節點。partial tour <code>{1, 2, 3, 4}</code> 和 <code>{1, 3, 2, 4}</code> 可以合成同一個節點，因為：最後停的節點一樣（投影片的講法是節點 3），剩下要走的節點也一樣（<code>4, 5, 6</code>）。它們接下來要面對的局面完全相同，所以共用同一個子問題。</span></p>
 </blockquote>
-<p><strong>DP recurrence (Held–Karp).</strong> Let <code>g(i, S)</code> = the length of a shortest path that <strong>starts at vertex <code>i</code>, goes through all vertices in <code>S</code>, and terminates at vertex 1</strong>.</p>
+<p><span data-tr="en"><strong>DP recurrence (Held–Karp).</strong> Let <code>g(i, S)</code> = the length of a shortest path that <strong>starts at vertex <code>i</code>, goes through all vertices in <code>S</code>, and terminates at vertex 1</strong>.</span><span data-tr="zh"><strong>DP recurrence（Held–Karp）。</strong>設 <code>g(i, S)</code> = 一條最短路徑的長度，這條路徑<strong>從節點 <code>i</code> 出發，走過 <code>S</code> 裡所有節點，最後停在節點 1</strong>。</span></p>
 <ul>
-<li><strong>Length of an optimal tour (slide 25):</strong>
-  <code>g(1, V − {1}) = min_{2 ≤ k ≤ n} { c_{1k} + g(k, V − {1, k}) }</code></li>
-<li><strong>General form (slide 25):</strong>
-  <code>g(i, S) = min_{j ∈ S} { c_{ij} + g(j, S − {j}) }</code></li>
-<li><strong>Base:</strong> <code>g(i, ∅) = c_{i1}</code>.</li>
+<li><span data-tr="en"><strong>Length of an optimal tour (slide 25):</strong>
+  <code>g(1, V − {1}) = min_{2 ≤ k ≤ n} { c_{1k} + g(k, V − {1, k}) }</code></span><span data-tr="zh"><strong>最佳 tour 的長度（投影片 25）：</strong>
+  <code>g(1, V − {1}) = min_{2 ≤ k ≤ n} { c_{1k} + g(k, V − {1, k}) }</code></span></li>
+<li><span data-tr="en"><strong>General form (slide 25):</strong>
+  <code>g(i, S) = min_{j ∈ S} { c_{ij} + g(j, S − {j}) }</code></span><span data-tr="zh"><strong>一般式（投影片 25）：</strong>
+  <code>g(i, S) = min_{j ∈ S} { c_{ij} + g(j, S − {j}) }</code></span></li>
+<li><span data-tr="en"><strong>Base:</strong> <code>g(i, ∅) = c_{i1}</code>.</span><span data-tr="zh"><strong>base：</strong><code>g(i, ∅) = c_{i1}</code>。</span></li>
 </ul>
 <blockquote>
-<p>✅ Verified against slide 25. The slide prints both recurrences (with the <code>min_{2≤k≤n}</code> and <code>min_{j∈S}</code> ranges) exactly as above; the <code>g(i,S)</code> definition is stated verbatim on slide 25.</p>
+<p><span data-tr="en">✅ Verified against slide 25. The slide prints both recurrences (with the <code>min_{2≤k≤n}</code> and <code>min_{j∈S}</code> ranges) exactly as above; the <code>g(i,S)</code> definition is stated verbatim on slide 25.</span><span data-tr="zh">✅ 已對照投影片 25 核對。投影片上兩條 recurrence（含 <code>min_{2≤k≤n}</code> 和 <code>min_{j∈S}</code> 的範圍）都跟上面一模一樣；<code>g(i,S)</code> 的定義也是投影片 25 一字不差寫出來的。</span></p>
 </blockquote>
-<p><strong>Time complexity (slide 25, verbatim).</strong></p>
+<p><span data-tr="en"><strong>Time complexity (slide 25, verbatim).</strong></span><span data-tr="zh"><strong>時間複雜度（投影片 25 原文）。</strong></span></p>
 <pre><code>n + Σ_{k=2}^{n-1} (n−1)·C(n−2, n−k)·(n−k)  =  O(n² · 2ⁿ)
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 25: the slide shows the explicit sum <code>n + Σ_{k=2} (n−1)(ⁿ⁻²_{n−k})(n−k) = O(n² 2ⁿ)</code>, the standard Held–Karp bound — exponential but far better than <code>(n−1)!</code> brute force.</p>
+<p><span data-tr="en">✅ Verified against slide 25: the slide shows the explicit sum <code>n + Σ_{k=2} (n−1)(ⁿ⁻²_{n−k})(n−k) = O(n² 2ⁿ)</code>, the standard Held–Karp bound — exponential but far better than <code>(n−1)!</code> brute force.</span><span data-tr="zh">✅ 已對照投影片 25 核對：投影片列出完整的總和 <code>n + Σ_{k=2} (n−1)(ⁿ⁻²_{n−k})(n−k) = O(n² 2ⁿ)</code>，這就是標準的 Held–Karp 界 — 雖然是指數級，但已經比 <code>(n−1)!</code> 的暴力法好太多了。</span></p>
 </blockquote>
 <hr />
-<h2 id="11-longest-common-subsequence-lcs">11. Longest Common Subsequence (LCS)</h2>
-<p><strong>Subsequence.</strong> A subsequence of a string <code>A</code> is obtained by deleting 0 or more symbols from <code>A</code> (not necessarily consecutive).
-For <code>A = b a c a d</code>: examples include <code>ad, ac, bac, acad, bacad, bcd</code>.</p>
-<p><strong>Common subsequence.</strong> Of <code>A = b a c a d</code> and <code>B = a c c b a d c b</code>: e.g. <code>ad, ac, bac, acad</code>.</p>
-<p><strong>Longest common subsequence of A and B:</strong> <code>a c a d</code>.</p>
-<h3 id="recurrence">Recurrence</h3>
-<p>Let <code>A = a₁ a₂ … a_m</code> and <code>B = b₁ b₂ … b_n</code>.
-Let <code>L_{i,j}</code> = length of the LCS of the prefixes <code>a₁…aᵢ</code> and <code>b₁…bⱼ</code>.</p>
+<h2 id="11-longest-common-subsequence-lcs"><span data-tr="en">11. Longest Common Subsequence (LCS)</span><span data-tr="zh">11. Longest Common Subsequence (LCS)</span></h2>
+<p><span data-tr="en"><strong>Subsequence.</strong> A subsequence of a string <code>A</code> is obtained by deleting 0 or more symbols from <code>A</code> (not necessarily consecutive).
+For <code>A = b a c a d</code>: examples include <code>ad, ac, bac, acad, bacad, bcd</code>.</span><span data-tr="zh"><strong>Subsequence（子序列）。</strong>字串 <code>A</code> 的一個 subsequence，就是從 <code>A</code> 裡刪掉 0 個或多個字元後剩下的（被刪的不用連在一起）。
+以 <code>A = b a c a d</code> 為例：<code>ad, ac, bac, acad, bacad, bcd</code> 都算。</span></p>
+<p><span data-tr="en"><strong>Common subsequence.</strong> Of <code>A = b a c a d</code> and <code>B = a c c b a d c b</code>: e.g. <code>ad, ac, bac, acad</code>.</span><span data-tr="zh"><strong>Common subsequence（共同子序列）。</strong><code>A = b a c a d</code> 跟 <code>B = a c c b a d c b</code> 的共同子序列，例如 <code>ad, ac, bac, acad</code>。</span></p>
+<p><span data-tr="en"><strong>Longest common subsequence of A and B:</strong> <code>a c a d</code>.</span><span data-tr="zh"><strong>A 和 B 的 longest common subsequence：</strong><code>a c a d</code>。</span></p>
+<h3 id="recurrence"><span data-tr="en">Recurrence</span><span data-tr="zh">Recurrence</span></h3>
+<p><span data-tr="en">Let <code>A = a₁ a₂ … a_m</code> and <code>B = b₁ b₂ … b_n</code>.
+Let <code>L_{i,j}</code> = length of the LCS of the prefixes <code>a₁…aᵢ</code> and <code>b₁…bⱼ</code>.</span><span data-tr="zh">設 <code>A = a₁ a₂ … a_m</code>、<code>B = b₁ b₂ … b_n</code>。
+設 <code>L_{i,j}</code> = 前綴 <code>a₁…aᵢ</code> 跟 <code>b₁…bⱼ</code> 的 LCS 長度。</span></p>
 <pre><code>            ┌ L_{i-1, j-1} + 1                  if aᵢ = bⱼ
 L_{i,j} =   │
             └ max{ L_{i-1, j}, L_{i, j-1} }     if aᵢ ≠ bⱼ
 </code></pre>
-<p><strong>Boundary:</strong> <code>L_{0,0} = L_{0,j} = L_{i,0} = 0</code> for <code>1 ≤ i ≤ m</code>, <code>1 ≤ j ≤ n</code>.</p>
-<p>(Reference: Fig. 8-17, "The Dynamic Programming Approach to Solve the Longest Common Subsequence Problem.")</p>
-<p><strong>Recovering the subsequence.</strong> After all <code>L_{i,j}</code> are filled in (for <code>A = b a c a d</code>, <code>B = a c c b a d c b</code>), <strong>trace back</strong> through the table to recover the actual LCS (<code>a c a d</code>).</p>
-<p><strong>The L table (slide 29, verified).</strong> Rows = <code>A = b a c a d</code> (plus a 0-row), columns = <code>B = a c c b a d c b</code> (plus a 0-column):</p>
+<p><span data-tr="en"><strong>Boundary:</strong> <code>L_{0,0} = L_{0,j} = L_{i,0} = 0</code> for <code>1 ≤ i ≤ m</code>, <code>1 ≤ j ≤ n</code>.</span><span data-tr="zh"><strong>邊界條件：</strong><code>L_{0,0} = L_{0,j} = L_{i,0} = 0</code>，其中 <code>1 ≤ i ≤ m</code>、<code>1 ≤ j ≤ n</code>。</span></p>
+<p><span data-tr="en">(Reference: Fig. 8-17, "The Dynamic Programming Approach to Solve the Longest Common Subsequence Problem.")</span><span data-tr="zh">（參考：Fig. 8-17，「The Dynamic Programming Approach to Solve the Longest Common Subsequence Problem.」）</span></p>
+<p><span data-tr="en"><strong>Recovering the subsequence.</strong> After all <code>L_{i,j}</code> are filled in (for <code>A = b a c a d</code>, <code>B = a c c b a d c b</code>), <strong>trace back</strong> through the table to recover the actual LCS (<code>a c a d</code>).</span><span data-tr="zh"><strong>把子序列還原出來。</strong>等所有 <code>L_{i,j}</code> 都填好之後（針對 <code>A = b a c a d</code>、<code>B = a c c b a d c b</code>），沿著表格<strong>往回追（trace back）</strong>，就能把真正的 LCS（<code>a c a d</code>）找回來。</span></p>
+<p><span data-tr="en"><strong>The L table (slide 29, verified).</strong> Rows = <code>A = b a c a d</code> (plus a 0-row), columns = <code>B = a c c b a d c b</code> (plus a 0-column):</span><span data-tr="zh"><strong>L 表（投影片 29，已核對）。</strong>列 = <code>A = b a c a d</code>（多一個 0 列），欄 = <code>B = a c c b a d c b</code>（多一個 0 欄）：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>A \ B</th>
+<th><span data-tr="en">A \ B</span><span data-tr="zh">A \ B</span></th>
 <th style="text-align: right;"></th>
 <th style="text-align: right;">a</th>
 <th style="text-align: right;">c</th>
@@ -514,12 +530,12 @@ L_{i,j} =   │
 </tbody>
 </table></div>
 <p><img class="figure" src="../render/A07full/slide-29.png" alt="LCS dynamic-programming table for A=bacad (rows) and B=accbadcb (columns); the circled trace-back cells 1→2→3→4 yield LCS = a c a d, length 4 in the bottom-right cell"></p>
-<figcaption>Slide 29 — the LCS L-table with the circled trace-back 1 → 2 → 3 → 4 giving <code>a c a d</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 29 — the LCS L-table with the circled trace-back 1 → 2 → 3 → 4 giving <code>a c a d</code>.</span><span data-tr="zh">投影片 29 — LCS 的 L 表，圈起來的 trace-back 1 → 2 → 3 → 4 給出 <code>a c a d</code>。</span></figcaption>
 
-<p>The slide circles the trace-back cells <code>1 → 2 → 3 → 4</code> (the <code>a</code>, <code>c</code>, <code>a</code>, <code>d</code> matches), giving LCS = <code>a c a d</code> (length 4 = bottom-right cell).</p>
+<p><span data-tr="en">The slide circles the trace-back cells <code>1 → 2 → 3 → 4</code> (the <code>a</code>, <code>c</code>, <code>a</code>, <code>d</code> matches), giving LCS = <code>a c a d</code> (length 4 = bottom-right cell).</span><span data-tr="zh">投影片把 trace-back 的格子 <code>1 → 2 → 3 → 4</code> 圈起來（也就是 <code>a</code>、<code>c</code>、<code>a</code>、<code>d</code> 這幾個配對），得到 LCS = <code>a c a d</code>（長度 4 = 右下角那格）。</span></p>
 <hr />
-<h2 id="12-01-knapsack-as-a-multistage-graph">12. 0/1 Knapsack as a Multistage Graph</h2>
-<p>The same 0/1 knapsack problem of §6 can be drawn as a multistage graph.</p>
+<h2 id="12-01-knapsack-as-a-multistage-graph"><span data-tr="en">12. 0/1 Knapsack as a Multistage Graph</span><span data-tr="zh">12. 把 0/1 Knapsack 畫成 Multistage Graph</span></h2>
+<p><span data-tr="en">The same 0/1 knapsack problem of §6 can be drawn as a multistage graph.</span><span data-tr="zh">§6 那個 0/1 knapsack 問題，其實也可以畫成一張 multistage graph。</span></p>
 <pre><code>n objects, weights  W₁, W₂, …, Wₙ
            profits   P₁, P₂, …, Pₙ
            capacity  M
@@ -528,7 +544,7 @@ maximize    Σ Pᵢ·xᵢ
 subject to  Σ Wᵢ·xᵢ ≤ M
             xᵢ = 0 or 1,   1 ≤ i ≤ n
 </code></pre>
-<p><strong>Deck example data (slide 30).</strong> <code>M = 10</code>, three objects:</p>
+<p><span data-tr="en"><strong>Deck example data (slide 30).</strong> <code>M = 10</code>, three objects:</span><span data-tr="zh"><strong>投影片 30 的範例資料。</strong><code>M = 10</code>，三個物品：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -555,106 +571,113 @@ subject to  Σ Wᵢ·xᵢ ≤ M
 </tr>
 </tbody>
 </table></div>
-<p><strong>The staged graph (slide 31).</strong> Nodes are labeled by the partial decision vector. <code>S</code> branches on <code>x₁</code>: <code>S →(x₁=1, weight 40) "1"</code> and <code>S →(x₁=0, weight 0) "0"</code>. Each node then branches on <code>x₂</code> (edge weight <code>P₂=20</code> if <code>x₂=1</code>, else 0), then on <code>x₃</code> (edge weight <code>P₃=30</code> if <code>x₃=1</code>, else 0), then a weight-0 edge to <code>T</code>. (Infeasible high-capacity branches are pruned — e.g. taking object 1 at weight 10 leaves no room.)</p>
+<p><span data-tr="en"><strong>The staged graph (slide 31).</strong> Nodes are labeled by the partial decision vector. <code>S</code> branches on <code>x₁</code>: <code>S →(x₁=1, weight 40) "1"</code> and <code>S →(x₁=0, weight 0) "0"</code>. Each node then branches on <code>x₂</code> (edge weight <code>P₂=20</code> if <code>x₂=1</code>, else 0), then on <code>x₃</code> (edge weight <code>P₃=30</code> if <code>x₃=1</code>, else 0), then a weight-0 edge to <code>T</code>. (Infeasible high-capacity branches are pruned — e.g. taking object 1 at weight 10 leaves no room.)</span><span data-tr="zh"><strong>分 stage 的圖（投影片 31）。</strong>節點是用「目前的部分決策向量」來標。<code>S</code> 先依 <code>x₁</code> 分岔：<code>S →(x₁=1, weight 40) "1"</code> 和 <code>S →(x₁=0, weight 0) "0"</code>。每個節點再依 <code>x₂</code> 分岔（<code>x₂=1</code> 時邊權重 <code>P₂=20</code>，否則 0），再依 <code>x₃</code> 分岔（<code>x₃=1</code> 時邊權重 <code>P₃=30</code>，否則 0），最後接一條權重 0 的邊到 <code>T</code>。（不可行、超過容量的分支會被剪掉 — 例如拿了重量 10 的物品 1，就塞不下別的了。）</span></p>
 <p><img class="figure" src="../render/A07full/slide-31.png" alt="0/1 knapsack as a multistage graph: S branches x1=1 (weight 40) / x1=0 (weight 0), then x2 (weight 20 if 1), then x3 (weight 30 if 1), then weight-0 edges to T; nodes labeled by partial decision strings 1,0,10,01,00,100,011,010,001,000"></p>
-<figcaption>Slide 31 — the 0/1 knapsack problem in multistage representation. Longest path = max profit; optimum x₁=0, x₂=1, x₃=1 → 20+30 = 50.</figcaption>
+<figcaption><span data-tr="en">Slide 31 — the 0/1 knapsack problem in multistage representation. Longest path = max profit; optimum x₁=0, x₂=1, x₃=1 → 20+30 = 50.</span><span data-tr="zh">投影片 31 — 用 multistage 表示的 0/1 knapsack。最長路徑 = 最大利潤；最佳解 x₁=0, x₂=1, x₃=1 → 20+30 = 50。</span></figcaption>
 
-<p>The <strong>longest path</strong> (max profit) from S to T in this multistage graph is the optimal solution. Deck answer (slides 31–32):</p>
+<p><span data-tr="en">The <strong>longest path</strong> (max profit) from S to T in this multistage graph is the optimal solution. Deck answer (slides 31–32):</span><span data-tr="zh">在這張 multistage graph 上，從 S 到 T 的<strong>最長路徑</strong>（利潤最大）就是最佳解。投影片的答案（投影片 31–32）：</span></p>
 <pre><code>x₁ = 0, x₂ = 1, x₃ = 1   →   20 + 30 = 50
 </code></pre>
-<h3 id="recurrence-prefix-form">Recurrence (prefix form)</h3>
-<p>Let <code>fᵢ(Q)</code> = the value of an optimal solution using objects <code>1, 2, …, i</code> with capacity <code>Q</code>.</p>
+<h3 id="recurrence-prefix-form"><span data-tr="en">Recurrence (prefix form)</span><span data-tr="zh">Recurrence（前綴形式）</span></h3>
+<p><span data-tr="en">Let <code>fᵢ(Q)</code> = the value of an optimal solution using objects <code>1, 2, …, i</code> with capacity <code>Q</code>.</span><span data-tr="zh">設 <code>fᵢ(Q)</code> = 只用物品 <code>1, 2, …, i</code>、容量為 <code>Q</code> 時最佳解的值。</span></p>
 <pre><code>fᵢ(Q) = max{ f_{i-1}(Q),  f_{i-1}(Q − Wᵢ) + Pᵢ }
 </code></pre>
-<p>The optimal answer is <code>fₙ(M)</code>.
-<em>(This is the backward-approach formulation of the same knapsack recurrence from §6/§7.)</em></p>
+<p><span data-tr="en">The optimal answer is <code>fₙ(M)</code>.
+<em>(This is the backward-approach formulation of the same knapsack recurrence from §6/§7.)</em></span><span data-tr="zh">最佳答案是 <code>fₙ(M)</code>。
+<em>（這其實就是 §6／§7 那條 knapsack recurrence 的 backward-approach 寫法。）</em></span></p>
 <hr />
-<h2 id="13-optimal-binary-search-trees-obst">13. Optimal Binary Search Trees (OBST)</h2>
-<h3 id="setup">Setup</h3>
+<h2 id="13-optimal-binary-search-trees-obst"><span data-tr="en">13. Optimal Binary Search Trees (OBST)</span><span data-tr="zh">13. Optimal Binary Search Trees (OBST)</span></h2>
+<h3 id="setup"><span data-tr="en">Setup</span><span data-tr="zh">設定</span></h3>
 <ul>
-<li><code>n</code> identifiers in sorted order: <code>a₁ &lt; a₂ &lt; a₃ &lt; … &lt; aₙ</code>.</li>
-<li><code>Pᵢ</code>, <code>1 ≤ i ≤ n</code>: probability that <code>aᵢ</code> is searched (<strong>successful</strong> search → internal node).</li>
-<li><code>Qᵢ</code>, <code>0 ≤ i ≤ n</code>: probability that a search key <code>x</code> falls strictly between neighbors, <code>aᵢ &lt; x &lt; a_{i+1}</code> (<strong>unsuccessful</strong> search → external node), with sentinels <code>a₀ = −∞</code>, <code>a_{n+1} = +∞</code>.</li>
+<li><span data-tr="en"><code>n</code> identifiers in sorted order: <code>a₁ &lt; a₂ &lt; a₃ &lt; … &lt; aₙ</code>.</span><span data-tr="zh"><code>n</code> 個 identifier，已排好序：<code>a₁ &lt; a₂ &lt; a₃ &lt; … &lt; aₙ</code>。</span></li>
+<li><span data-tr="en"><code>Pᵢ</code>, <code>1 ≤ i ≤ n</code>: probability that <code>aᵢ</code> is searched (<strong>successful</strong> search → internal node).</span><span data-tr="zh"><code>Pᵢ</code>，<code>1 ≤ i ≤ n</code>：搜尋到 <code>aᵢ</code> 的機率（<strong>成功</strong>的搜尋 → 內部節點）。</span></li>
+<li><span data-tr="en"><code>Qᵢ</code>, <code>0 ≤ i ≤ n</code>: probability that a search key <code>x</code> falls strictly between neighbors, <code>aᵢ &lt; x &lt; a_{i+1}</code> (<strong>unsuccessful</strong> search → external node), with sentinels <code>a₀ = −∞</code>, <code>a_{n+1} = +∞</code>.</span><span data-tr="zh"><code>Qᵢ</code>，<code>0 ≤ i ≤ n</code>：要找的 key <code>x</code> 剛好落在兩個相鄰 identifier 之間 <code>aᵢ &lt; x &lt; a_{i+1}</code> 的機率（<strong>失敗</strong>的搜尋 → 外部節點），兩端用哨兵 <code>a₀ = −∞</code>、<code>a_{n+1} = +∞</code>。</span></li>
 </ul>
-<p>Examples of identifier sets used in the deck: <code>{3, 7, 9, 12}</code> (slide 33, four candidate BSTs) and <code>{4, 5, 8, 10, 11, 12, 14}</code> (slide 35, the worked tree with external nodes). ✅ Verified against slides 33–35.</p>
+<p><span data-tr="en">Examples of identifier sets used in the deck: <code>{3, 7, 9, 12}</code> (slide 33, four candidate BSTs) and <code>{4, 5, 8, 10, 11, 12, 14}</code> (slide 35, the worked tree with external nodes). ✅ Verified against slides 33–35.</span><span data-tr="zh">投影片用到的 identifier 集合範例：<code>{3, 7, 9, 12}</code>（投影片 33，四棵候選 BST）和 <code>{4, 5, 8, 10, 11, 12, 14}</code>（投影片 35，帶外部節點實際畫出來的樹）。✅ 已對照投影片 33–35 核對。</span></p>
 <p><img class="figure" src="../render/A07full/slide-33.png" alt="Four candidate binary search trees (a)-(d) for identifiers 3,7,9,12: (a) right-going chain 3→7→9→12; (b) root 7 with children 3 and 12, 12's left child 9; (c) root 7 with children 3 and 9, 9's right child 12; (d) chain 12→9→3→7"></p>
-<figcaption>Slide 33 — four candidate BSTs for {3, 7, 9, 12}.</figcaption>
+<figcaption><span data-tr="en">Slide 33 — four candidate BSTs for {3, 7, 9, 12}.</span><span data-tr="zh">投影片 33 — {3, 7, 9, 12} 的四棵候選 BST。</span></figcaption>
 
-<h3 id="expected-cost-of-a-binary-search-tree">Expected cost of a binary search tree</h3>
-<p>With the root at level 1, the expected cost is:</p>
+<h3 id="expected-cost-of-a-binary-search-tree"><span data-tr="en">Expected cost of a binary search tree</span><span data-tr="zh">一棵 binary search tree 的期望成本</span></h3>
+<p><span data-tr="en">With the root at level 1, the expected cost is:</span><span data-tr="zh">把 root 當成 level 1，期望成本是：</span></p>
 <pre><code>Cost =  Σᵢ Pᵢ · level(aᵢ)  +  Σᵢ Qᵢ · ( level(Eᵢ) − 1 )
 </code></pre>
-<p>where <code>Eᵢ</code> are the external (failure) nodes. (See Fig. "A Binary Tree with Added External Nodes" — slide 35, drawn for identifiers <code>4,5,8,10,11,12,14</code>.)</p>
+<p><span data-tr="en">where <code>Eᵢ</code> are the external (failure) nodes. (See Fig. "A Binary Tree with Added External Nodes" — slide 35, drawn for identifiers <code>4,5,8,10,11,12,14</code>.)</span><span data-tr="zh">其中 <code>Eᵢ</code> 是外部（失敗）節點。（見 Fig.「A Binary Tree with Added External Nodes」— 投影片 35，是為 identifier <code>4,5,8,10,11,12,14</code> 畫的。）</span></p>
 <blockquote>
-<p>✅ Verified against slide 35. The slide prints <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>, with "The level of the root : 1". The lower index on the <code>P</code> sum is <code>i=1</code>, on the <code>Q</code> sum is <code>i=0</code> (external nodes <code>E₀ … Eₙ</code>). Slide 34 also confirms the probability normalization <code>Σ_{i=1}^{n} Pᵢ + Σ_{i=0}^{n} Qᵢ = 1</code>.</p>
+<p><span data-tr="en">✅ Verified against slide 35. The slide prints <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>, with "The level of the root : 1". The lower index on the <code>P</code> sum is <code>i=1</code>, on the <code>Q</code> sum is <code>i=0</code> (external nodes <code>E₀ … Eₙ</code>). Slide 34 also confirms the probability normalization <code>Σ_{i=1}^{n} Pᵢ + Σ_{i=0}^{n} Qᵢ = 1</code>.</span><span data-tr="zh">✅ 已對照投影片 35 核對。投影片印的是 <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>，並註明「The level of the root : 1」。<code>P</code> 那個總和的下標從 <code>i=1</code> 起算，<code>Q</code> 那個從 <code>i=0</code> 起算（外部節點 <code>E₀ … Eₙ</code>）。投影片 34 也確認了機率歸一化 <code>Σ_{i=1}^{n} Pᵢ + Σ_{i=0}^{n} Qᵢ = 1</code>。</span></p>
 </blockquote>
-<p><strong>The example tree (slide 35).</strong> For identifiers <code>4,5,8,10,11,12,14</code>, the drawn BST has root <code>10</code>; left child <code>5</code> (with children <code>4</code> and <code>8</code>), right child <code>14</code> (left child <code>11</code>, which has right child <code>12</code>; <code>14</code>'s right is external <code>E₇</code>). External (failure) nodes <code>E₀…E₆</code> hang off the leaves, <code>E₅,E₆</code> off node <code>12</code>. Slide 33 also shows four candidate BSTs (a)–(d) for the smaller set <code>3,7,9,12</code>.</p>
+<p><span data-tr="en"><strong>The example tree (slide 35).</strong> For identifiers <code>4,5,8,10,11,12,14</code>, the drawn BST has root <code>10</code>; left child <code>5</code> (with children <code>4</code> and <code>8</code>), right child <code>14</code> (left child <code>11</code>, which has right child <code>12</code>; <code>14</code>'s right is external <code>E₇</code>). External (failure) nodes <code>E₀…E₆</code> hang off the leaves, <code>E₅,E₆</code> off node <code>12</code>. Slide 33 also shows four candidate BSTs (a)–(d) for the smaller set <code>3,7,9,12</code>.</span><span data-tr="zh"><strong>範例樹（投影片 35）。</strong>對 identifier <code>4,5,8,10,11,12,14</code>，畫出來的 BST root 是 <code>10</code>；左小孩 <code>5</code>（小孩是 <code>4</code> 和 <code>8</code>），右小孩 <code>14</code>（左小孩 <code>11</code>，<code>11</code> 又有右小孩 <code>12</code>；<code>14</code> 的右邊是外部節點 <code>E₇</code>）。外部（失敗）節點 <code>E₀…E₆</code> 掛在葉子下面，<code>E₅,E₆</code> 掛在節點 <code>12</code> 下。投影片 33 另外給了較小集合 <code>3,7,9,12</code> 的四棵候選 BST (a)–(d)。</span></p>
 <p><img class="figure" src="../render/A07full/slide-35.png" alt="OBST example tree for identifiers 4,5,8,10,11,12,14 with external nodes: root 10; left child 5 with children 4 and 8; right child 14 with left child 11 (right child 12) and external E7; external failure nodes E0..E6 at the leaves, E5,E6 under node 12"></p>
-<figcaption>Slide 35 — a binary search tree with added external nodes; expected cost Σ Pᵢ·level(aᵢ) + Σ Qᵢ·(level(Eᵢ)−1), root at level 1.</figcaption>
+<figcaption><span data-tr="en">Slide 35 — a binary search tree with added external nodes; expected cost Σ Pᵢ·level(aᵢ) + Σ Qᵢ·(level(Eᵢ)−1), root at level 1.</span><span data-tr="zh">投影片 35 — 加上外部節點的 binary search tree；期望成本 Σ Pᵢ·level(aᵢ) + Σ Qᵢ·(level(Eᵢ)−1)，root 在 level 1。</span></figcaption>
 
-<h3 id="recurrence_1">Recurrence</h3>
-<p>Let <code>C(i, j)</code> = cost of an <strong>optimal</strong> BST containing <code>aᵢ, …, aⱼ</code>.</p>
-<p>For the full tree, choosing root <code>a_k</code>:</p>
+<h3 id="recurrence_1"><span data-tr="en">Recurrence</span><span data-tr="zh">Recurrence</span></h3>
+<p><span data-tr="en">Let <code>C(i, j)</code> = cost of an <strong>optimal</strong> BST containing <code>aᵢ, …, aⱼ</code>.</span><span data-tr="zh">設 <code>C(i, j)</code> = 包含 <code>aᵢ, …, aⱼ</code> 的<strong>最佳</strong> BST 的成本。</span></p>
+<p><span data-tr="en">For the full tree, choosing root <code>a_k</code>:</span><span data-tr="zh">對整棵樹來說，選 <code>a_k</code> 當 root：</span></p>
 <pre><code>C(1, n) = min_k { Pk + [ Q₀ + (cost of left subtree weights) + C(1, k−1) ]
                        + [ Qk + (cost of right subtree weights) + C(k+1, n) ] }
 </code></pre>
-<p><strong>General formula</strong> (subtree on <code>aᵢ … aⱼ</code>, trying each <code>a_k</code> as root):</p>
+<p><span data-tr="en"><strong>General formula</strong> (subtree on <code>aᵢ … aⱼ</code>, trying each <code>a_k</code> as root):</span><span data-tr="zh"><strong>一般式</strong>（子樹涵蓋 <code>aᵢ … aⱼ</code>，每個 <code>a_k</code> 都試著當 root）：</span></p>
 <pre><code>C(i, j) = min_{i ≤ k ≤ j} { Pk
                           + [ Q_{i-1} + … + C(i, k−1) ]
                           + [ Qk      + … + C(k+1, j) ] }
 
         = min_{i ≤ k ≤ j} { C(i, k−1) + C(k+1, j) + W(i, j) }
 </code></pre>
-<p>where <code>W(i, j) = Q_{i-1} + Σ_{l=i}^{j}(P_l + Q_l)</code> is the total weight of the subtree (the <code>Q_{i-1} + …</code> term). The <code>+ W(i,j)</code> accounts for every node in the subtree dropping one level deeper when the subtree gains a root.</p>
+<p><span data-tr="en">where <code>W(i, j) = Q_{i-1} + Σ_{l=i}^{j}(P_l + Q_l)</code> is the total weight of the subtree (the <code>Q_{i-1} + …</code> term). The <code>+ W(i,j)</code> accounts for every node in the subtree dropping one level deeper when the subtree gains a root.</span><span data-tr="zh">其中 <code>W(i, j) = Q_{i-1} + Σ_{l=i}^{j}(P_l + Q_l)</code> 是這棵子樹的總權重（也就是 <code>Q_{i-1} + …</code> 這一項）。加上 <code>+ W(i,j)</code> 是因為：當子樹多了一個 root，子樹裡每個節點都會往下掉一層。</span></p>
 <p><img class="figure" src="../render/A07full/slide-37.png" alt="OBST general recurrence C(i,j) with the split-at-root triangle diagram: root a_k, left subtree C(i,k−1) over a_1..a_{k-1} with weights P_1..P_{k-1}, Q_0..Q_{k-1}; right subtree C(k+1,n) over a_{k+1}..a_n with weights P_{k+1}..P_n, Q_k..Q_n; collapses to C(i,k−1)+C(k+1,j)+W(i,j)"></p>
-<figcaption>Slide 37 — the general C(i, j) recurrence and the split-at-root subtree triangle.</figcaption>
+<figcaption><span data-tr="en">Slide 37 — the general C(i, j) recurrence and the split-at-root subtree triangle.</span><span data-tr="zh">投影片 37 — 一般的 C(i, j) recurrence，以及「從 root 切開」的子樹三角圖。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slides 36–37. Slide 36 prints the root-<code>aₖ</code> form
+<p><span data-tr="en">✅ Verified against slides 36–37. Slide 36 prints the root-<code>aₖ</code> form
 <code>C(1,n) = min_{1≤k≤n} { Pₖ + [Q₀ + Σ_{i=1}^{k-1}(Pᵢ+Qᵢ) + C(1,k−1)] + [Qₖ + Σ_{i=k+1}^{?}(Pᵢ+Qᵢ) + C(k+1,n)] }</code>.
-Slide 37 prints the general form <code>C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1} + Σ_{l=i}^{k-1}(P_l+Q_l) + C(i,k−1)] + [Qₖ + Σ_{l=k+1}^{j}(P_l+Q_l) + C(k+1,j)] }</code> and collapses it to <code>= min { C(i,k−1) + C(k+1,j) + Σ_{l=i}^{j}(P_l+Q_l) + Q_{i-1} }</code> — i.e. <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>. Both slides include the triangle diagram (root <code>aₖ</code>, left subtree <code>C(1,k−1)</code>/<code>a₁…a_{k-1}</code> with weights <code>P₁…P_{k-1}, Q₀…Q_{k-1}</code>, right subtree <code>C(k+1,n)</code>/<code>a_{k+1}…aₙ</code> with <code>P_{k+1}…Pₙ, Qₖ…Qₙ</code>).</p>
-<p>Note: slides 36–37 are heavily overlapped (formula and diagram collide), so the exact upper limit of the second inner sum on slide 36 is obscured; the slide-37 general form makes it unambiguous (it is <code>j</code>, here <code>n</code>). No numeric <code>n=4</code> <em>value</em> table appears — slide 38's "E.g. n=4" is a <strong>dependency diagram</strong>, not a cost table (see below).</p>
+Slide 37 prints the general form <code>C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1} + Σ_{l=i}^{k-1}(P_l+Q_l) + C(i,k−1)] + [Qₖ + Σ_{l=k+1}^{j}(P_l+Q_l) + C(k+1,j)] }</code> and collapses it to <code>= min { C(i,k−1) + C(k+1,j) + Σ_{l=i}^{j}(P_l+Q_l) + Q_{i-1} }</code> — i.e. <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>. Both slides include the triangle diagram (root <code>aₖ</code>, left subtree <code>C(1,k−1)</code>/<code>a₁…a_{k-1}</code> with weights <code>P₁…P_{k-1}, Q₀…Q_{k-1}</code>, right subtree <code>C(k+1,n)</code>/<code>a_{k+1}…aₙ</code> with <code>P_{k+1}…Pₙ, Qₖ…Qₙ</code>).</span><span data-tr="zh">✅ 已對照投影片 36–37 核對。投影片 36 印的是 root-<code>aₖ</code> 形式
+<code>C(1,n) = min_{1≤k≤n} { Pₖ + [Q₀ + Σ_{i=1}^{k-1}(Pᵢ+Qᵢ) + C(1,k−1)] + [Qₖ + Σ_{i=k+1}^{?}(Pᵢ+Qᵢ) + C(k+1,n)] }</code>。
+投影片 37 印的是一般式 <code>C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1} + Σ_{l=i}^{k-1}(P_l+Q_l) + C(i,k−1)] + [Qₖ + Σ_{l=k+1}^{j}(P_l+Q_l) + C(k+1,j)] }</code>，再把它收斂成 <code>= min { C(i,k−1) + C(k+1,j) + Σ_{l=i}^{j}(P_l+Q_l) + Q_{i-1} }</code> — 也就是 <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>。兩張投影片都附了三角圖（root <code>aₖ</code>，左子樹 <code>C(1,k−1)</code>／<code>a₁…a_{k-1}</code>，權重 <code>P₁…P_{k-1}, Q₀…Q_{k-1}</code>；右子樹 <code>C(k+1,n)</code>／<code>a_{k+1}…aₙ</code>，權重 <code>P_{k+1}…Pₙ, Qₖ…Qₙ</code>）。</span></p>
+<p><span data-tr="en">Note: slides 36–37 are heavily overlapped (formula and diagram collide), so the exact upper limit of the second inner sum on slide 36 is obscured; the slide-37 general form makes it unambiguous (it is <code>j</code>, here <code>n</code>). No numeric <code>n=4</code> <em>value</em> table appears — slide 38's "E.g. n=4" is a <strong>dependency diagram</strong>, not a cost table (see below).</span><span data-tr="zh">注意：投影片 36–37 疊得很嚴重（公式跟圖撞在一起），所以投影片 36 第二個內層總和的上界看不太清楚；不過投影片 37 的一般式講得很明確（就是 <code>j</code>，這裡是 <code>n</code>）。投影片裡沒有出現 <code>n=4</code> 的<em>數值</em>表 — 投影片 38 的「E.g. n=4」是一張<strong>依賴關係圖</strong>，不是成本表（見下面）。</span></p>
 </blockquote>
-<h3 id="time-complexity">Time complexity</h3>
+<h3 id="time-complexity"><span data-tr="en">Time complexity</span><span data-tr="zh">時間複雜度</span></h3>
 <pre><code>O(n³)
 </code></pre>
-<p>Reasoning (slide 38, verbatim):
+<p><span data-tr="en">Reasoning (slide 38, verbatim):
 - When <code>j − i = m</code>, there are <code>(n − m)</code> values <code>C(i, j)</code> to compute.
 - Each <code>C(i, j)</code> with <code>j − i = m</code> is computed in <code>O(m)</code> time (trying <code>m+1</code> candidate roots).
-- Summing over all <code>m</code>: <code>O( Σ_{1≤m&lt;n} m·(n − m) ) = O(n³)</code>.</p>
-<p>(See Fig. "Computation Relationships of Subtrees", slide 38.) ✅ Verified against slide 38: it shows the <code>n=4</code> dependency DAG — <code>C(1,2),C(2,3),C(3,4)</code> feed <code>C(1,3),C(2,4)</code>, which feed <code>C(1,4)</code> — and the closed sum <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</p>
+- Summing over all <code>m</code>: <code>O( Σ_{1≤m&lt;n} m·(n − m) ) = O(n³)</code>.</span><span data-tr="zh">推導（投影片 38 原文）：
+- 當 <code>j − i = m</code> 時，要算的 <code>C(i, j)</code> 共有 <code>(n − m)</code> 個。
+- 每個 <code>j − i = m</code> 的 <code>C(i, j)</code> 都要花 <code>O(m)</code> 時間算（試 <code>m+1</code> 個候選 root）。
+- 把所有 <code>m</code> 加總起來：<code>O( Σ_{1≤m&lt;n} m·(n − m) ) = O(n³)</code>。</span></p>
+<p><span data-tr="en">(See Fig. "Computation Relationships of Subtrees", slide 38.) ✅ Verified against slide 38: it shows the <code>n=4</code> dependency DAG — <code>C(1,2),C(2,3),C(3,4)</code> feed <code>C(1,3),C(2,4)</code>, which feed <code>C(1,4)</code> — and the closed sum <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</span><span data-tr="zh">（見 Fig.「Computation Relationships of Subtrees」，投影片 38。）✅ 已對照投影片 38 核對：它畫了 <code>n=4</code> 的依賴 DAG — <code>C(1,2),C(2,3),C(3,4)</code> 餵給 <code>C(1,3),C(2,4)</code>，再餵給 <code>C(1,4)</code> — 以及封閉形式的總和 <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>。</span></p>
 <p>&lt;img class="figure" src="../render/A07full/slide-38.png" alt="OBST computation-relationships DAG for n=4: C(1,2),C(2,3),C(3,4) feed C(1,3),C(2,4), which feed C(1,4); complexity O(Σ_{1≤m<n} m(n−m)) = O(n³)"></p>
-<figcaption>Slide 38 — computation relationships of subtrees (n=4); O(n³) overall.</figcaption>
+<figcaption><span data-tr="en">Slide 38 — computation relationships of subtrees (n=4); O(n³) overall.</span><span data-tr="zh">投影片 38 — 子樹之間的計算依賴關係（n=4）；整體 O(n³)。</span></figcaption>
 
 <hr />
-<h2 id="verification-log-resolved-against-full-slide-renders">✅ Verification log (resolved against full slide renders)</h2>
-<p>All items previously flagged as reconstructed have now been checked against the per-slide PNG renders in <code>/home/brant/finals_study/algo/render/A07full/</code> (38 slides, vision pass 2026-06-13):</p>
+<h2 id="verification-log-resolved-against-full-slide-renders"><span data-tr="en">✅ Verification log (resolved against full slide renders)</span><span data-tr="zh">✅ 核對紀錄（對照完整投影片圖檔逐一確認）</span></h2>
+<p><span data-tr="en">All items previously flagged as reconstructed have now been checked against the per-slide PNG renders in <code>/home/brant/finals_study/algo/render/A07full/</code> (38 slides, vision pass 2026-06-13):</span><span data-tr="zh">之前標記為「重建」的項目，現在都已經對照 <code>/home/brant/finals_study/algo/render/A07full/</code> 裡每張投影片的 PNG 圖檔核對過（共 38 張，視覺確認於 2026-06-13）：</span></p>
 <ol>
-<li><strong>Multistage-graph edge weights (§2).</strong> ✅ <strong>Verified against slide 5.</strong> The full figure was read directly; every edge matches the prior reconstruction (see verdict in Appendix A).</li>
-<li><strong><code>d(S,F)</code> predecessors (§4).</strong> ✅ <strong>Resolved (slide 9).</strong> Result <code>d(S,F)=7</code> confirmed. The slide's term-labels read <code>d(S,A)+d(A,F), d(S,B)+d(B,F)</code> but the graph has no such edges; the correct labels are <code>d(S,B)+d(B,F)=2+16</code> and <code>d(S,C)+d(C,F)=5+2</code>. The slide itself has a label typo; numbers are right.</li>
-<li><strong>Resource-allocation figure (§9).</strong> ✅ <strong>Verified (slides 19–21).</strong> Profit table, node labeling, S-stage edges, and winning path <code>S→C→H→L→T = 8+5 = 13</code> all confirmed.</li>
-<li><strong>TSP recurrences and complexity (§10).</strong> ✅ <strong>Verified (slides 22–25).</strong> Cost matrix, tour multistage graph, both Held–Karp recurrences, base case, and the explicit complexity sum <code>= O(n²·2ⁿ)</code> all read off the slides.</li>
-<li><strong>OBST expected-cost summations (§13).</strong> ✅ <strong>Verified (slides 34–35).</strong> <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>.</li>
-<li><strong>OBST recurrence weight terms (§13).</strong> ✅ <strong>Verified (slides 36–37).</strong> Both forms and the <code>+W(i,j)</code> collapse confirmed. The "n=4" item (slide 38) is a dependency DAG, not a numeric cost table.</li>
-<li><strong>LCS / knapsack-multistage tables (§11, §12).</strong> ✅ <strong>Verified.</strong> Full LCS <code>L</code> table (slide 29), knapsack <code>W/P</code> table + staged graph (slides 30–31), answer <code>50</code> (slide 32).</li>
+<li><span data-tr="en"><strong>Multistage-graph edge weights (§2).</strong> ✅ <strong>Verified against slide 5.</strong> The full figure was read directly; every edge matches the prior reconstruction (see verdict in Appendix A).</span><span data-tr="zh"><strong>Multistage-graph 的邊權重（§2）。</strong>✅ <strong>已對照投影片 5 核對。</strong>完整的圖是直接讀出來的；每條邊都跟先前重建的一致（結論見 Appendix A）。</span></li>
+<li><span data-tr="en"><strong><code>d(S,F)</code> predecessors (§4).</strong> ✅ <strong>Resolved (slide 9).</strong> Result <code>d(S,F)=7</code> confirmed. The slide's term-labels read <code>d(S,A)+d(A,F), d(S,B)+d(B,F)</code> but the graph has no such edges; the correct labels are <code>d(S,B)+d(B,F)=2+16</code> and <code>d(S,C)+d(C,F)=5+2</code>. The slide itself has a label typo; numbers are right.</span><span data-tr="zh"><strong><code>d(S,F)</code> 的前驅節點（§4）。</strong>✅ <strong>已釐清（投影片 9）。</strong>結果 <code>d(S,F)=7</code> 確認無誤。投影片上的標號寫成 <code>d(S,A)+d(A,F), d(S,B)+d(B,F)</code>，但圖裡根本沒這些邊；正確的標號是 <code>d(S,B)+d(B,F)=2+16</code> 和 <code>d(S,C)+d(C,F)=5+2</code>。是投影片本身的標號打錯，數字是對的。</span></li>
+<li><span data-tr="en"><strong>Resource-allocation figure (§9).</strong> ✅ <strong>Verified (slides 19–21).</strong> Profit table, node labeling, S-stage edges, and winning path <code>S→C→H→L→T = 8+5 = 13</code> all confirmed.</span><span data-tr="zh"><strong>Resource-allocation 的圖（§9）。</strong>✅ <strong>已核對（投影片 19–21）。</strong>利潤表、節點命名、S 那個 stage 的邊、獲勝路徑 <code>S→C→H→L→T = 8+5 = 13</code> 全部確認。</span></li>
+<li><span data-tr="en"><strong>TSP recurrences and complexity (§10).</strong> ✅ <strong>Verified (slides 22–25).</strong> Cost matrix, tour multistage graph, both Held–Karp recurrences, base case, and the explicit complexity sum <code>= O(n²·2ⁿ)</code> all read off the slides.</span><span data-tr="zh"><strong>TSP 的 recurrence 跟複雜度（§10）。</strong>✅ <strong>已核對（投影片 22–25）。</strong>cost matrix、tour 的 multistage graph、兩條 Held–Karp recurrence、base case，還有完整的複雜度總和 <code>= O(n²·2ⁿ)</code>，全都從投影片讀出來了。</span></li>
+<li><span data-tr="en"><strong>OBST expected-cost summations (§13).</strong> ✅ <strong>Verified (slides 34–35).</strong> <code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>.</span><span data-tr="zh"><strong>OBST 期望成本的總和式（§13）。</strong>✅ <strong>已核對（投影片 34–35）。</strong><code>Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)</code>。</span></li>
+<li><span data-tr="en"><strong>OBST recurrence weight terms (§13).</strong> ✅ <strong>Verified (slides 36–37).</strong> Both forms and the <code>+W(i,j)</code> collapse confirmed. The "n=4" item (slide 38) is a dependency DAG, not a numeric cost table.</span><span data-tr="zh"><strong>OBST recurrence 的權重項（§13）。</strong>✅ <strong>已核對（投影片 36–37）。</strong>兩種形式跟收斂成 <code>+W(i,j)</code> 的部分都確認了。「n=4」那個項目（投影片 38）是依賴 DAG，不是數值成本表。</span></li>
+<li><span data-tr="en"><strong>LCS / knapsack-multistage tables (§11, §12).</strong> ✅ <strong>Verified.</strong> Full LCS <code>L</code> table (slide 29), knapsack <code>W/P</code> table + staged graph (slides 30–31), answer <code>50</code> (slide 32).</span><span data-tr="zh"><strong>LCS／knapsack-multistage 的表（§11, §12）。</strong>✅ <strong>已核對。</strong>完整的 LCS <code>L</code> 表（投影片 29）、knapsack 的 <code>W/P</code> 表 + 分 stage 的圖（投影片 30–31）、答案 <code>50</code>（投影片 32）。</span></li>
 </ol>
 <hr />
-<h2 id="appendix-a-figures-transcribed-from-full-slide-renders">Appendix A — Figures (transcribed from full slide renders)</h2>
-<p><strong>Source directory:</strong> <code>/home/brant/finals_study/algo/render/A07full/</code> (per-slide PNG renders, 38 slides)
-<strong>Extraction date:</strong> 2026-06-13 (vision pass over clean full-slide renders)</p>
-<p>The earlier carve (<code>render/A07/</code>) recovered only two decorative clip-art images (a cartoon angel, a red rose bud — both appear as slide decoration on slides 1 and 14) and <strong>no diagrams</strong>, because the DP figures were authored as native PowerPoint vector shapes. The full per-slide renders below now make every figure legible. Text-only slides are omitted.</p>
-<h3 id="slide-3-multistage-greedy-motivating-graph-linear">Slide 3 — Multistage greedy motivating graph (linear)</h3>
-<p>Linear 4-node chain <code>S → A → B → T</code> with parallel edges. Weights: <code>S→A</code>: top arc 3, bottom arc 5, straight 1. <code>A→B</code>: top arc 2, straight 4, bottom arc 6. <code>B→T</code>: top arc 7, straight 5. Greedy "shortest" sum shown: <code>1 + 2 + 5 = 8</code>.</p>
-<h3 id="slide-5-the-running-multistage-graph-full-with-numeric-weights">Slide 5 — THE running multistage graph (full, with numeric weights)</h3>
-<p>Stages: <code>S</code> | <code>A,B,C</code> | <code>D,E,F</code> | <code>T</code>. Edge list read directly:</p>
+<h2 id="appendix-a-figures-transcribed-from-full-slide-renders"><span data-tr="en">Appendix A — Figures (transcribed from full slide renders)</span><span data-tr="zh">附錄 A — 圖（從完整投影片圖檔抄錄）</span></h2>
+<p><span data-tr="en"><strong>Source directory:</strong> <code>/home/brant/finals_study/algo/render/A07full/</code> (per-slide PNG renders, 38 slides)
+<strong>Extraction date:</strong> 2026-06-13 (vision pass over clean full-slide renders)</span><span data-tr="zh"><strong>來源資料夾：</strong><code>/home/brant/finals_study/algo/render/A07full/</code>（每張投影片的 PNG 圖檔，共 38 張）
+<strong>抄錄日期：</strong>2026-06-13（對乾淨的完整投影片圖檔做視覺確認）</span></p>
+<p><span data-tr="en">The earlier carve (<code>render/A07/</code>) recovered only two decorative clip-art images (a cartoon angel, a red rose bud — both appear as slide decoration on slides 1 and 14) and <strong>no diagrams</strong>, because the DP figures were authored as native PowerPoint vector shapes. The full per-slide renders below now make every figure legible. Text-only slides are omitted.</span><span data-tr="zh">之前那次抽圖（<code>render/A07/</code>）只挖到兩張裝飾用的 clip-art（一個卡通天使、一朵紅玫瑰花苞 — 都是投影片 1 和 14 的裝飾），<strong>一張圖表都沒撈到</strong>，因為那些 DP 的圖是用 PowerPoint 原生向量圖形畫的。下面這份完整的逐張圖檔，現在每張圖都看得清楚了。純文字的投影片就略過。</span></p>
+<h3 id="slide-3-multistage-greedy-motivating-graph-linear"><span data-tr="en">Slide 3 — Multistage greedy motivating graph (linear)</span><span data-tr="zh">投影片 3 — Multistage greedy 開場圖（線性）</span></h3>
+<p><span data-tr="en">Linear 4-node chain <code>S → A → B → T</code> with parallel edges. Weights: <code>S→A</code>: top arc 3, bottom arc 5, straight 1. <code>A→B</code>: top arc 2, straight 4, bottom arc 6. <code>B→T</code>: top arc 7, straight 5. Greedy "shortest" sum shown: <code>1 + 2 + 5 = 8</code>.</span><span data-tr="zh">一條 4 個節點的線性鏈 <code>S → A → B → T</code>，節點間有多條平行邊。權重：<code>S→A</code>：上弧 3、下弧 5、直線 1。<code>A→B</code>：上弧 2、直線 4、下弧 6。<code>B→T</code>：上弧 7、直線 5。投影片上的 greedy「最短」總和：<code>1 + 2 + 5 = 8</code>。</span></p>
+<h3 id="slide-5-the-running-multistage-graph-full-with-numeric-weights"><span data-tr="en">Slide 5 — THE running multistage graph (full, with numeric weights)</span><span data-tr="zh">投影片 5 — 那張一直用到的 multistage graph（完整版，含數字權重）</span></h3>
+<p><span data-tr="en">Stages: <code>S</code> | <code>A,B,C</code> | <code>D,E,F</code> | <code>T</code>. Edge list read directly:</span><span data-tr="zh">各 stage：<code>S</code> | <code>A,B,C</code> | <code>D,E,F</code> | <code>T</code>。直接讀出來的邊列表：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Edge</th>
+<th><span data-tr="en">Edge</span><span data-tr="zh">邊</span></th>
 <th style="text-align: right;">w</th>
-<th>Edge</th>
+<th><span data-tr="en">Edge</span><span data-tr="zh">邊</span></th>
 <th style="text-align: right;">w</th>
-<th>Edge</th>
+<th><span data-tr="en">Edge</span><span data-tr="zh">邊</span></th>
 <th style="text-align: right;">w</th>
 </tr>
 </thead>
@@ -709,48 +732,52 @@ Slide 37 prints the general form <code>C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1
 </tr>
 </tbody>
 </table></div>
-<p>Captions: "greedy … S A D T 1+4+18 = 23"; "shortest path … S C F T 5+2+2 = 9."</p>
-<h3 id="slide-6-abstract-backward-figure-sabct">Slide 6 — Abstract backward figure <code>S→{A,B,C}→T</code></h3>
-<p><code>S→A=1, S→B=2, S→C=5</code>, dashed <code>d(A,T), d(B,T), d(C,T)</code> into <code>T</code>. Eqn <code>d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}</code>.</p>
-<h3 id="slide-7-abstract-figure-adet">Slide 7 — Abstract figure <code>A→{D,E}→T</code></h3>
-<p><code>A→D=4, A→E=11</code>, dashed <code>d(D,T), d(E,T)</code>. <code>d(A,T)=min{4+18,11+13}=22</code>.</p>
-<h3 id="slide-19-resource-allocation-profit-table">Slide 19 — Resource allocation profit table</h3>
-<p><code>m</code> resources, <code>n</code> projects, profit <code>p(i,j)</code>. Table (rows project 1–4, cols 1–3 resources): row1 <code>2,8,9</code>; row2 <code>5,6,7</code>; row3 <code>4,4,4</code>; row4 <code>2,4,5</code>.</p>
-<h3 id="slide-20-resource-allocation-as-a-multi-stage-graph">Slide 20 — Resource Allocation as a Multi-Stage Graph</h3>
-<p>5 stages. Stage 2 <code>A=(0,1),B=(1,1),C=(2,1),D=(3,1)</code>; stage 3 <code>E=(0,2),F=(1,2),G=(2,2),H=(3,2)</code>; stage 4 <code>I=(0,3),J=(1,3),K=(2,3),L=(3,3)</code>; <code>S</code>,<code>T</code> singletons. S-edges: <code>S→A=0, S→B=2, S→C=8, S→D=9</code>. Dense interior labels (the profit increments) overlap; the S-edges and winning path are read with confidence.</p>
-<h3 id="slide-21-resource-allocation-answer">Slide 21 — Resource allocation answer</h3>
-<p><code>S —8→ C —5→ H —0→ L —0→ T</code>, <code>8+5=13</code>. Allocation: 2 resources to project 1, 1 to project 2, 0 to projects 3 &amp; 4.</p>
-<h3 id="slide-22-tsp-directed-graph-cost-matrix">Slide 22 — TSP directed graph + cost matrix</h3>
-<p>4-vertex directed graph. Cost matrix (from→to), <code>∞</code> on diagonal:
-<code>1: [∞,2,10,5]  2: [2,∞,9,∞]  3: [4,3,∞,4]  4: [6,8,7,∞]</code>.</p>
-<h3 id="slide-23-tsp-all-possible-tours-multistage-graph">Slide 23 — TSP "all possible tours" multistage graph</h3>
-<p>Root <code>(1)</code> → <code>(1,2)</code>=2, <code>(1,3)</code>=10, <code>(1,4)</code>=5; expands to the 3rd then 4th vertex then back to <code>1</code>. Optimal branch <code>(1)→(1,4)→(1,4,3)→(1,4,3,2)→1</code> = <code>5+7+3+2=17</code>. Caption: "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed graph." Answer: <code>1,4,3,2,1 = 17</code>.</p>
-<h3 id="slide-24-tsp-node-merging-illustration">Slide 24 — TSP node-merging illustration</h3>
-<p><code>(1,3,2)→(1,3,2,4)</code> and <code>(1,2,3)→(1,2,3,4)</code> merge (last vertex 3, remaining {4,5,6} same) into one node; shown as <code>(2),(4,5,6)</code> &amp; <code>(3),(4,5,6)</code> → <code>(4),(5,6)</code>.</p>
-<h3 id="slide-25-tsp-recurrences-complexity">Slide 25 — TSP recurrences + complexity</h3>
-<p><code>g(1,V−{1}) = min_{2≤k≤n}{c_{1k} + g(k,V−{1,k})}</code>; <code>g(i,S) = min_{j∈S}{c_{ij} + g(j,S−{j})}</code>; complexity <code>n + Σ_{k=2}^{n-1}(n−1)·C(n−2,n−k)·(n−k) = O(n²·2ⁿ)</code>.</p>
-<h3 id="slide-28-lcs-dp-dependency-diagram-fig-8-17">Slide 28 — LCS DP dependency diagram (Fig. 8-17)</h3>
-<p>Grid of <code>L_{i,j}</code> cells with arrows right, down, and diagonal-down (the three recurrence dependencies), flowing toward <code>L_{m,n}</code>.</p>
-<h3 id="slide-29-lcs-l-table-abacad-baccbadcb">Slide 29 — LCS L table (A=bacad, B=accbadcb)</h3>
-<p>See the full table in §11. Trace-back circles <code>1→2→3→4</code> give LCS = <code>a c a d</code>.</p>
-<h3 id="slide-30-01-knapsack-data">Slide 30 — 0/1 knapsack data</h3>
-<p><code>M=10</code>; objects <code>(i, Wᵢ, Pᵢ)</code>: <code>(1,10,40), (2,3,20), (3,5,30)</code>.</p>
-<h3 id="slide-31-01-knapsack-as-a-multistage-graph">Slide 31 — 0/1 knapsack as a multistage graph</h3>
-<p><code>S</code> branches <code>x₁=1</code>(w 40) / <code>x₁=0</code>(w 0); each branches <code>x₂</code> (w 20 if 1) then <code>x₃</code> (w 30 if 1) then weight-0 edges to <code>T</code>. Node labels are partial decision strings (<code>1</code>,<code>0</code>,<code>10</code>,<code>01</code>,<code>00</code>,<code>100</code>,<code>011</code>,<code>010</code>,<code>001</code>,<code>000</code>).</p>
-<h3 3_7_9_12="3,7,9,12" id="slide-33-four-candidate-bsts-for">Slide 33 — Four candidate BSTs for</h3>
-<p>(a) right-going chain <code>3→7→9→12</code>; (b) root 7, children 3 &amp; 12, 12's left child 9; (c) root 7, children 3 &amp; 9, 9's right child 12; (d) left-going-ish <code>12→9→3→7</code>.</p>
-<h3 id="slide-35-obst-example-tree-fig-a-binary-tree-with-added-external-nodes">Slide 35 — OBST example tree (Fig. A Binary Tree with Added External Nodes)</h3>
-<p>Identifiers <code>4,5,8,10,11,12,14</code>. Root <code>10</code>; left <code>5</code> (children <code>4</code>,<code>8</code>), right <code>14</code> (left <code>11</code> with right child <code>12</code>; right external <code>E₇</code>). External nodes <code>E₀…E₆</code> at the leaves (<code>E₅,E₆</code> under <code>12</code>). Cost formula <code>Σ_{i=1}^{n}Pᵢ·level(aᵢ) + Σ_{i=0}^{n}Qᵢ·(level(Eᵢ)−1)</code>, root at level 1.</p>
-<h3 id="slide-36-37-obst-recurrence-subtree-triangle-diagram">Slide 36 / 37 — OBST recurrence + subtree triangle diagram</h3>
-<p>Root-<code>aₖ</code> form (36) and general <code>C(i,j)</code> form (37); both with the split-at-root triangle: left <code>C(i,k−1)</code> over <code>a₁…a_{k-1}</code> (weights <code>P₁…P_{k-1},Q₀…Q_{k-1}</code>), right <code>C(k+1,n)</code> over <code>a_{k+1}…aₙ</code> (weights <code>P_{k+1}…Pₙ,Qₖ…Qₙ</code>). Collapses to <code>C(i,j)=min_k{C(i,k−1)+C(k+1,j)+W(i,j)}</code>.</p>
-<h3 id="slide-38-obst-computation-relationships-dag-n4">Slide 38 — OBST computation-relationships DAG (n=4)</h3>
-<p><code>C(1,2),C(2,3),C(3,4)</code> → <code>C(1,3),C(2,4)</code> → <code>C(1,4)</code>. Complexity <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</p>
-<h3 id="multistage-edge-weight-verdict">Multistage edge-weight verdict</h3>
-<p>The note's reconstructed set
+<p><span data-tr="en">Captions: "greedy … S A D T 1+4+18 = 23"; "shortest path … S C F T 5+2+2 = 9."</span><span data-tr="zh">圖說：「greedy … S A D T 1+4+18 = 23」；「shortest path … S C F T 5+2+2 = 9。」</span></p>
+<h3 id="slide-6-abstract-backward-figure-sabct"><span data-tr="en">Slide 6 — Abstract backward figure <code>S→{A,B,C}→T</code></span><span data-tr="zh">投影片 6 — backward 的示意圖 <code>S→{A,B,C}→T</code></span></h3>
+<p><span data-tr="en"><code>S→A=1, S→B=2, S→C=5</code>, dashed <code>d(A,T), d(B,T), d(C,T)</code> into <code>T</code>. Eqn <code>d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}</code>.</span><span data-tr="zh"><code>S→A=1, S→B=2, S→C=5</code>，虛線 <code>d(A,T), d(B,T), d(C,T)</code> 連到 <code>T</code>。式子 <code>d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}</code>。</span></p>
+<h3 id="slide-7-abstract-figure-adet"><span data-tr="en">Slide 7 — Abstract figure <code>A→{D,E}→T</code></span><span data-tr="zh">投影片 7 — 示意圖 <code>A→{D,E}→T</code></span></h3>
+<p><span data-tr="en"><code>A→D=4, A→E=11</code>, dashed <code>d(D,T), d(E,T)</code>. <code>d(A,T)=min{4+18,11+13}=22</code>.</span><span data-tr="zh"><code>A→D=4, A→E=11</code>，虛線 <code>d(D,T), d(E,T)</code>。<code>d(A,T)=min{4+18,11+13}=22</code>。</span></p>
+<h3 id="slide-19-resource-allocation-profit-table"><span data-tr="en">Slide 19 — Resource allocation profit table</span><span data-tr="zh">投影片 19 — Resource allocation 利潤表</span></h3>
+<p><span data-tr="en"><code>m</code> resources, <code>n</code> projects, profit <code>p(i,j)</code>. Table (rows project 1–4, cols 1–3 resources): row1 <code>2,8,9</code>; row2 <code>5,6,7</code>; row3 <code>4,4,4</code>; row4 <code>2,4,5</code>.</span><span data-tr="zh"><code>m</code> 份資源、<code>n</code> 個專案，利潤 <code>p(i,j)</code>。表（列為專案 1–4，欄為 1–3 份資源）：第 1 列 <code>2,8,9</code>；第 2 列 <code>5,6,7</code>；第 3 列 <code>4,4,4</code>；第 4 列 <code>2,4,5</code>。</span></p>
+<h3 id="slide-20-resource-allocation-as-a-multi-stage-graph"><span data-tr="en">Slide 20 — Resource Allocation as a Multi-Stage Graph</span><span data-tr="zh">投影片 20 — Resource Allocation 畫成 Multi-Stage Graph</span></h3>
+<p><span data-tr="en">5 stages. Stage 2 <code>A=(0,1),B=(1,1),C=(2,1),D=(3,1)</code>; stage 3 <code>E=(0,2),F=(1,2),G=(2,2),H=(3,2)</code>; stage 4 <code>I=(0,3),J=(1,3),K=(2,3),L=(3,3)</code>; <code>S</code>,<code>T</code> singletons. S-edges: <code>S→A=0, S→B=2, S→C=8, S→D=9</code>. Dense interior labels (the profit increments) overlap; the S-edges and winning path are read with confidence.</span><span data-tr="zh">5 個 stage。Stage 2 <code>A=(0,1),B=(1,1),C=(2,1),D=(3,1)</code>；stage 3 <code>E=(0,2),F=(1,2),G=(2,2),H=(3,2)</code>；stage 4 <code>I=(0,3),J=(1,3),K=(2,3),L=(3,3)</code>；<code>S</code>、<code>T</code> 各只有一個節點。S 出去的邊：<code>S→A=0, S→B=2, S→C=8, S→D=9</code>。內部的標號（利潤增量）很密、疊在一起；只有 S 的邊跟獲勝路徑能讀得有把握。</span></p>
+<h3 id="slide-21-resource-allocation-answer"><span data-tr="en">Slide 21 — Resource allocation answer</span><span data-tr="zh">投影片 21 — Resource allocation 答案</span></h3>
+<p><span data-tr="en"><code>S —8→ C —5→ H —0→ L —0→ T</code>, <code>8+5=13</code>. Allocation: 2 resources to project 1, 1 to project 2, 0 to projects 3 &amp; 4.</span><span data-tr="zh"><code>S —8→ C —5→ H —0→ L —0→ T</code>，<code>8+5=13</code>。分配：2 份給專案 1、1 份給專案 2、專案 3 跟 4 各 0 份。</span></p>
+<h3 id="slide-22-tsp-directed-graph-cost-matrix"><span data-tr="en">Slide 22 — TSP directed graph + cost matrix</span><span data-tr="zh">投影片 22 — TSP 有向圖 + cost matrix</span></h3>
+<p><span data-tr="en">4-vertex directed graph. Cost matrix (from→to), <code>∞</code> on diagonal:
+<code>1: [∞,2,10,5]  2: [2,∞,9,∞]  3: [4,3,∞,4]  4: [6,8,7,∞]</code>.</span><span data-tr="zh">4 個節點的有向圖。Cost matrix（從→到），對角線是 <code>∞</code>：
+<code>1: [∞,2,10,5]  2: [2,∞,9,∞]  3: [4,3,∞,4]  4: [6,8,7,∞]</code>。</span></p>
+<h3 id="slide-23-tsp-all-possible-tours-multistage-graph"><span data-tr="en">Slide 23 — TSP "all possible tours" multistage graph</span><span data-tr="zh">投影片 23 — TSP「所有可能 tour」的 multistage graph</span></h3>
+<p><span data-tr="en">Root <code>(1)</code> → <code>(1,2)</code>=2, <code>(1,3)</code>=10, <code>(1,4)</code>=5; expands to the 3rd then 4th vertex then back to <code>1</code>. Optimal branch <code>(1)→(1,4)→(1,4,3)→(1,4,3,2)→1</code> = <code>5+7+3+2=17</code>. Caption: "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed graph." Answer: <code>1,4,3,2,1 = 17</code>.</span><span data-tr="zh">根 <code>(1)</code> → <code>(1,2)</code>=2、<code>(1,3)</code>=10、<code>(1,4)</code>=5；接著展開到第 3 個、第 4 個節點，再繞回 <code>1</code>。最佳分支 <code>(1)→(1,4)→(1,4,3)→(1,4,3,2)→1</code> = <code>5+7+3+2=17</code>。圖說：「Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed graph.」答案：<code>1,4,3,2,1 = 17</code>。</span></p>
+<h3 id="slide-24-tsp-node-merging-illustration"><span data-tr="en">Slide 24 — TSP node-merging illustration</span><span data-tr="zh">投影片 24 — TSP 節點合併示意</span></h3>
+<p><span data-tr="en"><code>(1,3,2)→(1,3,2,4)</code> and <code>(1,2,3)→(1,2,3,4)</code> merge (last vertex 3, remaining {4,5,6} same) into one node; shown as <code>(2),(4,5,6)</code> &amp; <code>(3),(4,5,6)</code> → <code>(4),(5,6)</code>.</span><span data-tr="zh"><code>(1,3,2)→(1,3,2,4)</code> 跟 <code>(1,2,3)→(1,2,3,4)</code> 合成同一個節點（最後停的節點都是 3，剩下要走的 {4,5,6} 也一樣）；圖上畫成 <code>(2),(4,5,6)</code> 和 <code>(3),(4,5,6)</code> → <code>(4),(5,6)</code>。</span></p>
+<h3 id="slide-25-tsp-recurrences-complexity"><span data-tr="en">Slide 25 — TSP recurrences + complexity</span><span data-tr="zh">投影片 25 — TSP recurrence + 複雜度</span></h3>
+<p><span data-tr="en"><code>g(1,V−{1}) = min_{2≤k≤n}{c_{1k} + g(k,V−{1,k})}</code>; <code>g(i,S) = min_{j∈S}{c_{ij} + g(j,S−{j})}</code>; complexity <code>n + Σ_{k=2}^{n-1}(n−1)·C(n−2,n−k)·(n−k) = O(n²·2ⁿ)</code>.</span><span data-tr="zh"><code>g(1,V−{1}) = min_{2≤k≤n}{c_{1k} + g(k,V−{1,k})}</code>；<code>g(i,S) = min_{j∈S}{c_{ij} + g(j,S−{j})}</code>；複雜度 <code>n + Σ_{k=2}^{n-1}(n−1)·C(n−2,n−k)·(n−k) = O(n²·2ⁿ)</code>。</span></p>
+<h3 id="slide-28-lcs-dp-dependency-diagram-fig-8-17"><span data-tr="en">Slide 28 — LCS DP dependency diagram (Fig. 8-17)</span><span data-tr="zh">投影片 28 — LCS DP 依賴關係圖（Fig. 8-17）</span></h3>
+<p><span data-tr="en">Grid of <code>L_{i,j}</code> cells with arrows right, down, and diagonal-down (the three recurrence dependencies), flowing toward <code>L_{m,n}</code>.</span><span data-tr="zh">一格一格的 <code>L_{i,j}</code> 網格，箭頭往右、往下、往右下斜（就是 recurrence 的三種依賴），全部朝 <code>L_{m,n}</code> 流。</span></p>
+<h3 id="slide-29-lcs-l-table-abacad-baccbadcb"><span data-tr="en">Slide 29 — LCS L table (A=bacad, B=accbadcb)</span><span data-tr="zh">投影片 29 — LCS L 表（A=bacad, B=accbadcb）</span></h3>
+<p><span data-tr="en">See the full table in §11. Trace-back circles <code>1→2→3→4</code> give LCS = <code>a c a d</code>.</span><span data-tr="zh">完整的表看 §11。trace-back 圈起來的 <code>1→2→3→4</code> 給出 LCS = <code>a c a d</code>。</span></p>
+<h3 id="slide-30-01-knapsack-data"><span data-tr="en">Slide 30 — 0/1 knapsack data</span><span data-tr="zh">投影片 30 — 0/1 knapsack 資料</span></h3>
+<p><span data-tr="en"><code>M=10</code>; objects <code>(i, Wᵢ, Pᵢ)</code>: <code>(1,10,40), (2,3,20), (3,5,30)</code>.</span><span data-tr="zh"><code>M=10</code>；物品 <code>(i, Wᵢ, Pᵢ)</code>：<code>(1,10,40), (2,3,20), (3,5,30)</code>。</span></p>
+<h3 id="slide-31-01-knapsack-as-a-multistage-graph"><span data-tr="en">Slide 31 — 0/1 knapsack as a multistage graph</span><span data-tr="zh">投影片 31 — 0/1 knapsack 畫成 multistage graph</span></h3>
+<p><span data-tr="en"><code>S</code> branches <code>x₁=1</code>(w 40) / <code>x₁=0</code>(w 0); each branches <code>x₂</code> (w 20 if 1) then <code>x₃</code> (w 30 if 1) then weight-0 edges to <code>T</code>. Node labels are partial decision strings (<code>1</code>,<code>0</code>,<code>10</code>,<code>01</code>,<code>00</code>,<code>100</code>,<code>011</code>,<code>010</code>,<code>001</code>,<code>000</code>).</span><span data-tr="zh"><code>S</code> 分岔成 <code>x₁=1</code>(w 40) / <code>x₁=0</code>(w 0)；每個再依 <code>x₂</code> 分岔（=1 時 w 20）、再依 <code>x₃</code> 分岔（=1 時 w 30），最後接權重 0 的邊到 <code>T</code>。節點標號就是部分決策字串（<code>1</code>,<code>0</code>,<code>10</code>,<code>01</code>,<code>00</code>,<code>100</code>,<code>011</code>,<code>010</code>,<code>001</code>,<code>000</code>）。</span></p>
+<h3 3_7_9_12="3,7,9,12" id="slide-33-four-candidate-bsts-for"><span data-tr="en">Slide 33 — Four candidate BSTs for</span><span data-tr="zh">投影片 33 — 四棵候選 BST，針對</span></h3>
+<p><span data-tr="en">(a) right-going chain <code>3→7→9→12</code>; (b) root 7, children 3 &amp; 12, 12's left child 9; (c) root 7, children 3 &amp; 9, 9's right child 12; (d) left-going-ish <code>12→9→3→7</code>.</span><span data-tr="zh">(a) 一路往右的鏈 <code>3→7→9→12</code>；(b) root 7，小孩 3 和 12，12 的左小孩是 9；(c) root 7，小孩 3 和 9，9 的右小孩是 12；(d) 偏往左的 <code>12→9→3→7</code>。</span></p>
+<h3 id="slide-35-obst-example-tree-fig-a-binary-tree-with-added-external-nodes"><span data-tr="en">Slide 35 — OBST example tree (Fig. A Binary Tree with Added External Nodes)</span><span data-tr="zh">投影片 35 — OBST 範例樹（Fig. A Binary Tree with Added External Nodes）</span></h3>
+<p><span data-tr="en">Identifiers <code>4,5,8,10,11,12,14</code>. Root <code>10</code>; left <code>5</code> (children <code>4</code>,<code>8</code>), right <code>14</code> (left <code>11</code> with right child <code>12</code>; right external <code>E₇</code>). External nodes <code>E₀…E₆</code> at the leaves (<code>E₅,E₆</code> under <code>12</code>). Cost formula <code>Σ_{i=1}^{n}Pᵢ·level(aᵢ) + Σ_{i=0}^{n}Qᵢ·(level(Eᵢ)−1)</code>, root at level 1.</span><span data-tr="zh">Identifier <code>4,5,8,10,11,12,14</code>。Root <code>10</code>；左邊 <code>5</code>（小孩 <code>4</code>,<code>8</code>），右邊 <code>14</code>（左小孩 <code>11</code>，<code>11</code> 有右小孩 <code>12</code>；右邊是外部節點 <code>E₇</code>）。外部節點 <code>E₀…E₆</code> 在葉子上（<code>E₅,E₆</code> 掛在 <code>12</code> 下）。成本公式 <code>Σ_{i=1}^{n}Pᵢ·level(aᵢ) + Σ_{i=0}^{n}Qᵢ·(level(Eᵢ)−1)</code>，root 在 level 1。</span></p>
+<h3 id="slide-36-37-obst-recurrence-subtree-triangle-diagram"><span data-tr="en">Slide 36 / 37 — OBST recurrence + subtree triangle diagram</span><span data-tr="zh">投影片 36 / 37 — OBST recurrence + 子樹三角圖</span></h3>
+<p><span data-tr="en">Root-<code>aₖ</code> form (36) and general <code>C(i,j)</code> form (37); both with the split-at-root triangle: left <code>C(i,k−1)</code> over <code>a₁…a_{k-1}</code> (weights <code>P₁…P_{k-1},Q₀…Q_{k-1}</code>), right <code>C(k+1,n)</code> over <code>a_{k+1}…aₙ</code> (weights <code>P_{k+1}…Pₙ,Qₖ…Qₙ</code>). Collapses to <code>C(i,j)=min_k{C(i,k−1)+C(k+1,j)+W(i,j)}</code>.</span><span data-tr="zh">root-<code>aₖ</code> 形式（36）跟一般的 <code>C(i,j)</code> 形式（37）；兩張都有「從 root 切開」的三角圖：左邊 <code>C(i,k−1)</code> 涵蓋 <code>a₁…a_{k-1}</code>（權重 <code>P₁…P_{k-1},Q₀…Q_{k-1}</code>），右邊 <code>C(k+1,n)</code> 涵蓋 <code>a_{k+1}…aₙ</code>（權重 <code>P_{k+1}…Pₙ,Qₖ…Qₙ</code>）。收斂成 <code>C(i,j)=min_k{C(i,k−1)+C(k+1,j)+W(i,j)}</code>。</span></p>
+<h3 id="slide-38-obst-computation-relationships-dag-n4"><span data-tr="en">Slide 38 — OBST computation-relationships DAG (n=4)</span><span data-tr="zh">投影片 38 — OBST 計算依賴 DAG（n=4）</span></h3>
+<p><span data-tr="en"><code>C(1,2),C(2,3),C(3,4)</code> → <code>C(1,3),C(2,4)</code> → <code>C(1,4)</code>. Complexity <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>.</span><span data-tr="zh"><code>C(1,2),C(2,3),C(3,4)</code> → <code>C(1,3),C(2,4)</code> → <code>C(1,4)</code>。複雜度 <code>O(Σ_{1≤m&lt;n} m(n−m)) = O(n³)</code>。</span></p>
+<h3 id="multistage-edge-weight-verdict"><span data-tr="en">Multistage edge-weight verdict</span><span data-tr="zh">Multistage 邊權重的最終結論</span></h3>
+<p><span data-tr="en">The note's reconstructed set
 <code>S→A=1, S→B=2, S→C=5, A→D=4, A→E=11, B→D=9, B→E=5, B→F=16, C→F=2, D→T=18, E→T=13, F→T=2</code>
-<strong>✅ MATCHES slide 5 exactly</strong> — every edge weight confirmed by direct reading of the rendered figure. All dependent results hold: <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(S,T)=9</code>, <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>.</p>
+<strong>✅ MATCHES slide 5 exactly</strong> — every edge weight confirmed by direct reading of the rendered figure. All dependent results hold: <code>d(C,T)=4</code>, <code>d(A,T)=22</code>, <code>d(B,T)=18</code>, <code>d(S,T)=9</code>, <code>d(S,D)=5</code>, <code>d(S,E)=7</code>, <code>d(S,F)=7</code>.</span><span data-tr="zh">筆記裡重建的這組
+<code>S→A=1, S→B=2, S→C=5, A→D=4, A→E=11, B→D=9, B→E=5, B→F=16, C→F=2, D→T=18, E→T=13, F→T=2</code>
+<strong>✅ 跟投影片 5 完全吻合</strong> — 每個邊權重都是直接讀圖確認過的。所有衍生的結果也都站得住腳：<code>d(C,T)=4</code>、<code>d(A,T)=22</code>、<code>d(B,T)=18</code>、<code>d(S,T)=9</code>、<code>d(S,D)=5</code>、<code>d(S,E)=7</code>、<code>d(S,F)=7</code>。</span></p>
 <hr>
-<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
-The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+<p class="lede"><span data-tr="en">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</span><span data-tr="zh">這裡有任何看不懂的嗎？直接問你的老師（就是這個 agent）— 我就是來幫你的。
+原始投影片都算成圖檔放在 <code>render/</code> 裡，你可以自己對照看看。</span></p>
 </div><script src="../assets/i18n.js"></script>
 </body></html>

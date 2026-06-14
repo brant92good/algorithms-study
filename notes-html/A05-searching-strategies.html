@@ -13,43 +13,56 @@
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
-<h1 id="chapter-6-the-searching-strategies">Chapter 6 — The Searching Strategies</h1>
+<h1 id="chapter-6-the-searching-strategies"><span data-tr="en">Chapter 6 — The Searching Strategies</span><span data-tr="zh">第 6 章 — Searching Strategies（搜尋策略）</span></h1>
 <blockquote>
-<p>Source: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6.
-Deck: <code>Alg05(1).ppt</code>. Figure/Table numbers (Fig. 6-x, Table 6-x) are preserved so you can cross-check against the slides.</p>
+<p><span data-tr="en">Source: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6.
+Deck: <code>Alg05(1).ppt</code>. Figure/Table numbers (Fig. 6-x, Table 6-x) are preserved so you can cross-check against the slides.</span><span data-tr="zh">出處：R.C.T. Lee、Tseng、Chang、Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 6 章。投影片：<code>Alg05(1).ppt</code>。圖表編號（Fig. 6-x、Table 6-x）都有保留，方便你跟投影片對照。</span></p>
 </blockquote>
 <hr />
-<h2 id="overview">Overview</h2>
-<p>This chapter surveys <strong>searching strategies</strong> that explore a <em>solution-space tree</em> (also called a state-space tree). Many hard problems can be cast as "search a tree of candidate (partial) solutions," and the searching strategy decides the <em>order</em> in which nodes are expanded.</p>
-<p>The chapter is organized in two halves:</p>
+<h2 id="overview"><span data-tr="en">Overview</span><span data-tr="zh">總覽</span></h2>
+<p><span data-tr="en">This chapter surveys <strong>searching strategies</strong> that explore a <em>solution-space tree</em> (also called a state-space tree). Many hard problems can be cast as "search a tree of candidate (partial) solutions," and the searching strategy decides the <em>order</em> in which nodes are expanded.</span><span data-tr="zh">這一章在講各種 <strong>searching strategies（搜尋策略）</strong>，重點是怎麼去走一棵 <em>solution-space tree</em>（解空間樹，也叫 state-space tree）。很多難題其實都可以改寫成「在一棵候選（部分）解的樹裡面搜尋」，而搜尋策略決定的就是節點展開的<em>順序</em>。</span></p>
+<p><span data-tr="en">The chapter is organized in two halves:</span><span data-tr="zh">整章分成兩半：</span></p>
 <ol>
 <li>
-<p><strong>Search strategies for decision / feasibility problems</strong> (find <em>a</em> solution, or decide if one exists):
+<p><span data-tr="en"><strong>Search strategies for decision / feasibility problems</strong> (find <em>a</em> solution, or decide if one exists):
    - Satisfiability problem (tree of <code>2ⁿ</code> assignments)
    - Hamiltonian circuit problem
    - Sum-of-subsets problem
    - <strong>Depth-first search (DFS)</strong> — guided by a stack
    - <strong>Breadth-first search (BFS)</strong>
    - <strong>Hill climbing</strong> — a greedy variant of DFS (8-puzzle)
-   - <strong>Best-first search</strong> — combines DFS + BFS, global view (8-puzzle)</p>
+   - <strong>Best-first search</strong> — combines DFS + BFS, global view (8-puzzle)</span><span data-tr="zh"><strong>給 decision／feasibility 問題用的搜尋策略</strong>（找出<em>某一個</em>解，或判斷到底存不存在解）：
+   - Satisfiability problem（<code>2ⁿ</code> 種 assignment 構成的樹）
+   - Hamiltonian circuit problem
+   - Sum-of-subsets problem
+   - <strong>Depth-first search (DFS)</strong> — 用一個 stack 來帶路
+   - <strong>Breadth-first search (BFS)</strong>
+   - <strong>Hill climbing</strong> — DFS 的 greedy 版本（8-puzzle）
+   - <strong>Best-first search</strong> — 結合 DFS + BFS，有全域視野（8-puzzle）</span></p>
 </li>
 <li>
-<p><strong>Search strategies for optimization problems</strong> (find the <em>best</em> solution):
+<p><span data-tr="en"><strong>Search strategies for optimization problems</strong> (find the <em>best</em> solution):
    - <strong>Branch-and-bound</strong> — the master strategy for optimization (multi-stage graph)
    - Personnel assignment problem (cost matrix, partial order of jobs, topological sort)
    - Travelling salesperson problem (reduced cost matrices, lower bounds, decision tree)
    - 0/1 knapsack problem (upper/lower bounds via fractional relaxation)
    - <strong>A*</strong> algorithm — best-first search with <code>f(n) = g(n) + h(n)</code>, <code>h(n) ≤ h*(n)</code>
-   - Channel routing problem (HCG, vertical constraint graph, max cliques, A*)</p>
+   - Channel routing problem (HCG, vertical constraint graph, max cliques, A*)</span><span data-tr="zh"><strong>給 optimization 問題用的搜尋策略</strong>（找出<em>最好</em>的那個解）：
+   - <strong>Branch-and-bound</strong> — 解最佳化問題的招牌策略（multi-stage graph）
+   - Personnel assignment problem（cost matrix、jobs 的 partial order、topological sort）
+   - Travelling salesperson problem（reduced cost matrix、lower bound、decision tree）
+   - 0/1 knapsack problem（用 fractional relaxation 算 upper／lower bound）
+   - <strong>A*</strong> algorithm — best-first search 加上 <code>f(n) = g(n) + h(n)</code>、<code>h(n) ≤ h*(n)</code>
+   - Channel routing problem（HCG、vertical constraint graph、max cliques、A*）</span></p>
 </li>
 </ol>
-<p>Key reason DFS/BFS/hill-climbing/best-first <strong>cannot</strong> solve optimization problems directly: they stop at the <em>first</em> goal node found, which need not be optimal. Branch-and-bound and A* add <strong>bounding</strong> so the <em>optimal</em> goal is guaranteed.</p>
+<p><span data-tr="en">Key reason DFS/BFS/hill-climbing/best-first <strong>cannot</strong> solve optimization problems directly: they stop at the <em>first</em> goal node found, which need not be optimal. Branch-and-bound and A* add <strong>bounding</strong> so the <em>optimal</em> goal is guaranteed.</span><span data-tr="zh">為什麼 DFS／BFS／hill-climbing／best-first <strong>沒辦法</strong>直接拿來解最佳化問題？關鍵在於：它們碰到<em>第一個</em> goal node 就停了，但那個不一定是最佳解。Branch-and-bound 跟 A* 多加了 <strong>bounding</strong>，所以才能保證拿到<em>最佳</em>的 goal。</span></p>
 <hr />
-<h2 id="1-the-satisfiability-sat-problem">1. The Satisfiability (SAT) Problem</h2>
-<h3 id="idea">Idea</h3>
-<p>Given a Boolean formula in <code>n</code> variables <code>x₁, x₂, …, xₙ</code>, decide whether there is a truth assignment making it true. There are <strong>2ⁿ</strong> possible assignments, which can be laid out as a <strong>binary tree</strong> of depth <code>n</code>: at level <code>i</code> we branch on <code>xᵢ = true</code> vs <code>xᵢ = false</code> (<em>Tree Representation of Eight Assignments</em> shows <code>n = 3 → 2³ = 8</code> leaves).</p>
-<h3 id="instance-from-the-slides">Instance from the slides</h3>
-<p>A conjunction of clauses (each line is a clause that must hold). Using ¬ for negation and ∨ for OR:</p>
+<h2 id="1-the-satisfiability-sat-problem"><span data-tr="en">1. The Satisfiability (SAT) Problem</span><span data-tr="zh">1. Satisfiability (SAT) 問題</span></h2>
+<h3 id="idea"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en">Given a Boolean formula in <code>n</code> variables <code>x₁, x₂, …, xₙ</code>, decide whether there is a truth assignment making it true. There are <strong>2ⁿ</strong> possible assignments, which can be laid out as a <strong>binary tree</strong> of depth <code>n</code>: at level <code>i</code> we branch on <code>xᵢ = true</code> vs <code>xᵢ = false</code> (<em>Tree Representation of Eight Assignments</em> shows <code>n = 3 → 2³ = 8</code> leaves).</span><span data-tr="zh">給你一個有 <code>n</code> 個變數 <code>x₁, x₂, …, xₙ</code> 的布林式，問：有沒有一組 truth assignment 能讓它變成 true？總共有 <strong>2ⁿ</strong> 種 assignment，可以排成一棵深度 <code>n</code> 的 <strong>binary tree</strong>：在第 <code>i</code> 層就分岔成 <code>xᵢ = true</code> 跟 <code>xᵢ = false</code>（<em>Tree Representation of Eight Assignments</em> 畫的就是 <code>n = 3 → 2³ = 8</code> 片葉子的情況）。</span></p>
+<h3 id="instance-from-the-slides"><span data-tr="en">Instance from the slides</span><span data-tr="zh">投影片上的例子</span></h3>
+<p><span data-tr="en">A conjunction of clauses (each line is a clause that must hold). Using ¬ for negation and ∨ for OR:</span><span data-tr="zh">一堆 clause 用 AND 串起來（每一行就是一個必須成立的 clause）。用 ¬ 代表否定、∨ 代表 OR：</span></p>
 <pre><code>(1)  ¬x₁
 (2)   x₁
 (3)   x₂ ∨ x₅
@@ -57,156 +70,161 @@ Deck: <code>Alg05(1).ppt</code>. Figure/Table numbers (Fig. 6-x, Table 6-x) are 
 (5)  ¬x₂
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 3: the slide writes <code>-x₁</code>, <code>x₁</code>, <code>x₂ v x₅</code>, <code>x₃</code>, <code>-x₂</code> exactly as clauses (1)–(5). <code>-x</code> = ¬x, <code>v</code> = ∨. The clauses are a set that must <em>all</em> hold simultaneously.</p>
+<p><span data-tr="en">✅ Verified against slide 3: the slide writes <code>-x₁</code>, <code>x₁</code>, <code>x₂ v x₅</code>, <code>x₃</code>, <code>-x₂</code> exactly as clauses (1)–(5). <code>-x</code> = ¬x, <code>v</code> = ∨. The clauses are a set that must <em>all</em> hold simultaneously.</span><span data-tr="zh">✅ 對照投影片 3：上面寫的 clause (1)–(5) 就是 <code>-x₁</code>、<code>x₁</code>、<code>x₂ v x₅</code>、<code>x₃</code>、<code>-x₂</code>。其中 <code>-x</code> = ¬x、<code>v</code> = ∨。這幾個 clause 是一組，必須<em>同時</em>全部成立。</span></p>
 </blockquote>
-<p>Notice clauses (1) <code>¬x₁</code> and (2) <code>x₁</code> directly contradict each other, so this particular instance is <strong>unsatisfiable</strong> — which is exactly the point: a <em>partial</em> assignment can already reveal a contradiction. The partial tree on slide 3 shows the root branching <code>X₁=T</code> / <code>X₁=F</code>, and <strong>both</strong> children are labeled "(1) falsified" / "(2) falsified" — i.e. either choice of X₁ immediately falsifies a clause.</p>
+<p><span data-tr="en">Notice clauses (1) <code>¬x₁</code> and (2) <code>x₁</code> directly contradict each other, so this particular instance is <strong>unsatisfiable</strong> — which is exactly the point: a <em>partial</em> assignment can already reveal a contradiction. The partial tree on slide 3 shows the root branching <code>X₁=T</code> / <code>X₁=F</code>, and <strong>both</strong> children are labeled "(1) falsified" / "(2) falsified" — i.e. either choice of X₁ immediately falsifies a clause.</span><span data-tr="zh">你會發現 clause (1) <code>¬x₁</code> 跟 (2) <code>x₁</code> 根本互相矛盾，所以這個例子是 <strong>unsatisfiable</strong>（無解）—— 而這正是重點：光是一組<em>部分</em> assignment 就能看出矛盾。投影片 3 的部分樹中，root 分出 <code>X₁=T</code> / <code>X₁=F</code>，<strong>兩邊</strong>子節點都標了「(1) falsified」/「(2) falsified」，也就是說 X₁ 不管選哪個，馬上就有一個 clause 被踩爆。</span></p>
 <blockquote>
-<p>✅ The full 2³ truth table is on slide 2 (columns x₁,x₂,x₃): FFF, FFT, FTF, FTT, TFF, TFT, TTF, TTT — the eight assignments enumerated by the "Tree Representation of Eight Assignments."</p>
+<p><span data-tr="en">✅ The full 2³ truth table is on slide 2 (columns x₁,x₂,x₃): FFF, FFT, FTF, FTT, TFF, TFT, TTF, TTT — the eight assignments enumerated by the "Tree Representation of Eight Assignments."</span><span data-tr="zh">✅ 完整的 2³ truth table 在投影片 2（欄位 x₁,x₂,x₃）：FFF, FFT, FTF, FTT, TFF, TFT, TTF, TTT —— 就是「Tree Representation of Eight Assignments」列出來的那八種 assignment。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A05full/slide-02.png" alt="Tree Representation of Eight Assignments (SAT, n=3)"></p>
-<figcaption>SAT — 2³ truth table and the "Tree Representation of Eight Assignments" (n=3).</figcaption>
+<figcaption><span data-tr="en">SAT — 2³ truth table and the "Tree Representation of Eight Assignments" (n=3).</span><span data-tr="zh">SAT —— 2³ truth table 跟「Tree Representation of Eight Assignments」（n=3）。</span></figcaption>
 
-<h3 id="why-search-helps">Why search helps</h3>
-<p><em>A Partial Tree to Determine the Satisfiability Problem</em>: <strong>We may not need to examine all 2ⁿ assignments.</strong> As soon as a partial assignment violates a clause, that entire subtree is abandoned (pruned). This early termination motivates tree-search strategies and, later, bounding.</p>
+<h3 id="why-search-helps"><span data-tr="en">Why search helps</span><span data-tr="zh">為什麼用搜尋會比較省</span></h3>
+<p><span data-tr="en"><em>A Partial Tree to Determine the Satisfiability Problem</em>: <strong>We may not need to examine all 2ⁿ assignments.</strong> As soon as a partial assignment violates a clause, that entire subtree is abandoned (pruned). This early termination motivates tree-search strategies and, later, bounding.</span><span data-tr="zh"><em>A Partial Tree to Determine the Satisfiability Problem</em>：<strong>其實不一定要把 2ⁿ 種 assignment 全部試過。</strong>只要一組部分 assignment 違反了某個 clause，那整棵 subtree 就直接砍掉（prune）。這種提早收手的概念，就是後面 tree-search 策略、以及 bounding 的由來。</span></p>
 <hr />
-<h2 id="2-the-hamiltonian-circuit-problem">2. The Hamiltonian Circuit Problem</h2>
-<h3 id="idea_1">Idea</h3>
-<p>A <strong>Hamiltonian circuit</strong> is a cycle that visits <em>every vertex of a graph exactly once</em> and returns to the start. The problem: does a given graph contain one?</p>
+<h2 id="2-the-hamiltonian-circuit-problem"><span data-tr="en">2. The Hamiltonian Circuit Problem</span><span data-tr="zh">2. Hamiltonian Circuit 問題</span></h2>
+<h3 id="idea_1"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en">A <strong>Hamiltonian circuit</strong> is a cycle that visits <em>every vertex of a graph exactly once</em> and returns to the start. The problem: does a given graph contain one?</span><span data-tr="zh"><strong>Hamiltonian circuit</strong> 就是一個環，<em>把圖上每個頂點剛好走過一次</em>，最後再繞回起點。問題是：給你一張圖，它裡面到底有沒有這種環？</span></p>
 <ul>
-<li><em>A Graph Containing a Hamiltonian Circuit</em> (Fig. 6-6) shows the example graph. ✅ Verified against slide 4 — see Appendix A for the edge list (vertices 1–7; edges 1-2, 1-6, 1-3, 2-3, 6-5, 7-5, 7-4, 3-4, 4-5).</li>
+<li><span data-tr="en"><em>A Graph Containing a Hamiltonian Circuit</em> (Fig. 6-6) shows the example graph. ✅ Verified against slide 4 — see Appendix A for the edge list (vertices 1–7; edges 1-2, 1-6, 1-3, 2-3, 6-5, 7-5, 7-4, 3-4, 4-5).</span><span data-tr="zh"><em>A Graph Containing a Hamiltonian Circuit</em>（Fig. 6-6）就是範例圖。✅ 對照投影片 4 —— edge list 看附錄 A（頂點 1–7；邊有 1-2, 1-6, 1-3, 2-3, 6-5, 7-5, 7-4, 3-4, 4-5）。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-04.png" alt="Fig 6-6 A Graph Containing a Hamiltonian Circuit"></p>
-<figcaption>Fig. 6-6 — A Graph Containing a Hamiltonian Circuit (vertices 1–7).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-6 — A Graph Containing a Hamiltonian Circuit (vertices 1–7).</span><span data-tr="zh">Fig. 6-6 —— 含有 Hamiltonian circuit 的圖（頂點 1–7）。</span></figcaption>
 
 <ul>
-<li><strong>Fig. 6-8</strong> — <em>The Tree Representation of Whether There Exists a Hamiltonian Circuit of the Graph in Fig. 6-6</em>: build a tree where each level chooses the next vertex to visit. A path from root to a leaf at depth <code>n</code> that reuses no vertex and closes back to the start is a Hamiltonian circuit.</li>
+<li><span data-tr="en"><strong>Fig. 6-8</strong> — <em>The Tree Representation of Whether There Exists a Hamiltonian Circuit of the Graph in Fig. 6-6</em>: build a tree where each level chooses the next vertex to visit. A path from root to a leaf at depth <code>n</code> that reuses no vertex and closes back to the start is a Hamiltonian circuit.</span><span data-tr="zh"><strong>Fig. 6-8</strong> — <em>The Tree Representation of Whether There Exists a Hamiltonian Circuit of the Graph in Fig. 6-6</em>：建一棵樹，每一層就選下一個要走的頂點。如果有一條從 root 到深度 <code>n</code> 葉子的路徑，沒有重複用到任何頂點、而且最後又接回起點，那就是一個 Hamiltonian circuit。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-05.png" alt="Fig 6-8 Tree Representation of Whether a Hamiltonian Circuit Exists"></p>
-<figcaption>Fig. 6-8 — Search tree for the Hamiltonian circuit (rooted at vertex 1; dead ends marked X).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-8 — Search tree for the Hamiltonian circuit (rooted at vertex 1; dead ends marked X).</span><span data-tr="zh">Fig. 6-8 —— Hamiltonian circuit 的搜尋樹（root 在頂點 1；死路用 X 標記）。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 5 (Fig. 6-8) and slide 4 (Fig. 6-6): the full search tree is transcribed (root at vertex 1; two paths close back to 1 to give a Hamiltonian circuit, all other branches end in <code>X</code>). The underlying Fig. 6-6 graph is now also read directly from slide 4 (see Appendix A). The search idea (extend partial paths, backtrack on dead ends) is standard.</p>
+<p><span data-tr="en">✅ Verified against slide 5 (Fig. 6-8) and slide 4 (Fig. 6-6): the full search tree is transcribed (root at vertex 1; two paths close back to 1 to give a Hamiltonian circuit, all other branches end in <code>X</code>). The underlying Fig. 6-6 graph is now also read directly from slide 4 (see Appendix A). The search idea (extend partial paths, backtrack on dead ends) is standard.</span><span data-tr="zh">✅ 對照投影片 5（Fig. 6-8）跟投影片 4（Fig. 6-6）：整棵搜尋樹都抄下來了（root 在頂點 1；有兩條路徑接回 1 形成 Hamiltonian circuit，其他分支全部以 <code>X</code> 收場）。底層的 Fig. 6-6 圖現在也直接從投影片 4 讀出來（看附錄 A）。搜尋的概念（延伸部分路徑、碰到死路就 backtrack）是標準做法。</span></p>
 </blockquote>
 <hr />
-<h2 id="3-the-sum-of-subsets-problem-solved-by-depth-first-search">3. The Sum-of-Subsets Problem (solved by Depth-First Search)</h2>
-<h3 id="problem">Problem</h3>
-<p>Given a set <code>S</code> and a target, find a subset <code>S′ ⊆ S</code> whose elements sum to the target.</p>
+<h2 id="3-the-sum-of-subsets-problem-solved-by-depth-first-search"><span data-tr="en">3. The Sum-of-Subsets Problem (solved by Depth-First Search)</span><span data-tr="zh">3. Sum-of-Subsets 問題（用 Depth-First Search 解）</span></h2>
+<h3 id="problem"><span data-tr="en">Problem</span><span data-tr="zh">問題</span></h3>
+<p><span data-tr="en">Given a set <code>S</code> and a target, find a subset <code>S′ ⊆ S</code> whose elements sum to the target.</span><span data-tr="zh">給你一個集合 <code>S</code> 跟一個 target，問：能不能挑出一個子集合 <code>S′ ⊆ S</code>，讓裡面元素加起來剛好等於 target？</span></p>
 <pre><code>S = {7, 5, 1, 2, 10}
 Find S′ ⊆ S with  sum(S′) = 9 ?
 </code></pre>
-<p>(Answer: <code>{7, 2}</code>, since <code>7 + 2 = 9</code>. The slide's tree, <strong>Fig. 6-11</strong>, enumerates the candidate subsets via depth-first search.)</p>
+<p><span data-tr="en">(Answer: <code>{7, 2}</code>, since <code>7 + 2 = 9</code>. The slide's tree, <strong>Fig. 6-11</strong>, enumerates the candidate subsets via depth-first search.)</span><span data-tr="zh">（答案是 <code>{7, 2}</code>，因為 <code>7 + 2 = 9</code>。投影片上的樹 <strong>Fig. 6-11</strong> 就是用 depth-first search 把候選子集合一個一個列出來。）</span></p>
 <blockquote>
-<p>✅ Verified against slide 6 (Fig. 6-11). The DFS tree: root = <code>0</code>; edge <code>X₁=7</code> → node <code>7</code>; from <code>7</code>: edge <code>X₂=5</code> → <code>12</code> (marked <code>x</code>, exceeds 9), edge <code>X₂=1</code> → <code>8</code>, edge <code>X₂=2</code> → <code>9</code> labeled <strong>Goal Node</strong> (7+2=9). From <code>8</code>: edge <code>X₃=2</code> → <code>10</code> (<code>x</code>), edge <code>X₃=10</code> → <code>18</code> (<code>x</code>). So the satisfying subset is <strong>{7, 2}</strong> and the goal node holds the running sum 9.</p>
+<p><span data-tr="en">✅ Verified against slide 6 (Fig. 6-11). The DFS tree: root = <code>0</code>; edge <code>X₁=7</code> → node <code>7</code>; from <code>7</code>: edge <code>X₂=5</code> → <code>12</code> (marked <code>x</code>, exceeds 9), edge <code>X₂=1</code> → <code>8</code>, edge <code>X₂=2</code> → <code>9</code> labeled <strong>Goal Node</strong> (7+2=9). From <code>8</code>: edge <code>X₃=2</code> → <code>10</code> (<code>x</code>), edge <code>X₃=10</code> → <code>18</code> (<code>x</code>). So the satisfying subset is <strong>{7, 2}</strong> and the goal node holds the running sum 9.</span><span data-tr="zh">✅ 對照投影片 6（Fig. 6-11）。這棵 DFS 樹：root = <code>0</code>；邊 <code>X₁=7</code> → 節點 <code>7</code>；從 <code>7</code> 再分：邊 <code>X₂=5</code> → <code>12</code>（標 <code>x</code>，超過 9），邊 <code>X₂=1</code> → <code>8</code>，邊 <code>X₂=2</code> → <code>9</code> 標成 <strong>Goal Node</strong>（7+2=9）。從 <code>8</code> 再分：邊 <code>X₃=2</code> → <code>10</code>（<code>x</code>），邊 <code>X₃=10</code> → <code>18</code>（<code>x</code>）。所以符合的子集合是 <strong>{7, 2}</strong>，goal node 上記的累加和就是 9。</span></p>
 </blockquote>
-<h3 id="depth-first-search-dfs">Depth-First Search (DFS)</h3>
+<h3 id="depth-first-search-dfs"><span data-tr="en">Depth-First Search (DFS)</span><span data-tr="zh">Depth-First Search (DFS)</span></h3>
 <ul>
-<li><strong>Fig. 6-11</strong> — <em>A Sum of Subset Problem Solved by Depth-First Search.</em></li>
+<li><span data-tr="en"><strong>Fig. 6-11</strong> — <em>A Sum of Subset Problem Solved by Depth-First Search.</em></span><span data-tr="zh"><strong>Fig. 6-11</strong> — <em>A Sum of Subset Problem Solved by Depth-First Search.</em></span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-06.png" alt="Fig 6-11 A Sum of Subset Problem Solved by Depth-First Search"></p>
-<figcaption>Fig. 6-11 — Sum-of-subsets DFS tree; goal node "9" = {7, 2}.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-11 — Sum-of-subsets DFS tree; goal node "9" = {7, 2}.</span><span data-tr="zh">Fig. 6-11 —— Sum-of-subsets 的 DFS 樹；goal node「9」= {7, 2}。</span></figcaption>
 <ul>
-<li>Build a binary tree: at level <code>i</code>, decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong> of <code>S′</code>.</li>
-<li><strong>A stack can be used to guide the depth-first search.</strong> DFS dives down one branch as deep as possible, then backtracks (pop the stack) when a branch is exhausted or the partial sum already exceeds the target.</li>
+<li><span data-tr="en">Build a binary tree: at level <code>i</code>, decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong> of <code>S′</code>.</span><span data-tr="zh">建一棵 binary tree：在第 <code>i</code> 層就決定第 <code>i</code> 個元素要<strong>放進</strong>還是<strong>不放進</strong> <code>S′</code>。</span></li>
+<li><span data-tr="en"><strong>A stack can be used to guide the depth-first search.</strong> DFS dives down one branch as deep as possible, then backtracks (pop the stack) when a branch is exhausted or the partial sum already exceeds the target.</span><span data-tr="zh"><strong>可以用一個 stack 來帶 depth-first search。</strong>DFS 會沿著一條分支一路往下鑽到底，等到這條分支走完、或是部分和已經超過 target，就 backtrack（從 stack pop 出來）退回去。</span></li>
 </ul>
-<p><strong>DFS procedure (general):</strong>
+<p><span data-tr="en"><strong>DFS procedure (general):</strong>
 1. Push the root onto the stack.
 2. Pop a node; if it is a goal, stop.
-3. Otherwise push its children; repeat from step 2 until the stack is empty.</p>
-<p>LIFO ordering of the stack gives the deep-first exploration order.</p>
+3. Otherwise push its children; repeat from step 2 until the stack is empty.</span><span data-tr="zh"><strong>DFS 流程（通用版）：</strong>
+1. 把 root push 進 stack。
+2. pop 出一個節點；如果它是 goal，就停。
+3. 否則把它的小孩全部 push 進去；從第 2 步重複，直到 stack 清空。</span></p>
+<p><span data-tr="en">LIFO ordering of the stack gives the deep-first exploration order.</span><span data-tr="zh">stack 的 LIFO 特性，自然就給出了「先往深處走」的探索順序。</span></p>
 <hr />
-<h2 id="4-breadth-first-search-bfs">4. Breadth-First Search (BFS)</h2>
-<h3 id="idea_2">Idea</h3>
-<p>Explore the tree <strong>level by level</strong>: expand all nodes at depth <code>d</code> before any node at depth <code>d+1</code>. Implemented with a <strong>queue</strong> (FIFO) instead of a stack.</p>
+<h2 id="4-breadth-first-search-bfs"><span data-tr="en">4. Breadth-First Search (BFS)</span><span data-tr="zh">4. Breadth-First Search (BFS)</span></h2>
+<h3 id="idea_2"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en">Explore the tree <strong>level by level</strong>: expand all nodes at depth <code>d</code> before any node at depth <code>d+1</code>. Implemented with a <strong>queue</strong> (FIFO) instead of a stack.</span><span data-tr="zh">BFS 是<strong>一層一層</strong>地走：先把深度 <code>d</code> 的節點全部展開，才會碰深度 <code>d+1</code> 的任何節點。實作上是用 <strong>queue</strong>（FIFO），而不是 stack。</span></p>
 <blockquote>
-<p>✅ Verified against slide 6: the slide titled "The breadth-first search" actually carries the <strong>sum-of-subset DFS example (Fig. 6-11)</strong> as its illustration — there is <strong>no separate BFS figure or example</strong> in the deck. BFS is the FIFO counterpart of the DFS in §3 (same tree, different expansion order).</p>
+<p><span data-tr="en">✅ Verified against slide 6: the slide titled "The breadth-first search" actually carries the <strong>sum-of-subset DFS example (Fig. 6-11)</strong> as its illustration — there is <strong>no separate BFS figure or example</strong> in the deck. BFS is the FIFO counterpart of the DFS in §3 (same tree, different expansion order).</span><span data-tr="zh">✅ 對照投影片 6：那張標題寫「The breadth-first search」的投影片，其實放的是 <strong>sum-of-subset 的 DFS 例子（Fig. 6-11）</strong> —— 整份投影片裡<strong>沒有獨立的 BFS 圖或例子</strong>。BFS 就是 §3 那個 DFS 的 FIFO 版本（同一棵樹，只是展開順序不同）。</span></p>
 </blockquote>
 <hr />
-<h2 id="5-hill-climbing-a-variant-of-dfs-the-8-puzzle">5. Hill Climbing (a variant of DFS) — the 8-Puzzle</h2>
-<h3 id="idea_3">Idea</h3>
-<p>Hill climbing is <strong>a variant of depth-first search</strong> in which, instead of expanding children in fixed order, <strong>the method selects the locally optimal node to expand</strong> (the child that looks best by an evaluation function). It is greedy and <em>local</em> — it commits to the locally best child and can get stuck.</p>
-<h3 id="8-puzzle-evaluation-function">8-puzzle evaluation function</h3>
-<p>For the 8-puzzle (a 3×3 board with tiles 1–8 and one blank, slide tiles to reach a goal configuration):</p>
+<h2 id="5-hill-climbing-a-variant-of-dfs-the-8-puzzle"><span data-tr="en">5. Hill Climbing (a variant of DFS) — the 8-Puzzle</span><span data-tr="zh">5. Hill Climbing（DFS 的變形）—— 8-Puzzle</span></h2>
+<h3 id="idea_3"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en">Hill climbing is <strong>a variant of depth-first search</strong> in which, instead of expanding children in fixed order, <strong>the method selects the locally optimal node to expand</strong> (the child that looks best by an evaluation function). It is greedy and <em>local</em> — it commits to the locally best child and can get stuck.</span><span data-tr="zh">Hill climbing 是 <strong>depth-first search 的變形</strong>：它不是照固定順序展開小孩，而是<strong>每次挑當下看起來最好的那個節點展開</strong>（也就是用某個 evaluation function 評分後最好的那個小孩）。它是 greedy 而且<em>只看局部</em>的 —— 一旦認定了局部最好的小孩就鑽下去，所以有可能會卡住。</span></p>
+<h3 id="8-puzzle-evaluation-function"><span data-tr="en">8-puzzle evaluation function</span><span data-tr="zh">8-puzzle 的 evaluation function</span></h3>
+<p><span data-tr="en">For the 8-puzzle (a 3×3 board with tiles 1–8 and one blank, slide tiles to reach a goal configuration):</span><span data-tr="zh">8-puzzle 是一個 3×3 的盤面，上面有 1–8 的方塊跟一個空格，你要靠滑動方塊把盤面排成目標樣式：</span></p>
 <pre><code>f(n) = d(n) + w(n)
    d(n) = depth of node n  (number of moves made so far)
    w(n) = number of misplaced tiles in node n
 </code></pre>
-<p>Lower <code>f(n)</code> is better. At each step expand the child minimizing <code>f</code>.</p>
+<p><span data-tr="en">Lower <code>f(n)</code> is better. At each step expand the child minimizing <code>f</code>.</span><span data-tr="zh"><code>f(n)</code> 越小越好。每一步就展開讓 <code>f</code> 最小的那個小孩。</span></p>
 <ul>
-<li><strong>Fig. 6-15</strong> — <em>An 8-Puzzle Problem Solved by a Hill Climbing Method.</em></li>
+<li><span data-tr="en"><strong>Fig. 6-15</strong> — <em>An 8-Puzzle Problem Solved by a Hill Climbing Method.</em></span><span data-tr="zh"><strong>Fig. 6-15</strong> — <em>An 8-Puzzle Problem Solved by a Hill Climbing Method.</em></span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-08.png" alt="Fig 6-15 An 8-Puzzle Problem Solved by a Hill Climbing Method"></p>
-<figcaption>Fig. 6-15 — Hill-climbing 8-puzzle; path initial→1→5→7→8 (Goal).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-15 — Hill-climbing 8-puzzle; path initial→1→5→7→8 (Goal).</span><span data-tr="zh">Fig. 6-15 —— Hill-climbing 解 8-puzzle；路徑 initial→1→5→7→8（Goal）。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 8 (Fig. 6-15): the board states and per-node parenthesized evaluation values are transcribed (see Appendix A). Hill-climbing path: <code>initial(3) → 1(4) → 5(4) → 7(4) → 8 (Goal)</code>, always descending to the locally best child. The function <code>f(n) = d(n) + w(n)</code> and the "expand locally best child" rule are explicit on slide 7.</p>
+<p><span data-tr="en">✅ Verified against slide 8 (Fig. 6-15): the board states and per-node parenthesized evaluation values are transcribed (see Appendix A). Hill-climbing path: <code>initial(3) → 1(4) → 5(4) → 7(4) → 8 (Goal)</code>, always descending to the locally best child. The function <code>f(n) = d(n) + w(n)</code> and the "expand locally best child" rule are explicit on slide 7.</span><span data-tr="zh">✅ 對照投影片 8（Fig. 6-15）：每個盤面狀態跟節點旁括號裡的評估值都抄下來了（看附錄 A）。Hill-climbing 路徑：<code>initial(3) → 1(4) → 5(4) → 7(4) → 8 (Goal)</code>，每一步都往局部最好的小孩走下去。函式 <code>f(n) = d(n) + w(n)</code> 跟「展開局部最好的小孩」這條規則，在投影片 7 都有明寫。</span></p>
 </blockquote>
 <hr />
-<h2 id="6-best-first-search">6. Best-First Search</h2>
-<h3 id="idea_4">Idea</h3>
-<p><strong>Combines depth-first search and breadth-first search.</strong> Rather than committing to a local best (hill climbing) or a rigid level order (BFS), best-first <strong>selects the node with the best estimated cost among <em>all</em> open nodes</strong> anywhere in the tree. Because it can jump to the globally most promising node, <strong>this method has a global view.</strong></p>
+<h2 id="6-best-first-search"><span data-tr="en">6. Best-First Search</span><span data-tr="zh">6. Best-First Search</span></h2>
+<h3 id="idea_4"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en"><strong>Combines depth-first search and breadth-first search.</strong> Rather than committing to a local best (hill climbing) or a rigid level order (BFS), best-first <strong>selects the node with the best estimated cost among <em>all</em> open nodes</strong> anywhere in the tree. Because it can jump to the globally most promising node, <strong>this method has a global view.</strong></span><span data-tr="zh"><strong>把 depth-first search 跟 breadth-first search 結合起來。</strong>它不像 hill climbing 死守局部最好、也不像 BFS 硬照層序走，而是<strong>從樹上<em>所有</em>還沒展開的節點裡，挑估計成本最好的那個</strong>，不管它在哪。因為它可以直接跳到全域最有希望的節點，<strong>所以這個方法是有全域視野的。</strong></span></p>
 <ul>
-<li><strong>Fig. 6-16</strong> — <em>An 8-Puzzle Problem Solved by a Best-First Search Scheme</em> (same evaluation function <code>f(n) = d(n) + w(n)</code> as hill climbing, but chosen globally).</li>
+<li><span data-tr="en"><strong>Fig. 6-16</strong> — <em>An 8-Puzzle Problem Solved by a Best-First Search Scheme</em> (same evaluation function <code>f(n) = d(n) + w(n)</code> as hill climbing, but chosen globally).</span><span data-tr="zh"><strong>Fig. 6-16</strong> — <em>An 8-Puzzle Problem Solved by a Best-First Search Scheme</em>（evaluation function 跟 hill climbing 一樣是 <code>f(n) = d(n) + w(n)</code>，差別在於這次是從全域去挑）。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-10.png" alt="Fig 6-16 An 8-Puzzle Problem Solved by a Best-First Search Scheme"></p>
-<figcaption>Fig. 6-16 — Best-first 8-puzzle; goal at node 10 via root→2→7→9→10.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-16 — Best-first 8-puzzle; goal at node 10 via root→2→7→9→10.</span><span data-tr="zh">Fig. 6-16 —— Best-first 解 8-puzzle；經 root→2→7→9→10 在節點 10 到達 goal。</span></figcaption>
 
-<h3 id="best-first-search-scheme-explicit-step-1step-4">Best-First Search Scheme (explicit Step 1–Step 4)</h3>
+<h3 id="best-first-search-scheme-explicit-step-1step-4"><span data-tr="en">Best-First Search Scheme (explicit Step 1–Step 4)</span><span data-tr="zh">Best-First Search 流程（Step 1–Step 4）</span></h3>
 <blockquote>
-<p><strong>Step 1.</strong> Form a one-element list consisting of the root node.</p>
-<p><strong>Step 2.</strong> Remove the first element from the list. Expand it. If one of the descendants of this element is a <strong>goal node</strong>, then <strong>stop</strong>; otherwise, add the descendants into the list.</p>
-<p><strong>Step 3.</strong> Sort the entire list by the values of some <strong>estimation function</strong>.</p>
-<p><strong>Step 4.</strong> If the list is empty, then <strong>failure</strong>. Otherwise, go to Step 2.</p>
+<p><span data-tr="en"><strong>Step 1.</strong> Form a one-element list consisting of the root node.</span><span data-tr="zh"><strong>Step 1.</strong> 建一個只有 root 一個元素的 list。</span></p>
+<p><span data-tr="en"><strong>Step 2.</strong> Remove the first element from the list. Expand it. If one of the descendants of this element is a <strong>goal node</strong>, then <strong>stop</strong>; otherwise, add the descendants into the list.</span><span data-tr="zh"><strong>Step 2.</strong> 從 list 拿掉第一個元素，把它展開。如果它的後代裡有一個是 <strong>goal node</strong>，就<strong>停</strong>；否則把這些後代全部加進 list。</span></p>
+<p><span data-tr="en"><strong>Step 3.</strong> Sort the entire list by the values of some <strong>estimation function</strong>.</span><span data-tr="zh"><strong>Step 3.</strong> 用某個 <strong>estimation function</strong> 的值把整個 list 排序。</span></p>
+<p><span data-tr="en"><strong>Step 4.</strong> If the list is empty, then <strong>failure</strong>. Otherwise, go to Step 2.</span><span data-tr="zh"><strong>Step 4.</strong> 如果 list 空了，就<strong>失敗</strong>；否則回到 Step 2。</span></p>
 </blockquote>
-<p>The sort in Step 3 is what makes the <em>first</em> element in Step 2 always the globally best-looking node.</p>
+<p><span data-tr="en">The sort in Step 3 is what makes the <em>first</em> element in Step 2 always the globally best-looking node.</span><span data-tr="zh">就是 Step 3 那個排序，讓 Step 2 每次拿到的<em>第一個</em>元素，永遠是全域看起來最好的那個節點。</span></p>
 <hr />
-<h2 id="7-the-branch-and-bound-strategy">7. The Branch-and-Bound Strategy</h2>
-<h3 id="idea_5">Idea</h3>
-<p><strong>Branch-and-bound can be used to solve optimization problems</strong> — and is needed because <strong>DFS, BFS, hill climbing, and best-first search cannot</strong> (they halt at the first goal, not the best one).</p>
-<p>Two ingredients:
+<h2 id="7-the-branch-and-bound-strategy"><span data-tr="en">7. The Branch-and-Bound Strategy</span><span data-tr="zh">7. Branch-and-Bound 策略</span></h2>
+<h3 id="idea_5"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en"><strong>Branch-and-bound can be used to solve optimization problems</strong> — and is needed because <strong>DFS, BFS, hill climbing, and best-first search cannot</strong> (they halt at the first goal, not the best one).</span><span data-tr="zh"><strong>Branch-and-bound 可以拿來解 optimization 問題</strong> —— 而且非用它不可，因為 <strong>DFS、BFS、hill climbing、best-first search 都做不到</strong>（它們碰到第一個 goal 就停了，不是最佳的那個）。</span></p>
+<p><span data-tr="en">Two ingredients:
 - <strong>Branching</strong> — split the solution space into subsets (subtrees), as in any tree search.
-- <strong>Bounding</strong> — compute, for each node, a <strong>bound</strong> on the best solution obtainable in its subtree. If a node's bound is <em>worse</em> than the best complete solution already found, <strong>prune</strong> the entire subtree.</p>
-<p>For a minimization problem you maintain a <strong>lower bound</strong> per node and an <strong>upper bound</strong> = best feasible solution found so far; prune any node whose lower bound ≥ current best.</p>
-<h3 id="example">Example</h3>
+- <strong>Bounding</strong> — compute, for each node, a <strong>bound</strong> on the best solution obtainable in its subtree. If a node's bound is <em>worse</em> than the best complete solution already found, <strong>prune</strong> the entire subtree.</span><span data-tr="zh">兩個要件：
+- <strong>Branching（分支）</strong> —— 把解空間切成一塊塊子集合（subtree），跟一般 tree search 一樣。
+- <strong>Bounding（定界）</strong> —— 對每個節點算一個 <strong>bound</strong>，代表它那棵 subtree 裡最好能拿到的解。如果某個節點的 bound 比你目前已經找到的最佳完整解還<em>差</em>，那整棵 subtree 直接<strong>砍掉（prune）</strong>。</span></p>
+<p><span data-tr="en">For a minimization problem you maintain a <strong>lower bound</strong> per node and an <strong>upper bound</strong> = best feasible solution found so far; prune any node whose lower bound ≥ current best.</span><span data-tr="zh">如果是最小化問題，你會給每個節點維護一個 <strong>lower bound</strong>，再維護一個 <strong>upper bound</strong> = 目前找到的最佳可行解；只要某節點的 lower bound ≥ 目前最佳值，就把它砍掉。</span></p>
+<h3 id="example"><span data-tr="en">Example</span><span data-tr="zh">範例</span></h3>
 <ul>
-<li><strong>Fig. 6-17</strong> — <em>A Multi-Stage Graph Searching Problem</em>, <strong>solved by branch-and-bound</strong> (find the cheapest path through a layered graph).</li>
+<li><span data-tr="en"><strong>Fig. 6-17</strong> — <em>A Multi-Stage Graph Searching Problem</em>, <strong>solved by branch-and-bound</strong> (find the cheapest path through a layered graph).</span><span data-tr="zh"><strong>Fig. 6-17</strong> — <em>A Multi-Stage Graph Searching Problem</em>，<strong>用 branch-and-bound 來解</strong>（在分層圖裡找出最便宜的一條路徑）。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-12.png" alt="Fig 6-17 A Multi-Stage Graph Searching Problem"></p>
-<figcaption>Fig. 6-17 — The multi-stage graph (V₀ … V₃) solved by branch-and-bound.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-17 — The multi-stage graph (V₀ … V₃) solved by branch-and-bound.</span><span data-tr="zh">Fig. 6-17 —— 用 branch-and-bound 解的 multi-stage graph（V₀ … V₃）。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 12 (Fig. 6-17): <strong>Correction</strong> — Fig. 6-17 is the multi-stage graph with vertices <code>V₀, V₁,₁ V₁,₂ V₁,₃, V₂,₁ V₂,₂ V₂,₃, V₃</code> (NOT the <code>S,V₁..V₅,T</code> graph — that one is <strong>Fig. 6-36</strong>, the A* example on slide 36). Fig. 6-17 edge weights (slide 12, disambiguated by the B&amp;B tree on slide 13): <code>V₀→V₁,₁=1, V₀→V₁,₂=3, V₀→V₁,₃=2</code>; <code>V₁,₁→V₂,₁=5, V₁,₁→V₂,₃=3</code>; <code>V₁,₂→V₂,₁=4, V₁,₂→V₂,₂=3</code>; <code>V₁,₃→V₂,₂=2, V₁,₃→V₂,₃=7</code>; <code>V₂,₁→V₃=4, V₂,₂→V₃=1, V₂,₃→V₃=1</code>. The best-first B&amp;B search tree for this graph is on slide 13 (Appendix A). See Appendix A "Fig. 6-17 correction."</p>
+<p><span data-tr="en">✅ Verified against slide 12 (Fig. 6-17): <strong>Correction</strong> — Fig. 6-17 is the multi-stage graph with vertices <code>V₀, V₁,₁ V₁,₂ V₁,₃, V₂,₁ V₂,₂ V₂,₃, V₃</code> (NOT the <code>S,V₁..V₅,T</code> graph — that one is <strong>Fig. 6-36</strong>, the A* example on slide 36). Fig. 6-17 edge weights (slide 12, disambiguated by the B&amp;B tree on slide 13): <code>V₀→V₁,₁=1, V₀→V₁,₂=3, V₀→V₁,₃=2</code>; <code>V₁,₁→V₂,₁=5, V₁,₁→V₂,₃=3</code>; <code>V₁,₂→V₂,₁=4, V₁,₂→V₂,₂=3</code>; <code>V₁,₃→V₂,₂=2, V₁,₃→V₂,₃=7</code>; <code>V₂,₁→V₃=4, V₂,₂→V₃=1, V₂,₃→V₃=1</code>. The best-first B&amp;B search tree for this graph is on slide 13 (Appendix A). See Appendix A "Fig. 6-17 correction."</span><span data-tr="zh">✅ 對照投影片 12（Fig. 6-17）：<strong>更正</strong> —— Fig. 6-17 其實是頂點為 <code>V₀, V₁,₁ V₁,₂ V₁,₃, V₂,₁ V₂,₂ V₂,₃, V₃</code> 的 multi-stage graph（<strong>不是</strong> <code>S,V₁..V₅,T</code> 那張 —— 那張是 <strong>Fig. 6-36</strong>，投影片 36 的 A* 例子）。Fig. 6-17 的 edge 權重（投影片 12，再用投影片 13 的 B&amp;B 樹來確認）：<code>V₀→V₁,₁=1, V₀→V₁,₂=3, V₀→V₁,₃=2</code>；<code>V₁,₁→V₂,₁=5, V₁,₁→V₂,₃=3</code>；<code>V₁,₂→V₂,₁=4, V₁,₂→V₂,₂=3</code>；<code>V₁,₃→V₂,₂=2, V₁,₃→V₂,₃=7</code>；<code>V₂,₁→V₃=4, V₂,₂→V₃=1, V₂,₃→V₃=1</code>。這張圖的 best-first B&amp;B 搜尋樹在投影片 13（附錄 A）。詳見附錄 A 的「Fig. 6-17 correction」。</span></p>
 </blockquote>
 <hr />
-<h2 id="8-the-personnel-assignment-problem-branch-and-bound">8. The Personnel Assignment Problem (Branch-and-Bound)</h2>
-<h3 id="problem-statement">Problem statement</h3>
+<h2 id="8-the-personnel-assignment-problem-branch-and-bound"><span data-tr="en">8. The Personnel Assignment Problem (Branch-and-Bound)</span><span data-tr="zh">8. Personnel Assignment 問題（Branch-and-Bound）</span></h2>
+<h3 id="problem-statement"><span data-tr="en">Problem statement</span><span data-tr="zh">問題描述</span></h3>
 <ul>
-<li>A <strong>linearly ordered</strong> set of persons <code>P = {P₁, P₂, …, Pₙ}</code> with <code>P₁ &lt; P₂ &lt; … &lt; Pₙ</code>.</li>
-<li>A <strong>partially ordered</strong> set of jobs <code>J = {J₁, J₂, …, Jₙ}</code>.</li>
-<li>Constraint: if <code>Pᵢ</code> and <code>Pⱼ</code> are assigned to jobs <code>f(Pᵢ)</code> and <code>f(Pⱼ)</code>, then <strong><code>f(Pᵢ) ≤ f(Pⱼ)</code> whenever <code>Pᵢ ≤ Pⱼ</code></strong> (the assignment must respect the partial order of jobs — a <em>feasible</em> assignment).</li>
-<li><code>Cᵢⱼ</code> = cost of assigning person <code>Pᵢ</code> to job <code>Jⱼ</code>.</li>
-<li>Decision variable: <code>Xᵢⱼ = 1</code> if <code>Pᵢ</code> is assigned to <code>Jⱼ</code>, else <code>0</code>.</li>
+<li><span data-tr="en">A <strong>linearly ordered</strong> set of persons <code>P = {P₁, P₂, …, Pₙ}</code> with <code>P₁ &lt; P₂ &lt; … &lt; Pₙ</code>.</span><span data-tr="zh">一組<strong>線性排序（linearly ordered）</strong>的人 <code>P = {P₁, P₂, …, Pₙ}</code>，滿足 <code>P₁ &lt; P₂ &lt; … &lt; Pₙ</code>。</span></li>
+<li><span data-tr="en">A <strong>partially ordered</strong> set of jobs <code>J = {J₁, J₂, …, Jₙ}</code>.</span><span data-tr="zh">一組<strong>偏序（partially ordered）</strong>的工作 <code>J = {J₁, J₂, …, Jₙ}</code>。</span></li>
+<li><span data-tr="en">Constraint: if <code>Pᵢ</code> and <code>Pⱼ</code> are assigned to jobs <code>f(Pᵢ)</code> and <code>f(Pⱼ)</code>, then <strong><code>f(Pᵢ) ≤ f(Pⱼ)</code> whenever <code>Pᵢ ≤ Pⱼ</code></strong> (the assignment must respect the partial order of jobs — a <em>feasible</em> assignment).</span><span data-tr="zh">限制：如果 <code>Pᵢ</code> 跟 <code>Pⱼ</code> 分別被指派到工作 <code>f(Pᵢ)</code> 跟 <code>f(Pⱼ)</code>，那麼只要 <code>Pᵢ ≤ Pⱼ</code>，就必須 <strong><code>f(Pᵢ) ≤ f(Pⱼ)</code></strong>（這個指派要符合 jobs 的 partial order，才算一個<em>可行（feasible）</em>的指派）。</span></li>
+<li><span data-tr="en"><code>Cᵢⱼ</code> = cost of assigning person <code>Pᵢ</code> to job <code>Jⱼ</code>.</span><span data-tr="zh"><code>Cᵢⱼ</code> = 把人 <code>Pᵢ</code> 指派到工作 <code>Jⱼ</code> 的成本。</span></li>
+<li><span data-tr="en">Decision variable: <code>Xᵢⱼ = 1</code> if <code>Pᵢ</code> is assigned to <code>Jⱼ</code>, else <code>0</code>.</span><span data-tr="zh">決策變數：<code>Pᵢ</code> 被指派到 <code>Jⱼ</code> 時 <code>Xᵢⱼ = 1</code>，否則為 <code>0</code>。</span></li>
 </ul>
-<p><strong>Objective:</strong></p>
+<p><span data-tr="en"><strong>Objective:</strong></span><span data-tr="zh"><strong>目標：</strong></span></p>
 <pre><code>Minimize   Σᵢ Σⱼ Cᵢⱼ · Xᵢⱼ
 </code></pre>
-<p>subject to each person getting exactly one job, each job exactly one person, and the partial-order feasibility constraint.</p>
+<p><span data-tr="en">subject to each person getting exactly one job, each job exactly one person, and the partial-order feasibility constraint.</span><span data-tr="zh">限制條件是：每個人剛好拿到一份工作、每份工作剛好分給一個人，並且要滿足 partial-order 的可行性限制。</span></p>
 <blockquote>
-<p>✅ Verified against slide 14: the slide states it as <strong>"If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ"</strong> (an order-preserving / monotone feasibility rule). Cost <code>Cᵢⱼ</code> = cost of assigning Pᵢ to Jⱼ; <code>Xᵢⱼ = 1</code> if Pᵢ→Jⱼ else 0; minimize <code>Σᵢ,ⱼ CᵢⱼXᵢⱼ</code>.</p>
+<p><span data-tr="en">✅ Verified against slide 14: the slide states it as <strong>"If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ"</strong> (an order-preserving / monotone feasibility rule). Cost <code>Cᵢⱼ</code> = cost of assigning Pᵢ to Jⱼ; <code>Xᵢⱼ = 1</code> if Pᵢ→Jⱼ else 0; minimize <code>Σᵢ,ⱼ CᵢⱼXᵢⱼ</code>.</span><span data-tr="zh">✅ 對照投影片 14：投影片上寫的是 <strong>「If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ」</strong>（一條保序／單調的可行性規則）。成本 <code>Cᵢⱼ</code> = 把 Pᵢ 指派給 Jⱼ 的成本；<code>Xᵢⱼ = 1</code> 表示 Pᵢ→Jⱼ，否則 0；目標是最小化 <code>Σᵢ,ⱼ CᵢⱼXᵢⱼ</code>。</span></p>
 </blockquote>
-<h3 id="partial-order-of-jobs-fig-6-21">Partial order of jobs — Fig. 6-21</h3>
-<p><strong>Fig. 6-21</strong> — <em>A Partial Ordering of Jobs</em>. ✅ Verified against slide 15 — the diagram is <strong>two simple vertical arrows only</strong> (no diagonal):</p>
+<h3 id="partial-order-of-jobs-fig-6-21"><span data-tr="en">Partial order of jobs — Fig. 6-21</span><span data-tr="zh">Jobs 的 partial order —— Fig. 6-21</span></h3>
+<p><span data-tr="en"><strong>Fig. 6-21</strong> — <em>A Partial Ordering of Jobs</em>. ✅ Verified against slide 15 — the diagram is <strong>two simple vertical arrows only</strong> (no diagonal):</span><span data-tr="zh"><strong>Fig. 6-21</strong> — <em>A Partial Ordering of Jobs</em>。✅ 對照投影片 15 —— 這張圖<strong>就只有兩條直的箭頭</strong>，沒有斜的：</span></p>
 <p><img class="figure" src="../render/A05full/slide-15.png" alt="Fig 6-21 A Partial Ordering of Jobs"></p>
-<figcaption>Fig. 6-21 — Partial ordering of jobs (J1→J3, J2→J4) plus the topological sorts.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-21 — Partial ordering of jobs (J1→J3, J2→J4) plus the topological sorts.</span><span data-tr="zh">Fig. 6-21 —— Jobs 的 partial order（J1→J3、J2→J4），外加各種 topological sort。</span></figcaption>
 
 <pre><code>   J1        J2
    ↓         ↓
    J3        J4
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 15: the arrows are exactly <code>J1 → J3</code> and <code>J2 → J4</code>. There is <strong>no</strong> <code>J1 → J4</code> diagonal (the earlier reconstruction's <code>↘</code> was wrong). So J1 precedes J3, and J2 precedes J4; J1/J2 are incomparable, as are J3/J4.</p>
+<p><span data-tr="en">✅ Verified against slide 15: the arrows are exactly <code>J1 → J3</code> and <code>J2 → J4</code>. There is <strong>no</strong> <code>J1 → J4</code> diagonal (the earlier reconstruction's <code>↘</code> was wrong). So J1 precedes J3, and J2 precedes J4; J1/J2 are incomparable, as are J3/J4.</span><span data-tr="zh">✅ 對照投影片 15：箭頭就只有 <code>J1 → J3</code> 跟 <code>J2 → J4</code>。<strong>沒有</strong> <code>J1 → J4</code> 那條斜線（之前重建版本的 <code>↘</code> 是錯的）。所以 J1 排在 J3 前面、J2 排在 J4 前面；J1/J2 之間沒有先後關係，J3/J4 之間也沒有。</span></p>
 </blockquote>
-<h3 id="topological-sorting">Topological sorting</h3>
-<p>A feasible assignment corresponds to a <strong>topological order</strong> of the jobs (one that respects all precedence arrows). The slide lists several topologically sorted sequences that can be generated:</p>
+<h3 id="topological-sorting"><span data-tr="en">Topological sorting</span><span data-tr="zh">Topological sorting</span></h3>
+<p><span data-tr="en">A feasible assignment corresponds to a <strong>topological order</strong> of the jobs (one that respects all precedence arrows). The slide lists several topologically sorted sequences that can be generated:</span><span data-tr="zh">一個可行的指派，對應到的就是 jobs 的一個 <strong>topological order</strong>（要符合所有先後箭頭的順序）。投影片列了幾個可以生成的 topological sort 序列：</span></p>
 <pre><code>J1, J2, J3, J4
 J1, J2, J4, J3
 J1, J3, J2, J4
@@ -214,23 +232,23 @@ J2, J1, J3, J4
 J2, J1, J4, J3
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 15: the five topologically-sorted sequences listed above are exactly those shown on the slide.</p>
+<p><span data-tr="en">✅ Verified against slide 15: the five topologically-sorted sequences listed above are exactly those shown on the slide.</span><span data-tr="zh">✅ 對照投影片 15：上面列的五個 topological sort 序列，跟投影片上的完全一樣。</span></p>
 </blockquote>
-<p><strong>One feasible assignment:</strong></p>
+<p><span data-tr="en"><strong>One feasible assignment:</strong></span><span data-tr="zh"><strong>一個可行的指派：</strong></span></p>
 <pre><code>P1 → J1,  P2 → J2,  P3 → J3,  P4 → J4
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 15.</p>
+<p><span data-tr="en">✅ Verified against slide 15.</span><span data-tr="zh">✅ 對照投影片 15。</span></p>
 </blockquote>
-<h3 id="cost-matrix-table-6-1">Cost matrix — Table 6-1</h3>
-<p><strong>Table 6-1</strong> — <em>A Cost Matrix for a Personnel Assignment Problem</em> (rows = persons, columns = jobs):</p>
+<h3 id="cost-matrix-table-6-1"><span data-tr="en">Cost matrix — Table 6-1</span><span data-tr="zh">Cost matrix —— Table 6-1</span></h3>
+<p><span data-tr="en"><strong>Table 6-1</strong> — <em>A Cost Matrix for a Personnel Assignment Problem</em> (rows = persons, columns = jobs):</span><span data-tr="zh"><strong>Table 6-1</strong> — <em>A Cost Matrix for a Personnel Assignment Problem</em>（列 = 人，欄 = 工作）：</span></p>
 <p><img class="figure" src="../render/A05full/slide-16.png" alt="Table 6-1 A Cost Matrix for a Personnel Assignment Problem"></p>
-<figcaption>Table 6-1 — Personnel cost matrix.</figcaption>
+<figcaption><span data-tr="en">Table 6-1 — Personnel cost matrix.</span><span data-tr="zh">Table 6-1 —— Personnel 的 cost matrix。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Person \ Job</th>
+<th><span data-tr="en">Person \ Job</span><span data-tr="zh">人 \ 工作</span></th>
 <th>1</th>
 <th>2</th>
 <th>3</th>
@@ -269,23 +287,23 @@ J2, J1, J4, J3
 </tbody>
 </table></div>
 <blockquote>
-<p>✅ Verified against slide 16: the P3 row reads <strong>C₃₁ = 3, C₃₂ = 21, C₃₃ = 7, C₃₄ = 9</strong> exactly (single-digit <code>3</code> in column 1, clearly distinct). All other cells match the table above.</p>
+<p><span data-tr="en">✅ Verified against slide 16: the P3 row reads <strong>C₃₁ = 3, C₃₂ = 21, C₃₃ = 7, C₃₄ = 9</strong> exactly (single-digit <code>3</code> in column 1, clearly distinct). All other cells match the table above.</span><span data-tr="zh">✅ 對照投影片 16：P3 那一列是 <strong>C₃₁ = 3, C₃₂ = 21, C₃₃ = 7, C₃₄ = 9</strong>（第一欄是個位數的 <code>3</code>，清楚可辨）。其他格子都跟上面這張表一致。</span></p>
 </blockquote>
-<h3 id="reduced-cost-matrix-table-6-2">Reduced cost matrix — Table 6-2</h3>
-<p><strong>Reduction rule:</strong> <em>subtract a constant from each row and each column so that each row and each column contains at least one zero.</em> The total subtracted is a <strong>lower bound</strong> on the optimal assignment cost.</p>
-<p><strong>Table 6-2</strong> — <em>A Reduced Cost Matrix</em>:</p>
+<h3 id="reduced-cost-matrix-table-6-2"><span data-tr="en">Reduced cost matrix — Table 6-2</span><span data-tr="zh">Reduced cost matrix —— Table 6-2</span></h3>
+<p><span data-tr="en"><strong>Reduction rule:</strong> <em>subtract a constant from each row and each column so that each row and each column contains at least one zero.</em> The total subtracted is a <strong>lower bound</strong> on the optimal assignment cost.</span><span data-tr="zh"><strong>Reduction 規則：</strong><em>每一列、每一欄各減掉一個常數，讓每一列每一欄都至少有一個 0。</em>總共減掉的量，就是最佳指派成本的一個 <strong>lower bound</strong>。</span></p>
+<p><span data-tr="en"><strong>Table 6-2</strong> — <em>A Reduced Cost Matrix</em>:</span><span data-tr="zh"><strong>Table 6-2</strong> — <em>A Reduced Cost Matrix</em>：</span></p>
 <p><img class="figure" src="../render/A05full/slide-17.png" alt="Table 6-2 A Reduced Cost Matrix"></p>
-<figcaption>Table 6-2 — Reduced personnel cost matrix (row tags −12,−26,−3,−10; col-2 −3).</figcaption>
+<figcaption><span data-tr="en">Table 6-2 — Reduced personnel cost matrix (row tags −12,−26,−3,−10; col-2 −3).</span><span data-tr="zh">Table 6-2 —— reduce 過的 personnel cost matrix（列扣 −12,−26,−3,−10；第 2 欄 −3）。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Person \ Job</th>
+<th><span data-tr="en">Person \ Job</span><span data-tr="zh">人 \ 工作</span></th>
 <th>1</th>
 <th>2</th>
 <th>3</th>
 <th>4</th>
-<th>row reduction</th>
+<th><span data-tr="en">row reduction</span><span data-tr="zh">列 reduction</span></th>
 </tr>
 </thead>
 <tbody>
@@ -322,7 +340,7 @@ J2, J1, J4, J3
 <td>(−10)</td>
 </tr>
 <tr>
-<td>col reduction</td>
+<td><span data-tr="en">col reduction</span><span data-tr="zh">欄 reduction</span></td>
 <td></td>
 <td>(−3)</td>
 <td></td>
@@ -331,37 +349,38 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p><strong>Total cost subtracted: 12 + 26 + 3 + 10 + 3 = 54.</strong>
-<strong>This is a lower bound of our solution.</strong></p>
+<p><span data-tr="en"><strong>Total cost subtracted: 12 + 26 + 3 + 10 + 3 = 54.</strong>
+<strong>This is a lower bound of our solution.</strong></span><span data-tr="zh"><strong>總共減掉的成本：12 + 26 + 3 + 10 + 3 = 54。</strong>
+<strong>這就是我們解的一個 lower bound。</strong></span></p>
 <blockquote>
-<p>✅ Verified against slides 17 &amp; 18: Table 6-2 cells and the red row-reduction tags <code>(−12)(−26)(−3)(−10)</code> plus the column-2 reduction <code>(−3)</code> are exactly as printed; slide 18 states "Total cost subtracted: 12+26+3+10+3 = 54" and "This is a lower bound of our solution."</p>
+<p><span data-tr="en">✅ Verified against slides 17 &amp; 18: Table 6-2 cells and the red row-reduction tags <code>(−12)(−26)(−3)(−10)</code> plus the column-2 reduction <code>(−3)</code> are exactly as printed; slide 18 states "Total cost subtracted: 12+26+3+10+3 = 54" and "This is a lower bound of our solution."</span><span data-tr="zh">✅ 對照投影片 17 跟 18：Table 6-2 的格子、紅色的列 reduction 標籤 <code>(−12)(−26)(−3)(−10)</code> 加上第 2 欄的 <code>(−3)</code>，都跟投影片印的一模一樣；投影片 18 寫著「Total cost subtracted: 12+26+3+10+3 = 54」跟「This is a lower bound of our solution」。</span></p>
 </blockquote>
-<h3 id="solving">Solving</h3>
+<h3 id="solving"><span data-tr="en">Solving</span><span data-tr="zh">解法</span></h3>
 <ul>
-<li><strong>Solution tree:</strong> branch on which job each person takes (respecting feasibility).</li>
-<li><strong>Apply the best-first search scheme</strong> (the Step 1–4 scheme from §6) to expand the most promising node.</li>
-<li><strong>Bounding of subsolutions:</strong> at each tree node, recompute a reduced matrix / lower bound for the remaining sub-assignment; prune nodes whose lower bound exceeds the best feasible cost found.</li>
+<li><span data-tr="en"><strong>Solution tree:</strong> branch on which job each person takes (respecting feasibility).</span><span data-tr="zh"><strong>Solution tree：</strong>對「每個人拿哪份工作」做分支（同時要顧及可行性）。</span></li>
+<li><span data-tr="en"><strong>Apply the best-first search scheme</strong> (the Step 1–4 scheme from §6) to expand the most promising node.</span><span data-tr="zh"><strong>套用 best-first search 流程</strong>（§6 那個 Step 1–4 的流程）去展開最有希望的節點。</span></li>
+<li><span data-tr="en"><strong>Bounding of subsolutions:</strong> at each tree node, recompute a reduced matrix / lower bound for the remaining sub-assignment; prune nodes whose lower bound exceeds the best feasible cost found.</span><span data-tr="zh"><strong>對子解做 bounding：</strong>在每個樹節點，針對剩下還沒指派的部分重新算一個 reduced matrix／lower bound；只要某節點的 lower bound 超過目前找到的最佳可行成本，就砍掉。</span></li>
 </ul>
 <blockquote>
-<p>✅ Verified against slides 19–21 — the numeric trees are now transcribed (see Appendix A entries "Personnel — Solution Tree (slide 19)", "Personnel — Best-First Search Tree (slide 20)", "Personnel — Bounding of Subsolutions (slide 21)"). Slide 20 is annotated <strong>"Only one node is pruned away."</strong> The bounding tree on slide 21 follows the spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>, i.e. the optimal feasible assignment costs <strong>70</strong>.</p>
+<p><span data-tr="en">✅ Verified against slides 19–21 — the numeric trees are now transcribed (see Appendix A entries "Personnel — Solution Tree (slide 19)", "Personnel — Best-First Search Tree (slide 20)", "Personnel — Bounding of Subsolutions (slide 21)"). Slide 20 is annotated <strong>"Only one node is pruned away."</strong> The bounding tree on slide 21 follows the spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>, i.e. the optimal feasible assignment costs <strong>70</strong>.</span><span data-tr="zh">✅ 對照投影片 19–21 —— 帶數字的那幾棵樹現在都抄下來了（看附錄 A 的「Personnel — Solution Tree (slide 19)」、「Personnel — Best-First Search Tree (slide 20)」、「Personnel — Bounding of Subsolutions (slide 21)」）。投影片 20 標了 <strong>「Only one node is pruned away.」</strong>。投影片 21 的 bounding 樹主幹是 <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>，也就是說最佳可行指派的成本是 <strong>70</strong>。</span></p>
 </blockquote>
 <p><img class="figure" src="../render/A05full/slide-19.png" alt="Personnel assignment solution tree"></p>
-<figcaption>Personnel — Solution tree (slide 19).</figcaption>
+<figcaption><span data-tr="en">Personnel — Solution tree (slide 19).</span><span data-tr="zh">Personnel —— Solution tree（投影片 19）。</span></figcaption>
 
 <p><img class="figure" src="../render/A05full/slide-20.png" alt="Personnel assignment best-first search tree with bounds"></p>
-<figcaption>Personnel — Best-first search tree (slide 20); "Only one node is pruned away."</figcaption>
+<figcaption><span data-tr="en">Personnel — Best-first search tree (slide 20); "Only one node is pruned away."</span><span data-tr="zh">Personnel —— Best-first 搜尋樹（投影片 20）；「Only one node is pruned away.」</span></figcaption>
 
 <p><img class="figure" src="../render/A05full/slide-21.png" alt="Personnel assignment bounding of subsolutions tree"></p>
-<figcaption>Personnel — Bounding of subsolutions (slide 21); optimal cost 70.</figcaption>
+<figcaption><span data-tr="en">Personnel — Bounding of subsolutions (slide 21); optimal cost 70.</span><span data-tr="zh">Personnel —— 子解的 bounding（投影片 21）；最佳成本 70。</span></figcaption>
 
 <hr />
-<h2 id="9-the-travelling-salesperson-problem-tsp-via-branch-and-bound">9. The Travelling Salesperson Problem (TSP) via Branch-and-Bound</h2>
-<h3 id="problem_1">Problem</h3>
-<p>Find a minimum-cost tour visiting every city exactly once and returning to the start. <strong>It is NP-complete.</strong></p>
-<h3 id="cost-matrix-table-6-3">Cost matrix — Table 6-3</h3>
-<p><strong>Table 6-3</strong> — <em>A Cost Matrix for a Traveling Salesperson Problem</em> (7 cities; <code>∞</code> on the diagonal = no self-loop). Entry <code>(i, j)</code> = cost of arc <code>i → j</code>:</p>
+<h2 id="9-the-travelling-salesperson-problem-tsp-via-branch-and-bound"><span data-tr="en">9. The Travelling Salesperson Problem (TSP) via Branch-and-Bound</span><span data-tr="zh">9. Travelling Salesperson Problem (TSP) 用 Branch-and-Bound 解</span></h2>
+<h3 id="problem_1"><span data-tr="en">Problem</span><span data-tr="zh">問題</span></h3>
+<p><span data-tr="en">Find a minimum-cost tour visiting every city exactly once and returning to the start. <strong>It is NP-complete.</strong></span><span data-tr="zh">要找一條成本最小的 tour，把每個城市剛好走過一次，最後再回到起點。<strong>這題是 NP-complete。</strong></span></p>
+<h3 id="cost-matrix-table-6-3"><span data-tr="en">Cost matrix — Table 6-3</span><span data-tr="zh">Cost matrix —— Table 6-3</span></h3>
+<p><span data-tr="en"><strong>Table 6-3</strong> — <em>A Cost Matrix for a Traveling Salesperson Problem</em> (7 cities; <code>∞</code> on the diagonal = no self-loop). Entry <code>(i, j)</code> = cost of arc <code>i → j</code>:</span><span data-tr="zh"><strong>Table 6-3</strong> — <em>A Cost Matrix for a Traveling Salesperson Problem</em>（7 個城市；對角線上的 <code>∞</code> 代表沒有 self-loop）。第 <code>(i, j)</code> 格 = arc <code>i → j</code> 的成本：</span></p>
 <p><img class="figure" src="../render/A05full/slide-22.png" alt="Table 6-3 A Cost Matrix for a Traveling Salesperson Problem"></p>
-<figcaption>Table 6-3 — TSP cost matrix (7 cities).</figcaption>
+<figcaption><span data-tr="en">Table 6-3 — TSP cost matrix (7 cities).</span><span data-tr="zh">Table 6-3 —— TSP 的 cost matrix（7 個城市）。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
@@ -449,11 +468,11 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<h3 id="first-reduction-table-6-4-row-reductions">First reduction — Table 6-4 (row reductions)</h3>
-<p>Subtract the row minimum from each row (so each row has a zero):</p>
-<p><strong>Table 6-4</strong> — <em>A Reduced Cost Matrix</em>:</p>
+<h3 id="first-reduction-table-6-4-row-reductions"><span data-tr="en">First reduction — Table 6-4 (row reductions)</span><span data-tr="zh">第一次 reduction —— Table 6-4（列 reduction）</span></h3>
+<p><span data-tr="en">Subtract the row minimum from each row (so each row has a zero):</span><span data-tr="zh">每一列各減掉該列的最小值（讓每一列都有一個 0）：</span></p>
+<p><span data-tr="en"><strong>Table 6-4</strong> — <em>A Reduced Cost Matrix</em>:</span><span data-tr="zh"><strong>Table 6-4</strong> — <em>A Reduced Cost Matrix</em>：</span></p>
 <p><img class="figure" src="../render/A05full/slide-23.png" alt="Table 6-4 A Reduced Cost Matrix (row reductions)"></p>
-<figcaption>Table 6-4 — TSP row-reduced matrix; sum of row reductions = 84.</figcaption>
+<figcaption><span data-tr="en">Table 6-4 — TSP row-reduced matrix; sum of row reductions = 84.</span><span data-tr="zh">Table 6-4 —— TSP 做完列 reduction 的矩陣；列 reduction 總和 = 84。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
@@ -466,7 +485,7 @@ J2, J1, J4, J3
 <th>5</th>
 <th>6</th>
 <th>7</th>
-<th>row reduction</th>
+<th><span data-tr="en">row reduction</span><span data-tr="zh">列 reduction</span></th>
 </tr>
 </thead>
 <tbody>
@@ -549,15 +568,15 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p><strong>Sum of row reductions: <code>reduced: 84</code></strong> (= 3+4+16+7+25+3+26 = 84).</p>
+<p><span data-tr="en"><strong>Sum of row reductions: <code>reduced: 84</code></strong> (= 3+4+16+7+25+3+26 = 84).</span><span data-tr="zh"><strong>列 reduction 總和：<code>reduced: 84</code></strong>（= 3+4+16+7+25+3+26 = 84）。</span></p>
 <blockquote>
-<p>✅ Verified against slides 22 (Table 6-3) and 23 (Table 6-4): every cell and the red <code>(−3)(−4)(−16)(−7)(−25)(−3)(−26)</code> row tags and "reduced:84" match exactly.</p>
+<p><span data-tr="en">✅ Verified against slides 22 (Table 6-3) and 23 (Table 6-4): every cell and the red <code>(−3)(−4)(−16)(−7)(−25)(−3)(−26)</code> row tags and "reduced:84" match exactly.</span><span data-tr="zh">✅ 對照投影片 22（Table 6-3）跟 23（Table 6-4）：每一格、紅色的列標籤 <code>(−3)(−4)(−16)(−7)(−25)(−3)(−26)</code> 還有「reduced:84」都完全吻合。</span></p>
 </blockquote>
-<h3 id="second-reduction-table-6-5-column-reductions">Second reduction — Table 6-5 (column reductions)</h3>
-<p>Now subtract column minimums from columns that still lack a zero:</p>
-<p><strong>Table 6-5</strong> — <em>Another Reduced Cost Matrix</em>:</p>
+<h3 id="second-reduction-table-6-5-column-reductions"><span data-tr="en">Second reduction — Table 6-5 (column reductions)</span><span data-tr="zh">第二次 reduction —— Table 6-5（欄 reduction）</span></h3>
+<p><span data-tr="en">Now subtract column minimums from columns that still lack a zero:</span><span data-tr="zh">接著，對那些還沒有 0 的欄，各減掉該欄的最小值：</span></p>
+<p><span data-tr="en"><strong>Table 6-5</strong> — <em>Another Reduced Cost Matrix</em>:</span><span data-tr="zh"><strong>Table 6-5</strong> — <em>Another Reduced Cost Matrix</em>：</span></p>
 <p><img class="figure" src="../render/A05full/slide-24.png" alt="Table 6-5 Another Reduced Cost Matrix (column reductions)"></p>
-<figcaption>Table 6-5 — TSP column-reduced matrix; total reduced = 96 (lower bound).</figcaption>
+<figcaption><span data-tr="en">Table 6-5 — TSP column-reduced matrix; total reduced = 96 (lower bound).</span><span data-tr="zh">Table 6-5 —— TSP 做完欄 reduction 的矩陣；總共 reduce = 96（lower bound）。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
@@ -644,7 +663,7 @@ J2, J1, J4, J3
 <td>∞</td>
 </tr>
 <tr>
-<td><strong>col reduction</strong></td>
+<td><strong><span data-tr="en">col reduction</span><span data-tr="zh">欄 reduction</span></strong></td>
 <td></td>
 <td></td>
 <td>(−7)</td>
@@ -655,31 +674,31 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p>Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).</p>
-<p><strong>Total cost reduced: 84 + 7 + 1 + 4 = 96  (lower bound).</strong></p>
+<p><span data-tr="en">Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).</span><span data-tr="zh">欄 reduction：第 3 欄 (−7)、第 4 欄 (−1)、第 7 欄 (−4)。</span></p>
+<p><span data-tr="en"><strong>Total cost reduced: 84 + 7 + 1 + 4 = 96  (lower bound).</strong></span><span data-tr="zh"><strong>總共 reduce 掉的成本：84 + 7 + 1 + 4 = 96（lower bound）。</strong></span></p>
 <blockquote>
-<p>✅ Verified against slide 24 (Table 6-5): all cells match; the column reductions <code>(−7)(−1)(−4)</code> sit under columns 3, 4, 7. Slide circles the cells <code>17</code> (row 2, col 5) and <code>1</code> (row 3, col 2). Slide 25 states "Total cost reduced: 84+7+1+4 = 96 (lower bound)."</p>
+<p><span data-tr="en">✅ Verified against slide 24 (Table 6-5): all cells match; the column reductions <code>(−7)(−1)(−4)</code> sit under columns 3, 4, 7. Slide circles the cells <code>17</code> (row 2, col 5) and <code>1</code> (row 3, col 2). Slide 25 states "Total cost reduced: 84+7+1+4 = 96 (lower bound)."</span><span data-tr="zh">✅ 對照投影片 24（Table 6-5）：所有格子都吻合；欄 reduction <code>(−7)(−1)(−4)</code> 分別在第 3、4、7 欄底下。投影片把 <code>17</code>（第 2 列第 5 欄）跟 <code>1</code>（第 3 列第 2 欄）兩格圈了起來。投影片 25 寫著「Total cost reduced: 84+7+1+4 = 96 (lower bound)」。</span></p>
 </blockquote>
-<h3 id="decision-tree-fig-6-25-and-branching-choice">Decision tree — Fig. 6-25 and branching choice</h3>
+<h3 id="decision-tree-fig-6-25-and-branching-choice"><span data-tr="en">Decision tree — Fig. 6-25 and branching choice</span><span data-tr="zh">Decision tree —— Fig. 6-25 與分支的選擇</span></h3>
 <p><img class="figure" src="../render/A05full/slide-25.png" alt="Fig 6-25 The Highest Level of a Decision Tree"></p>
-<figcaption>Fig. 6-25 — Top level of the TSP decision tree (split on arc 4-6; LB 96 / 128).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-25 — Top level of the TSP decision tree (split on arc 4-6; LB 96 / 128).</span><span data-tr="zh">Fig. 6-25 —— TSP decision tree 的最上層（用 arc 4-6 分裂；LB 96 / 128）。</span></figcaption>
 
 <ul>
-<li><strong>Fig. 6-25</strong> — <em>The Highest Level of a Decision Tree.</em> ✅ Verified against slide 25. The root box "All solutions" has <strong>Lower bound = 96</strong>. It splits into:</li>
-<li><strong>"All solutions with arc 4-6"</strong> — Lower bound = <strong>96</strong> (including the zero-cost arc 4→6 adds nothing).</li>
-<li><strong>"All solutions without arc 4-6"</strong> — Lower bound = <strong>96 + 32 = 128</strong> (excluding arc 4→6 forces the next-cheapest entry, penalty 32).</li>
-<li><strong>Choosing the splitting arc:</strong> pick the zero-cost arc whose <em>exclusion</em> raises the bound the most. Arc <strong>4-6</strong> is chosen because its exclusion penalty (<strong>32</strong>) is the largest.</li>
-<li>The slide also notes a comparison: "If we use arc <strong>3-5</strong> to split, the difference on the lower bounds is <strong>17 + 1 = 18</strong>" — smaller than 32, so 4-6 wins.</li>
+<li><span data-tr="en"><strong>Fig. 6-25</strong> — <em>The Highest Level of a Decision Tree.</em> ✅ Verified against slide 25. The root box "All solutions" has <strong>Lower bound = 96</strong>. It splits into:</span><span data-tr="zh"><strong>Fig. 6-25</strong> — <em>The Highest Level of a Decision Tree.</em> ✅ 對照投影片 25。root 的「All solutions」框的 <strong>Lower bound = 96</strong>。它分裂成：</span></li>
+<li><span data-tr="en"><strong>"All solutions with arc 4-6"</strong> — Lower bound = <strong>96</strong> (including the zero-cost arc 4→6 adds nothing).</span><span data-tr="zh"><strong>「All solutions with arc 4-6」</strong> —— Lower bound = <strong>96</strong>（arc 4→6 成本是 0，納進來不會多花）。</span></li>
+<li><span data-tr="en"><strong>"All solutions without arc 4-6"</strong> — Lower bound = <strong>96 + 32 = 128</strong> (excluding arc 4→6 forces the next-cheapest entry, penalty 32).</span><span data-tr="zh"><strong>「All solutions without arc 4-6」</strong> —— Lower bound = <strong>96 + 32 = 128</strong>（不准用 arc 4→6，就被逼著用次便宜的選項，懲罰 32）。</span></li>
+<li><span data-tr="en"><strong>Choosing the splitting arc:</strong> pick the zero-cost arc whose <em>exclusion</em> raises the bound the most. Arc <strong>4-6</strong> is chosen because its exclusion penalty (<strong>32</strong>) is the largest.</span><span data-tr="zh"><strong>怎麼挑要分裂的 arc：</strong>挑一個成本為 0 的 arc，<em>不用它</em>時會把 bound 抬最高的那個。這裡選 arc <strong>4-6</strong>，因為它被排除的懲罰（<strong>32</strong>）最大。</span></li>
+<li><span data-tr="en">The slide also notes a comparison: "If we use arc <strong>3-5</strong> to split, the difference on the lower bounds is <strong>17 + 1 = 18</strong>" — smaller than 32, so 4-6 wins.</span><span data-tr="zh">投影片也做了個比較：「如果改用 arc <strong>3-5</strong> 來分裂，lower bound 的差距是 <strong>17 + 1 = 18</strong>」 —— 比 32 小，所以 4-6 勝出。</span></li>
 </ul>
 <blockquote>
-<p>✅ Verified against slide 25: arc <strong>4-6</strong> is the splitting arc (penalty 32, giving the 96/128 split shown in Fig. 6-25); the 3-5 alternative would only give penalty 18. The "with 4-6" subtree (LB still 96) is expanded next via Tables 6-6/6-7.</p>
+<p><span data-tr="en">✅ Verified against slide 25: arc <strong>4-6</strong> is the splitting arc (penalty 32, giving the 96/128 split shown in Fig. 6-25); the 3-5 alternative would only give penalty 18. The "with 4-6" subtree (LB still 96) is expanded next via Tables 6-6/6-7.</span><span data-tr="zh">✅ 對照投影片 25：分裂用的 arc 是 <strong>4-6</strong>（懲罰 32，對應 Fig. 6-25 的 96/128 分裂）；用 3-5 的話懲罰只有 18。「with 4-6」這棵 subtree（LB 還是 96）接著用 Table 6-6／6-7 展開。</span></p>
 </blockquote>
-<h3 id="including-arc-4-6-tables-6-6-and-6-7">Including arc 4-6 — Tables 6-6 and 6-7</h3>
+<h3 id="including-arc-4-6-tables-6-6-and-6-7"><span data-tr="en">Including arc 4-6 — Tables 6-6 and 6-7</span><span data-tr="zh">納入 arc 4-6 —— Table 6-6 與 6-7</span></h3>
 <ul>
-<li><strong>Table 6-6</strong> — <em>A Reduced Cost Matrix if Arc 4-6 is Included.</em> Including arc 4→6 means we delete <strong>row 4</strong> and <strong>column 6</strong>, and set entry <code>(6,4) = ∞</code> (to forbid the premature subtour 4→6→4). ✅ Verified against slide 26 (columns 1,2,3,4,5,7; the <code>(6,4)=∞</code> cell is circled on the slide):</li>
+<li><span data-tr="en"><strong>Table 6-6</strong> — <em>A Reduced Cost Matrix if Arc 4-6 is Included.</em> Including arc 4→6 means we delete <strong>row 4</strong> and <strong>column 6</strong>, and set entry <code>(6,4) = ∞</code> (to forbid the premature subtour 4→6→4). ✅ Verified against slide 26 (columns 1,2,3,4,5,7; the <code>(6,4)=∞</code> cell is circled on the slide):</span><span data-tr="zh"><strong>Table 6-6</strong> — <em>A Reduced Cost Matrix if Arc 4-6 is Included.</em> 把 arc 4→6 納進來，意思就是刪掉<strong>第 4 列</strong>跟<strong>第 6 欄</strong>，並把 <code>(6,4)</code> 那格設成 <code>∞</code>（避免提早形成 4→6→4 這種小迴圈 subtour）。✅ 對照投影片 26（欄位 1,2,3,4,5,7；<code>(6,4)=∞</code> 那格在投影片上被圈起來）：</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-26.png" alt="Table 6-6 A Reduced Cost Matrix if Arc 4-6 is Included"></p>
-<figcaption>Table 6-6 — Reduced matrix with arc 4-6 included; (6,4)=∞ circled.</figcaption>
+<figcaption><span data-tr="en">Table 6-6 — Reduced matrix with arc 4-6 included; (6,4)=∞ circled.</span><span data-tr="zh">Table 6-6 —— 納入 arc 4-6 後的 reduced 矩陣；(6,4)=∞ 被圈起來。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
@@ -750,10 +769,10 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p>(Note: in Table 6-6 row 5 is still <code>3,21,56,7,∞,28</code> — not yet reduced. Reducing row 5 by its minimum 3 gives Table 6-7.)</p>
-<p><strong>Table 6-7</strong> — <em>A Reduced Cost Matrix for that in Table 6-6</em> (rows/cols 4 and 6 removed; row 5 further reduced by −3). ✅ Verified cell-by-cell against slide 27:</p>
+<p><span data-tr="en">(Note: in Table 6-6 row 5 is still <code>3,21,56,7,∞,28</code> — not yet reduced. Reducing row 5 by its minimum 3 gives Table 6-7.)</span><span data-tr="zh">（注意：Table 6-6 的第 5 列還是 <code>3,21,56,7,∞,28</code> —— 還沒 reduce。把第 5 列減掉它的最小值 3，就得到 Table 6-7。）</span></p>
+<p><span data-tr="en"><strong>Table 6-7</strong> — <em>A Reduced Cost Matrix for that in Table 6-6</em> (rows/cols 4 and 6 removed; row 5 further reduced by −3). ✅ Verified cell-by-cell against slide 27:</span><span data-tr="zh"><strong>Table 6-7</strong> — <em>A Reduced Cost Matrix for that in Table 6-6</em>（第 4 列／欄、第 6 列／欄已移除；第 5 列再 reduce 掉 −3）。✅ 對照投影片 27 逐格確認：</span></p>
 <p><img class="figure" src="../render/A05full/slide-27.png" alt="Table 6-7 A Reduced Cost Matrix for that in Table 6-6"></p>
-<figcaption>Table 6-7 — Row 5 further reduced by −3; new lower bound 99.</figcaption>
+<figcaption><span data-tr="en">Table 6-7 — Row 5 further reduced by −3; new lower bound 99.</span><span data-tr="zh">Table 6-7 —— 第 5 列再 reduce 掉 −3；新的 lower bound 是 99。</span></figcaption>
 
 <div class="tablewrap"><table>
 <thead>
@@ -765,7 +784,7 @@ J2, J1, J4, J3
 <th>4</th>
 <th>5</th>
 <th>7</th>
-<th>reduction</th>
+<th><span data-tr="en">reduction</span><span data-tr="zh">reduction</span></th>
 </tr>
 </thead>
 <tbody>
@@ -831,37 +850,37 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p>Row 5 here carries an extra reduction <strong>(−3)</strong>.</p>
-<p><strong>Total cost reduced: 96 + 3 = 99  (new lower bound)</strong> for the subtree where arc 4-6 is included.</p>
+<p><span data-tr="en">Row 5 here carries an extra reduction <strong>(−3)</strong>.</span><span data-tr="zh">這裡第 5 列多扣了一個 <strong>(−3)</strong>。</span></p>
+<p><span data-tr="en"><strong>Total cost reduced: 96 + 3 = 99  (new lower bound)</strong> for the subtree where arc 4-6 is included.</span><span data-tr="zh">對「納入 arc 4-6」這棵 subtree 來說，<strong>總共 reduce 掉的成本：96 + 3 = 99（新的 lower bound）</strong>。</span></p>
 <blockquote>
-<p>✅ Verified against slides 26 (Table 6-6) and 27 (Table 6-7): every cell confirmed. Slide 27 prints "Total cost reduced: 96+3 = 99 (new lower bound)."</p>
+<p><span data-tr="en">✅ Verified against slides 26 (Table 6-6) and 27 (Table 6-7): every cell confirmed. Slide 27 prints "Total cost reduced: 96+3 = 99 (new lower bound)."</span><span data-tr="zh">✅ 對照投影片 26（Table 6-6）跟 27（Table 6-7）：每一格都確認過。投影片 27 印著「Total cost reduced: 96+3 = 99 (new lower bound)」。</span></p>
 </blockquote>
 <ul>
-<li><strong>Fig. 6-26</strong> — <em>A Branch-and-Bound Solution of a Traveling Salesperson Problem.</em> Continue branching on arcs, propagating lower bounds, pruning subtrees whose bound ≥ best tour found, until the optimal tour is isolated.</li>
+<li><span data-tr="en"><strong>Fig. 6-26</strong> — <em>A Branch-and-Bound Solution of a Traveling Salesperson Problem.</em> Continue branching on arcs, propagating lower bounds, pruning subtrees whose bound ≥ best tour found, until the optimal tour is isolated.</span><span data-tr="zh"><strong>Fig. 6-26</strong> — <em>A Branch-and-Bound Solution of a Traveling Salesperson Problem.</em> 繼續對 arc 做分支、把 lower bound 往下傳，凡是 bound ≥ 目前最佳 tour 的 subtree 就砍掉，一路做到把最佳 tour 鎖定為止。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-28.png" alt="Fig 6-26 A Branch-and-Bound Solution of a Traveling Salesperson Problem"></p>
-<figcaption>Fig. 6-26 — Full TSP B&B tree; optimal tour 1-4-6-7-3-5-2-1, cost 126.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-26 — Full TSP B&B tree; optimal tour 1-4-6-7-3-5-2-1, cost 126.</span><span data-tr="zh">Fig. 6-26 —— 完整的 TSP B&B 樹；最佳 tour 1-4-6-7-3-5-2-1，成本 126。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 28 (Fig. 6-26): the full B&amp;B tree is transcribed. Spine bounds: All=96, With/Without 4-6 = 99/128, With/Without 3-5 = 99/117, With/Without 2-1 = 112/125, With/Without 1-4 = 126/153, With/Without 6-7 = 126/141, With/Without 5-2 = 126/(no soln), With/Without 7-3 = Solution/(no soln). <strong>Optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126.</strong> Slide 28 also draws the tour itself (arrows 1→4→6→7→3→5→2→1 over the 7 city dots).</p>
+<p><span data-tr="en">✅ Verified against slide 28 (Fig. 6-26): the full B&amp;B tree is transcribed. Spine bounds: All=96, With/Without 4-6 = 99/128, With/Without 3-5 = 99/117, With/Without 2-1 = 112/125, With/Without 1-4 = 126/153, With/Without 6-7 = 126/141, With/Without 5-2 = 126/(no soln), With/Without 7-3 = Solution/(no soln). <strong>Optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126.</strong> Slide 28 also draws the tour itself (arrows 1→4→6→7→3→5→2→1 over the 7 city dots).</span><span data-tr="zh">✅ 對照投影片 28（Fig. 6-26）：整棵 B&amp;B 樹都抄下來了。主幹的 bound：All=96，With/Without 4-6 = 99/128，With/Without 3-5 = 99/117，With/Without 2-1 = 112/125，With/Without 1-4 = 126/153，With/Without 6-7 = 126/141，With/Without 5-2 = 126/(無解)，With/Without 7-3 = Solution/(無解)。<strong>最佳 tour <code>1-4-6-7-3-5-2-1</code>，Cost = 126。</strong>投影片 28 還把這條 tour 本身畫出來（在 7 個城市點上用箭頭 1→4→6→7→3→5→2→1 串起來）。</span></p>
 </blockquote>
 <hr />
-<h2 id="10-the-01-knapsack-problem-via-branch-and-bound">10. The 0/1 Knapsack Problem via Branch-and-Bound</h2>
-<h3 id="problem_2">Problem</h3>
+<h2 id="10-the-01-knapsack-problem-via-branch-and-bound"><span data-tr="en">10. The 0/1 Knapsack Problem via Branch-and-Bound</span><span data-tr="zh">10. 0/1 Knapsack 問題用 Branch-and-Bound 解</span></h2>
+<h3 id="problem_2"><span data-tr="en">Problem</span><span data-tr="zh">問題</span></h3>
 <ul>
-<li>Positive integers: profits <code>P₁, P₂, …, Pₙ</code>; weights <code>W₁, W₂, …, Wₙ</code>; capacity <code>M</code>.</li>
-<li>Choose <code>Xᵢ ∈ {0, 1}</code> to <strong>maximize</strong> <code>Σ PᵢXᵢ</code> subject to <code>Σ WᵢXᵢ ≤ M</code>.</li>
-<li>Slides minimize the <em>negative</em> profit (so it becomes a minimization B&amp;B): objective value <code>−Σ PᵢXᵢ</code>.</li>
+<li><span data-tr="en">Positive integers: profits <code>P₁, P₂, …, Pₙ</code>; weights <code>W₁, W₂, …, Wₙ</code>; capacity <code>M</code>.</span><span data-tr="zh">一堆正整數：利潤 <code>P₁, P₂, …, Pₙ</code>；重量 <code>W₁, W₂, …, Wₙ</code>；容量 <code>M</code>。</span></li>
+<li><span data-tr="en">Choose <code>Xᵢ ∈ {0, 1}</code> to <strong>maximize</strong> <code>Σ PᵢXᵢ</code> subject to <code>Σ WᵢXᵢ ≤ M</code>.</span><span data-tr="zh">選 <code>Xᵢ ∈ {0, 1}</code>，在 <code>Σ WᵢXᵢ ≤ M</code> 的限制下，<strong>最大化</strong> <code>Σ PᵢXᵢ</code>。</span></li>
+<li><span data-tr="en">Slides minimize the <em>negative</em> profit (so it becomes a minimization B&amp;B): objective value <code>−Σ PᵢXᵢ</code>.</span><span data-tr="zh">投影片改成最小化<em>負的</em>利潤（這樣就變成一個最小化的 B&amp;B）：目標值是 <code>−Σ PᵢXᵢ</code>。</span></li>
 </ul>
-<h3 id="branching-fig-6-27">Branching — Fig. 6-27</h3>
+<h3 id="branching-fig-6-27"><span data-tr="en">Branching — Fig. 6-27</span><span data-tr="zh">Branching —— Fig. 6-27</span></h3>
 <ul>
-<li><strong>Fig. 6-27</strong> — <em>The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem.</em> At level <code>i</code> branch on <code>Xᵢ = 1</code> (include item <code>i</code>) vs <code>Xᵢ = 0</code> (exclude it).</li>
+<li><span data-tr="en"><strong>Fig. 6-27</strong> — <em>The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem.</em> At level <code>i</code> branch on <code>Xᵢ = 1</code> (include item <code>i</code>) vs <code>Xᵢ = 0</code> (exclude it).</span><span data-tr="zh"><strong>Fig. 6-27</strong> — <em>The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem.</em> 在第 <code>i</code> 層做分支：<code>Xᵢ = 1</code>（放入第 <code>i</code> 個物品）對上 <code>Xᵢ = 0</code>（不放）。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-30.png" alt="Fig 6-27 The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem"></p>
-<figcaption>Fig. 6-27 — Knapsack branching: each level splits Xᵢ=1 / Xᵢ=0.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-27 — Knapsack branching: each level splits Xᵢ=1 / Xᵢ=0.</span><span data-tr="zh">Fig. 6-27 —— Knapsack 的分支：每一層分成 Xᵢ=1 / Xᵢ=0。</span></figcaption>
 
-<h3 id="example-data-n-6-m-34">Example data — <code>n = 6, M = 34</code></h3>
-<p>Items are sorted by profit density so that <code>Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁</code>:</p>
+<h3 id="example-data-n-6-m-34"><span data-tr="en">Example data — <code>n = 6, M = 34</code></span><span data-tr="zh">範例資料 —— <code>n = 6, M = 34</code></span></h3>
+<p><span data-tr="en">Items are sorted by profit density so that <code>Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁</code>:</span><span data-tr="zh">物品先依 profit density 排序，讓 <code>Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁</code>：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -904,202 +923,204 @@ J2, J1, J4, J3
 </tr>
 </tbody>
 </table></div>
-<p>Property: <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> — items in non-increasing density order, which the greedy bound relies on.</p>
+<p><span data-tr="en">Property: <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> — items in non-increasing density order, which the greedy bound relies on.</span><span data-tr="zh">性質：<code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> —— 物品照 density 由大到小排，這正是 greedy bound 仰賴的前提。</span></p>
 <blockquote>
-<p>✅ Verified against slide 31: data <code>Pᵢ = 6,10,4,5,6,4</code> and <code>Wᵢ = 10,19,8,10,12,8</code> (n=6, M=34) and the ordering claim <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> are exactly as printed. (Densities are not numerically tabulated on the slide; the 0.60/0.53/0.50… values above are computed here.) The feasible solution <code>X1=X2=1, rest 0</code> giving upper bound <code>−(P1+P2) = −16</code> is on slide 31; "Any solution higher than −16 cannot be an optimal solution" is verbatim.</p>
+<p><span data-tr="en">✅ Verified against slide 31: data <code>Pᵢ = 6,10,4,5,6,4</code> and <code>Wᵢ = 10,19,8,10,12,8</code> (n=6, M=34) and the ordering claim <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> are exactly as printed. (Densities are not numerically tabulated on the slide; the 0.60/0.53/0.50… values above are computed here.) The feasible solution <code>X1=X2=1, rest 0</code> giving upper bound <code>−(P1+P2) = −16</code> is on slide 31; "Any solution higher than −16 cannot be an optimal solution" is verbatim.</span><span data-tr="zh">✅ 對照投影片 31：資料 <code>Pᵢ = 6,10,4,5,6,4</code>、<code>Wᵢ = 10,19,8,10,12,8</code>（n=6, M=34）跟排序宣稱 <code>(Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁)</code> 都跟投影片印的一致。（density 的數值投影片沒列；上面的 0.60/0.53/0.50… 是這裡自己算的。）可行解 <code>X1=X2=1, 其餘 0</code> 給出 upper bound <code>−(P1+P2) = −16</code> 在投影片 31；「Any solution higher than −16 cannot be an optimal solution」是原文照抄。</span></p>
 </blockquote>
-<h3 id="upper-bound-a-feasible-solution">Upper bound (a feasible solution)</h3>
-<p>A quick feasible solution gives an <strong>upper bound</strong> on the (negated) objective:</p>
+<h3 id="upper-bound-a-feasible-solution"><span data-tr="en">Upper bound (a feasible solution)</span><span data-tr="zh">Upper bound（一個可行解）</span></h3>
+<p><span data-tr="en">A quick feasible solution gives an <strong>upper bound</strong> on the (negated) objective:</span><span data-tr="zh">隨手找一個可行解，就能給（取負後的）目標一個 <strong>upper bound</strong>：</span></p>
 <pre><code>X1 = 1, X2 = 1, X3 = 0, X4 = 0, X5 = 0, X6 = 0
 weight used = W1 + W2 = 10 + 19 = 29 ≤ 34 ✓
 objective  = −(P1 + P2) = −16     (upper bound)
 </code></pre>
-<p><strong>Any solution higher than −16 cannot be an optimal solution</strong> (we are minimizing the negative profit, i.e. we will not accept anything worse than −16).</p>
-<h3 id="lower-bound-via-fractional-relaxation">Lower bound via fractional relaxation</h3>
-<p><strong>Relax the restriction from <code>Xᵢ = 0 or 1</code> to <code>0 ≤ Xᵢ ≤ 1</code></strong> — this is the (fractional) <strong>knapsack problem</strong>, solvable optimally by the <strong>greedy method</strong> (fill by decreasing density until capacity runs out, taking a fraction of the last item):</p>
+<p><span data-tr="en"><strong>Any solution higher than −16 cannot be an optimal solution</strong> (we are minimizing the negative profit, i.e. we will not accept anything worse than −16).</span><span data-tr="zh"><strong>任何比 −16 還大的解都不可能是最佳解</strong>（因為我們在最小化負利潤，也就是說比 −16 還差的都不收）。</span></p>
+<h3 id="lower-bound-via-fractional-relaxation"><span data-tr="en">Lower bound via fractional relaxation</span><span data-tr="zh">用 fractional relaxation 算 lower bound</span></h3>
+<p><span data-tr="en"><strong>Relax the restriction from <code>Xᵢ = 0 or 1</code> to <code>0 ≤ Xᵢ ≤ 1</code></strong> — this is the (fractional) <strong>knapsack problem</strong>, solvable optimally by the <strong>greedy method</strong> (fill by decreasing density until capacity runs out, taking a fraction of the last item):</span><span data-tr="zh"><strong>把限制從 <code>Xᵢ = 0 或 1</code> 放寬成 <code>0 ≤ Xᵢ ≤ 1</code></strong> —— 這就是（分數版）<strong>knapsack problem</strong>，可以用 <strong>greedy 法</strong>直接解到最佳（照 density 由大到小一直塞，塞到容量用完，最後一個物品就拿一部分）：</span></p>
 <pre><code>X1 = 1, X2 = 1, X3 = 5/8, X4 = 0, X5 = 0, X6 = 0
 weight = 10 + 19 + (5/8)(8) = 10 + 19 + 5 = 34 = M  ✓ (capacity exactly full)
 objective = −(P1 + P2 + (5/8)P3) = −(6 + 10 + 2.5) = −18.5   (lower bound)
 </code></pre>
-<p>Since the true 0/1 objective must be an integer, the lower bound rounds to <strong>−18</strong> (only integer solutions count).</p>
-<p><strong>Therefore:</strong></p>
+<p><span data-tr="en">Since the true 0/1 objective must be an integer, the lower bound rounds to <strong>−18</strong> (only integer solutions count).</span><span data-tr="zh">因為真正的 0/1 目標值一定是整數，所以這個 lower bound 進位成 <strong>−18</strong>（只有整數解算數）。</span></p>
+<p><span data-tr="en"><strong>Therefore:</strong></span><span data-tr="zh"><strong>所以：</strong></span></p>
 <pre><code>−18 ≤ optimal solution ≤ −16
 </code></pre>
-<h3 id="optimal-solution">Optimal solution</h3>
-<p>After completing the branch-and-bound search:</p>
+<h3 id="optimal-solution"><span data-tr="en">Optimal solution</span><span data-tr="zh">最佳解</span></h3>
+<p><span data-tr="en">After completing the branch-and-bound search:</span><span data-tr="zh">跑完整個 branch-and-bound 搜尋之後：</span></p>
 <pre><code>optimal solution: X1 = 1, X2 = 0, X3 = 0, X4 = 1, X5 = 1, X6 = 0
 weight = W1 + W4 + W5 = 10 + 10 + 12 = 32 ≤ 34 ✓
 objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </code></pre>
-<p>This <code>−17</code> lies inside <code>[−18, −16]</code>, consistent with the bounds.</p>
+<p><span data-tr="en">This <code>−17</code> lies inside <code>[−18, −16]</code>, consistent with the bounds.</span><span data-tr="zh">這個 <code>−17</code> 落在 <code>[−18, −16]</code> 裡面，跟前面算的 bound 對得起來。</span></p>
 <ul>
-<li><strong>Fig. 6-28</strong> — <em>0/1 Knapsack Problem Solved by Branch-and-Bound Strategy</em> shows the full tree with per-node upper/lower bounds and pruning.</li>
+<li><span data-tr="en"><strong>Fig. 6-28</strong> — <em>0/1 Knapsack Problem Solved by Branch-and-Bound Strategy</em> shows the full tree with per-node upper/lower bounds and pruning.</span><span data-tr="zh"><strong>Fig. 6-28</strong> — <em>0/1 Knapsack Problem Solved by Branch-and-Bound Strategy</em> 畫了整棵樹，標出每個節點的 upper／lower bound 跟 prune 的情況。</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-34.png" alt="Fig 6-28 0/1 Knapsack Problem Solved by Branch-and-Bound Strategy"></p>
-<figcaption>Fig. 6-28 — Knapsack B&B tree (nodes 0–30); optimum −17 at node 14 branch.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-28 — Knapsack B&B tree (nodes 0–30); optimum −17 at node 14 branch.</span><span data-tr="zh">Fig. 6-28 —— Knapsack 的 B&B 樹（節點 0–30）；最佳值 −17 在 node 14 那條分支。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 34 (Fig. 6-28): all per-node U.B./L.B. values for nodes 0–30 are transcribed. Root node 0 = (U.B. −16, L.B. −18); node 14 is annotated "(a good upper bound is found here)" with U.B.=−17; the optimal −17 is reached on the X1=0 (node 14) sub-branch (nodes 15/16/17/18/20 circled in red on the slide). Slides 32–33 confirm the fractional-relaxation lower bound: <code>X3 = 5/8</code>, <code>−(P1+P2+⅝P3) = −18.5</code> → rounded <code>−18</code>, so <code>−18 ≤ optimal ≤ −16</code>, and optimal <code>X1=1,X4=1,X5=1</code> (rest 0) → <code>−(P1+P4+P5) = −17</code>. The weight sums (29, 34, 32) are computed here from the data.</p>
+<p><span data-tr="en">✅ Verified against slide 34 (Fig. 6-28): all per-node U.B./L.B. values for nodes 0–30 are transcribed. Root node 0 = (U.B. −16, L.B. −18); node 14 is annotated "(a good upper bound is found here)" with U.B.=−17; the optimal −17 is reached on the X1=0 (node 14) sub-branch (nodes 15/16/17/18/20 circled in red on the slide). Slides 32–33 confirm the fractional-relaxation lower bound: <code>X3 = 5/8</code>, <code>−(P1+P2+⅝P3) = −18.5</code> → rounded <code>−18</code>, so <code>−18 ≤ optimal ≤ −16</code>, and optimal <code>X1=1,X4=1,X5=1</code> (rest 0) → <code>−(P1+P4+P5) = −17</code>. The weight sums (29, 34, 32) are computed here from the data.</span><span data-tr="zh">✅ 對照投影片 34（Fig. 6-28）：節點 0–30 每個的 U.B./L.B. 值都抄下來了。Root node 0 = (U.B. −16, L.B. −18)；node 14 標了「(a good upper bound is found here)」，U.B.=−17；最佳值 −17 是在 X1=0（node 14）這條子分支上達成的（投影片上把 node 15/16/17/18/20 圈成紅色）。投影片 32–33 確認了 fractional-relaxation 的 lower bound：<code>X3 = 5/8</code>、<code>−(P1+P2+⅝P3) = −18.5</code> → 進位成 <code>−18</code>，所以 <code>−18 ≤ optimal ≤ −16</code>，最佳解 <code>X1=1,X4=1,X5=1</code>（其餘 0）→ <code>−(P1+P4+P5) = −17</code>。重量總和（29, 34, 32）是這裡依資料自己算的。</span></p>
 </blockquote>
 <hr />
-<h2 id="11-the-a-algorithm">11. The A* Algorithm</h2>
-<h3 id="idea_6">Idea</h3>
-<p>A* is used to <strong>solve optimization problems</strong> with the <strong>best-first strategy</strong>, but with a special cost function that guarantees optimality. <strong>If a feasible solution (goal node) is obtained, then it is optimal and we can stop.</strong></p>
-<h3 id="cost-function">Cost function</h3>
-<p>For each node <code>n</code>:</p>
+<h2 id="11-the-a-algorithm"><span data-tr="en">11. The A* Algorithm</span><span data-tr="zh">11. A* 演算法</span></h2>
+<h3 id="idea_6"><span data-tr="en">Idea</span><span data-tr="zh">想法</span></h3>
+<p><span data-tr="en">A* is used to <strong>solve optimization problems</strong> with the <strong>best-first strategy</strong>, but with a special cost function that guarantees optimality. <strong>If a feasible solution (goal node) is obtained, then it is optimal and we can stop.</strong></span><span data-tr="zh">A* 是拿 <strong>best-first 策略</strong>來<strong>解 optimization 問題</strong>，但配上一個特別的 cost function 來保證最佳性。<strong>只要拿到一個可行解（goal node），它就一定是最佳的，可以直接停。</strong></span></p>
+<h3 id="cost-function"><span data-tr="en">Cost function</span><span data-tr="zh">Cost function</span></h3>
+<p><span data-tr="en">For each node <code>n</code>:</span><span data-tr="zh">對每個節點 <code>n</code>：</span></p>
 <pre><code>f(n) = g(n) + h(n)
    g(n): actual cost from the root to node n.
    h(n): estimated cost from node n to a goal node.
    h*(n): the &quot;real&quot; (true minimum) cost from node n to a goal node.
 </code></pre>
-<p><strong>Admissibility condition:</strong> the heuristic must never overestimate:</p>
+<p><span data-tr="en"><strong>Admissibility condition:</strong> the heuristic must never overestimate:</span><span data-tr="zh"><strong>Admissibility 條件：</strong>heuristic 絕對不能高估：</span></p>
 <pre><code>h(n) ≤ h*(n)
 ⇒  f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)
 </code></pre>
-<p>i.e. <code>f(n)</code> is a <em>lower bound</em> on the best total cost of any solution through <code>n</code>. This is what makes the first goal reached optimal.</p>
-<h3 id="stopping-rule">Stopping rule</h3>
-<p><strong>Stop iff the selected (expanded) node is also a goal node.</strong> (Reaching a goal node in the list is not enough — it must be the node with the smallest <code>f</code>, i.e. the one selected for expansion.)</p>
-<h3 id="worked-example-fig-6-36-slides-3642">Worked example — Fig. 6-36 (slides 36–42)</h3>
+<p><span data-tr="en">i.e. <code>f(n)</code> is a <em>lower bound</em> on the best total cost of any solution through <code>n</code>. This is what makes the first goal reached optimal.</span><span data-tr="zh">也就是說 <code>f(n)</code> 是「任何經過 <code>n</code> 的解，其最佳總成本」的一個 <em>lower bound</em>。正是這點，讓第一個碰到的 goal 就是最佳的。</span></p>
+<h3 id="stopping-rule"><span data-tr="en">Stopping rule</span><span data-tr="zh">停止條件</span></h3>
+<p><span data-tr="en"><strong>Stop iff the selected (expanded) node is also a goal node.</strong> (Reaching a goal node in the list is not enough — it must be the node with the smallest <code>f</code>, i.e. the one selected for expansion.)</span><span data-tr="zh"><strong>當且僅當你選中（要展開）的那個節點剛好也是 goal node，才停。</strong>（光是 list 裡出現一個 goal node 還不夠 —— 它必須是 <code>f</code> 最小、被挑出來要展開的那個。）</span></p>
+<h3 id="worked-example-fig-6-36-slides-3642"><span data-tr="en">Worked example — Fig. 6-36 (slides 36–42)</span><span data-tr="zh">完整範例 —— Fig. 6-36（投影片 36–42）</span></h3>
 <p><img class="figure" src="../render/A05full/slide-36.png" alt="Fig 6-36 A Graph to Illustrate A* Algorithm"></p>
-<figcaption>Fig. 6-36 — Layered graph S→V₁..V₅→T for the A* worked example.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-36 — Layered graph S→V₁..V₅→T for the A* worked example.</span><span data-tr="zh">Fig. 6-36 —— A* 範例用的分層圖 S→V₁..V₅→T。</span></figcaption>
 
 <ul>
-<li><strong>Fig. 6-36</strong> — <em>A Graph to Illustrate A* Algorithm</em> (slide 36). The search graph (NOT a tree — it is the layered graph <code>S→V₁..V₅→T</code>; see Appendix A for the literal Fig. 6-36 graph). The <strong>A* search tree</strong> is built on it across slides 37–42, with the underlying graph relabeled <code>R, A, B, C, D, E, F, G, H, I, J, K, L</code>. The slides walk the expansion order with full <code>g/h/f</code> bookkeeping:</li>
+<li><span data-tr="en"><strong>Fig. 6-36</strong> — <em>A Graph to Illustrate A* Algorithm</em> (slide 36). The search graph (NOT a tree — it is the layered graph <code>S→V₁..V₅→T</code>; see Appendix A for the literal Fig. 6-36 graph). The <strong>A* search tree</strong> is built on it across slides 37–42, with the underlying graph relabeled <code>R, A, B, C, D, E, F, G, H, I, J, K, L</code>. The slides walk the expansion order with full <code>g/h/f</code> bookkeeping:</span><span data-tr="zh"><strong>Fig. 6-36</strong> — <em>A Graph to Illustrate A* Algorithm</em>（投影片 36）。這是搜尋的圖（<strong>不是</strong>樹 —— 它是分層圖 <code>S→V₁..V₅→T</code>；Fig. 6-36 原圖看附錄 A）。<strong>A* 搜尋樹</strong>就建在它上面，橫跨投影片 37–42，底層的圖被重新標成 <code>R, A, B, C, D, E, F, G, H, I, J, K, L</code>。投影片帶你走過整個展開順序，並完整記下每步的 <code>g/h/f</code>：</span></li>
 </ul>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Step (slide)</th>
-<th>Action</th>
-<th>New <code>g/h/f</code> values shown</th>
+<th><span data-tr="en">Step (slide)</span><span data-tr="zh">步驟（投影片）</span></th>
+<th><span data-tr="en">Action</span><span data-tr="zh">動作</span></th>
+<th><span data-tr="en">New <code>g/h/f</code> values shown</span><span data-tr="zh">新出現的 <code>g/h/f</code> 值</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1 (37)</td>
-<td>Form list with root R; children A,B,C</td>
+<td><span data-tr="en">Form list with root R; children A,B,C</span><span data-tr="zh">建一個含 root R 的 list；小孩有 A,B,C</span></td>
 <td>A(g2,h2,f4), B(g4,h2,f6), C(g3,h2,f5)</td>
 </tr>
 <tr>
 <td>2 (38)</td>
-<td><strong>Expand A</strong> (smallest f=4)</td>
+<td><span data-tr="en"><strong>Expand A</strong> (smallest f=4)</span><span data-tr="zh"><strong>展開 A</strong>（f=4 最小）</span></td>
 <td>D(g4,h1,f5), E(g5,h2,f7)</td>
 </tr>
 <tr>
 <td>3 (39)</td>
-<td><strong>Expand C</strong> (f=5)</td>
+<td><span data-tr="en"><strong>Expand C</strong> (f=5)</span><span data-tr="zh"><strong>展開 C</strong>（f=5）</span></td>
 <td>F(g5,h1,f6), G(g5,h5,f10)</td>
 </tr>
 <tr>
 <td>4 (40)</td>
-<td><strong>Expand D</strong> (f=5)</td>
+<td><span data-tr="en"><strong>Expand D</strong> (f=5)</span><span data-tr="zh"><strong>展開 D</strong>（f=5）</span></td>
 <td>H(g5,h5,f10), I(g7,h0,f7)</td>
 </tr>
 <tr>
 <td>5 (41)</td>
-<td><strong>Expand B</strong> (f=6)</td>
+<td><span data-tr="en"><strong>Expand B</strong> (f=6)</span><span data-tr="zh"><strong>展開 B</strong>（f=6）</span></td>
 <td>J(g6,h5,f11)</td>
 </tr>
 <tr>
 <td>6 (42)</td>
-<td><strong>Expand F</strong> (f=6)</td>
+<td><span data-tr="en"><strong>Expand F</strong> (f=6)</span><span data-tr="zh"><strong>展開 F</strong>（f=6）</span></td>
 <td>K(g6,h5,f11), L(g8,h0,f8)</td>
 </tr>
 </tbody>
 </table></div>
-<p>After step 6, the smallest-<code>f</code> open node is <strong>I (f = 7)</strong>, and <strong>I is the goal node</strong> → stop, optimal.</p>
+<p><span data-tr="en">After step 6, the smallest-<code>f</code> open node is <strong>I (f = 7)</strong>, and <strong>I is the goal node</strong> → stop, optimal.</span><span data-tr="zh">走完第 6 步，還沒展開的節點裡 <code>f</code> 最小的是 <strong>I（f = 7）</strong>，而 <strong>I 就是 goal node</strong> → 停，已經是最佳解。</span></p>
 <blockquote>
-<p>✅ Verified against slides 36–42: edges <code>R→A(a,2), R→B(b,4), R→C(c,3), A→D(d,2), A→E(e,3), C→F(k,2), C→G(f,2), D→H(h,1), D→I(i,3), B→J(g,2), F→K(h,1), F→L(l,3)</code> and all <code>g/h/f</code> values as tabulated. <strong>Correction:</strong> the goal node is <strong>I</strong>, not F (slide 42 prints "I is a goal node !"); F is merely the last node <em>expanded</em>. Expansion order: <strong>A → C → D → B → F</strong>, terminating by selecting goal I.</p>
+<p><span data-tr="en">✅ Verified against slides 36–42: edges <code>R→A(a,2), R→B(b,4), R→C(c,3), A→D(d,2), A→E(e,3), C→F(k,2), C→G(f,2), D→H(h,1), D→I(i,3), B→J(g,2), F→K(h,1), F→L(l,3)</code> and all <code>g/h/f</code> values as tabulated. <strong>Correction:</strong> the goal node is <strong>I</strong>, not F (slide 42 prints "I is a goal node !"); F is merely the last node <em>expanded</em>. Expansion order: <strong>A → C → D → B → F</strong>, terminating by selecting goal I.</span><span data-tr="zh">✅ 對照投影片 36–42：邊 <code>R→A(a,2), R→B(b,4), R→C(c,3), A→D(d,2), A→E(e,3), C→F(k,2), C→G(f,2), D→H(h,1), D→I(i,3), B→J(g,2), F→K(h,1), F→L(l,3)</code> 跟上表所有 <code>g/h/f</code> 值都對得上。<strong>更正：</strong>goal node 是 <strong>I</strong>，不是 F（投影片 42 印「I is a goal node !」）；F 只是最後一個被<em>展開</em>的節點。展開順序：<strong>A → C → D → B → F</strong>，最後挑中 goal I 而結束。</span></p>
 </blockquote>
 <hr />
-<h2 id="12-the-channel-routing-problem-a">12. The Channel Routing Problem (A*)</h2>
-<h3 id="problem_3">Problem</h3>
-<p>In VLSI layout, a <strong>channel</strong> is a rectangular region with terminals (pins) on its top and bottom edges. Each <strong>net</strong> connects a set of terminals. Wires run in horizontal <strong>tracks</strong> (and vertical segments). Goal: <strong>find a routing that minimizes the number of tracks.</strong> <strong>This problem is NP-complete.</strong></p>
+<h2 id="12-the-channel-routing-problem-a"><span data-tr="en">12. The Channel Routing Problem (A*)</span><span data-tr="zh">12. Channel Routing 問題（A*）</span></h2>
+<h3 id="problem_3"><span data-tr="en">Problem</span><span data-tr="zh">問題</span></h3>
+<p><span data-tr="en">In VLSI layout, a <strong>channel</strong> is a rectangular region with terminals (pins) on its top and bottom edges. Each <strong>net</strong> connects a set of terminals. Wires run in horizontal <strong>tracks</strong> (and vertical segments). Goal: <strong>find a routing that minimizes the number of tracks.</strong> <strong>This problem is NP-complete.</strong></span><span data-tr="zh">在 VLSI 佈線裡，<strong>channel</strong> 是一塊長方形區域，上下兩邊都有一排 terminal（接腳）。每個 <strong>net</strong> 要把一組 terminal 接在一起。線會走在水平的 <strong>track</strong>（軌道）上，外加一些垂直段。目標：<strong>找一個 routing，讓用到的 track 數最少。</strong><strong>這題是 NP-complete。</strong></span></p>
 <ul>
-<li><strong>Fig. 6-40</strong> — <em>A Channel Specification</em> (slide 43). ✅ Verified. 13 columns; terminal numbers (a net number, <code>0</code> = no terminal):</li>
+<li><span data-tr="en"><strong>Fig. 6-40</strong> — <em>A Channel Specification</em> (slide 43). ✅ Verified. 13 columns; terminal numbers (a net number, <code>0</code> = no terminal):</span><span data-tr="zh"><strong>Fig. 6-40</strong> — <em>A Channel Specification</em>（投影片 43）。✅ 已確認。13 個欄；terminal 上的數字代表 net 編號（<code>0</code> = 沒有 terminal）：</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-43.png" alt="Fig 6-40 A Channel Specification"></p>
-<figcaption>Fig. 6-40 — Channel specification (13 columns; top/bottom terminals + net spans).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-40 — Channel specification (13 columns; top/bottom terminals + net spans).</span><span data-tr="zh">Fig. 6-40 —— Channel 規格（13 欄；上下 terminal 加上各 net 的跨度）。</span></figcaption>
 <ul>
-<li><strong>Top row</strong> (cols 1→13): <code>4, 8, 0, 7, 0, 3, 6, 0, 0, 2, 1, 5, 0</code></li>
-<li><strong>Bottom row</strong> (cols 1→13): <code>0, 0, 7, 0, 5, 4, 0, 8, 3, 0, 2, 6, 1</code></li>
-<li>The slide also sketches each net's horizontal span (nets 7, 3, 1, 8, 2, 5, 4, 6).</li>
-<li><strong>Illegal wirings</strong> (slide 44): three example layouts of wires that short/overlap illegally are forbidden. "We want to find a routing which minimizes the number of tracks."</li>
-<li>The slides distinguish <strong>a feasible routing</strong> (slide 45 — uses <strong>7 tracks</strong>: nets placed 7→track1, 2→track2, 3→track3, 4→track4, 5→track5, 6→track6, 8→track7, etc.) from <strong>an optimal routing</strong> (slide 46 — only <strong>4 tracks</strong>). "This problem is NP-complete."</li>
+<li><span data-tr="en"><strong>Top row</strong> (cols 1→13): <code>4, 8, 0, 7, 0, 3, 6, 0, 0, 2, 1, 5, 0</code></span><span data-tr="zh"><strong>上排</strong>（欄 1→13）：<code>4, 8, 0, 7, 0, 3, 6, 0, 0, 2, 1, 5, 0</code></span></li>
+<li><span data-tr="en"><strong>Bottom row</strong> (cols 1→13): <code>0, 0, 7, 0, 5, 4, 0, 8, 3, 0, 2, 6, 1</code></span><span data-tr="zh"><strong>下排</strong>（欄 1→13）：<code>0, 0, 7, 0, 5, 4, 0, 8, 3, 0, 2, 6, 1</code></span></li>
+<li><span data-tr="en">The slide also sketches each net's horizontal span (nets 7, 3, 1, 8, 2, 5, 4, 6).</span><span data-tr="zh">投影片也畫出每個 net 的水平跨度（nets 7, 3, 1, 8, 2, 5, 4, 6）。</span></li>
+<li><span data-tr="en"><strong>Illegal wirings</strong> (slide 44): three example layouts of wires that short/overlap illegally are forbidden. "We want to find a routing which minimizes the number of tracks."</span><span data-tr="zh"><strong>不合法的接線</strong>（投影片 44）：三種會短路／非法重疊的接線方式是禁止的。「We want to find a routing which minimizes the number of tracks.」</span></li>
+<li><span data-tr="en">The slides distinguish <strong>a feasible routing</strong> (slide 45 — uses <strong>7 tracks</strong>: nets placed 7→track1, 2→track2, 3→track3, 4→track4, 5→track5, 6→track6, 8→track7, etc.) from <strong>an optimal routing</strong> (slide 46 — only <strong>4 tracks</strong>). "This problem is NP-complete."</span><span data-tr="zh">投影片區分了<strong>可行的 routing</strong>（投影片 45 —— 用了 <strong>7 條 track</strong>：net 7→track1、2→track2、3→track3、4→track4、5→track5、6→track6、8→track7…）跟<strong>最佳的 routing</strong>（投影片 46 —— 只用 <strong>4 條 track</strong>）。「This problem is NP-complete.」</span></li>
 </ul>
-<h3 id="horizontal-constraint-graph-hcg">Horizontal Constraint Graph (HCG)</h3>
+<h3 id="horizontal-constraint-graph-hcg"><span data-tr="en">Horizontal Constraint Graph (HCG)</span><span data-tr="zh">Horizontal Constraint Graph (HCG)</span></h3>
 <ul>
-<li>Nodes = nets. Captures which nets' horizontal spans <strong>overlap</strong> (if two nets overlap horizontally they cannot share a track).</li>
-<li>Example ordering rule from the slide (slide 47): <strong>"net 8 must be to the left of net 1 and net 2 if they are in the same track."</strong>
-<img class="figure" src="../render/A05full/slide-47.png" alt="Fig 6-41 Horizontal Constraint Graph (HCG)"></li>
+<li><span data-tr="en">Nodes = nets. Captures which nets' horizontal spans <strong>overlap</strong> (if two nets overlap horizontally they cannot share a track).</span><span data-tr="zh">節點 = nets。它記的是哪些 net 的水平跨度互相<strong>重疊</strong>（兩個 net 如果水平重疊，就不能共用同一條 track）。</span></li>
+<li><span data-tr="en">Example ordering rule from the slide (slide 47): <strong>"net 8 must be to the left of net 1 and net 2 if they are in the same track."</strong>
+<img class="figure" src="../render/A05full/slide-47.png" alt="Fig 6-41 Horizontal Constraint Graph (HCG)"></span><span data-tr="zh">投影片上的一條排序規則範例（投影片 47）：<strong>「net 8 must be to the left of net 1 and net 2 if they are in the same track.」</strong>
+<img class="figure" src="../render/A05full/slide-47.png" alt="Fig 6-41 Horizontal Constraint Graph (HCG)"></span></li>
 </ul>
-<figcaption>Fig. 6-41 — Horizontal Constraint Graph (HCG); tail must be left of head.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-41 — Horizontal Constraint Graph (HCG); tail must be left of head.</span><span data-tr="zh">Fig. 6-41 —— Horizontal Constraint Graph (HCG)；箭尾 net 必須在箭頭 net 的左邊。</span></figcaption>
 
 <ul>
-<li><strong>Fig. 6-41 (HCG), slide 47</strong> — ✅ Verified directed edges (tail = must-be-left-of head): <code>7→5, 7→6, 7→3, 7→1, 7→2</code>, <code>8→1, 8→2</code>, <code>4→6, 4→1, 4→2</code>, <code>3→1, 3→2</code>. (This is the directed graph the earlier note recorded as the uncaptioned <code>png_014</code> "personnel/VCG ordering graph" — it is in fact the <strong>channel-routing HCG</strong>.)</li>
-<li><strong>Maximal cliques in the HCG: <code>{1,8}</code>, <code>{1,3,7}</code>, <code>{5,7}</code>. Each maximal clique can be assigned to a track.</strong> ✅ Verified verbatim on slide 48. (A clique = a set of nets that mutually conflict; the cliques bound how many nets pile up at one horizontal position = the <em>local density</em>.)</li>
+<li><span data-tr="en"><strong>Fig. 6-41 (HCG), slide 47</strong> — ✅ Verified directed edges (tail = must-be-left-of head): <code>7→5, 7→6, 7→3, 7→1, 7→2</code>, <code>8→1, 8→2</code>, <code>4→6, 4→1, 4→2</code>, <code>3→1, 3→2</code>. (This is the directed graph the earlier note recorded as the uncaptioned <code>png_014</code> "personnel/VCG ordering graph" — it is in fact the <strong>channel-routing HCG</strong>.)</span><span data-tr="zh"><strong>Fig. 6-41 (HCG)，投影片 47</strong> — ✅ 已確認的有向邊（箭尾 = 必須在箭頭左邊）：<code>7→5, 7→6, 7→3, 7→1, 7→2</code>、<code>8→1, 8→2</code>、<code>4→6, 4→1, 4→2</code>、<code>3→1, 3→2</code>。（這就是之前筆記記成沒標題的 <code>png_014</code>「personnel/VCG ordering graph」那張有向圖 —— 其實它是 <strong>channel-routing 的 HCG</strong>。）</span></li>
+<li><span data-tr="en"><strong>Maximal cliques in the HCG: <code>{1,8}</code>, <code>{1,3,7}</code>, <code>{5,7}</code>. Each maximal clique can be assigned to a track.</strong> ✅ Verified verbatim on slide 48. (A clique = a set of nets that mutually conflict; the cliques bound how many nets pile up at one horizontal position = the <em>local density</em>.)</span><span data-tr="zh"><strong>HCG 裡的 maximal cliques：<code>{1,8}</code>、<code>{1,3,7}</code>、<code>{5,7}</code>。每個 maximal clique 都可以指派給一條 track。</strong>✅ 對照投影片 48 逐字確認。（一個 clique = 一組互相衝突的 net；這些 clique 決定了同一個水平位置最多會疊幾個 net = <em>local density</em>。）</span></li>
 </ul>
-<h3 id="vertical-constraint-graph-vcg">Vertical Constraint Graph (VCG)</h3>
+<h3 id="vertical-constraint-graph-vcg"><span data-tr="en">Vertical Constraint Graph (VCG)</span><span data-tr="zh">Vertical Constraint Graph (VCG)</span></h3>
 <ul>
-<li>Captures top/bottom precedence: if a net has a terminal on top at a column where another net has a terminal on the bottom, the top net must be routed in a track <strong>above</strong> the bottom net. These vertical constraints further restrict track assignment.</li>
-<li><strong>VCG (slide 48)</strong> — ✅ Verified edges: <code>1→2</code>, <code>3→4</code>, <code>5→6</code> (three disjoint edges; nets 7 and 8 are isolated VCG nodes). The slide annotates <strong>"e.g. net 3 must be wired before net 4."</strong></li>
+<li><span data-tr="en">Captures top/bottom precedence: if a net has a terminal on top at a column where another net has a terminal on the bottom, the top net must be routed in a track <strong>above</strong> the bottom net. These vertical constraints further restrict track assignment.</span><span data-tr="zh">它記的是上下的先後關係：如果某個 net 在某一欄上面有 terminal，而另一個 net 在同一欄下面有 terminal，那上面那個 net 的 track 就得排在下面那個 net 的<strong>上方</strong>。這些垂直限制會進一步綁住 track 的分配。</span></li>
+<li><span data-tr="en"><strong>VCG (slide 48)</strong> — ✅ Verified edges: <code>1→2</code>, <code>3→4</code>, <code>5→6</code> (three disjoint edges; nets 7 and 8 are isolated VCG nodes). The slide annotates <strong>"e.g. net 3 must be wired before net 4."</strong></span><span data-tr="zh"><strong>VCG（投影片 48）</strong> — ✅ 已確認的邊：<code>1→2</code>、<code>3→4</code>、<code>5→6</code>（三條彼此不相連的邊；net 7 跟 8 在 VCG 裡是孤立節點）。投影片標了 <strong>「e.g. net 3 must be wired before net 4.」</strong></span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-48.png" alt="Vertical Constraint Graph (VCG), max cliques, and Fig 6-46 first level"></p>
-<figcaption>VCG (1→2, 3→4, 5→6) + HCG max cliques {1,8},{1,3,7},{5,7} + Fig. 6-46 first level (root → {8,1}, {7,3,1}, {7,5}). All on slide 48.</figcaption>
+<figcaption><span data-tr="en">VCG (1→2, 3→4, 5→6) + HCG max cliques {1,8},{1,3,7},{5,7} + Fig. 6-46 first level (root → {8,1}, {7,3,1}, {7,5}). All on slide 48.</span><span data-tr="zh">VCG（1→2, 3→4, 5→6）+ HCG max cliques {1,8},{1,3,7},{5,7} + Fig. 6-46 第一層（root → {8,1}, {7,3,1}, {7,5}）。全都在投影片 48。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slide 48: the VCG is exactly the three edges 1→2, 3→4, 5→6.</p>
+<p><span data-tr="en">✅ Verified against slide 48: the VCG is exactly the three edges 1→2, 3→4, 5→6.</span><span data-tr="zh">✅ 對照投影片 48：VCG 就是 1→2、3→4、5→6 這三條邊。</span></p>
 </blockquote>
-<h3 id="solving-with-a">Solving with A*</h3>
+<h3 id="solving-with-a"><span data-tr="en">Solving with A*</span><span data-tr="zh">用 A* 來解</span></h3>
 <ul>
-<li><strong>Fig. 6-46</strong> — <em>The First Level of a Tree to Solve a Channel Routing Problem</em> (slide 48). ✅ Verified: the root branches into three children = the three maximal cliques: <strong><code>{8,1}</code>, <code>{7,3,1}</code>, <code>{7,5}</code></strong> (one per candidate first track). (Pictured on slide 48, shown above with the VCG.)</li>
-<li>Cost function (slide 49):</li>
+<li><span data-tr="en"><strong>Fig. 6-46</strong> — <em>The First Level of a Tree to Solve a Channel Routing Problem</em> (slide 48). ✅ Verified: the root branches into three children = the three maximal cliques: <strong><code>{8,1}</code>, <code>{7,3,1}</code>, <code>{7,5}</code></strong> (one per candidate first track). (Pictured on slide 48, shown above with the VCG.)</span><span data-tr="zh"><strong>Fig. 6-46</strong> — <em>The First Level of a Tree to Solve a Channel Routing Problem</em>（投影片 48）。✅ 已確認：root 分出三個小孩 = 三個 maximal clique：<strong><code>{8,1}</code>、<code>{7,3,1}</code>、<code>{7,5}</code></strong>（每個對應第一條 track 的一種候選）。（畫在投影片 48，上面跟 VCG 一起顯示。）</span></li>
+<li><span data-tr="en">Cost function (slide 49):</span><span data-tr="zh">Cost function（投影片 49）：</span></li>
 </ul>
 <pre><code>f(n) = g(n) + h(n)
    g(n): the level of the tree   (= number of tracks used so far)
    h(n): maximal local density    (a lower bound on tracks still needed)
 </code></pre>
-<p>Since <code>h(n)</code> = maximal local density never overestimates the remaining tracks needed, A* finds the minimum-track routing.
-- <strong>Fig. 6-48</strong> — <em>A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm</em> (slide 49). ✅ Verified — full tree transcribed in Appendix A. (This is the same tree the earlier note recorded as the uncaptioned <code>png_015</code> "best-first g+h tree"; it is in fact <strong>Fig. 6-48</strong>, with node states being net-cliques.)</p>
+<p><span data-tr="en">Since <code>h(n)</code> = maximal local density never overestimates the remaining tracks needed, A* finds the minimum-track routing.
+- <strong>Fig. 6-48</strong> — <em>A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm</em> (slide 49). ✅ Verified — full tree transcribed in Appendix A. (This is the same tree the earlier note recorded as the uncaptioned <code>png_015</code> "best-first g+h tree"; it is in fact <strong>Fig. 6-48</strong>, with node states being net-cliques.)</span><span data-tr="zh">因為 <code>h(n)</code> = maximal local density 永遠不會高估剩下還需要的 track 數，所以 A* 一定能找到 track 數最少的 routing。
+- <strong>Fig. 6-48</strong> — <em>A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm</em>（投影片 49）。✅ 已確認 —— 完整的樹抄在附錄 A。（這就是之前筆記記成沒標題的 <code>png_015</code>「best-first g+h tree」那棵；其實它是 <strong>Fig. 6-48</strong>，節點狀態是 net-clique。）</span></p>
 <p><img class="figure" src="../render/A05full/slide-49.png" alt="Fig 6-48 A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm"></p>
-<figcaption>Fig. 6-48 — A* partial solution tree for channel routing; goal at node I.</figcaption>
+<figcaption><span data-tr="en">Fig. 6-48 — A* partial solution tree for channel routing; goal at node I.</span><span data-tr="zh">Fig. 6-48 —— channel routing 的 A* 部分解樹；goal 在節點 I。</span></figcaption>
 
 <blockquote>
-<p>✅ Verified against slides 43–49: Fig. 6-40 channel spec, the HCG (slide 47) and VCG (slide 48) edge lists, the three maximal cliques <code>{1,8},{1,3,7},{5,7}</code>, the Fig. 6-46 first level, and the Fig. 6-48 A* tree with <code>f=g+h</code> (g = tree level, h = max local density) are all read directly.</p>
+<p><span data-tr="en">✅ Verified against slides 43–49: Fig. 6-40 channel spec, the HCG (slide 47) and VCG (slide 48) edge lists, the three maximal cliques <code>{1,8},{1,3,7},{5,7}</code>, the Fig. 6-46 first level, and the Fig. 6-48 A* tree with <code>f=g+h</code> (g = tree level, h = max local density) are all read directly.</span><span data-tr="zh">✅ 對照投影片 43–49：Fig. 6-40 的 channel 規格、HCG（投影片 47）跟 VCG（投影片 48）的邊清單、三個 maximal clique <code>{1,8},{1,3,7},{5,7}</code>、Fig. 6-46 第一層、以及帶 <code>f=g+h</code>（g = 樹的層數，h = max local density）的 Fig. 6-48 A* 樹，全都直接讀出來了。</span></p>
 </blockquote>
 <hr />
-<h2 id="items-reconstructed-earlier-now-resolved-against-the-clean-slide-renders">Items reconstructed earlier — now resolved against the clean slide renders</h2>
-<p>All items below have been checked against the per-slide PNG renders in <code>render/A05full/</code> (49 slides). Every previously-reconstructed item is now resolved.</p>
+<h2 id="items-reconstructed-earlier-now-resolved-against-the-clean-slide-renders"><span data-tr="en">Items reconstructed earlier — now resolved against the clean slide renders</span><span data-tr="zh">之前用推測重建的項目 —— 現在都對照乾淨的投影片 render 確認過了</span></h2>
+<p><span data-tr="en">All items below have been checked against the per-slide PNG renders in <code>render/A05full/</code> (49 slides). Every previously-reconstructed item is now resolved.</span><span data-tr="zh">下面每一項都拿 <code>render/A05full/</code> 裡逐張的 PNG render（共 49 張投影片）核對過了。之前每個用推測重建的項目，現在都解決了。</span></p>
 <ol>
-<li>✅ <strong>Verified against slide 3</strong> — SAT instance <code>-x₁, x₁, x₂∨x₅, x₃, -x₂</code> (clauses 1–5); both partial-tree children labeled "(1)/(2) falsified"; full 2³ truth table on slide 2. Instance is unsatisfiable. <em>(§1)</em></li>
-<li>✅ <strong>Verified against slides 4 &amp; 5</strong> — Fig. 6-8 search tree + Fig. 6-6 graph (edges 1-2,1-6,1-3,2-3,6-5,7-5,7-4,3-4,4-5) both read directly. <em>(§2)</em></li>
-<li>✅ <strong>Verified against slide 6</strong> — Fig. 6-11 DFS tree; satisfying subset <strong>{7,2}</strong> (goal node "9"); 12/10/18 dead-ends marked <code>x</code>. <em>(§3)</em></li>
-<li>✅ <strong>Verified against slide 6</strong> — the "breadth-first search" slide reuses the Fig. 6-11 DFS example; <strong>no separate BFS figure</strong> exists. <em>(§4)</em></li>
-<li>✅ <strong>Verified against slide 8</strong> — Fig. 6-15 hill-climbing 8-puzzle boards + (f) values; path initial→1→5→7→8(Goal). <em>(§5)</em></li>
-<li>✅ <strong>Verified against slide 10</strong> — Fig. 6-16 best-first 8-puzzle; goal at node 10 via root→1→5(node5? see Appendix)→…; Step 1–4 scheme verbatim on slide 11. <em>(§6)</em></li>
-<li>✅ <strong>Verified against slides 12 &amp; 13</strong> — <strong>Correction:</strong> Fig. 6-17 is the <code>V₀…V₃</code> multi-stage graph (slide 12, 12 edges) with its best-first B&amp;B tree (slide 13). The <code>S,V₁..V₅,T</code> graph the old note called "Fig. 6-17" is actually <strong>Fig. 6-36</strong> (slide 36). <em>(§7)</em></li>
-<li>✅ <strong>Verified against slide 14</strong> — feasibility rule printed as "If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ". <em>(§8)</em></li>
-<li>✅ <strong>Verified against slide 15</strong> — <strong>Correction:</strong> Fig. 6-21 has only <code>J1→J3</code> and <code>J2→J4</code> (two vertical arrows; <strong>no</strong> <code>J1→J4</code> diagonal). <em>(§8)</em></li>
-<li>✅ <strong>Verified against slide 16</strong> — Table 6-1 P3 row = 3, 21, 7, 9 (C₃₁=3 confirmed). <em>(§8)</em></li>
-<li>✅ <strong>Verified against slides 19–21</strong> — personnel solution tree (slide 19), best-first tree with bounds (slide 20, "Only one node is pruned away"), bounding tree (slide 21, optimal cost 70). <em>(§8)</em></li>
-<li>✅ <strong>Verified against slide 25</strong> — splitting arc is <strong>4-6</strong> (exclusion penalty 32 → 96/128 split); the 3-5 alternative penalty is only 17+1=18. <em>(§9)</em></li>
-<li>✅ <strong>Verified against slides 26 &amp; 27</strong> — Tables 6-6 and 6-7 confirmed cell-by-cell; LB 96+3 = 99. <em>(§9)</em></li>
-<li>✅ <strong>Verified against slide 28</strong> — Fig. 6-26 B&amp;B tree + all bounds; optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126. <em>(§9)</em></li>
-<li>✅ <strong>Verified against slides 31–33</strong> — knapsack data, density ordering claim, UB −16, LB −18 (via X3=5/8, −18.5), optimum −17 ({1,4,5}). <em>(§10)</em></li>
-<li>✅ <strong>Verified against slide 34</strong> — Fig. 6-28 per-node UB/LB for nodes 0–30; root −16/−18; "good upper bound" at node 14; optimum −17. <em>(§10)</em></li>
-<li>✅ <strong>Verified against slides 36–42</strong> — Fig. 6-36 graph edges + all <code>g/h/f</code> across six expansion steps. <strong>Correction:</strong> the <strong>goal node is I</strong> (slide 42: "I is a goal node !"), not F; expansion order A→C→D→B→F. <em>(§11)</em></li>
-<li>✅ <strong>Verified against slides 43–49</strong> — Fig. 6-40 channel spec (top/bottom terminal rows), HCG edges (slide 47), VCG edges 1→2/3→4/5→6 (slide 48), max cliques <code>{1,8},{1,3,7},{5,7}</code>, Fig. 6-46 first level, Fig. 6-48 A* tree, <code>f=g+h</code>. <em>(§12)</em></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 3</strong> — SAT instance <code>-x₁, x₁, x₂∨x₅, x₃, -x₂</code> (clauses 1–5); both partial-tree children labeled "(1)/(2) falsified"; full 2³ truth table on slide 2. Instance is unsatisfiable. <em>(§1)</em></span><span data-tr="zh">✅ <strong>對照投影片 3</strong> —— SAT 例子 <code>-x₁, x₁, x₂∨x₅, x₃, -x₂</code>（clause 1–5）；部分樹的兩個子節點都標「(1)/(2) falsified」；完整 2³ truth table 在投影片 2。這個例子無解。<em>(§1)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 4 &amp; 5</strong> — Fig. 6-8 search tree + Fig. 6-6 graph (edges 1-2,1-6,1-3,2-3,6-5,7-5,7-4,3-4,4-5) both read directly. <em>(§2)</em></span><span data-tr="zh">✅ <strong>對照投影片 4 跟 5</strong> —— Fig. 6-8 搜尋樹加上 Fig. 6-6 圖（邊 1-2,1-6,1-3,2-3,6-5,7-5,7-4,3-4,4-5）都直接讀出來了。<em>(§2)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 6</strong> — Fig. 6-11 DFS tree; satisfying subset <strong>{7,2}</strong> (goal node "9"); 12/10/18 dead-ends marked <code>x</code>. <em>(§3)</em></span><span data-tr="zh">✅ <strong>對照投影片 6</strong> —— Fig. 6-11 DFS 樹；符合的子集合 <strong>{7,2}</strong>（goal node「9」）；12/10/18 是死路，標 <code>x</code>。<em>(§3)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 6</strong> — the "breadth-first search" slide reuses the Fig. 6-11 DFS example; <strong>no separate BFS figure</strong> exists. <em>(§4)</em></span><span data-tr="zh">✅ <strong>對照投影片 6</strong> —— 那張「breadth-first search」投影片其實重用了 Fig. 6-11 的 DFS 例子；<strong>沒有獨立的 BFS 圖</strong>。<em>(§4)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 8</strong> — Fig. 6-15 hill-climbing 8-puzzle boards + (f) values; path initial→1→5→7→8(Goal). <em>(§5)</em></span><span data-tr="zh">✅ <strong>對照投影片 8</strong> —— Fig. 6-15 hill-climbing 8-puzzle 的盤面加上 (f) 值；路徑 initial→1→5→7→8(Goal)。<em>(§5)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 10</strong> — Fig. 6-16 best-first 8-puzzle; goal at node 10 via root→1→5(node5? see Appendix)→…; Step 1–4 scheme verbatim on slide 11. <em>(§6)</em></span><span data-tr="zh">✅ <strong>對照投影片 10</strong> —— Fig. 6-16 best-first 8-puzzle；經 root→1→5（node5？見附錄）→… 在 node 10 到 goal；Step 1–4 流程在投影片 11 逐字照抄。<em>(§6)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 12 &amp; 13</strong> — <strong>Correction:</strong> Fig. 6-17 is the <code>V₀…V₃</code> multi-stage graph (slide 12, 12 edges) with its best-first B&amp;B tree (slide 13). The <code>S,V₁..V₅,T</code> graph the old note called "Fig. 6-17" is actually <strong>Fig. 6-36</strong> (slide 36). <em>(§7)</em></span><span data-tr="zh">✅ <strong>對照投影片 12 跟 13</strong> —— <strong>更正：</strong>Fig. 6-17 是 <code>V₀…V₃</code> 的 multi-stage graph（投影片 12，12 條邊），配它的 best-first B&amp;B 樹（投影片 13）。舊筆記叫「Fig. 6-17」的那張 <code>S,V₁..V₅,T</code> 圖其實是 <strong>Fig. 6-36</strong>（投影片 36）。<em>(§7)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 14</strong> — feasibility rule printed as "If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ". <em>(§8)</em></span><span data-tr="zh">✅ <strong>對照投影片 14</strong> —— 可行性規則印的是「If f(Pᵢ) ≤ f(Pⱼ), then Pᵢ ≤ Pⱼ」。<em>(§8)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 15</strong> — <strong>Correction:</strong> Fig. 6-21 has only <code>J1→J3</code> and <code>J2→J4</code> (two vertical arrows; <strong>no</strong> <code>J1→J4</code> diagonal). <em>(§8)</em></span><span data-tr="zh">✅ <strong>對照投影片 15</strong> —— <strong>更正：</strong>Fig. 6-21 只有 <code>J1→J3</code> 跟 <code>J2→J4</code>（兩條直箭頭；<strong>沒有</strong> <code>J1→J4</code> 斜線）。<em>(§8)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 16</strong> — Table 6-1 P3 row = 3, 21, 7, 9 (C₃₁=3 confirmed). <em>(§8)</em></span><span data-tr="zh">✅ <strong>對照投影片 16</strong> —— Table 6-1 P3 列 = 3, 21, 7, 9（C₃₁=3 確認）。<em>(§8)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 19–21</strong> — personnel solution tree (slide 19), best-first tree with bounds (slide 20, "Only one node is pruned away"), bounding tree (slide 21, optimal cost 70). <em>(§8)</em></span><span data-tr="zh">✅ <strong>對照投影片 19–21</strong> —— personnel solution tree（投影片 19）、帶 bound 的 best-first 樹（投影片 20，「Only one node is pruned away」）、bounding 樹（投影片 21，最佳成本 70）。<em>(§8)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 25</strong> — splitting arc is <strong>4-6</strong> (exclusion penalty 32 → 96/128 split); the 3-5 alternative penalty is only 17+1=18. <em>(§9)</em></span><span data-tr="zh">✅ <strong>對照投影片 25</strong> —— 分裂用的 arc 是 <strong>4-6</strong>（排除懲罰 32 → 96/128 分裂）；改用 3-5 的懲罰只有 17+1=18。<em>(§9)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 26 &amp; 27</strong> — Tables 6-6 and 6-7 confirmed cell-by-cell; LB 96+3 = 99. <em>(§9)</em></span><span data-tr="zh">✅ <strong>對照投影片 26 跟 27</strong> —— Table 6-6 跟 6-7 逐格確認；LB 96+3 = 99。<em>(§9)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 28</strong> — Fig. 6-26 B&amp;B tree + all bounds; optimal tour <code>1-4-6-7-3-5-2-1</code>, Cost = 126. <em>(§9)</em></span><span data-tr="zh">✅ <strong>對照投影片 28</strong> —— Fig. 6-26 B&amp;B 樹加上所有 bound；最佳 tour <code>1-4-6-7-3-5-2-1</code>，Cost = 126。<em>(§9)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 31–33</strong> — knapsack data, density ordering claim, UB −16, LB −18 (via X3=5/8, −18.5), optimum −17 ({1,4,5}). <em>(§10)</em></span><span data-tr="zh">✅ <strong>對照投影片 31–33</strong> —— knapsack 資料、density 排序宣稱、UB −16、LB −18（透過 X3=5/8、−18.5）、最佳值 −17（{1,4,5}）。<em>(§10)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slide 34</strong> — Fig. 6-28 per-node UB/LB for nodes 0–30; root −16/−18; "good upper bound" at node 14; optimum −17. <em>(§10)</em></span><span data-tr="zh">✅ <strong>對照投影片 34</strong> —— Fig. 6-28 節點 0–30 每個的 UB/LB；root −16/−18；node 14 有「good upper bound」；最佳值 −17。<em>(§10)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 36–42</strong> — Fig. 6-36 graph edges + all <code>g/h/f</code> across six expansion steps. <strong>Correction:</strong> the <strong>goal node is I</strong> (slide 42: "I is a goal node !"), not F; expansion order A→C→D→B→F. <em>(§11)</em></span><span data-tr="zh">✅ <strong>對照投影片 36–42</strong> —— Fig. 6-36 圖的邊加上六個展開步驟全部的 <code>g/h/f</code>。<strong>更正：</strong><strong>goal node 是 I</strong>（投影片 42：「I is a goal node !」），不是 F；展開順序 A→C→D→B→F。<em>(§11)</em></span></li>
+<li><span data-tr="en">✅ <strong>Verified against slides 43–49</strong> — Fig. 6-40 channel spec (top/bottom terminal rows), HCG edges (slide 47), VCG edges 1→2/3→4/5→6 (slide 48), max cliques <code>{1,8},{1,3,7},{5,7}</code>, Fig. 6-46 first level, Fig. 6-48 A* tree, <code>f=g+h</code>. <em>(§12)</em></span><span data-tr="zh">✅ <strong>對照投影片 43–49</strong> —— Fig. 6-40 channel 規格（上下 terminal 排）、HCG 邊（投影片 47）、VCG 邊 1→2/3→4/5→6（投影片 48）、max cliques <code>{1,8},{1,3,7},{5,7}</code>、Fig. 6-46 第一層、Fig. 6-48 A* 樹、<code>f=g+h</code>。<em>(§12)</em></span></li>
 </ol>
 <hr />
-<h2 id="appendix-a-figures-visually-extracted-from-slide-images">Appendix A — Figures (visually extracted from slide images)</h2>
+<h2 id="appendix-a-figures-visually-extracted-from-slide-images"><span data-tr="en">Appendix A — Figures (visually extracted from slide images)</span><span data-tr="zh">附錄 A —— 圖（從投影片影像逐一抄出來的）</span></h2>
 <blockquote>
-<p>The diagrams below were transcribed from slide images. <strong>All entries have now been re-verified against the clean per-slide renders in <code>render/A05full/</code> (49 slides, <code>slide-NN.png</code>).</strong> Each entry gives the source slide, a description, and an exact transcription of every label/number visible.</p>
-<p><strong>Update note (clean-render pass):</strong> Two figure identities were corrected. The graph the original carve recorded as "Fig. 6-17" (<code>S,V₁..V₅,T</code>) is in fact <strong>Fig. 6-36</strong> (the A* example, slide 36). The uncaptioned <code>png_014</code> directed graph is the <strong>channel-routing HCG</strong> (slide 47), and the uncaptioned <code>png_015</code> "best-first g+h tree" is <strong>Fig. 6-48</strong> (slide 49). The true <strong>Fig. 6-17</strong> is the <code>V₀…V₃</code> multi-stage graph (slide 12). Fig. 6-21 was corrected (no <code>J1→J4</code> diagonal), and the A* goal node is <strong>I</strong>, not F.</p>
+<p><span data-tr="en">The diagrams below were transcribed from slide images. <strong>All entries have now been re-verified against the clean per-slide renders in <code>render/A05full/</code> (49 slides, <code>slide-NN.png</code>).</strong> Each entry gives the source slide, a description, and an exact transcription of every label/number visible.</span><span data-tr="zh">下面這些圖都是從投影片影像抄下來的。<strong>每一項現在都拿 <code>render/A05full/</code> 裡逐張乾淨的 render（共 49 張，<code>slide-NN.png</code>）重新核對過了。</strong>每一項都附上來源投影片、一段描述，以及把看得到的每個標籤／數字原樣抄下來。</span></p>
+<p><span data-tr="en"><strong>Update note (clean-render pass):</strong> Two figure identities were corrected. The graph the original carve recorded as "Fig. 6-17" (<code>S,V₁..V₅,T</code>) is in fact <strong>Fig. 6-36</strong> (the A* example, slide 36). The uncaptioned <code>png_014</code> directed graph is the <strong>channel-routing HCG</strong> (slide 47), and the uncaptioned <code>png_015</code> "best-first g+h tree" is <strong>Fig. 6-48</strong> (slide 49). The true <strong>Fig. 6-17</strong> is the <code>V₀…V₃</code> multi-stage graph (slide 12). Fig. 6-21 was corrected (no <code>J1→J4</code> diagonal), and the A* goal node is <strong>I</strong>, not F.</span><span data-tr="zh"><strong>更新說明（乾淨 render 那一輪）：</strong>有兩張圖的身分被更正了。原本抄成「Fig. 6-17」的那張圖（<code>S,V₁..V₅,T</code>）其實是 <strong>Fig. 6-36</strong>（A* 範例，投影片 36）。沒標題的 <code>png_014</code> 有向圖是 <strong>channel-routing 的 HCG</strong>（投影片 47），沒標題的 <code>png_015</code>「best-first g+h tree」是 <strong>Fig. 6-48</strong>（投影片 49）。真正的 <strong>Fig. 6-17</strong> 是 <code>V₀…V₃</code> 的 multi-stage graph（投影片 12）。Fig. 6-21 也更正了（沒有 <code>J1→J4</code> 斜線），而且 A* 的 goal node 是 <strong>I</strong>，不是 F。</span></p>
 </blockquote>
-<h3 id="sat-tree-representation-of-the-2n-assignments">SAT — Tree Representation of the 2ⁿ Assignments</h3>
+<h3 id="sat-tree-representation-of-the-2n-assignments"><span data-tr="en">SAT — Tree Representation of the 2ⁿ Assignments</span><span data-tr="zh">SAT —— 2ⁿ 種 assignment 的樹表示法</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 2 (<code>render/A05full/slide-02.png</code>). ✅ Verified.</li>
-<li>A complete binary tree of depth 3 (for <code>n = 3</code>, giving <code>2³ = 8</code> leaves). The root has no label; each level branches left/right on one variable.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 2 (<code>render/A05full/slide-02.png</code>). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 2（<code>render/A05full/slide-02.png</code>）。✅ 已確認。</span></li>
+<li><span data-tr="en">A complete binary tree of depth 3 (for <code>n = 3</code>, giving <code>2³ = 8</code> leaves). The root has no label; each level branches left/right on one variable.</span><span data-tr="zh">一棵深度 3 的完整 binary tree（<code>n = 3</code>，所以有 <code>2³ = 8</code> 片葉子）。root 沒有標籤；每一層就針對一個變數往左／右分岔。</span></li>
 </ul>
 <pre><code>                         (root)
               X1=T /                \ X1=F
@@ -1109,13 +1130,13 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
   X3=T/\X3=F  X3=T/\X3=F   X3=T/\X3=F   X3=T/\X3=F
   ( )  ( )    ( )  ( )     ( )  ( )     ( )  ( )
 </code></pre>
-<p>Edge labels are exactly <code>X₁=T / X₁=F</code> at level 1, <code>X₂=T / X₂=F</code> at level 2, <code>X₃=T / X₃=F</code> at level 3. Nodes themselves are unlabeled circles. This is the generic "Tree Representation of Eight Assignments" referenced in §1.</p>
-<h3 id="fig-6-8-tree-representation-of-whether-a-hamiltonian-circuit-exists-graph-of-fig-6-6">Fig. 6-8 — Tree Representation of Whether a Hamiltonian Circuit Exists (graph of Fig. 6-6)</h3>
+<p><span data-tr="en">Edge labels are exactly <code>X₁=T / X₁=F</code> at level 1, <code>X₂=T / X₂=F</code> at level 2, <code>X₃=T / X₃=F</code> at level 3. Nodes themselves are unlabeled circles. This is the generic "Tree Representation of Eight Assignments" referenced in §1.</span><span data-tr="zh">邊的標籤就是：第 1 層 <code>X₁=T / X₁=F</code>、第 2 層 <code>X₂=T / X₂=F</code>、第 3 層 <code>X₃=T / X₃=F</code>。節點本身是沒標籤的圓圈。這就是 §1 提到的那個通用「Tree Representation of Eight Assignments」。</span></p>
+<h3 id="fig-6-8-tree-representation-of-whether-a-hamiltonian-circuit-exists-graph-of-fig-6-6"><span data-tr="en">Fig. 6-8 — Tree Representation of Whether a Hamiltonian Circuit Exists (graph of Fig. 6-6)</span><span data-tr="zh">Fig. 6-8 —— 判斷 Hamiltonian circuit 是否存在的樹（用 Fig. 6-6 的圖）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 5 (<code>render/A05full/slide-05.png</code>). ✅ Verified.</li>
-<li>A search tree whose nodes are vertex numbers (1–7), rooted at vertex <code>1</code>. Each root-to-leaf path is a candidate vertex-visiting order; dead ends are marked <code>X</code>. Edges are unlabeled (no weights — Hamiltonicity is a feasibility, not optimization, problem).</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 5 (<code>render/A05full/slide-05.png</code>). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 5（<code>render/A05full/slide-05.png</code>）。✅ 已確認。</span></li>
+<li><span data-tr="en">A search tree whose nodes are vertex numbers (1–7), rooted at vertex <code>1</code>. Each root-to-leaf path is a candidate vertex-visiting order; dead ends are marked <code>X</code>. Edges are unlabeled (no weights — Hamiltonicity is a feasibility, not optimization, problem).</span><span data-tr="zh">一棵搜尋樹，節點是頂點編號（1–7），root 在頂點 <code>1</code>。每一條 root 到葉子的路徑，就是一種候選的走訪順序；死路標 <code>X</code>。邊沒有標籤（沒有權重 —— Hamiltonicity 是可行性問題，不是最佳化問題）。</span></li>
 </ul>
-<p>Exact tree structure (children read left→right; <code>X</code> = dead end / pruned):</p>
+<p><span data-tr="en">Exact tree structure (children read left→right; <code>X</code> = dead end / pruned):</span><span data-tr="zh">完整的樹結構（小孩由左讀到右；<code>X</code> = 死路／被砍掉）：</span></p>
 <pre><code>1
 ├─ 2 ── 3 ── 4 ─┬─ 5 ─┬─ 7 (X)
 │                │     └─ 6 (X)
@@ -1128,17 +1149,17 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
               │     └─ 6 (X)
               └─ 7 ── 5 ── 6 (X)
 </code></pre>
-<p>Two paths close back to vertex <code>1</code> (a Hamiltonian circuit): <code>1-2-3-4-5-7-5-6-1</code> reading and <code>1-6-5-7-4-3-2-1</code>. The two successful leaves both terminate in node <code>1</code>; all other branches end in <code>X</code>.</p>
+<p><span data-tr="en">Two paths close back to vertex <code>1</code> (a Hamiltonian circuit): <code>1-2-3-4-5-7-5-6-1</code> reading and <code>1-6-5-7-4-3-2-1</code>. The two successful leaves both terminate in node <code>1</code>; all other branches end in <code>X</code>.</span><span data-tr="zh">有兩條路徑接回頂點 <code>1</code>（形成 Hamiltonian circuit）：<code>1-2-3-4-5-7-5-6-1</code> 跟 <code>1-6-5-7-4-3-2-1</code>。這兩片成功的葉子最後都落在節點 <code>1</code>；其他分支全部以 <code>X</code> 收場。</span></p>
 <blockquote>
-<p>Note: vertex adjacencies of the underlying graph (Fig. 6-6) are not separately shown in the extracted image set, but the full tree above is now transcribed. Resolves reconstruction item #2 (tree portion).</p>
+<p><span data-tr="en">Note: vertex adjacencies of the underlying graph (Fig. 6-6) are not separately shown in the extracted image set, but the full tree above is now transcribed. Resolves reconstruction item #2 (tree portion).</span><span data-tr="zh">注意：底層圖（Fig. 6-6）的頂點相鄰關係，在抄出來的影像集裡沒有另外畫出來，不過上面整棵樹現在已經抄好了。解決了重建項目 #2（樹的部分）。</span></p>
 </blockquote>
-<h3 id="fig-6-15-8-puzzle-solved-by-hill-climbing">Fig. 6-15 — 8-Puzzle Solved by Hill Climbing</h3>
+<h3 id="fig-6-15-8-puzzle-solved-by-hill-climbing"><span data-tr="en">Fig. 6-15 — 8-Puzzle Solved by Hill Climbing</span><span data-tr="zh">Fig. 6-15 —— 用 Hill Climbing 解 8-Puzzle</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 8 (<code>render/A05full/slide-08.png</code>). ✅ Verified.</li>
-<li>Each node is a 3×3 board; the number in parentheses beside a board is its evaluation <code>f</code> (here <code>f = w(n)</code>, the misplaced-tile count used to pick the locally best child — the labels shown are the parenthesized values). Edge labels <code>1..9</code> are move/step indices. The blank cell is empty.</li>
-<li>Initial state (top), goal node reached at bottom-left.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 8 (<code>render/A05full/slide-08.png</code>). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 8（<code>render/A05full/slide-08.png</code>）。✅ 已確認。</span></li>
+<li><span data-tr="en">Each node is a 3×3 board; the number in parentheses beside a board is its evaluation <code>f</code> (here <code>f = w(n)</code>, the misplaced-tile count used to pick the locally best child — the labels shown are the parenthesized values). Edge labels <code>1..9</code> are move/step indices. The blank cell is empty.</span><span data-tr="zh">每個節點是一個 3×3 盤面；盤面旁括號裡的數字是它的評估值 <code>f</code>（這裡 <code>f = w(n)</code>，也就是放錯位置的方塊數，用來挑局部最好的小孩 —— 標出來的就是括號裡那個值）。邊上的標籤 <code>1..9</code> 是步驟編號。空格那一格是空的。</span></li>
+<li><span data-tr="en">Initial state (top), goal node reached at bottom-left.</span><span data-tr="zh">初始狀態在最上面，goal node 在左下角到達。</span></li>
 </ul>
-<p>Boards (row by row; <code>_</code> = blank):</p>
+<p><span data-tr="en">Boards (row by row; <code>_</code> = blank):</span><span data-tr="zh">盤面（一列一列看；<code>_</code> = 空格）：</span></p>
 <pre><code>initial state (3):   2 8 3 / 1 _ 4 / 7 6 5
   ├─1 (4):  2 _ 3 / 1 8 4 / 7 6 5
   ├─2 (4):  2 8 3 / _ 1 4 / 7 6 5
@@ -1153,11 +1174,11 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
            ├─8 (4):  1 2 3 / 8 _ 4 / 7 6 5   ← GOAL NODE (f=0 conceptually; labeled (4) in fig as path value)
            └─9 (6):  1 2 3 / 7 8 4 / _ 6 5
 </code></pre>
-<p>The hill-climbing path is <code>initial → 1 → 5 → 7 → 8 (Goal)</code>, always descending to the child with the smallest parenthesized value. Resolves reconstruction item #5 (board states + f-values now transcribed).</p>
-<h3 id="fig-6-16-8-puzzle-solved-by-best-first-search">Fig. 6-16 — 8-Puzzle Solved by Best-First Search</h3>
+<p><span data-tr="en">The hill-climbing path is <code>initial → 1 → 5 → 7 → 8 (Goal)</code>, always descending to the child with the smallest parenthesized value. Resolves reconstruction item #5 (board states + f-values now transcribed).</span><span data-tr="zh">Hill-climbing 路徑是 <code>initial → 1 → 5 → 7 → 8 (Goal)</code>，每一步都往括號值最小的小孩走下去。解決了重建項目 #5（盤面狀態加上 f 值現在都抄好了）。</span></p>
+<h3 id="fig-6-16-8-puzzle-solved-by-best-first-search"><span data-tr="en">Fig. 6-16 — 8-Puzzle Solved by Best-First Search</span><span data-tr="zh">Fig. 6-16 —— 用 Best-First Search 解 8-Puzzle</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 10 (<code>render/A05full/slide-10.png</code>). ✅ Verified. Path root→2→7→9→10 (goal at node 10).</li>
-<li>Same start board and same numbering scheme as Fig. 6-15, but the tree is broader because best-first keeps <strong>all</strong> open nodes and expands the globally best one. Parenthesized numbers are the evaluation values; edge numbers <code>1..11</code> are expansion order.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 10 (<code>render/A05full/slide-10.png</code>). ✅ Verified. Path root→2→7→9→10 (goal at node 10).</span><span data-tr="zh"><strong>來源：</strong>投影片 10（<code>render/A05full/slide-10.png</code>）。✅ 已確認。路徑 root→2→7→9→10（goal 在節點 10）。</span></li>
+<li><span data-tr="en">Same start board and same numbering scheme as Fig. 6-15, but the tree is broader because best-first keeps <strong>all</strong> open nodes and expands the globally best one. Parenthesized numbers are the evaluation values; edge numbers <code>1..11</code> are expansion order.</span><span data-tr="zh">起始盤面跟編號方式都跟 Fig. 6-15 一樣，但這棵樹比較寬，因為 best-first 會把<strong>所有</strong>還沒展開的節點都留著，然後展開全域最好的那個。括號裡的數字是評估值；邊上的數字 <code>1..11</code> 是展開順序。</span></li>
 </ul>
 <pre><code>root (3):  2 8 3 / 1 _ 4 / 7 6 5
   ├─1 (4):  2 _ 3 / 1 8 4 / 7 6 5
@@ -1177,19 +1198,19 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
            └─11 (6):  1 2 3 / 7 8 4 / _ 6 5
 </code></pre>
 <blockquote>
-<p>✅ Verified against clean slide 10. The parenthesized evaluation values along the expansion order are <code>root(3); 1(4),2(4),3(5),4(5); under 1: 5(5),6(6); under 2: 7(4),8(6); under 7: 9(4); under 9: 10(4),11(6)</code>. Goal at node 10 via root→2→7→9→10. (Resolves item #6.)</p>
+<p><span data-tr="en">✅ Verified against clean slide 10. The parenthesized evaluation values along the expansion order are <code>root(3); 1(4),2(4),3(5),4(5); under 1: 5(5),6(6); under 2: 7(4),8(6); under 7: 9(4); under 9: 10(4),11(6)</code>. Goal at node 10 via root→2→7→9→10. (Resolves item #6.)</span><span data-tr="zh">✅ 對照乾淨的投影片 10。照展開順序的括號評估值是 <code>root(3); 1(4),2(4),3(5),4(5); 在 1 底下: 5(5),6(6); 在 2 底下: 7(4),8(6); 在 7 底下: 9(4); 在 9 底下: 10(4),11(6)</code>。經 root→2→7→9→10 在節點 10 到達 goal。（解決了項目 #6。）</span></p>
 </blockquote>
-<h3 id="fig-6-36-a-graph-to-illustrate-the-a-algorithm-was-mislabeled-fig-6-17">Fig. 6-36 — A Graph to Illustrate the A* Algorithm (was mislabeled "Fig. 6-17")</h3>
+<h3 id="fig-6-36-a-graph-to-illustrate-the-a-algorithm-was-mislabeled-fig-6-17"><span data-tr="en">Fig. 6-36 — A Graph to Illustrate the A* Algorithm (was mislabeled "Fig. 6-17")</span><span data-tr="zh">Fig. 6-36 —— 用來示範 A* 演算法的圖（之前被誤標成「Fig. 6-17」）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 36 (<code>render/A05full/slide-36.png</code>) — ✅ Verified.</li>
-<li>A layered directed graph from source <code>S</code> to sink <code>T</code>. Vertices: <code>S, V₁, V₂, V₃, V₄, V₅, T</code>. Each edge has a lowercase letter id and a weight. <strong>This is the graph the A* worked example (slides 37–42) operates on</strong>, relabeled R/A/B/…/L there.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 36 (<code>render/A05full/slide-36.png</code>) — ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 36（<code>render/A05full/slide-36.png</code>）— ✅ 已確認。</span></li>
+<li><span data-tr="en">A layered directed graph from source <code>S</code> to sink <code>T</code>. Vertices: <code>S, V₁, V₂, V₃, V₄, V₅, T</code>. Each edge has a lowercase letter id and a weight. <strong>This is the graph the A* worked example (slides 37–42) operates on</strong>, relabeled R/A/B/…/L there.</span><span data-tr="zh">一張從 source <code>S</code> 到 sink <code>T</code> 的分層有向圖。頂點：<code>S, V₁, V₂, V₃, V₄, V₅, T</code>。每條邊都有一個小寫字母 id 跟一個權重。<strong>A* 範例（投影片 37–42）就是在這張圖上跑</strong>，只是在那裡重新標成 R/A/B/…/L。</span></li>
 </ul>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Edge id</th>
-<th>From → To</th>
-<th>weight</th>
+<th><span data-tr="en">Edge id</span><span data-tr="zh">Edge id</span></th>
+<th><span data-tr="en">From → To</span><span data-tr="zh">從 → 到</span></th>
+<th><span data-tr="en">weight</span><span data-tr="zh">權重</span></th>
 </tr>
 </thead>
 <tbody>
@@ -1251,18 +1272,18 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tbody>
 </table></div>
 <blockquote>
-<p><strong>Correction:</strong> this is <strong>Fig. 6-36</strong> (A* example), not Fig. 6-17. Cheapest S→T path by inspection: <code>S→V₁→V₄→T = 2+2+3 = 7</code>.</p>
+<p><span data-tr="en"><strong>Correction:</strong> this is <strong>Fig. 6-36</strong> (A* example), not Fig. 6-17. Cheapest S→T path by inspection: <code>S→V₁→V₄→T = 2+2+3 = 7</code>.</span><span data-tr="zh"><strong>更正：</strong>這是 <strong>Fig. 6-36</strong>（A* 範例），不是 Fig. 6-17。直接看就能看出最便宜的 S→T 路徑：<code>S→V₁→V₄→T = 2+2+3 = 7</code>。</span></p>
 </blockquote>
-<h3 id="fig-6-17-a-multi-stage-graph-searching-problem-the-real-fig-6-17-its-bb-tree">Fig. 6-17 — A Multi-Stage Graph Searching Problem (the real Fig. 6-17) + its B&amp;B tree</h3>
+<h3 id="fig-6-17-a-multi-stage-graph-searching-problem-the-real-fig-6-17-its-bb-tree"><span data-tr="en">Fig. 6-17 — A Multi-Stage Graph Searching Problem (the real Fig. 6-17) + its B&amp;B tree</span><span data-tr="zh">Fig. 6-17 —— A Multi-Stage Graph Searching Problem（真正的 Fig. 6-17）+ 它的 B&amp;B 樹</span></h3>
 <ul>
-<li><strong>Sources:</strong> slide 12 (graph) and slide 13 (best-first B&amp;B search tree). ✅ Verified.</li>
+<li><span data-tr="en"><strong>Sources:</strong> slide 12 (graph) and slide 13 (best-first B&amp;B search tree). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 12（圖）跟投影片 13（best-first B&amp;B 搜尋樹）。✅ 已確認。</span></li>
 </ul>
-<p><strong>The graph (slide 12):</strong> vertices <code>V₀</code> (source), layer 1 <code>V₁,₁ V₁,₂ V₁,₃</code>, layer 2 <code>V₂,₁ V₂,₂ V₂,₃</code>, sink <code>V₃</code>. Edge weights:</p>
+<p><span data-tr="en"><strong>The graph (slide 12):</strong> vertices <code>V₀</code> (source), layer 1 <code>V₁,₁ V₁,₂ V₁,₃</code>, layer 2 <code>V₂,₁ V₂,₂ V₂,₃</code>, sink <code>V₃</code>. Edge weights:</span><span data-tr="zh"><strong>這張圖（投影片 12）：</strong>頂點有 <code>V₀</code>（source）、第 1 層 <code>V₁,₁ V₁,₂ V₁,₃</code>、第 2 層 <code>V₂,₁ V₂,₂ V₂,₃</code>、sink <code>V₃</code>。邊的權重：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>From → To</th>
-<th>weight</th>
+<th><span data-tr="en">From → To</span><span data-tr="zh">從 → 到</span></th>
+<th><span data-tr="en">weight</span><span data-tr="zh">權重</span></th>
 </tr>
 </thead>
 <tbody>
@@ -1316,9 +1337,9 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 </tbody>
 </table></div>
-<p><strong>The search tree (slide 13):</strong> nodes <code>a</code>–<code>l</code>. The number inside/next to a node is its cost estimate; the small number on an edge is the incremental cost; <code>x &gt;k</code> under a leaf means "pruned, bound &gt; k". Node <code>a</code> is the root (cost 1 shown above it). Branch labels are the V-vertices reached.</p>
+<p><span data-tr="en"><strong>The search tree (slide 13):</strong> nodes <code>a</code>–<code>l</code>. The number inside/next to a node is its cost estimate; the small number on an edge is the incremental cost; <code>x &gt;k</code> under a leaf means "pruned, bound &gt; k". Node <code>a</code> is the root (cost 1 shown above it). Branch labels are the V-vertices reached.</span><span data-tr="zh"><strong>搜尋樹（投影片 13）：</strong>節點 <code>a</code>–<code>l</code>。節點裡面／旁邊的數字是它的成本估計；邊上的小數字是這一步的增量成本；葉子下面的 <code>x &gt;k</code> 代表「被砍掉，bound &gt; k」。節點 <code>a</code> 是 root（上面標成本 1）。分支標籤是走到的那個 V 頂點。</span></p>
 <p><img class="figure" src="../render/A05full/slide-13.png" alt="Fig 6-17 multi-stage graph solved by branch-and-bound (search tree)"></p>
-<figcaption>Fig. 6-17 — Best-first B&B search tree for the multi-stage graph (slide 13).</figcaption>
+<figcaption><span data-tr="en">Fig. 6-17 — Best-first B&B search tree for the multi-stage graph (slide 13).</span><span data-tr="zh">Fig. 6-17 —— multi-stage graph 的 best-first B&B 搜尋樹（投影片 13）。</span></figcaption>
 
 <pre><code>a (1)
 ├─[1]→ b  V₁,₁  (2)
@@ -1333,122 +1354,122 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
          │        └─[1]→ l  V₃  (6)
          └─[7]→ k  V₂,₃  (5)   x &gt;9
 </code></pre>
-<p>The optimal root→sink path is <code>a→b→f→g</code>, i.e. <code>V₀→V₁,₁→V₂,₃→V₃</code> with cost <code>1+3+1 = 5</code> (node g labeled cost 4 inside the circle is the estimate at that node). This is the B&amp;B search tree for <strong>Fig. 6-17</strong> (slide 12 graph).</p>
-<h3 id="fig-6-26-branch-and-bound-solution-of-the-traveling-salesperson-problem">Fig. 6-26 — Branch-and-Bound Solution of the Traveling Salesperson Problem</h3>
+<p><span data-tr="en">The optimal root→sink path is <code>a→b→f→g</code>, i.e. <code>V₀→V₁,₁→V₂,₃→V₃</code> with cost <code>1+3+1 = 5</code> (node g labeled cost 4 inside the circle is the estimate at that node). This is the B&amp;B search tree for <strong>Fig. 6-17</strong> (slide 12 graph).</span><span data-tr="zh">最佳的 root→sink 路徑是 <code>a→b→f→g</code>，也就是 <code>V₀→V₁,₁→V₂,₃→V₃</code>，成本 <code>1+3+1 = 5</code>（節點 g 圓圈裡標的成本 4 是在那個節點的估計值）。這就是 <strong>Fig. 6-17</strong>（投影片 12 那張圖）的 B&amp;B 搜尋樹。</span></p>
+<h3 id="fig-6-26-branch-and-bound-solution-of-the-traveling-salesperson-problem"><span data-tr="en">Fig. 6-26 — Branch-and-Bound Solution of the Traveling Salesperson Problem</span><span data-tr="zh">Fig. 6-26 —— Traveling Salesperson Problem 的 Branch-and-Bound 解</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 28 (<code>render/A05full/slide-28.png</code>). ✅ Verified.</li>
-<li>A chain of <code>With X-Y</code> / <code>Without X-Y</code> decision boxes, each annotated with a lower bound <code>L.B.</code>. The left spine (the "With" choices) leads to the optimal tour.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 28 (<code>render/A05full/slide-28.png</code>). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 28（<code>render/A05full/slide-28.png</code>）。✅ 已確認。</span></li>
+<li><span data-tr="en">A chain of <code>With X-Y</code> / <code>Without X-Y</code> decision boxes, each annotated with a lower bound <code>L.B.</code>. The left spine (the "With" choices) leads to the optimal tour.</span><span data-tr="zh">一連串的 <code>With X-Y</code> / <code>Without X-Y</code> 決策框，每個都標了一個 lower bound <code>L.B.</code>。左邊那條主幹（一路選「With」）就通往最佳 tour。</span></li>
 </ul>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Node</th>
+<th><span data-tr="en">Node</span><span data-tr="zh">節點</span></th>
 <th>L.B.</th>
-<th>role</th>
+<th><span data-tr="en">role</span><span data-tr="zh">角色</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>All</td>
 <td>96</td>
-<td>root</td>
+<td><span data-tr="en">root</span><span data-tr="zh">root</span></td>
 </tr>
 <tr>
 <td>With 4-6</td>
 <td>99</td>
-<td>expanded (left spine)</td>
+<td><span data-tr="en">expanded (left spine)</span><span data-tr="zh">已展開（左主幹）</span></td>
 </tr>
 <tr>
 <td>Without 4-6</td>
 <td>128</td>
-<td><strong>terminated</strong></td>
+<td><strong><span data-tr="en">terminated</span><span data-tr="zh">已中止</span></strong></td>
 </tr>
 <tr>
 <td>With 3-5</td>
 <td>99</td>
-<td>expanded</td>
+<td><span data-tr="en">expanded</span><span data-tr="zh">已展開</span></td>
 </tr>
 <tr>
 <td>Without 3-5</td>
 <td>117</td>
-<td>to be expanded</td>
+<td><span data-tr="en">to be expanded</span><span data-tr="zh">待展開</span></td>
 </tr>
 <tr>
 <td>With 2-1</td>
 <td>112</td>
-<td>expanded</td>
+<td><span data-tr="en">expanded</span><span data-tr="zh">已展開</span></td>
 </tr>
 <tr>
 <td>Without 2-1</td>
 <td>125</td>
-<td>to be expanded</td>
+<td><span data-tr="en">to be expanded</span><span data-tr="zh">待展開</span></td>
 </tr>
 <tr>
 <td>With 1-4</td>
 <td>126</td>
-<td>expanded</td>
+<td><span data-tr="en">expanded</span><span data-tr="zh">已展開</span></td>
 </tr>
 <tr>
 <td>Without 1-4</td>
 <td>153</td>
-<td>terminated</td>
+<td><span data-tr="en">terminated</span><span data-tr="zh">已中止</span></td>
 </tr>
 <tr>
 <td>With 6-7</td>
 <td>126</td>
-<td>expanded</td>
+<td><span data-tr="en">expanded</span><span data-tr="zh">已展開</span></td>
 </tr>
 <tr>
 <td>Without 6-7</td>
 <td>141</td>
-<td>terminated</td>
+<td><span data-tr="en">terminated</span><span data-tr="zh">已中止</span></td>
 </tr>
 <tr>
 <td>With 5-2</td>
 <td>126</td>
-<td>expanded</td>
+<td><span data-tr="en">expanded</span><span data-tr="zh">已展開</span></td>
 </tr>
 <tr>
 <td>Without 5-2</td>
 <td>—</td>
-<td><strong>No solution</strong></td>
+<td><strong><span data-tr="en">No solution</span><span data-tr="zh">無解</span></strong></td>
 </tr>
 <tr>
 <td>With 7-3</td>
 <td>(Solution)</td>
-<td>optimal</td>
+<td><span data-tr="en">optimal</span><span data-tr="zh">最佳</span></td>
 </tr>
 <tr>
 <td>Without 7-3</td>
 <td>—</td>
-<td><strong>No solution</strong></td>
+<td><strong><span data-tr="en">No solution</span><span data-tr="zh">無解</span></strong></td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Final answer (printed in the figure):</strong> <code>Solution 1-4-6-7-3-5-2-1, Cost = 126</code>.</p>
+<p><span data-tr="en"><strong>Final answer (printed in the figure):</strong> <code>Solution 1-4-6-7-3-5-2-1, Cost = 126</code>.</span><span data-tr="zh"><strong>最後答案（圖上印的）：</strong><code>Solution 1-4-6-7-3-5-2-1, Cost = 126</code>。</span></p>
 <blockquote>
-<p>Resolves reconstruction item #14 — the full B&amp;B tree and the optimal tour (<code>1-4-6-7-3-5-2-1</code>, cost 126) are now extracted.</p>
+<p><span data-tr="en">Resolves reconstruction item #14 — the full B&amp;B tree and the optimal tour (<code>1-4-6-7-3-5-2-1</code>, cost 126) are now extracted.</span><span data-tr="zh">解決了重建項目 #14 —— 整棵 B&amp;B 樹跟最佳 tour（<code>1-4-6-7-3-5-2-1</code>，成本 126）現在都抄出來了。</span></p>
 </blockquote>
-<h3 id="fig-6-28-01-knapsack-problem-solved-by-branch-and-bound">Fig. 6-28 — 0/1 Knapsack Problem Solved by Branch-and-Bound</h3>
+<h3 id="fig-6-28-01-knapsack-problem-solved-by-branch-and-bound"><span data-tr="en">Fig. 6-28 — 0/1 Knapsack Problem Solved by Branch-and-Bound</span><span data-tr="zh">Fig. 6-28 —— 用 Branch-and-Bound 解 0/1 Knapsack 問題</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 34 (<code>render/A05full/slide-34.png</code>). ✅ Verified.</li>
-<li>Boxed nodes numbered <code>0</code>–<code>30</code> in creation order. Edges labeled <code>Xᵢ = 1</code> / <code>Xᵢ = 0</code>. Each live node carries <code>U.B.</code> (upper bound) and <code>L.B.</code> (lower bound). Many nodes are marked <code>infeasible</code>. (Recall the deck minimizes negative profit, so more-negative is better; U.B. = best feasible found, L.B. = relaxation bound.)</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 34 (<code>render/A05full/slide-34.png</code>). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 34（<code>render/A05full/slide-34.png</code>）。✅ 已確認。</span></li>
+<li><span data-tr="en">Boxed nodes numbered <code>0</code>–<code>30</code> in creation order. Edges labeled <code>Xᵢ = 1</code> / <code>Xᵢ = 0</code>. Each live node carries <code>U.B.</code> (upper bound) and <code>L.B.</code> (lower bound). Many nodes are marked <code>infeasible</code>. (Recall the deck minimizes negative profit, so more-negative is better; U.B. = best feasible found, L.B. = relaxation bound.)</span><span data-tr="zh">方框節點依產生順序編號 <code>0</code>–<code>30</code>。邊標 <code>Xᵢ = 1</code> / <code>Xᵢ = 0</code>。每個還活著的節點都帶 <code>U.B.</code>（upper bound）跟 <code>L.B.</code>（lower bound）。很多節點被標 <code>infeasible</code>（不可行）。（記得投影片是在最小化負利潤，所以越負越好；U.B. = 目前找到的最佳可行解，L.B. = relaxation 的 bound。）</span></li>
 </ul>
-<p>Per-node bounds, exactly as printed:</p>
+<p><span data-tr="en">Per-node bounds, exactly as printed:</span><span data-tr="zh">每個節點的 bound，照投影片原樣抄：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Node</th>
-<th>branch taken to reach it</th>
+<th><span data-tr="en">Node</span><span data-tr="zh">節點</span></th>
+<th><span data-tr="en">branch taken to reach it</span><span data-tr="zh">走到它所選的分支</span></th>
 <th>U.B.</th>
 <th>L.B.</th>
-<th>note</th>
+<th><span data-tr="en">note</span><span data-tr="zh">備註</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>0</td>
-<td>(root)</td>
+<td><span data-tr="en">(root)</span><span data-tr="zh">（root）</span></td>
 <td>−16</td>
 <td>−18</td>
 <td></td>
@@ -1486,7 +1507,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X3=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>6</td>
@@ -1500,7 +1521,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X4=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>8</td>
@@ -1514,7 +1535,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X5=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>10</td>
@@ -1528,7 +1549,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X6=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>12</td>
@@ -1539,17 +1560,17 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 <tr>
 <td>13</td>
-<td>(under 4) X3=1</td>
+<td><span data-tr="en">(under 4) X3=1</span><span data-tr="zh">（在 4 底下）X3=1</span></td>
 <td>−15</td>
 <td>−18</td>
 <td></td>
 </tr>
 <tr>
 <td>14</td>
-<td>(under 4) X3=0</td>
+<td><span data-tr="en">(under 4) X3=0</span><span data-tr="zh">（在 4 底下）X3=0</span></td>
 <td>−17</td>
 <td>−18</td>
-<td>"a good upper bound is found here"</td>
+<td><span data-tr="en">"a good upper bound is found here"</span><span data-tr="zh">「a good upper bound is found here」</span></td>
 </tr>
 <tr>
 <td>15</td>
@@ -1584,7 +1605,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X6=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>20</td>
@@ -1595,14 +1616,14 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 <tr>
 <td>21</td>
-<td>(under 13) X4=1</td>
+<td><span data-tr="en">(under 13) X4=1</span><span data-tr="zh">（在 13 底下）X4=1</span></td>
 <td>−15</td>
 <td>−18</td>
 <td></td>
 </tr>
 <tr>
 <td>22</td>
-<td>(under 13) X4=0</td>
+<td><span data-tr="en">(under 13) X4=0</span><span data-tr="zh">（在 13 底下）X4=0</span></td>
 <td>−16</td>
 <td>−18</td>
 <td></td>
@@ -1626,7 +1647,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X6=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>26</td>
@@ -1637,14 +1658,14 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 <tr>
 <td>27</td>
-<td>(under 21) X5=1</td>
+<td><span data-tr="en">(under 21) X5=1</span><span data-tr="zh">（在 21 底下）X5=1</span></td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>28</td>
-<td>(under 21) X5=0</td>
+<td><span data-tr="en">(under 21) X5=0</span><span data-tr="zh">（在 21 底下）X5=0</span></td>
 <td>−15</td>
 <td>−18</td>
 <td></td>
@@ -1654,7 +1675,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>X6=1</td>
 <td></td>
 <td></td>
-<td>infeasible</td>
+<td><span data-tr="en">infeasible</span><span data-tr="zh">infeasible（不可行）</span></td>
 </tr>
 <tr>
 <td>30</td>
@@ -1665,25 +1686,25 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 </tbody>
 </table></div>
-<p>The branch labels in the figure are <code>X1</code> (level 1, nodes 1/2), <code>X2</code> (nodes 3/4), <code>X3</code> (5/6 and 13/14), <code>X4</code> (7/8, 21/22, 15/16), <code>X5</code> (9/10, 27/28, 23/24, 17/18), <code>X6</code> (11/12, 29/30, 25/26, 19/20). The annotation "(a good upper bound is found here)" sits at node 14. The optimal value −17 surfaces along the node 14 → 15 → 17/18 → 20 chain (X1=0,…) consistent with the optimal set <code>{1,4,5}</code> giving −17 in §10.</p>
+<p><span data-tr="en">The branch labels in the figure are <code>X1</code> (level 1, nodes 1/2), <code>X2</code> (nodes 3/4), <code>X3</code> (5/6 and 13/14), <code>X4</code> (7/8, 21/22, 15/16), <code>X5</code> (9/10, 27/28, 23/24, 17/18), <code>X6</code> (11/12, 29/30, 25/26, 19/20). The annotation "(a good upper bound is found here)" sits at node 14. The optimal value −17 surfaces along the node 14 → 15 → 17/18 → 20 chain (X1=0,…) consistent with the optimal set <code>{1,4,5}</code> giving −17 in §10.</span><span data-tr="zh">圖上的分支標籤是 <code>X1</code>（第 1 層，節點 1/2）、<code>X2</code>（節點 3/4）、<code>X3</code>（5/6 跟 13/14）、<code>X4</code>（7/8, 21/22, 15/16）、<code>X5</code>（9/10, 27/28, 23/24, 17/18）、<code>X6</code>（11/12, 29/30, 25/26, 19/20）。「(a good upper bound is found here)」這個註記在節點 14。最佳值 −17 是沿著 node 14 → 15 → 17/18 → 20 這條鏈（X1=0,…）冒出來的，跟 §10 那個給出 −17 的最佳集合 <code>{1,4,5}</code> 一致。</span></p>
 <blockquote>
-<p>Resolves reconstruction item #16 — all per-node U.B./L.B. values now transcribed (root −16/−18 confirmed).</p>
+<p><span data-tr="en">Resolves reconstruction item #16 — all per-node U.B./L.B. values now transcribed (root −16/−18 confirmed).</span><span data-tr="zh">解決了重建項目 #16 —— 每個節點的 U.B./L.B. 現在都抄好了（root −16/−18 確認）。</span></p>
 </blockquote>
-<h3 id="fig-6-36-a-search-tree-progressive-expansion-snapshots-slides-3742">Fig. 6-36 — A* Search Tree (progressive-expansion snapshots, slides 37–42)</h3>
+<h3 id="fig-6-36-a-search-tree-progressive-expansion-snapshots-slides-3742"><span data-tr="en">Fig. 6-36 — A* Search Tree (progressive-expansion snapshots, slides 37–42)</span><span data-tr="zh">Fig. 6-36 —— A* 搜尋樹（逐步展開的快照，投影片 37–42）</span></h3>
 <ul>
-<li><strong>Sources:</strong> slides 37–42 (<code>render/A05full/slide-37..42.png</code>) — the A* search <strong>tree</strong> built on the Fig. 6-36 graph (slide 36). ✅ Verified.</li>
-<li>A search tree rooted at <code>R</code>. Each edge has a letter id and a weight <code>g</code>-increment; each node has a heuristic <code>h</code> value shown beneath it. <code>×</code> marks a node not (yet) expanded / a leaf in that snapshot. (The exact <code>g/h/f</code> table is given just below.)</li>
+<li><span data-tr="en"><strong>Sources:</strong> slides 37–42 (<code>render/A05full/slide-37..42.png</code>) — the A* search <strong>tree</strong> built on the Fig. 6-36 graph (slide 36). ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 37–42（<code>render/A05full/slide-37..42.png</code>）—— 建在 Fig. 6-36 圖（投影片 36）上的 A* 搜尋<strong>樹</strong>。✅ 已確認。</span></li>
+<li><span data-tr="en">A search tree rooted at <code>R</code>. Each edge has a letter id and a weight <code>g</code>-increment; each node has a heuristic <code>h</code> value shown beneath it. <code>×</code> marks a node not (yet) expanded / a leaf in that snapshot. (The exact <code>g/h/f</code> table is given just below.)</span><span data-tr="zh">一棵 root 在 <code>R</code> 的搜尋樹。每條邊有一個字母 id 跟一個 <code>g</code> 的增量；每個節點下面標一個 heuristic <code>h</code> 值。<code>×</code> 代表這張快照裡還沒（被）展開的節點／葉子。（精確的 <code>g/h/f</code> 表在下面。）</span></li>
 </ul>
 <p><img class="figure" src="../render/A05full/slide-42.png" alt="Fig 6-36 A* search tree (final snapshot, slide 42)"></p>
-<figcaption>Fig. 6-36 — A* search tree (final snapshot, slide 42); "I is a goal node!".</figcaption>
+<figcaption><span data-tr="en">Fig. 6-36 — A* search tree (final snapshot, slide 42); "I is a goal node!".</span><span data-tr="zh">Fig. 6-36 —— A* 搜尋樹（最後一張快照，投影片 42）；「I is a goal node!」。</span></figcaption>
 
-<p><strong>Edges (from slides 37–42):</strong></p>
+<p><span data-tr="en"><strong>Edges (from slides 37–42):</strong></span><span data-tr="zh"><strong>邊（來自投影片 37–42）：</strong></span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Edge id</th>
-<th>From → To</th>
-<th>weight</th>
+<th><span data-tr="en">Edge id</span><span data-tr="zh">Edge id</span></th>
+<th><span data-tr="en">From → To</span><span data-tr="zh">從 → 到</span></th>
+<th><span data-tr="en">weight</span><span data-tr="zh">權重</span></th>
 </tr>
 </thead>
 <tbody>
@@ -1749,15 +1770,15 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 </tbody>
 </table></div>
-<p><strong>Exact <code>g/h/f</code> per node (read directly from slides 37–42):</strong></p>
+<p><span data-tr="en"><strong>Exact <code>g/h/f</code> per node (read directly from slides 37–42):</strong></span><span data-tr="zh"><strong>每個節點精確的 <code>g/h/f</code>（直接從投影片 37–42 讀出來）：</strong></span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Node</th>
+<th><span data-tr="en">Node</span><span data-tr="zh">節點</span></th>
 <th>g</th>
 <th>h</th>
 <th>f</th>
-<th>source</th>
+<th><span data-tr="en">source</span><span data-tr="zh">來源</span></th>
 </tr>
 </thead>
 <tbody>
@@ -1766,95 +1787,95 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>2</td>
 <td>2</td>
 <td>4</td>
-<td>slide 37</td>
+<td><span data-tr="en">slide 37</span><span data-tr="zh">投影片 37</span></td>
 </tr>
 <tr>
 <td>B</td>
 <td>4</td>
 <td>2</td>
 <td>6</td>
-<td>slide 37</td>
+<td><span data-tr="en">slide 37</span><span data-tr="zh">投影片 37</span></td>
 </tr>
 <tr>
 <td>C</td>
 <td>3</td>
 <td>2</td>
 <td>5</td>
-<td>slide 37</td>
+<td><span data-tr="en">slide 37</span><span data-tr="zh">投影片 37</span></td>
 </tr>
 <tr>
 <td>D</td>
 <td>4</td>
 <td>1</td>
 <td>5</td>
-<td>slide 38</td>
+<td><span data-tr="en">slide 38</span><span data-tr="zh">投影片 38</span></td>
 </tr>
 <tr>
 <td>E</td>
 <td>5</td>
 <td>2</td>
 <td>7</td>
-<td>slide 38 (×)</td>
+<td><span data-tr="en">slide 38 (×)</span><span data-tr="zh">投影片 38 (×)</span></td>
 </tr>
 <tr>
 <td>F</td>
 <td>5</td>
 <td>1</td>
 <td>6</td>
-<td>slide 39</td>
+<td><span data-tr="en">slide 39</span><span data-tr="zh">投影片 39</span></td>
 </tr>
 <tr>
 <td>G</td>
 <td>5</td>
 <td>5</td>
 <td>10</td>
-<td>slide 39 (×)</td>
+<td><span data-tr="en">slide 39 (×)</span><span data-tr="zh">投影片 39 (×)</span></td>
 </tr>
 <tr>
 <td>H</td>
 <td>5</td>
 <td>5</td>
 <td>10</td>
-<td>slide 40 (×)</td>
+<td><span data-tr="en">slide 40 (×)</span><span data-tr="zh">投影片 40 (×)</span></td>
 </tr>
 <tr>
 <td>I</td>
 <td>7</td>
 <td>0</td>
 <td>7</td>
-<td>slide 40 — <strong>GOAL</strong></td>
+<td><span data-tr="en">slide 40 — <strong>GOAL</strong></span><span data-tr="zh">投影片 40 —— <strong>GOAL</strong></span></td>
 </tr>
 <tr>
 <td>J</td>
 <td>6</td>
 <td>5</td>
 <td>11</td>
-<td>slide 41 (×)</td>
+<td><span data-tr="en">slide 41 (×)</span><span data-tr="zh">投影片 41 (×)</span></td>
 </tr>
 <tr>
 <td>K</td>
 <td>6</td>
 <td>5</td>
 <td>11</td>
-<td>slide 42 (×)</td>
+<td><span data-tr="en">slide 42 (×)</span><span data-tr="zh">投影片 42 (×)</span></td>
 </tr>
 <tr>
 <td>L</td>
 <td>8</td>
 <td>0</td>
 <td>8</td>
-<td>slide 42 (×)</td>
+<td><span data-tr="en">slide 42 (×)</span><span data-tr="zh">投影片 42 (×)</span></td>
 </tr>
 </tbody>
 </table></div>
-<p>Expansion order (each step picks the smallest-<code>f</code> open node): <strong>A(4) → C(5) → D(5) → B(6) → F(6)</strong>. After expanding F, the smallest open node is <strong>I (f=7)</strong>, which is a goal node ("I is a goal node !", slide 42) → stop, optimal.</p>
+<p><span data-tr="en">Expansion order (each step picks the smallest-<code>f</code> open node): <strong>A(4) → C(5) → D(5) → B(6) → F(6)</strong>. After expanding F, the smallest open node is <strong>I (f=7)</strong>, which is a goal node ("I is a goal node !", slide 42) → stop, optimal.</span><span data-tr="zh">展開順序（每步挑還沒展開、<code>f</code> 最小的節點）：<strong>A(4) → C(5) → D(5) → B(6) → F(6)</strong>。展開 F 之後，還沒展開的節點裡最小的是 <strong>I（f=7）</strong>，而它是 goal node（「I is a goal node !」，投影片 42）→ 停，已是最佳解。</span></p>
 <blockquote>
-<p>✅ Verified against slides 36–42 (resolves item #17). <strong>Correction:</strong> goal node is <strong>I</strong>, not F.</p>
+<p><span data-tr="en">✅ Verified against slides 36–42 (resolves item #17). <strong>Correction:</strong> goal node is <strong>I</strong>, not F.</span><span data-tr="zh">✅ 對照投影片 36–42（解決項目 #17）。<strong>更正：</strong>goal node 是 <strong>I</strong>，不是 F。</span></p>
 </blockquote>
-<h3 id="fig-6-48-a-partial-solution-tree-for-the-channel-routing-problem-was-mislabeled-best-first-gh-tree">Fig. 6-48 — A* Partial Solution Tree for the Channel Routing Problem (was mislabeled "best-first g+h tree")</h3>
+<h3 id="fig-6-48-a-partial-solution-tree-for-the-channel-routing-problem-was-mislabeled-best-first-gh-tree"><span data-tr="en">Fig. 6-48 — A* Partial Solution Tree for the Channel Routing Problem (was mislabeled "best-first g+h tree")</span><span data-tr="zh">Fig. 6-48 —— Channel Routing 問題的 A* 部分解樹（之前被誤標成「best-first g+h tree」）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 49 (<code>render/A05full/slide-49.png</code>) — ✅ Verified.</li>
-<li><code>root</code> with three children; nodes labeled A–I. Edge labels are <code>g+h</code> sums; node interiors hold the net set assigned to that track; <code>g(n)</code> = tree level, <code>h(n)</code> = maximal local density. Goal reached at node <strong>I</strong>.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 49 (<code>render/A05full/slide-49.png</code>) — ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 49（<code>render/A05full/slide-49.png</code>）— ✅ 已確認。</span></li>
+<li><span data-tr="en"><code>root</code> with three children; nodes labeled A–I. Edge labels are <code>g+h</code> sums; node interiors hold the net set assigned to that track; <code>g(n)</code> = tree level, <code>h(n)</code> = maximal local density. Goal reached at node <strong>I</strong>.</span><span data-tr="zh"><code>root</code> 有三個小孩；節點標 A–I。邊上的標籤是 <code>g+h</code> 的和；節點內部放的是指派給那條 track 的 net 集合；<code>g(n)</code> = 樹的層數，<code>h(n)</code> = maximal local density。Goal 在節點 <strong>I</strong> 到達。</span></li>
 </ul>
 <pre><code>root
 ├─[1+3]→ A  {8,1}      (f=4)
@@ -1868,31 +1889,31 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 └─[1+3]→ C  {7,5}      (f=4)
 </code></pre>
 <blockquote>
-<p>✅ Verified against slide 49: this is <strong>Fig. 6-48</strong>. The three root children <code>{8,1}, {7,3,1}, {7,5}</code> are exactly the three maximal HCG cliques (= Fig. 6-46 first level). The node states are net-cliques assigned to successive tracks; goal is node I.</p>
+<p><span data-tr="en">✅ Verified against slide 49: this is <strong>Fig. 6-48</strong>. The three root children <code>{8,1}, {7,3,1}, {7,5}</code> are exactly the three maximal HCG cliques (= Fig. 6-46 first level). The node states are net-cliques assigned to successive tracks; goal is node I.</span><span data-tr="zh">✅ 對照投影片 49：這是 <strong>Fig. 6-48</strong>。root 的三個小孩 <code>{8,1}, {7,3,1}, {7,5}</code> 正是 HCG 的三個 maximal clique（= Fig. 6-46 第一層）。節點狀態是依序指派給各 track 的 net-clique；goal 是節點 I。</span></p>
 </blockquote>
-<h3 id="fig-6-41-horizontal-constraint-graph-hcg-was-the-uncaptioned-personnelvcg-ordering-graph">Fig. 6-41 — Horizontal Constraint Graph (HCG) (was the uncaptioned "personnel/VCG ordering graph")</h3>
+<h3 id="fig-6-41-horizontal-constraint-graph-hcg-was-the-uncaptioned-personnelvcg-ordering-graph"><span data-tr="en">Fig. 6-41 — Horizontal Constraint Graph (HCG) (was the uncaptioned "personnel/VCG ordering graph")</span><span data-tr="zh">Fig. 6-41 —— Horizontal Constraint Graph (HCG)（之前是沒標題的「personnel/VCG ordering graph」）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 47 (<code>render/A05full/slide-47.png</code>) — ✅ Verified.</li>
-<li>A directed graph over nets <code>1</code>–<code>8</code>. Edge tail → head means "tail must be left of head if in the same track". Arrows:</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 47 (<code>render/A05full/slide-47.png</code>) — ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 47（<code>render/A05full/slide-47.png</code>）— ✅ 已確認。</span></li>
+<li><span data-tr="en">A directed graph over nets <code>1</code>–<code>8</code>. Edge tail → head means "tail must be left of head if in the same track". Arrows:</span><span data-tr="zh">一張畫在 net <code>1</code>–<code>8</code> 上的有向圖。邊的箭尾 → 箭頭代表「如果在同一條 track，箭尾要在箭頭左邊」。箭頭：</span></li>
 </ul>
 <pre><code>7 → 5,  7 → 6,  7 → 3,  7 → 1,  7 → 2
 8 → 1,  8 → 2
 4 → 6,  4 → 1,  4 → 2
 3 → 1,  3 → 2
 </code></pre>
-<p>Sinks <code>1</code> and <code>2</code> receive the most arrows; <code>7, 8, 4</code> are sources; <code>3, 5, 6</code> intermediate.</p>
+<p><span data-tr="en">Sinks <code>1</code> and <code>2</code> receive the most arrows; <code>7, 8, 4</code> are sources; <code>3, 5, 6</code> intermediate.</span><span data-tr="zh">收到最多箭頭的 sink 是 <code>1</code> 跟 <code>2</code>；<code>7, 8, 4</code> 是 source；<code>3, 5, 6</code> 在中間。</span></p>
 <blockquote>
-<p>✅ Verified against slide 47: this is the <strong>channel-routing HCG</strong> (slide annotation: "net 8 must be to the left of net 1 and net 2 if they are in the same track"), NOT a personnel/VCG graph.</p>
+<p><span data-tr="en">✅ Verified against slide 47: this is the <strong>channel-routing HCG</strong> (slide annotation: "net 8 must be to the left of net 1 and net 2 if they are in the same track"), NOT a personnel/VCG graph.</span><span data-tr="zh">✅ 對照投影片 47：這是 <strong>channel-routing 的 HCG</strong>（投影片註記：「net 8 must be to the left of net 1 and net 2 if they are in the same track」），<strong>不是</strong> personnel/VCG 圖。</span></p>
 </blockquote>
-<h3 id="fig-6-40-channel-specification-newly-transcribed">Fig. 6-40 — Channel Specification (newly transcribed)</h3>
+<h3 id="fig-6-40-channel-specification-newly-transcribed"><span data-tr="en">Fig. 6-40 — Channel Specification (newly transcribed)</span><span data-tr="zh">Fig. 6-40 —— Channel 規格（新抄錄）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 43. ✅ Verified.</li>
-<li>13 columns; each column has a top terminal and bottom terminal (net number, <code>0</code> = none):</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 43. ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 43。✅ 已確認。</span></li>
+<li><span data-tr="en">13 columns; each column has a top terminal and bottom terminal (net number, <code>0</code> = none):</span><span data-tr="zh">13 個欄；每欄各有一個上 terminal 跟一個下 terminal（net 編號，<code>0</code> = 沒有）：</span></li>
 </ul>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Column</th>
+<th><span data-tr="en">Column</span><span data-tr="zh">欄</span></th>
 <th>1</th>
 <th>2</th>
 <th>3</th>
@@ -1910,7 +1931,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </thead>
 <tbody>
 <tr>
-<td><strong>Top</strong></td>
+<td><strong><span data-tr="en">Top</span><span data-tr="zh">上</span></strong></td>
 <td>4</td>
 <td>8</td>
 <td>0</td>
@@ -1926,7 +1947,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 <td>0</td>
 </tr>
 <tr>
-<td><strong>Bottom</strong></td>
+<td><strong><span data-tr="en">Bottom</span><span data-tr="zh">下</span></strong></td>
 <td>0</td>
 <td>0</td>
 <td>7</td>
@@ -1943,25 +1964,25 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
 </tr>
 </tbody>
 </table></div>
-<h3 id="vcg-vertical-constraint-graph-newly-transcribed">VCG — Vertical Constraint Graph (newly transcribed)</h3>
+<h3 id="vcg-vertical-constraint-graph-newly-transcribed"><span data-tr="en">VCG — Vertical Constraint Graph (newly transcribed)</span><span data-tr="zh">VCG —— Vertical Constraint Graph（新抄錄）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 48. ✅ Verified.</li>
-<li>Edges (top-net → bottom-net at shared column): <code>1 → 2</code>, <code>3 → 4</code>, <code>5 → 6</code>. Nets 7 and 8 are isolated. Annotation: "e.g. net 3 must be wired before net 4."</li>
-<li>Same slide states the <strong>max cliques in HCG: {1,8}, {1,3,7}, {5,7}</strong> and shows the <strong>Fig. 6-46</strong> first level (root → {8,1}, {7,3,1}, {7,5}).</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 48. ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 48。✅ 已確認。</span></li>
+<li><span data-tr="en">Edges (top-net → bottom-net at shared column): <code>1 → 2</code>, <code>3 → 4</code>, <code>5 → 6</code>. Nets 7 and 8 are isolated. Annotation: "e.g. net 3 must be wired before net 4."</span><span data-tr="zh">邊（在共用的那一欄，上面 net → 下面 net）：<code>1 → 2</code>、<code>3 → 4</code>、<code>5 → 6</code>。net 7 跟 8 是孤立的。註記：「e.g. net 3 must be wired before net 4.」</span></li>
+<li><span data-tr="en">Same slide states the <strong>max cliques in HCG: {1,8}, {1,3,7}, {5,7}</strong> and shows the <strong>Fig. 6-46</strong> first level (root → {8,1}, {7,3,1}, {7,5}).</span><span data-tr="zh">同一張投影片也寫了 <strong>HCG 的 max cliques：{1,8}, {1,3,7}, {5,7}</strong>，並畫出 <strong>Fig. 6-46</strong> 第一層（root → {8,1}, {7,3,1}, {7,5}）。</span></li>
 </ul>
-<h3 id="fig-6-6-graph-containing-a-hamiltonian-circuit-newly-transcribed">Fig. 6-6 — Graph Containing a Hamiltonian Circuit (newly transcribed)</h3>
+<h3 id="fig-6-6-graph-containing-a-hamiltonian-circuit-newly-transcribed"><span data-tr="en">Fig. 6-6 — Graph Containing a Hamiltonian Circuit (newly transcribed)</span><span data-tr="zh">Fig. 6-6 —— 含有 Hamiltonian Circuit 的圖（新抄錄）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 4. ✅ Verified.</li>
-<li>Vertices laid out: top row <code>1, 2, 7, 5</code>; bottom row <code>6, 3, 4</code>. Edges: <code>1-2, 1-6, 1-3, 2-3, 6-5</code> (long crossing edge), <code>7-5, 7-4, 3-4, 4-5</code>.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 4. ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 4。✅ 已確認。</span></li>
+<li><span data-tr="en">Vertices laid out: top row <code>1, 2, 7, 5</code>; bottom row <code>6, 3, 4</code>. Edges: <code>1-2, 1-6, 1-3, 2-3, 6-5</code> (long crossing edge), <code>7-5, 7-4, 3-4, 4-5</code>.</span><span data-tr="zh">頂點排法：上排 <code>1, 2, 7, 5</code>；下排 <code>6, 3, 4</code>。邊：<code>1-2, 1-6, 1-3, 2-3, 6-5</code>（一條很長的交叉邊）、<code>7-5, 7-4, 3-4, 4-5</code>。</span></li>
 </ul>
-<h3 id="tables-6-1-6-2-personnel-cost-reduced-matrices-newly-transcribed">Tables 6-1 / 6-2 — Personnel cost &amp; reduced matrices (newly transcribed)</h3>
+<h3 id="tables-6-1-6-2-personnel-cost-reduced-matrices-newly-transcribed"><span data-tr="en">Tables 6-1 / 6-2 — Personnel cost &amp; reduced matrices (newly transcribed)</span><span data-tr="zh">Table 6-1 / 6-2 —— Personnel 的 cost 與 reduced 矩陣（新抄錄）</span></h3>
 <ul>
-<li><strong>Source:</strong> slides 16, 17, 18. ✅ Verified — see §8 for the full Markdown tables. Table 6-1 P3 row = <code>3,21,7,9</code>; Table 6-2 row reductions <code>−12,−26,−3,−10</code> + column-2 <code>−3</code>; lower bound <strong>54</strong>.</li>
+<li><span data-tr="en"><strong>Source:</strong> slides 16, 17, 18. ✅ Verified — see §8 for the full Markdown tables. Table 6-1 P3 row = <code>3,21,7,9</code>; Table 6-2 row reductions <code>−12,−26,−3,−10</code> + column-2 <code>−3</code>; lower bound <strong>54</strong>.</span><span data-tr="zh"><strong>來源：</strong>投影片 16, 17, 18。✅ 已確認 —— 完整表格看 §8。Table 6-1 P3 列 = <code>3,21,7,9</code>；Table 6-2 列 reduction <code>−12,−26,−3,−10</code> 加第 2 欄 <code>−3</code>；lower bound <strong>54</strong>。</span></li>
 </ul>
-<h3 id="personnel-bb-trees-newly-transcribed">Personnel B&amp;B trees (newly transcribed)</h3>
+<h3 id="personnel-bb-trees-newly-transcribed"><span data-tr="en">Personnel B&amp;B trees (newly transcribed)</span><span data-tr="zh">Personnel 的 B&amp;B 樹（新抄錄）</span></h3>
 <ul>
-<li><strong>Sources:</strong> slide 19 (solution tree), slide 20 (best-first with bounds), slide 21 (bounding).</li>
-<li><strong>Solution tree (slide 19, "Person Assigned" levels 1–4):</strong></li>
+<li><span data-tr="en"><strong>Sources:</strong> slide 19 (solution tree), slide 20 (best-first with bounds), slide 21 (bounding).</span><span data-tr="zh"><strong>來源：</strong>投影片 19（solution tree）、投影片 20（帶 bound 的 best-first）、投影片 21（bounding）。</span></li>
+<li><span data-tr="en"><strong>Solution tree (slide 19, "Person Assigned" levels 1–4):</strong></span><span data-tr="zh"><strong>Solution tree（投影片 19，「Person Assigned」第 1–4 層）：</strong></span></li>
 </ul>
 <pre><code>            0
           /   \
@@ -1974,7 +1995,7 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
      4 3   4    4   3
 </code></pre>
 <ul>
-<li><strong>Best-first tree (slide 20)</strong> — node value = partial cost; "Only one node is pruned away":</li>
+<li><span data-tr="en"><strong>Best-first tree (slide 20)</strong> — node value = partial cost; "Only one node is pruned away":</span><span data-tr="zh"><strong>Best-first 樹（投影片 20）</strong> —— 節點值 = 部分成本；「Only one node is pruned away」：</span></li>
 </ul>
 <pre><code>0(0)
 ├─ 1(29)
@@ -1986,32 +2007,36 @@ objective = −(P1 + P4 + P5) = −(6 + 5 + 6) = −17
                └─ 4(60) ── 3(70)
 </code></pre>
 <ul>
-<li><strong>Bounding tree (slide 21)</strong> — node value = lower bound; spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>; optimal feasible cost = <strong>70</strong>.</li>
+<li><span data-tr="en"><strong>Bounding tree (slide 21)</strong> — node value = lower bound; spine <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>; optimal feasible cost = <strong>70</strong>.</span><span data-tr="zh"><strong>Bounding 樹（投影片 21）</strong> —— 節點值 = lower bound；主幹 <code>0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}</code>；最佳可行成本 = <strong>70</strong>。</span></li>
 </ul>
-<h3 id="tables-6-3-6-4-6-5-6-6-6-7-tsp-cost-reduced-matrices-newly-transcribed">Tables 6-3 / 6-4 / 6-5 / 6-6 / 6-7 — TSP cost &amp; reduced matrices (newly transcribed)</h3>
+<h3 id="tables-6-3-6-4-6-5-6-6-6-7-tsp-cost-reduced-matrices-newly-transcribed"><span data-tr="en">Tables 6-3 / 6-4 / 6-5 / 6-6 / 6-7 — TSP cost &amp; reduced matrices (newly transcribed)</span><span data-tr="zh">Table 6-3 / 6-4 / 6-5 / 6-6 / 6-7 —— TSP 的 cost 與 reduced 矩陣（新抄錄）</span></h3>
 <ul>
-<li><strong>Sources:</strong> slides 22, 23, 24, 26, 27. ✅ Verified — full Markdown tables in §9. Row-reduction sum 84 (Table 6-4); column reductions <code>−7,−1,−4</code> (Table 6-5) → lower bound <strong>96</strong>. Table 6-6 = "arc 4-6 included" with <code>(6,4)=∞</code>; Table 6-7 reduces row 5 by <code>−3</code> → lower bound <strong>99</strong>.</li>
+<li><span data-tr="en"><strong>Sources:</strong> slides 22, 23, 24, 26, 27. ✅ Verified — full Markdown tables in §9. Row-reduction sum 84 (Table 6-4); column reductions <code>−7,−1,−4</code> (Table 6-5) → lower bound <strong>96</strong>. Table 6-6 = "arc 4-6 included" with <code>(6,4)=∞</code>; Table 6-7 reduces row 5 by <code>−3</code> → lower bound <strong>99</strong>.</span><span data-tr="zh"><strong>來源：</strong>投影片 22, 23, 24, 26, 27。✅ 已確認 —— 完整表格在 §9。列 reduction 總和 84（Table 6-4）；欄 reduction <code>−7,−1,−4</code>（Table 6-5）→ lower bound <strong>96</strong>。Table 6-6 = 「納入 arc 4-6」並 <code>(6,4)=∞</code>；Table 6-7 把第 5 列 reduce <code>−3</code> → lower bound <strong>99</strong>。</span></li>
 </ul>
-<h3 id="fig-6-25-highest-level-of-the-tsp-decision-tree-newly-transcribed">Fig. 6-25 — Highest Level of the TSP Decision Tree (newly transcribed)</h3>
+<h3 id="fig-6-25-highest-level-of-the-tsp-decision-tree-newly-transcribed"><span data-tr="en">Fig. 6-25 — Highest Level of the TSP Decision Tree (newly transcribed)</span><span data-tr="zh">Fig. 6-25 —— TSP Decision Tree 的最上層（新抄錄）</span></h3>
 <ul>
-<li><strong>Source:</strong> slide 25. ✅ Verified.</li>
+<li><span data-tr="en"><strong>Source:</strong> slide 25. ✅ Verified.</span><span data-tr="zh"><strong>來源：</strong>投影片 25。✅ 已確認。</span></li>
 </ul>
 <pre><code>          [All solutions]  L.B. = 96
           /                       \
 [with arc 4-6]            [without arc 4-6]
   L.B. = 96                L.B. = 96+32 = 128
 </code></pre>
-<p>Splitting arc = <strong>4-6</strong> (exclusion penalty 32, the largest; the 3-5 alternative penalty is 17+1=18).</p>
+<p><span data-tr="en">Splitting arc = <strong>4-6</strong> (exclusion penalty 32, the largest; the 3-5 alternative penalty is 17+1=18).</span><span data-tr="zh">分裂用的 arc = <strong>4-6</strong>（排除懲罰 32，最大；改用 3-5 的懲罰是 17+1=18）。</span></p>
 <hr />
-<h3 id="summary-all-reconstruction-flags-now-verified-against-the-clean-renders">Summary — all reconstruction flags now ✅ Verified against the clean renders</h3>
-<p>With the full 49-slide render set (<code>render/A05full/</code>), <strong>every</strong> previously-reconstructed item (#1–#18) is now verified directly from a slide. Newly transcribed figures/tables added to this Appendix: <strong>Fig. 6-6</strong> (Hamiltonian graph, slide 4), <strong>Tables 6-1/6-2</strong> (personnel, slides 16–18), <strong>personnel B&amp;B trees</strong> (slides 19–21), <strong>Tables 6-3..6-7</strong> (TSP, slides 22–27), <strong>Fig. 6-25</strong> (TSP decision tree top, slide 25), <strong>Fig. 6-40</strong> (channel spec, slide 43), <strong>Fig. 6-41 HCG</strong> (slide 47), <strong>VCG</strong> (slide 48), <strong>Fig. 6-46/6-48</strong> (channel A* trees, slides 48–49).</p>
-<p><strong>Corrections made during the clean-render pass:</strong>
+<h3 id="summary-all-reconstruction-flags-now-verified-against-the-clean-renders"><span data-tr="en">Summary — all reconstruction flags now ✅ Verified against the clean renders</span><span data-tr="zh">小結 —— 所有重建標記現在都 ✅ 對照乾淨 render 確認過了</span></h3>
+<p><span data-tr="en">With the full 49-slide render set (<code>render/A05full/</code>), <strong>every</strong> previously-reconstructed item (#1–#18) is now verified directly from a slide. Newly transcribed figures/tables added to this Appendix: <strong>Fig. 6-6</strong> (Hamiltonian graph, slide 4), <strong>Tables 6-1/6-2</strong> (personnel, slides 16–18), <strong>personnel B&amp;B trees</strong> (slides 19–21), <strong>Tables 6-3..6-7</strong> (TSP, slides 22–27), <strong>Fig. 6-25</strong> (TSP decision tree top, slide 25), <strong>Fig. 6-40</strong> (channel spec, slide 43), <strong>Fig. 6-41 HCG</strong> (slide 47), <strong>VCG</strong> (slide 48), <strong>Fig. 6-46/6-48</strong> (channel A* trees, slides 48–49).</span><span data-tr="zh">有了完整的 49 張 render（<code>render/A05full/</code>），<strong>每一個</strong>之前用推測重建的項目（#1–#18）現在都直接從投影片確認了。這份附錄新加的圖／表：<strong>Fig. 6-6</strong>（Hamiltonian 圖，投影片 4）、<strong>Table 6-1/6-2</strong>（personnel，投影片 16–18）、<strong>personnel B&amp;B 樹</strong>（投影片 19–21）、<strong>Table 6-3..6-7</strong>（TSP，投影片 22–27）、<strong>Fig. 6-25</strong>（TSP decision tree 頂層，投影片 25）、<strong>Fig. 6-40</strong>（channel 規格，投影片 43）、<strong>Fig. 6-41 HCG</strong>（投影片 47）、<strong>VCG</strong>（投影片 48）、<strong>Fig. 6-46/6-48</strong>（channel A* 樹，投影片 48–49）。</span></p>
+<p><span data-tr="en"><strong>Corrections made during the clean-render pass:</strong>
 - The graph called "Fig. 6-17" before is <strong>Fig. 6-36</strong> (A* example, slide 36); the true <strong>Fig. 6-17</strong> is the <code>V₀…V₃</code> multi-stage graph (slide 12, B&amp;B tree slide 13).
 - <strong>Fig. 6-21</strong> has only <code>J1→J3</code> and <code>J2→J4</code> — no <code>J1→J4</code> diagonal (was wrong).
 - The A* <strong>goal node is I</strong>, not F (slide 42).
-- The uncaptioned <code>png_014</code> graph = <strong>Fig. 6-41 HCG</strong>; the uncaptioned <code>png_015</code> tree = <strong>Fig. 6-48</strong>.</p>
+- The uncaptioned <code>png_014</code> graph = <strong>Fig. 6-41 HCG</strong>; the uncaptioned <code>png_015</code> tree = <strong>Fig. 6-48</strong>.</span><span data-tr="zh"><strong>這一輪乾淨 render 做的更正：</strong>
+- 之前叫「Fig. 6-17」的那張圖其實是 <strong>Fig. 6-36</strong>（A* 範例，投影片 36）；真正的 <strong>Fig. 6-17</strong> 是 <code>V₀…V₃</code> 的 multi-stage graph（投影片 12，B&amp;B 樹在投影片 13）。
+- <strong>Fig. 6-21</strong> 只有 <code>J1→J3</code> 跟 <code>J2→J4</code> —— 沒有 <code>J1→J4</code> 斜線（之前是錯的）。
+- A* 的 <strong>goal node 是 I</strong>，不是 F（投影片 42）。
+- 沒標題的 <code>png_014</code> 圖 = <strong>Fig. 6-41 HCG</strong>；沒標題的 <code>png_015</code> 樹 = <strong>Fig. 6-48</strong>。</span></p>
 <hr>
-<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
-The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+<p class="lede"><span data-tr="en">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</span><span data-tr="zh">這裡有任何問題嗎？問你的老師（就是這個 agent）—— 我就是幹這個的。原始投影片都 render 成圖片放在 <code>render/</code>，方便你用眼睛核對。</span></p>
 </div><script src="../assets/i18n.js"></script>
 </body></html>

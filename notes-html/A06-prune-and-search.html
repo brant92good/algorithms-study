@@ -13,65 +13,66 @@
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
-<h1 id="a06-prune-and-search">A06 — Prune-and-Search</h1>
+<h1 id="a06-prune-and-search"><span data-tr="en">A06 — Prune-and-Search</span><span data-tr="zh">A06 — Prune-and-Search</span></h1>
 <blockquote>
-<p>Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>
-Chapter 6/7: <strong>Prune-and-Search</strong></p>
+<p><span data-tr="en">Course: R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>
+Chapter 6/7: <strong>Prune-and-Search</strong></span><span data-tr="zh">課程：R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>
+第 6/7 章：<strong>Prune-and-Search</strong></span></p>
 </blockquote>
 <hr />
-<h2 id="overview">Overview</h2>
-<p><strong>Prune-and-search</strong> is an algorithm-design strategy that generalizes the idea behind <strong>binary search</strong>:</p>
+<h2 id="overview"><span data-tr="en">Overview</span><span data-tr="zh">總覽</span></h2>
+<p><span data-tr="en"><strong>Prune-and-search</strong> is an algorithm-design strategy that generalizes the idea behind <strong>binary search</strong>:</span><span data-tr="zh"><strong>Prune-and-search</strong> 是一種演算法設計策略，可以把它想成 <strong>binary search</strong> 背後那個想法的推廣：</span></p>
 <ul>
-<li>The algorithm runs in <strong>many iterations</strong>.</li>
-<li>At each iteration it <strong>prunes away a fixed fraction <code>f</code></strong> (<code>0 &lt; f &lt; 1</code>) of the current input data.</li>
-<li>It then <strong>recursively</strong> applies the same algorithm to the <strong>remaining <code>(1−f)·n</code></strong> elements.</li>
-<li>After enough iterations the surviving input is so small (size <code>q</code>) that the problem can be solved <strong>directly in constant time <code>c</code></strong>.</li>
+<li><span data-tr="en">The algorithm runs in <strong>many iterations</strong>.</span><span data-tr="zh">演算法會跑<strong>很多輪</strong>（iteration）。</span></li>
+<li><span data-tr="en">At each iteration it <strong>prunes away a fixed fraction <code>f</code></strong> (<code>0 &lt; f &lt; 1</code>) of the current input data.</span><span data-tr="zh">每一輪都會<strong>砍掉固定比例 <code>f</code></strong>（<code>0 &lt; f &lt; 1</code>）的輸入資料。</span></li>
+<li><span data-tr="en">It then <strong>recursively</strong> applies the same algorithm to the <strong>remaining <code>(1−f)·n</code></strong> elements.</span><span data-tr="zh">接著對<strong>剩下的 <code>(1−f)·n</code></strong> 個元素<strong>遞迴</strong>跑同一套演算法。</span></li>
+<li><span data-tr="en">After enough iterations the surviving input is so small (size <code>q</code>) that the problem can be solved <strong>directly in constant time <code>c</code></strong>.</span><span data-tr="zh">跑夠多輪之後，剩下的輸入小到（大小 <code>q</code>）可以<strong>直接用常數時間 <code>c</code></strong> 解掉。</span></li>
 </ul>
-<p>The headline result: <strong>if each iteration's pruning work costs <code>O(nᵏ)</code>, the entire prune-and-search procedure also costs <code>O(nᵏ)</code></strong> — i.e. the cost is dominated by the <em>first</em> iteration, not the sum over all iterations. This is what makes the <strong>selection problem</strong> and <strong>two-variable linear programming</strong> solvable in <strong>linear time <code>O(n)</code></strong>, and the <strong>1-center problem</strong> solvable in <code>O(n)</code>.</p>
+<p><span data-tr="en">The headline result: <strong>if each iteration's pruning work costs <code>O(nᵏ)</code>, the entire prune-and-search procedure also costs <code>O(nᵏ)</code></strong> — i.e. the cost is dominated by the <em>first</em> iteration, not the sum over all iterations. This is what makes the <strong>selection problem</strong> and <strong>two-variable linear programming</strong> solvable in <strong>linear time <code>O(n)</code></strong>, and the <strong>1-center problem</strong> solvable in <code>O(n)</code>.</span><span data-tr="zh">重點結論：<strong>如果每一輪的修剪工作要花 <code>O(nᵏ)</code>，那整個 prune-and-search 程序也只要 <code>O(nᵏ)</code></strong>。也就是說，總成本是被<em>第一輪</em>主導的，不是把每一輪加起來。正是這個性質讓 <strong>selection problem</strong> 跟 <strong>two-variable linear programming</strong> 能在<strong>線性時間 <code>O(n)</code></strong> 解掉，<strong>1-center problem</strong> 也能在 <code>O(n)</code> 解掉。</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Topic</th>
-<th>Result</th>
+<th><span data-tr="en">Topic</span><span data-tr="zh">主題</span></th>
+<th><span data-tr="en">Result</span><span data-tr="zh">結果</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>General method</td>
+<td><span data-tr="en">General method</span><span data-tr="zh">通用方法</span></td>
 <td><code>T(n) = T((1−f)·n) + O(nᵏ) ⇒ T(n) = O(nᵏ)</code></td>
 </tr>
 <tr>
-<td>Selection (k-th smallest) — naive</td>
-<td><code>O(n log n)</code> (sort)</td>
+<td><span data-tr="en">Selection (k-th smallest) — naive</span><span data-tr="zh">Selection（第 k 小）— 笨方法</span></td>
+<td><code>O(n log n)</code> <span data-tr="en">(sort)</span><span data-tr="zh">（排序）</span></td>
 </tr>
 <tr>
-<td>Selection — prune-and-search (median of medians)</td>
+<td><span data-tr="en">Selection — prune-and-search (median of medians)</span><span data-tr="zh">Selection — prune-and-search（median of medians）</span></td>
 <td><code>O(n)</code></td>
 </tr>
 <tr>
-<td>Two-variable linear programming</td>
+<td><span data-tr="en">Two-variable linear programming</span><span data-tr="zh">two-variable linear programming</span></td>
 <td><code>O(n)</code></td>
 </tr>
 <tr>
-<td>1-center problem (smallest enclosing circle)</td>
+<td><span data-tr="en">1-center problem (smallest enclosing circle)</span><span data-tr="zh">1-center problem（最小包覆圓）</span></td>
 <td><code>O(n)</code></td>
 </tr>
 </tbody>
 </table></div>
 <hr />
-<h2 id="1-the-general-method">1. The General Method</h2>
-<h3 id="idea">Idea</h3>
-<p>Consider how <strong>binary search</strong> works. It consists of many iterations; at each iteration it prunes away a fraction (<code>f = 1/2</code> for binary search) of the input and recurses on the rest. Prune-and-search abstracts this:</p>
+<h2 id="1-the-general-method"><span data-tr="en">1. The General Method</span><span data-tr="zh">1. 通用方法</span></h2>
+<h3 id="idea"><span data-tr="en">Idea</span><span data-tr="zh">核心想法</span></h3>
+<p><span data-tr="en">Consider how <strong>binary search</strong> works. It consists of many iterations; at each iteration it prunes away a fraction (<code>f = 1/2</code> for binary search) of the input and recurses on the rest. Prune-and-search abstracts this:</span><span data-tr="zh">先想想 <strong>binary search</strong> 怎麼運作。它就是一連串的 iteration：每一輪砍掉一部分輸入（binary search 砍的是一半，<code>f = 1/2</code>），再對剩下的部分遞迴下去。Prune-and-search 就是把這個概念抽象出來：</span></p>
 <ol>
-<li>Prune away a fraction <code>f</code> of the input each iteration.</li>
-<li>Recursively invoke the same algorithm on the remaining <code>(1−f)·n</code> elements.</li>
-<li>After <code>p</code> iterations the size shrinks to some <code>q</code> small enough to solve directly in constant time <code>c</code>.</li>
+<li><span data-tr="en">Prune away a fraction <code>f</code> of the input each iteration.</span><span data-tr="zh">每一輪砍掉比例 <code>f</code> 的輸入。</span></li>
+<li><span data-tr="en">Recursively invoke the same algorithm on the remaining <code>(1−f)·n</code> elements.</span><span data-tr="zh">對剩下的 <code>(1−f)·n</code> 個元素遞迴跑同一套演算法。</span></li>
+<li><span data-tr="en">After <code>p</code> iterations the size shrinks to some <code>q</code> small enough to solve directly in constant time <code>c</code>.</span><span data-tr="zh">跑 <code>p</code> 輪之後，大小縮到某個 <code>q</code>，小到可以直接用常數時間 <code>c</code> 解掉。</span></li>
 </ol>
-<h3 id="time-complexity-analysis">Time-complexity analysis</h3>
-<p>Assume the work to perform the prune-and-search step (pruning + bookkeeping) in <strong>each</strong> iteration is <code>O(nᵏ)</code> for some constant <code>k</code>, and let <code>T(n)</code> be the worst-case run time. Then:</p>
+<h3 id="time-complexity-analysis"><span data-tr="en">Time-complexity analysis</span><span data-tr="zh">時間複雜度分析</span></h3>
+<p><span data-tr="en">Assume the work to perform the prune-and-search step (pruning + bookkeeping) in <strong>each</strong> iteration is <code>O(nᵏ)</code> for some constant <code>k</code>, and let <code>T(n)</code> be the worst-case run time. Then:</span><span data-tr="zh">假設<strong>每一輪</strong>做 prune-and-search 那一步（修剪加上記帳）要花 <code>O(nᵏ)</code>（<code>k</code> 是某個常數），並令 <code>T(n)</code> 是最壞情況的執行時間。那麼：</span></p>
 <pre><code>T(n) = T((1 − f)·n) + O(nᵏ)
 </code></pre>
-<p>Unrolling the recurrence (for sufficiently large <code>n</code>, replace <code>O(nᵏ)</code> by <code>c·nᵏ</code>):</p>
+<p><span data-tr="en">Unrolling the recurrence (for sufficiently large <code>n</code>, replace <code>O(nᵏ)</code> by <code>c·nᵏ</code>):</span><span data-tr="zh">把這條遞迴式展開（<code>n</code> 夠大時，把 <code>O(nᵏ)</code> 換成 <code>c·nᵏ</code>）：</span></p>
 <pre><code>T(n) ≤ T((1 − f)·n) + c·nᵏ
 
      ≤ T((1 − f)²·n) + c·nᵏ + c·(1 − f)ᵏ·nᵏ
@@ -82,92 +83,92 @@ Chapter 6/7: <strong>Prune-and-Search</strong></p>
 
      = c′ + c·nᵏ · ( 1 + (1 − f)ᵏ + (1 − f)²ᵏ + … + (1 − f)ᵖᵏ )
 </code></pre>
-<p>The term <code>c′</code> is the constant-time cost of the base case (the directly-solved small instance).</p>
-<p>The parenthesized sum is a <strong>geometric series</strong> with ratio <code>(1 − f)ᵏ</code>. Since <code>1 − f &lt; 1</code>, we have <code>(1 − f)ᵏ &lt; 1</code>, so as <code>n → ∞</code> (i.e. <code>p → ∞</code>) the series converges to a constant:</p>
+<p><span data-tr="en">The term <code>c′</code> is the constant-time cost of the base case (the directly-solved small instance).</span><span data-tr="zh"><code>c′</code> 這一項是 base case 的常數時間成本（就是那個直接解掉的小問題）。</span></p>
+<p><span data-tr="en">The parenthesized sum is a <strong>geometric series</strong> with ratio <code>(1 − f)ᵏ</code>. Since <code>1 − f &lt; 1</code>, we have <code>(1 − f)ᵏ &lt; 1</code>, so as <code>n → ∞</code> (i.e. <code>p → ∞</code>) the series converges to a constant:</span><span data-tr="zh">括號裡那串總和是一個公比為 <code>(1 − f)ᵏ</code> 的<strong>等比級數</strong>。因為 <code>1 − f &lt; 1</code>，所以 <code>(1 − f)ᵏ &lt; 1</code>；這樣一來，當 <code>n → ∞</code>（也就是 <code>p → ∞</code>）時，這個級數會收斂到一個常數：</span></p>
 <pre><code>1 + (1 − f)ᵏ + (1 − f)²ᵏ + … = 1 / (1 − (1 − f)ᵏ)   *(reconstructed closed form)*
 </code></pre>
 <blockquote>
-<p>⚠️ Reconstructed (slide leaves it implicit) — <strong>Verified against slide 4</strong>: the slide really writes only "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>". It never gives a closed form. The closed form <code>1/(1 − (1−f)ᵏ)</code> of the convergent geometric series is the standard fill-in that justifies why the bracket is a constant; it is genuinely absent from the slide.</p>
+<p><span data-tr="en">⚠️ Reconstructed (slide leaves it implicit) — <strong>Verified against slide 4</strong>: the slide really writes only "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>". It never gives a closed form. The closed form <code>1/(1 − (1−f)ᵏ)</code> of the convergent geometric series is the standard fill-in that justifies why the bracket is a constant; it is genuinely absent from the slide.</span><span data-tr="zh">⚠️ 這是補上去的（投影片省略了）—<strong>已對照 slide 4 確認</strong>：投影片其實只寫了「Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>」，從頭到尾沒給封閉形式。等比級數收斂後的封閉形式 <code>1/(1 − (1−f)ᵏ)</code> 是標準的補白，用來說明為什麼括號裡是個常數；它確實沒出現在投影片上。</span></p>
 </blockquote>
-<p>Therefore the whole sum is <code>c·nᵏ · (constant) + c′</code>, giving:</p>
+<p><span data-tr="en">Therefore the whole sum is <code>c·nᵏ · (constant) + c′</code>, giving:</span><span data-tr="zh">所以整串總和就是 <code>c·nᵏ · (constant) + c′</code>，於是得到：</span></p>
 <pre><code>T(n) = O(nᵏ)
 </code></pre>
-<p><strong>Conclusion:</strong> the time-complexity of the <em>whole</em> prune-and-search process is of the <strong>same order</strong> as the time-complexity of a <em>single</em> iteration. The first iteration dominates.</p>
+<p><span data-tr="en"><strong>Conclusion:</strong> the time-complexity of the <em>whole</em> prune-and-search process is of the <strong>same order</strong> as the time-complexity of a <em>single</em> iteration. The first iteration dominates.</span><span data-tr="zh"><strong>結論：</strong><em>整個</em> prune-and-search 程序的時間複雜度，跟<em>單獨一輪</em>的複雜度是<strong>同一個 order</strong>。一切都被第一輪主導。</span></p>
 <hr />
-<h2 id="2-the-selection-problem">2. The Selection Problem</h2>
-<h3 id="definition">Definition</h3>
+<h2 id="2-the-selection-problem"><span data-tr="en">2. The Selection Problem</span><span data-tr="zh">2. Selection Problem</span></h2>
+<h3 id="definition"><span data-tr="en">Definition</span><span data-tr="zh">定義</span></h3>
 <ul>
-<li><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</li>
-<li><strong>Output:</strong> the <strong>k-th smallest</strong> element of <code>S</code>.</li>
-<li>The <strong>median problem</strong> is the special case of finding the <code>⌈n/2⌉</code>-th smallest element. ✅ Verified against slide 5 (the slide explicitly writes "the <code>⌈n/2⌉</code>-th smallest element").</li>
+<li><span data-tr="en"><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</span><span data-tr="zh"><strong>輸入：</strong>一個有 <code>n</code> 個元素的集合 <code>S</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> the <strong>k-th smallest</strong> element of <code>S</code>.</span><span data-tr="zh"><strong>輸出：</strong><code>S</code> 裡<strong>第 k 小</strong>的元素。</span></li>
+<li><span data-tr="en">The <strong>median problem</strong> is the special case of finding the <code>⌈n/2⌉</code>-th smallest element. ✅ Verified against slide 5 (the slide explicitly writes "the <code>⌈n/2⌉</code>-th smallest element").</span><span data-tr="zh"><strong>median problem</strong> 就是它的一個特例：要找第 <code>⌈n/2⌉</code> 小的元素。✅ 已對照 slide 5 確認（投影片明白寫出「the <code>⌈n/2⌉</code>-th smallest element」）。</span></li>
 </ul>
-<h3 id="straightforward-algorithm">Straightforward algorithm</h3>
+<h3 id="straightforward-algorithm"><span data-tr="en">Straightforward algorithm</span><span data-tr="zh">直接的做法</span></h3>
 <ol>
-<li><strong>Sort</strong> the <code>n</code> elements.</li>
-<li><strong>Locate</strong> the k-th element in the sorted list.</li>
+<li><span data-tr="en"><strong>Sort</strong> the <code>n</code> elements.</span><span data-tr="zh">把這 <code>n</code> 個元素<strong>排序</strong>。</span></li>
+<li><span data-tr="en"><strong>Locate</strong> the k-th element in the sorted list.</span><span data-tr="zh">在排好的序列裡<strong>找出</strong>第 k 個。</span></li>
 </ol>
-<p><strong>Time complexity:</strong> <code>O(n log n)</code> (dominated by the sort).</p>
-<p>We can do better — <code>O(n)</code> — with prune-and-search.</p>
+<p><span data-tr="en"><strong>Time complexity:</strong> <code>O(n log n)</code> (dominated by the sort).</span><span data-tr="zh"><strong>時間複雜度：</strong><code>O(n log n)</code>（被排序那一步主導）。</span></p>
+<p><span data-tr="en">We can do better — <code>O(n)</code> — with prune-and-search.</span><span data-tr="zh">其實可以做得更好——用 prune-and-search 能壓到 <code>O(n)</code>。</span></p>
 <hr />
-<h2 id="3-prune-and-search-selection">3. Prune-and-Search Selection</h2>
-<h3 id="idea_1">Idea</h3>
-<p>Pick a pivot <code>p ∈ S</code> and use it to partition <code>S</code> into <strong>three</strong> subsets, then recurse into only <strong>one</strong> of them.</p>
-<p>Given <code>S = {a₁, a₂, …, aₙ}</code> and pivot <code>p ∈ S</code>:</p>
+<h2 id="3-prune-and-search-selection"><span data-tr="en">3. Prune-and-Search Selection</span><span data-tr="zh">3. 用 Prune-and-Search 做 Selection</span></h2>
+<h3 id="idea_1"><span data-tr="en">Idea</span><span data-tr="zh">核心想法</span></h3>
+<p><span data-tr="en">Pick a pivot <code>p ∈ S</code> and use it to partition <code>S</code> into <strong>three</strong> subsets, then recurse into only <strong>one</strong> of them.</span><span data-tr="zh">挑一個 pivot <code>p ∈ S</code>，用它把 <code>S</code> 切成<strong>三</strong>塊，然後只往其中<strong>一</strong>塊遞迴下去。</span></p>
+<p><span data-tr="en">Given <code>S = {a₁, a₂, …, aₙ}</code> and pivot <code>p ∈ S</code>:</span><span data-tr="zh">給定 <code>S = {a₁, a₂, …, aₙ}</code> 跟 pivot <code>p ∈ S</code>：</span></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Subset</th>
-<th>Definition</th>
+<th><span data-tr="en">Subset</span><span data-tr="zh">子集合</span></th>
+<th><span data-tr="en">Definition</span><span data-tr="zh">定義</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>S₁</code></td>
-<td><code>{ aᵢ : aᵢ &lt; p, 1 ≤ i ≤ n }</code> (elements less than <code>p</code>)</td>
+<td><code>{ aᵢ : aᵢ &lt; p, 1 ≤ i ≤ n }</code> <span data-tr="en">(elements less than <code>p</code>)</span><span data-tr="zh">（比 <code>p</code> 小的元素）</span></td>
 </tr>
 <tr>
 <td><code>S₂</code></td>
-<td><code>{ aᵢ : aᵢ = p, 1 ≤ i ≤ n }</code> (elements equal to <code>p</code>)</td>
+<td><code>{ aᵢ : aᵢ = p, 1 ≤ i ≤ n }</code> <span data-tr="en">(elements equal to <code>p</code>)</span><span data-tr="zh">（等於 <code>p</code> 的元素）</span></td>
 </tr>
 <tr>
 <td><code>S₃</code></td>
-<td><code>{ aᵢ : aᵢ &gt; p, 1 ≤ i ≤ n }</code> (elements greater than <code>p</code>)</td>
+<td><code>{ aᵢ : aᵢ &gt; p, 1 ≤ i ≤ n }</code> <span data-tr="en">(elements greater than <code>p</code>)</span><span data-tr="zh">（比 <code>p</code> 大的元素）</span></td>
 </tr>
 </tbody>
 </table></div>
-<h3 id="three-way-recursion">Three-way recursion</h3>
-<p>To find the k-th smallest element of <code>S</code>:</p>
+<h3 id="three-way-recursion"><span data-tr="en">Three-way recursion</span><span data-tr="zh">三向遞迴</span></h3>
+<p><span data-tr="en">To find the k-th smallest element of <code>S</code>:</span><span data-tr="zh">要找 <code>S</code> 裡第 k 小的元素：</span></p>
 <ol>
-<li><strong>If <code>|S₁| ≥ k</code></strong> → the k-th smallest element of <code>S</code> lies in <code>S₁</code>. <strong>Prune away <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁</code> (same <code>k</code>).</li>
-<li><strong>Else if <code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> itself is the k-th smallest element of <code>S</code>. <strong>Done.</strong></li>
-<li><strong>Otherwise</strong> → the k-th smallest element of <code>S</code> is the <strong><code>(k − |S₁| − |S₂|)</code>-th</strong> smallest element in <code>S₃</code>. <strong>Prune away <code>S₁</code> and <code>S₂</code></strong> and recurse on <code>S₃</code> with the adjusted rank.</li>
+<li><span data-tr="en"><strong>If <code>|S₁| ≥ k</code></strong> → the k-th smallest element of <code>S</code> lies in <code>S₁</code>. <strong>Prune away <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁</code> (same <code>k</code>).</span><span data-tr="zh"><strong>如果 <code>|S₁| ≥ k</code></strong> → 答案就落在 <code>S₁</code> 裡。<strong>把 <code>S₂</code> 跟 <code>S₃</code> 砍掉</strong>，對 <code>S₁</code> 遞迴（<code>k</code> 不變）。</span></li>
+<li><span data-tr="en"><strong>Else if <code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> itself is the k-th smallest element of <code>S</code>. <strong>Done.</strong></span><span data-tr="zh"><strong>否則如果 <code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> 自己就是第 k 小的元素。<strong>結束。</strong></span></li>
+<li><span data-tr="en"><strong>Otherwise</strong> → the k-th smallest element of <code>S</code> is the <strong><code>(k − |S₁| − |S₂|)</code>-th</strong> smallest element in <code>S₃</code>. <strong>Prune away <code>S₁</code> and <code>S₂</code></strong> and recurse on <code>S₃</code> with the adjusted rank.</span><span data-tr="zh"><strong>不然</strong> → 答案是 <code>S₃</code> 裡第 <strong><code>(k − |S₁| − |S₂|)</code></strong> 小的元素。<strong>把 <code>S₁</code> 跟 <code>S₂</code> 砍掉</strong>，用調整過的名次對 <code>S₃</code> 遞迴。</span></li>
 </ol>
 <blockquote>
-<p>✅ Verified against slides 6 and 9: the deck really is inconsistent. <strong>Slide 6</strong> (conceptual) writes <code>If |S₁| &gt; k</code> and <code>Else if |S₁| + |S₂| &gt; k</code> (strict <code>&gt;</code>). <strong>Slide 9</strong> (Step 5, formal) writes <code>If |S₁| ≥ k</code> and <code>else if |S₁| + |S₂| ≥ k</code> (<code>≥</code>). The correct boundary condition for "answer is in <code>S₁</code>" is <strong><code>|S₁| ≥ k</code></strong> and for "<code>p</code> is the answer" is <strong><code>|S₁| + |S₂| ≥ k</code></strong> — i.e. slide 9's <code>≥</code> version is the right one; slide 6's <code>&gt;</code> is the deck's error.</p>
+<p><span data-tr="en">✅ Verified against slides 6 and 9: the deck really is inconsistent. <strong>Slide 6</strong> (conceptual) writes <code>If |S₁| &gt; k</code> and <code>Else if |S₁| + |S₂| &gt; k</code> (strict <code>&gt;</code>). <strong>Slide 9</strong> (Step 5, formal) writes <code>If |S₁| ≥ k</code> and <code>else if |S₁| + |S₂| ≥ k</code> (<code>≥</code>). The correct boundary condition for "answer is in <code>S₁</code>" is <strong><code>|S₁| ≥ k</code></strong> and for "<code>p</code> is the answer" is <strong><code>|S₁| + |S₂| ≥ k</code></strong> — i.e. slide 9's <code>≥</code> version is the right one; slide 6's <code>&gt;</code> is the deck's error.</span><span data-tr="zh">✅ 已對照 slide 6 跟 slide 9 確認：這份投影片本身就前後不一致。<strong>Slide 6</strong>（概念版）寫的是 <code>If |S₁| &gt; k</code> 跟 <code>Else if |S₁| + |S₂| &gt; k</code>（嚴格 <code>&gt;</code>）；<strong>Slide 9</strong>（Step 5，正式版）寫的是 <code>If |S₁| ≥ k</code> 跟 <code>else if |S₁| + |S₂| ≥ k</code>（<code>≥</code>）。正確的邊界條件是：「答案在 <code>S₁</code>」要用 <strong><code>|S₁| ≥ k</code></strong>，「<code>p</code> 就是答案」要用 <strong><code>|S₁| + |S₂| ≥ k</code></strong>——也就是 slide 9 的 <code>≥</code> 版本才對，slide 6 的 <code>&gt;</code> 是投影片寫錯了。</span></p>
 </blockquote>
-<p>The cost of this idea hinges entirely on <strong>choosing a good pivot <code>p</code></strong> so that a constant fraction is always pruned.</p>
+<p><span data-tr="en">The cost of this idea hinges entirely on <strong>choosing a good pivot <code>p</code></strong> so that a constant fraction is always pruned.</span><span data-tr="zh">這個做法的成本，完全卡在<strong>能不能挑到好的 pivot <code>p</code></strong>，好讓每一輪都穩定砍掉固定比例。</span></p>
 <hr />
-<h2 id="4-choosing-the-pivot-median-of-medians">4. Choosing the Pivot — Median of Medians</h2>
-<h3 id="idea_2">Idea</h3>
-<p>We want a pivot <code>p</code> that is guaranteed to be "central enough" that <strong>at least a constant fraction</strong> of <code>S</code> is pruned each iteration — regardless of input. The trick is the <strong>median of medians</strong>.</p>
-<h3 id="construction">Construction</h3>
+<h2 id="4-choosing-the-pivot-median-of-medians"><span data-tr="en">4. Choosing the Pivot — Median of Medians</span><span data-tr="zh">4. 怎麼挑 Pivot — Median of Medians</span></h2>
+<h3 id="idea_2"><span data-tr="en">Idea</span><span data-tr="zh">核心想法</span></h3>
+<p><span data-tr="en">We want a pivot <code>p</code> that is guaranteed to be "central enough" that <strong>at least a constant fraction</strong> of <code>S</code> is pruned each iteration — regardless of input. The trick is the <strong>median of medians</strong>.</span><span data-tr="zh">我們想要一個夠「中間」的 pivot <code>p</code>，好讓不管輸入長怎樣，每一輪都能保證砍掉 <code>S</code> 的<strong>至少固定比例</strong>。訣竅就是 <strong>median of medians</strong>。</span></p>
+<h3 id="construction"><span data-tr="en">Construction</span><span data-tr="zh">怎麼建出來</span></h3>
 <ol>
-<li>Divide the <code>n</code> elements into <strong><code>⌈n/5⌉</code> groups of 5 elements each</strong> (pad the last group with dummy elements if <code>n</code> is not a multiple of 5).</li>
-<li><strong>Sort each 5-element group</strong> into non-decreasing order. The <strong>median</strong> of each group is its 3rd element.</li>
-<li>Let <code>p</code> = <strong>the median of the <code>⌈n/5⌉</code> group-medians</strong> <code>M</code>.</li>
+<li><span data-tr="en">Divide the <code>n</code> elements into <strong><code>⌈n/5⌉</code> groups of 5 elements each</strong> (pad the last group with dummy elements if <code>n</code> is not a multiple of 5).</span><span data-tr="zh">把 <code>n</code> 個元素分成 <strong><code>⌈n/5⌉</code> 組，每組 5 個</strong>（如果 <code>n</code> 不是 5 的倍數，最後一組就補幾個 dummy 元素湊齊）。</span></li>
+<li><span data-tr="en"><strong>Sort each 5-element group</strong> into non-decreasing order. The <strong>median</strong> of each group is its 3rd element.</span><span data-tr="zh">把<strong>每一組 5 個元素排序</strong>（由小到大）。每組的 <strong>median</strong> 就是它的第 3 個。</span></li>
+<li><span data-tr="en">Let <code>p</code> = <strong>the median of the <code>⌈n/5⌉</code> group-medians</strong> <code>M</code>.</span><span data-tr="zh">令 <code>p</code> = 這 <strong><code>⌈n/5⌉</code> 個組 median（也就是 <code>M</code>）的 median</strong>。</span></li>
 </ol>
-<h3 id="the-14-guarantee">The 1/4 guarantee</h3>
-<p>✅ <strong>Verified against slide 7</strong> (the median-of-medians grid figure, "How to select P?"). The actual slide layout:</p>
+<h3 id="the-14-guarantee"><span data-tr="en">The 1/4 guarantee</span><span data-tr="zh">1/4 的保證</span></h3>
+<p><span data-tr="en">✅ <strong>Verified against slide 7</strong> (the median-of-medians grid figure, "How to select P?"). The actual slide layout:</span><span data-tr="zh">✅ <strong>已對照 slide 7 確認</strong>（就是那張 median-of-medians 格子圖，「How to select P?」）。投影片實際的排版是這樣：</span></p>
 <ul>
-<li>Each <strong>column</strong> is one 5-element subset, drawn as 5 dots stacked vertically; a vertical down-arrow on the left is labelled <strong>"Each 5-element subset is sorted in non-decreasing sequence"</strong> (smallest at top, largest at bottom).</li>
-<li>There are 7 columns of 5 dots in the drawing (a schematic of <code>⌈n/5⌉</code> columns).</li>
-<li>The <strong>middle row</strong> (3rd of 5) is the row of group-medians, enclosed in a thin dotted rectangle and labelled <strong><code>M</code></strong> at the right edge.</li>
-<li>The overall median of those medians, <strong><code>P</code></strong>, is the dot boxed in the middle of that median row (labelled <code>P</code> with an arrow pointing to it).</li>
-<li>Two solid rectangles mark the guaranteed regions:</li>
-<li>An <strong>upper-left</strong> solid rectangle covering the columns whose median ≤ P, rows from the median upward — labelled (top, arrow down into it) <strong>"At least 1/4 of S known to be less than or equal to P."</strong></li>
-<li>A <strong>lower-right</strong> solid rectangle covering the columns whose median ≥ P, rows from the median downward — labelled (bottom, arrow up into it) <strong>"At least 1/4 of S known to be greater than or equal to P."</strong></li>
+<li><span data-tr="en">Each <strong>column</strong> is one 5-element subset, drawn as 5 dots stacked vertically; a vertical down-arrow on the left is labelled <strong>"Each 5-element subset is sorted in non-decreasing sequence"</strong> (smallest at top, largest at bottom).</span><span data-tr="zh">每一<strong>欄</strong>就是一組 5 個元素，畫成 5 個點直直疊著；左邊有個向下的箭頭，標著 <strong>"Each 5-element subset is sorted in non-decreasing sequence"</strong>（最小在上、最大在下）。</span></li>
+<li><span data-tr="en">There are 7 columns of 5 dots in the drawing (a schematic of <code>⌈n/5⌉</code> columns).</span><span data-tr="zh">圖裡畫了 7 欄、每欄 5 個點（用來示意 <code>⌈n/5⌉</code> 欄）。</span></li>
+<li><span data-tr="en">The <strong>middle row</strong> (3rd of 5) is the row of group-medians, enclosed in a thin dotted rectangle and labelled <strong><code>M</code></strong> at the right edge.</span><span data-tr="zh"><strong>中間那一列</strong>（5 個裡的第 3 個）就是各組 median 排成的列，用一個細細的虛線框框起來，右邊標著 <strong><code>M</code></strong>。</span></li>
+<li><span data-tr="en">The overall median of those medians, <strong><code>P</code></strong>, is the dot boxed in the middle of that median row (labelled <code>P</code> with an arrow pointing to it).</span><span data-tr="zh">這些 median 的整體 median，<strong><code>P</code></strong>，就是那一列正中間被框起來的那個點（標著 <code>P</code>，還有箭頭指過去）。</span></li>
+<li><span data-tr="en">Two solid rectangles mark the guaranteed regions:</span><span data-tr="zh">有兩個實線框框出保證區域：</span></li>
+<li><span data-tr="en">An <strong>upper-left</strong> solid rectangle covering the columns whose median ≤ P, rows from the median upward — labelled (top, arrow down into it) <strong>"At least 1/4 of S known to be less than or equal to P."</strong></span><span data-tr="zh"><strong>左上角</strong>那個實線框，蓋住 median ≤ P 的那些欄、從 median 往上的那幾列——上面標著（箭頭往下指進去）<strong>"At least 1/4 of S known to be less than or equal to P."</strong></span></li>
+<li><span data-tr="en">A <strong>lower-right</strong> solid rectangle covering the columns whose median ≥ P, rows from the median downward — labelled (bottom, arrow up into it) <strong>"At least 1/4 of S known to be greater than or equal to P."</strong></span><span data-tr="zh"><strong>右下角</strong>那個實線框，蓋住 median ≥ P 的那些欄、從 median 往下的那幾列——下面標著（箭頭往上指進去）<strong>"At least 1/4 of S known to be greater than or equal to P."</strong></span></li>
 </ul>
-<p>Schematic reproduction (P boxed on the median row M; the two ≥1/4 blocks staircase around it):</p>
+<p><span data-tr="en">Schematic reproduction (P boxed on the median row M; the two ≥1/4 blocks staircase around it):</span><span data-tr="zh">示意重畫（<code>P</code> 框在 median 列 <code>M</code> 上；兩個 ≥1/4 的區塊像階梯一樣繞著它）：</span></p>
 <pre><code>   sorted ↓   each column = one sorted 5-element subset
             ┌─────────────────────────┐
         ·   │ ·    ·    ·    ·  │  ·    ·     ·
@@ -180,463 +181,496 @@ Chapter 6/7: <strong>Prune-and-Search</strong></p>
    └─ lower-right block: ≥ 1/4 of S is ≥ P
 </code></pre>
 <p><img class="figure" src="../render/A06full/slide-07.png" alt="Median-of-medians grid: columns of 5 sorted dots, dotted median row M, boxed median-of-medians P, and two solid rectangles marking the ≥1/4-of-S regions"></p>
-<figcaption>Slide 7 — "How to select P?" Each column is one sorted 5-element subset; the dotted row <code>M</code> holds the group medians and <code>P</code> is their median. The upper-left rectangle holds ≥1/4 of S known to be ≤ P; the lower-right rectangle holds ≥1/4 known to be ≥ P.</figcaption>
+<figcaption><span data-tr="en">Slide 7 — "How to select P?" Each column is one sorted 5-element subset; the dotted row <code>M</code> holds the group medians and <code>P</code> is their median. The upper-left rectangle holds ≥1/4 of S known to be ≤ P; the lower-right rectangle holds ≥1/4 known to be ≥ P.</span><span data-tr="zh">Slide 7 —「How to select P?」每一欄是一組排好序的 5 個元素；虛線列 <code>M</code> 放的是各組 median，<code>P</code> 是它們的 median。左上框裡保證有 ≥1/4 的 S ≤ P；右下框裡保證有 ≥1/4 ≥ P。</span></figcaption>
 
 <ul>
-<li>Every group whose median is <code>≤ p</code>: at least 3 of its 5 elements (the median and the two above it in the sorted column) are <code>≤ p</code>. About <strong>half</strong> the groups have median <code>≤ p</code>. Hence <strong>at least about <code>n/4</code> elements are <code>≤ p</code></strong> (the upper-left block).</li>
-<li>Symmetrically, <strong>at least about <code>n/4</code> elements are <code>≥ p</code></strong> (the lower-right block).</li>
+<li><span data-tr="en">Every group whose median is <code>≤ p</code>: at least 3 of its 5 elements (the median and the two above it in the sorted column) are <code>≤ p</code>. About <strong>half</strong> the groups have median <code>≤ p</code>. Hence <strong>at least about <code>n/4</code> elements are <code>≤ p</code></strong> (the upper-left block).</span><span data-tr="zh">凡是 median <code>≤ p</code> 的那組：它 5 個裡至少有 3 個（median 加上排序欄裡它上面那兩個）是 <code>≤ p</code> 的。而大約<strong>一半</strong>的組 median 都 <code>≤ p</code>。所以<strong>至少約 <code>n/4</code> 個元素是 <code>≤ p</code></strong>（就是左上那塊）。</span></li>
+<li><span data-tr="en">Symmetrically, <strong>at least about <code>n/4</code> elements are <code>≥ p</code></strong> (the lower-right block).</span><span data-tr="zh">對稱地，<strong>至少約 <code>n/4</code> 個元素是 <code>≥ p</code></strong>（右下那塊）。</span></li>
 </ul>
-<p><strong>Guarantees:</strong>
+<p><span data-tr="en"><strong>Guarantees:</strong>
 - At least <strong>1/4 of <code>S</code></strong> is <strong>≤ p</strong>.
-- At least <strong>1/4 of <code>S</code></strong> is <strong>≥ p</strong>.</p>
-<p>Therefore <strong>at least <code>n/4</code> elements are pruned</strong> in each iteration, and <strong>at most <code>3n/4</code> elements remain</strong> for the next iteration.</p>
+- At least <strong>1/4 of <code>S</code></strong> is <strong>≥ p</strong>.</span><span data-tr="zh"><strong>保證：</strong>
+- 至少 <strong><code>S</code> 的 1/4</strong> 是 <strong>≤ p</strong>。
+- 至少 <strong><code>S</code> 的 1/4</strong> 是 <strong>≥ p</strong>。</span></p>
+<p><span data-tr="en">Therefore <strong>at least <code>n/4</code> elements are pruned</strong> in each iteration, and <strong>at most <code>3n/4</code> elements remain</strong> for the next iteration.</span><span data-tr="zh">所以每一輪<strong>至少砍掉 <code>n/4</code> 個元素</strong>，留給下一輪的<strong>最多 <code>3n/4</code> 個</strong>。</span></p>
 <hr />
-<h2 id="5-the-full-linear-time-selection-algorithm">5. The Full Linear-Time Selection Algorithm</h2>
-<h3 id="algorithm-5-steps">Algorithm (5 steps)</h3>
+<h2 id="5-the-full-linear-time-selection-algorithm"><span data-tr="en">5. The Full Linear-Time Selection Algorithm</span><span data-tr="zh">5. 完整的線性時間 Selection 演算法</span></h2>
+<h3 id="algorithm-5-steps"><span data-tr="en">Algorithm (5 steps)</span><span data-tr="zh">演算法（5 步）</span></h3>
 <ul>
-<li><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</li>
-<li><strong>Output:</strong> the k-th smallest element of <code>S</code>.</li>
+<li><span data-tr="en"><strong>Input:</strong> a set <code>S</code> of <code>n</code> elements.</span><span data-tr="zh"><strong>輸入：</strong>一個有 <code>n</code> 個元素的集合 <code>S</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> the k-th smallest element of <code>S</code>.</span><span data-tr="zh"><strong>輸出：</strong><code>S</code> 裡第 k 小的元素。</span></li>
 </ul>
 <ol>
-<li><strong>Step 1.</strong> Divide <code>S</code> into <code>⌈n/5⌉</code> subsets, each containing five elements. Add dummy elements to the last subset if <code>n</code> is not a multiple of 5.</li>
-<li><strong>Step 2.</strong> Sort each subset of elements.</li>
-<li><strong>Step 3.</strong> Find the element <code>p</code> which is the <strong>median of the medians</strong> of the <code>⌈n/5⌉</code> subsets.</li>
-<li><strong>Step 4.</strong> Partition <code>S</code> into <code>S₁, S₂, S₃</code> (elements less than, equal to, and greater than <code>p</code>, respectively).</li>
-<li><strong>Step 5.</strong> Three-way recursion:
+<li><span data-tr="en"><strong>Step 1.</strong> Divide <code>S</code> into <code>⌈n/5⌉</code> subsets, each containing five elements. Add dummy elements to the last subset if <code>n</code> is not a multiple of 5.</span><span data-tr="zh"><strong>Step 1.</strong> 把 <code>S</code> 切成 <code>⌈n/5⌉</code> 組，每組 5 個。如果 <code>n</code> 不是 5 的倍數，最後一組補 dummy 元素湊齊。</span></li>
+<li><span data-tr="en"><strong>Step 2.</strong> Sort each subset of elements.</span><span data-tr="zh"><strong>Step 2.</strong> 把每一組各自排序。</span></li>
+<li><span data-tr="en"><strong>Step 3.</strong> Find the element <code>p</code> which is the <strong>median of the medians</strong> of the <code>⌈n/5⌉</code> subsets.</span><span data-tr="zh"><strong>Step 3.</strong> 找出 <code>p</code>，也就是這 <code>⌈n/5⌉</code> 組的 <strong>median of medians</strong>。</span></li>
+<li><span data-tr="en"><strong>Step 4.</strong> Partition <code>S</code> into <code>S₁, S₂, S₃</code> (elements less than, equal to, and greater than <code>p</code>, respectively).</span><span data-tr="zh"><strong>Step 4.</strong> 用 <code>p</code> 把 <code>S</code> 切成 <code>S₁, S₂, S₃</code>（分別是比 <code>p</code> 小、等於、比 <code>p</code> 大的元素）。</span></li>
+<li><span data-tr="en"><strong>Step 5.</strong> Three-way recursion:
    - If <strong><code>|S₁| ≥ k</code></strong> → discard <code>S₂, S₃</code>, solve "select k-th smallest from <code>S₁</code>" next iteration.
    - Else if <strong><code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> is the k-th smallest element of <code>S</code>. Done.
-   - Otherwise → let <code>k′ = k − |S₁| − |S₂|</code>, solve "select k′-th smallest from <code>S₃</code>" next iteration.</li>
+   - Otherwise → let <code>k′ = k − |S₁| − |S₂|</code>, solve "select k′-th smallest from <code>S₃</code>" next iteration.</span><span data-tr="zh"><strong>Step 5.</strong> 三向遞迴：
+   - 如果 <strong><code>|S₁| ≥ k</code></strong> → 丟掉 <code>S₂, S₃</code>，下一輪解「在 <code>S₁</code> 裡找第 k 小」。
+   - 否則如果 <strong><code>|S₁| + |S₂| ≥ k</code></strong> → <code>p</code> 就是第 k 小，結束。
+   - 不然 → 令 <code>k′ = k − |S₁| − |S₂|</code>，下一輪解「在 <code>S₃</code> 裡找第 k′ 小」。</span></li>
 </ol>
-<p>Key facts (from §4): <strong>at least <code>n/4</code> pruned per iteration</strong>, and the <strong>remaining problem in step 5 has at most <code>3n/4</code> elements</strong>.</p>
-<h3 id="per-step-cost">Per-step cost</h3>
+<p><span data-tr="en">Key facts (from §4): <strong>at least <code>n/4</code> pruned per iteration</strong>, and the <strong>remaining problem in step 5 has at most <code>3n/4</code> elements</strong>.</span><span data-tr="zh">關鍵事實（來自 §4）：<strong>每一輪至少砍 <code>n/4</code></strong>，而且 <strong>Step 5 留下來的子問題最多 <code>3n/4</code> 個元素</strong>。</span></p>
+<h3 id="per-step-cost"><span data-tr="en">Per-step cost</span><span data-tr="zh">每一步的成本</span></h3>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Step</th>
-<th>Work</th>
-<th>Cost</th>
+<th><span data-tr="en">Step</span><span data-tr="zh">步驟</span></th>
+<th><span data-tr="en">Work</span><span data-tr="zh">做的事</span></th>
+<th><span data-tr="en">Cost</span><span data-tr="zh">成本</span></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Step 1</td>
-<td>Divide into groups of 5</td>
+<td><span data-tr="en">Divide into groups of 5</span><span data-tr="zh">切成每組 5 個</span></td>
 <td><code>O(n)</code></td>
 </tr>
 <tr>
 <td>Step 2</td>
-<td>Sort each group (each is constant size 5)</td>
+<td><span data-tr="en">Sort each group (each is constant size 5)</span><span data-tr="zh">把每組排序（每組固定就 5 個）</span></td>
 <td><code>O(n)</code></td>
 </tr>
 <tr>
 <td>Step 3</td>
-<td>Recursively find median of <code>⌈n/5⌉</code> medians</td>
+<td><span data-tr="en">Recursively find median of <code>⌈n/5⌉</code> medians</span><span data-tr="zh">遞迴找 <code>⌈n/5⌉</code> 個 median 的 median</span></td>
 <td><code>T(n/5)</code></td>
 </tr>
 <tr>
 <td>Step 4</td>
-<td>Partition <code>S</code> around <code>p</code></td>
+<td><span data-tr="en">Partition <code>S</code> around <code>p</code></span><span data-tr="zh">用 <code>p</code> 把 <code>S</code> 切開</span></td>
 <td><code>O(n)</code></td>
 </tr>
 <tr>
 <td>Step 5</td>
-<td>Recurse on ≤ <code>3n/4</code> survivors</td>
+<td><span data-tr="en">Recurse on ≤ <code>3n/4</code> survivors</span><span data-tr="zh">對剩下的 ≤ <code>3n/4</code> 個遞迴</span></td>
 <td><code>T(3n/4)</code></td>
 </tr>
 </tbody>
 </table></div>
-<h3 id="recurrence">Recurrence</h3>
+<h3 id="recurrence"><span data-tr="en">Recurrence</span><span data-tr="zh">遞迴式</span></h3>
 <pre><code>T(n) = T(3n/4) + T(n/5) + O(n)
 </code></pre>
-<p>Note the <strong>two</strong> recursive calls: one of size <code>n/5</code> (finding the pivot in step 3) and one of size <code>3n/4</code> (the surviving subproblem in step 5). Because <code>3/4 + 1/5 = 19/20 &lt; 1</code>, the recurrence still solves to <code>O(n)</code>.</p>
-<h3 id="proof-that-tn-on-polynomial-substitution">Proof that <code>T(n) = O(n)</code> — polynomial substitution</h3>
-<p>Assume <code>T(n)</code> can be written as a polynomial:</p>
+<p><span data-tr="en">Note the <strong>two</strong> recursive calls: one of size <code>n/5</code> (finding the pivot in step 3) and one of size <code>3n/4</code> (the surviving subproblem in step 5). Because <code>3/4 + 1/5 = 19/20 &lt; 1</code>, the recurrence still solves to <code>O(n)</code>.</span><span data-tr="zh">注意這裡有<strong>兩個</strong>遞迴呼叫：一個大小 <code>n/5</code>（Step 3 找 pivot），一個大小 <code>3n/4</code>（Step 5 活下來的子問題）。因為 <code>3/4 + 1/5 = 19/20 &lt; 1</code>，這條遞迴式照樣解出 <code>O(n)</code>。</span></p>
+<h3 id="proof-that-tn-on-polynomial-substitution"><span data-tr="en">Proof that <code>T(n) = O(n)</code> — polynomial substitution</span><span data-tr="zh">證明 <code>T(n) = O(n)</code> — 多項式代入法</span></h3>
+<p><span data-tr="en">Assume <code>T(n)</code> can be written as a polynomial:</span><span data-tr="zh">假設 <code>T(n)</code> 可以寫成一個多項式：</span></p>
 <pre><code>T(n)     = a₀ + a₁n + a₂n² + …          (a₁ ≠ 0)
 T(3n/4)  = a₀ + (3/4)a₁n + (9/16)a₂n² + …
 T(n/5)   = a₀ + (1/5)a₁n + (1/25)a₂n² + …
 </code></pre>
-<p>Adding the two recursive terms and comparing with <code>T(19n/20)</code>:</p>
+<p><span data-tr="en">Adding the two recursive terms and comparing with <code>T(19n/20)</code>:</span><span data-tr="zh">把這兩個遞迴項加起來，跟 <code>T(19n/20)</code> 比一比：</span></p>
 <pre><code>T(19n/20) = a₀ + (19/20)a₁n + (361/400)a₂n² + …
 </code></pre>
-<p>Coefficient comparison (the linear and higher coefficients of <code>T(3n/4) + T(n/5)</code> vs <code>T(19n/20)</code>):</p>
+<p><span data-tr="en">Coefficient comparison (the linear and higher coefficients of <code>T(3n/4) + T(n/5)</code> vs <code>T(19n/20)</code>):</span><span data-tr="zh">比對係數（拿 <code>T(3n/4) + T(n/5)</code> 的一次項跟更高次項，去比 <code>T(19n/20)</code>）：</span></p>
 <ul>
-<li>Linear term: <code>(3/4 + 1/5)a₁n = (19/20)a₁n</code> — matches <code>T(19n/20)</code>'s linear term.</li>
-<li>Quadratic term: <code>(9/16 + 1/25)a₂n²</code> vs <code>(361/400)a₂n²</code>. Now <code>9/16 + 1/25 = 225/400 + 16/400 = 241/400 &lt; 361/400</code>. So the sum's quadratic part is <em>smaller</em>.</li>
+<li><span data-tr="en">Linear term: <code>(3/4 + 1/5)a₁n = (19/20)a₁n</code> — matches <code>T(19n/20)</code>'s linear term.</span><span data-tr="zh">一次項：<code>(3/4 + 1/5)a₁n = (19/20)a₁n</code>——剛好跟 <code>T(19n/20)</code> 的一次項一樣。</span></li>
+<li><span data-tr="en">Quadratic term: <code>(9/16 + 1/25)a₂n²</code> vs <code>(361/400)a₂n²</code>. Now <code>9/16 + 1/25 = 225/400 + 16/400 = 241/400 &lt; 361/400</code>. So the sum's quadratic part is <em>smaller</em>.</span><span data-tr="zh">二次項：<code>(9/16 + 1/25)a₂n²</code> 對上 <code>(361/400)a₂n²</code>。算一下 <code>9/16 + 1/25 = 225/400 + 16/400 = 241/400 &lt; 361/400</code>，所以左邊那個總和的二次項<em>比較小</em>。</span></li>
 </ul>
-<p>Hence, accounting for the extra constant <code>a₀</code>:</p>
+<p><span data-tr="en">Hence, accounting for the extra constant <code>a₀</code>:</span><span data-tr="zh">於是，把多出來的常數 <code>a₀</code> 也算進去：</span></p>
 <pre><code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)
 </code></pre>
 <blockquote>
-<p>⚠️ Reconstructed detail: the slide states <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code> directly. The coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (and similarly for higher terms) is the justification I filled in for <em>why</em> the inequality holds.</p>
+<p><span data-tr="en">⚠️ Reconstructed detail: the slide states <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code> directly. The coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (and similarly for higher terms) is the justification I filled in for <em>why</em> the inequality holds.</span><span data-tr="zh">⚠️ 補上去的細節：投影片直接寫 <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code>。那個係數比對 <code>9/16 + 1/25 = 241/400 &lt; 361/400</code>（更高次項同理）是我幫忙補上的，用來說明這個不等式<em>為什麼</em>成立。</span></p>
 </blockquote>
-<p>Substituting into the recurrence (with the <code>O(n)</code> term written as <code>cn</code>):</p>
+<p><span data-tr="en">Substituting into the recurrence (with the <code>O(n)</code> term written as <code>cn</code>):</span><span data-tr="zh">代回遞迴式（把 <code>O(n)</code> 那一項寫成 <code>cn</code>）：</span></p>
 <pre><code>T(n) ≤ cn + T(19n/20)
 </code></pre>
-<p>Unrolling this single-term recurrence:</p>
+<p><span data-tr="en">Unrolling this single-term recurrence:</span><span data-tr="zh">把這條單項遞迴式展開：</span></p>
 <pre><code>T(n) ≤ cn + (19/20)cn + T((19/20)²·n)
 
      ≤ cn + (19/20)cn + (19/20)²cn + … + (19/20)ᵖ·cn + T((19/20)ᵖ⁺¹·n)
 </code></pre>
-<p>where <code>p</code> is chosen so the surviving size is constant: <code>(19/20)ᵖ⁺¹·n ≤ 1 ≤ (19/20)ᵖ·n</code>.</p>
-<p>The geometric series with ratio <code>19/20</code>:</p>
+<p><span data-tr="en">where <code>p</code> is chosen so the surviving size is constant: <code>(19/20)ᵖ⁺¹·n ≤ 1 ≤ (19/20)ᵖ·n</code>.</span><span data-tr="zh">這裡 <code>p</code> 取到剩下的大小是常數為止：<code>(19/20)ᵖ⁺¹·n ≤ 1 ≤ (19/20)ᵖ·n</code>。</span></p>
+<p><span data-tr="en">The geometric series with ratio <code>19/20</code>:</span><span data-tr="zh">公比 <code>19/20</code> 的等比級數：</span></p>
 <pre><code>cn · ( 1 + 19/20 + (19/20)² + … )  =  cn · 1/(1 − 19/20)  =  cn · 20  =  20cn
 </code></pre>
-<p>So, adding the constant base-case cost <code>b</code>:</p>
+<p><span data-tr="en">So, adding the constant base-case cost <code>b</code>:</span><span data-tr="zh">所以，再把 base case 的常數成本 <code>b</code> 加上去：</span></p>
 <pre><code>T(n) ≤ 20cn + b = O(n)
 </code></pre>
-<h3 id="cn-log-n-vs-20cn"><code>cn log n</code> vs <code>20cn</code></h3>
-<p>The naive sort-based selection costs <code>cn log n</code>. The prune-and-search version costs <code>20cn</code>. The crossover: <code>20cn &lt; cn log n</code> exactly when <code>log n &gt; 20</code>, i.e. <code>n &gt; 2²⁰ ≈ 10⁶</code>. The point is <strong>asymptotically</strong> <code>20cn = O(n)</code> beats <code>O(n log n)</code>: the constant <code>20</code> is fixed while <code>log n</code> grows without bound.</p>
+<h3 id="cn-log-n-vs-20cn"><code>cn log n</code> <span data-tr="en">vs</span><span data-tr="zh">對上</span> <code>20cn</code></h3>
+<p><span data-tr="en">The naive sort-based selection costs <code>cn log n</code>. The prune-and-search version costs <code>20cn</code>. The crossover: <code>20cn &lt; cn log n</code> exactly when <code>log n &gt; 20</code>, i.e. <code>n &gt; 2²⁰ ≈ 10⁶</code>. The point is <strong>asymptotically</strong> <code>20cn = O(n)</code> beats <code>O(n log n)</code>: the constant <code>20</code> is fixed while <code>log n</code> grows without bound.</span><span data-tr="zh">用排序的笨方法做 selection 要 <code>cn log n</code>，prune-and-search 版本要 <code>20cn</code>。交叉點在哪？<code>20cn &lt; cn log n</code> 剛好發生在 <code>log n &gt; 20</code> 的時候，也就是 <code>n &gt; 2²⁰ ≈ 10⁶</code>。重點是<strong>漸近上</strong> <code>20cn = O(n)</code> 還是贏 <code>O(n log n)</code>：那個常數 <code>20</code> 是固定的，可是 <code>log n</code> 會無止盡長大。</span></p>
 <hr />
-<h2 id="6-linear-programming-with-two-variables">6. Linear Programming with Two Variables</h2>
-<h3 id="general-problem">General problem</h3>
+<h2 id="6-linear-programming-with-two-variables"><span data-tr="en">6. Linear Programming with Two Variables</span><span data-tr="zh">6. 兩個變數的 Linear Programming</span></h2>
+<h3 id="general-problem"><span data-tr="en">General problem</span><span data-tr="zh">一般問題</span></h3>
 <pre><code>Minimize    a·x + b·y
 subject to  aᵢ·x + bᵢ·y ≤ cᵢ ,   i = 1, 2, …, n
 </code></pre>
-<h3 id="simplified-problem">Simplified problem</h3>
-<p>A canonical, easier-to-visualize version (we will reduce the general one to this later):</p>
+<h3 id="simplified-problem"><span data-tr="en">Simplified problem</span><span data-tr="zh">簡化版問題</span></h3>
+<p><span data-tr="en">A canonical, easier-to-visualize version (we will reduce the general one to this later):</span><span data-tr="zh">一個標準、比較好畫圖想像的版本（之後我們會把一般問題化簡成這個）：</span></p>
 <pre><code>Minimize    y
 subject to  y ≥ aᵢ·x + bᵢ ,   i = 1, 2, …, n
 </code></pre>
-<p>Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> the line <code>aᵢx + bᵢ</code>.</p>
-<h3 id="the-boundary-function-fx">The boundary function <code>F(x)</code></h3>
-<p>The lower boundary of the feasible region is the <strong>upper envelope</strong> of all the lines:</p>
+<p><span data-tr="en">Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> the line <code>aᵢx + bᵢ</code>.</span><span data-tr="zh">每一條限制式 <code>y ≥ aᵢx + bᵢ</code> 的意思就是：可行的點必須落在直線 <code>aᵢx + bᵢ</code> <strong>上面或它本身</strong>。</span></p>
+<h3 id="the-boundary-function-fx"><span data-tr="en">The boundary function <code>F(x)</code></span><span data-tr="zh">邊界函數 <code>F(x)</code></span></h3>
+<p><span data-tr="en">The lower boundary of the feasible region is the <strong>upper envelope</strong> of all the lines:</span><span data-tr="zh">可行區域的下邊界，就是所有直線的 <strong>upper envelope</strong>（上包絡線）：</span></p>
 <pre><code>F(x) = max { aᵢ·x + bᵢ : i = 1, 2, …, n }
 </code></pre>
-<p><code>F(x)</code> is a <strong>convex</strong>, piecewise-linear function (the pointwise maximum of linear functions). ✅ <strong>Verified against slide 14 (Fig. 7-2).</strong> The slide explicitly prints the formula <code>F(x) = max_{1≤i≤n} {aᵢx + bᵢ}</code> (printed as <code>1≤x≤n</code> on the slide — an obvious typo for <code>1≤i≤n</code>). The figure shows a gray convex feasible region above the upper envelope of eight constraint lines <code>a₁x+b₁ … a₈x+b₈</code>, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (marked by a red vertical segment). Earlier carved render (Figure A.1) showed the same kind of plot with five labelled lines; slide 14 is the authoritative version. So the F(x) body is <strong>not</strong> blank on the slide.</p>
+<p><span data-tr="en"><code>F(x)</code> is a <strong>convex</strong>, piecewise-linear function (the pointwise maximum of linear functions). ✅ <strong>Verified against slide 14 (Fig. 7-2).</strong> The slide explicitly prints the formula <code>F(x) = max_{1≤i≤n} {aᵢx + bᵢ}</code> (printed as <code>1≤x≤n</code> on the slide — an obvious typo for <code>1≤i≤n</code>). The figure shows a gray convex feasible region above the upper envelope of eight constraint lines <code>a₁x+b₁ … a₈x+b₈</code>, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (marked by a red vertical segment). Earlier carved render (Figure A.1) showed the same kind of plot with five labelled lines; slide 14 is the authoritative version. So the F(x) body is <strong>not</strong> blank on the slide.</span><span data-tr="zh"><code>F(x)</code> 是一個 <strong>convex</strong>（凸的）、分段線性的函數（一堆線性函數逐點取 max）。✅ <strong>已對照 slide 14（Fig. 7-2）確認。</strong>投影片明白印出公式 <code>F(x) = max_{1≤i≤n} {aᵢx + bᵢ}</code>（投影片上印成 <code>1≤x≤n</code>——明顯是把 <code>1≤i≤n</code> 打錯）。圖裡是一塊灰色的凸可行區域，蓋在八條限制線 <code>a₁x+b₁ … a₈x+b₈</code> 的 upper envelope 上面，最佳解 <code>(x₀, y₀)</code> 在邊界的最低點（用一條紅色短直線標出來）。先前那張碎出來的圖（Figure A.1）畫的是同類型、只標了五條線；slide 14 才是正規版。所以 <code>F(x)</code> 的內容在投影片上<strong>並不是</strong>空白。</span></p>
 <p><img class="figure" src="../render/A06full/slide-14.png" alt="Fig. 7-2: gray convex feasible region above the upper envelope of eight constraint lines a1x+b1 … a8x+b8, with optimum (x0,y0) at the lowest envelope point marked by a red vertical segment"></p>
-<figcaption>Slide 14 (Fig. 7-2) — the upper envelope <code>F(x) = max{aᵢx+bᵢ}</code> of eight constraint lines, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (red segment).</figcaption>
+<figcaption><span data-tr="en">Slide 14 (Fig. 7-2) — the upper envelope <code>F(x) = max{aᵢx+bᵢ}</code> of eight constraint lines, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (red segment).</span><span data-tr="zh">Slide 14（Fig. 7-2）—八條限制線的 upper envelope <code>F(x) = max{aᵢx+bᵢ}</code>，最佳解 <code>(x₀, y₀)</code> 在邊界最低點（紅色線段）。</span></figcaption>
 
-<h3 id="the-optimum">The optimum</h3>
-<p>The optimum <code>x₀</code> minimizes the boundary:</p>
+<h3 id="the-optimum"><span data-tr="en">The optimum</span><span data-tr="zh">最佳解</span></h3>
+<p><span data-tr="en">The optimum <code>x₀</code> minimizes the boundary:</span><span data-tr="zh">最佳解 <code>x₀</code> 讓邊界值最小：</span></p>
 <pre><code>F(x₀) = min over x of  F(x)
 </code></pre>
-<p><code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the optimal solution — the lowest point of the convex envelope. ✅ <strong>Verified against slide 14 (Fig. 7-2)</strong>, which prints the optimum as <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code> and marks <code>(x₀, y₀)</code> at the bottom of the convex envelope. (The carved Figure A.1 with five labelled lines depicts the closely-related Fig. 7-3 pruning picture, case <code>x₀ &lt; xₘ</code>.)</p>
-<h3 id="deciding-which-side-x0-is-on-given-a-test-point-xm">Deciding which side <code>x₀</code> is on, given a test point <code>xₘ</code></h3>
-<p>Suppose a test abscissa <code>xₘ</code> is known. How do we know whether <code>x₀ &lt; xₘ</code> or <code>x₀ &gt; xₘ</code>? Evaluate <code>yₘ = F(xₘ)</code>.</p>
-<p><strong>Case 1: <code>yₘ</code> lies on only one constraint.</strong> Let <code>g</code> be the slope of that constraint.
+<p><span data-tr="en"><code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the optimal solution — the lowest point of the convex envelope. ✅ <strong>Verified against slide 14 (Fig. 7-2)</strong>, which prints the optimum as <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code> and marks <code>(x₀, y₀)</code> at the bottom of the convex envelope. (The carved Figure A.1 with five labelled lines depicts the closely-related Fig. 7-3 pruning picture, case <code>x₀ &lt; xₘ</code>.)</span><span data-tr="zh"><code>(x₀, y₀)</code>（其中 <code>y₀ = F(x₀)</code>）就是最佳解——凸 envelope 的最低點。✅ <strong>已對照 slide 14（Fig. 7-2）確認</strong>，它把最佳解印成 <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>，並在凸 envelope 底部標出 <code>(x₀, y₀)</code>。（那張碎出來、標了五條線的 Figure A.1，畫的其實是很接近的 Fig. 7-3 修剪圖，<code>x₀ &lt; xₘ</code> 的情形。）</span></p>
+<h3 id="deciding-which-side-x0-is-on-given-a-test-point-xm"><span data-tr="en">Deciding which side <code>x₀</code> is on, given a test point <code>xₘ</code></span><span data-tr="zh">給定一個測試點 <code>xₘ</code>，判斷 <code>x₀</code> 在哪一邊</span></h3>
+<p><span data-tr="en">Suppose a test abscissa <code>xₘ</code> is known. How do we know whether <code>x₀ &lt; xₘ</code> or <code>x₀ &gt; xₘ</code>? Evaluate <code>yₘ = F(xₘ)</code>.</span><span data-tr="zh">假設我們手上有一個測試橫座標 <code>xₘ</code>。怎麼知道是 <code>x₀ &lt; xₘ</code> 還是 <code>x₀ &gt; xₘ</code>？算一下 <code>yₘ = F(xₘ)</code> 就行。</span></p>
+<p><span data-tr="en"><strong>Case 1: <code>yₘ</code> lies on only one constraint.</strong> Let <code>g</code> be the slope of that constraint.
 - If <code>g &gt; 0</code> → <code>x₀ &lt; xₘ</code> (envelope still descending to the left).
-- If <code>g &lt; 0</code> → <code>x₀ &gt; xₘ</code> (envelope still descending to the right).</p>
+- If <code>g &lt; 0</code> → <code>x₀ &gt; xₘ</code> (envelope still descending to the right).</span><span data-tr="zh"><strong>情形 1：<code>yₘ</code> 只落在一條限制式上。</strong>令 <code>g</code> 是那條限制式的斜率。
+- 如果 <code>g &gt; 0</code> → <code>x₀ &lt; xₘ</code>（envelope 往左還在下降）。
+- 如果 <code>g &lt; 0</code> → <code>x₀ &gt; xₘ</code>（envelope 往右還在下降）。</span></p>
 <p><img class="figure" src="../render/A06full/slide-16.png" alt="Fig. 7-5: convex envelope with two test verticals; ym sits on a single constraint of slope g, with g>0 giving x0&lt;xm and g&lt;0 giving x0&gt;xm"&gt;</p>
-<figcaption>Slide 16 (Fig. 7-5) — the cases where <code>xₘ</code> is on only one constraint of slope <code>g</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 16 (Fig. 7-5) — the cases where <code>xₘ</code> is on only one constraint of slope <code>g</code>.</span><span data-tr="zh">Slide 16（Fig. 7-5）—<code>xₘ</code> 只落在一條斜率為 <code>g</code> 的限制式上的情形。</span></figcaption>
 
-<p><strong>Case 2: <code>yₘ</code> is the intersection of several constraints.</strong> ✅ <strong>Verified against slide 17 (Fig. 7-6).</strong> The slide prints the slope definitions explicitly:</p>
+<p><span data-tr="en"><strong>Case 2: <code>yₘ</code> is the intersection of several constraints.</strong> ✅ <strong>Verified against slide 17 (Fig. 7-6).</strong> The slide prints the slope definitions explicitly:</span><span data-tr="zh"><strong>情形 2：<code>yₘ</code> 是好幾條限制式的交點。</strong>✅ <strong>已對照 slide 17（Fig. 7-6）確認。</strong>投影片明白印出這幾個斜率的定義：</span></p>
 <pre><code>g_max = max_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (max slope of constraints achieving F(xₘ))
 g_min = min_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (min slope of constraints achieving F(xₘ))
 </code></pre>
 <ul>
-<li><strong>Case 2a:</strong> <code>g_min &gt; 0</code> and <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>.</li>
-<li><strong>Case 2b:</strong> <code>g_min &lt; 0</code> and <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>.</li>
-<li><strong>Case 2c:</strong> <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>(xₘ, yₘ)</code> <strong>is</strong> the optimum solution (envelope has its minimum exactly here).</li>
+<li><span data-tr="en"><strong>Case 2a:</strong> <code>g_min &gt; 0</code> and <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>.</span><span data-tr="zh"><strong>情形 2a：</strong><code>g_min &gt; 0</code> 且 <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Case 2b:</strong> <code>g_min &lt; 0</code> and <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>.</span><span data-tr="zh"><strong>情形 2b：</strong><code>g_min &lt; 0</code> 且 <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Case 2c:</strong> <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>(xₘ, yₘ)</code> <strong>is</strong> the optimum solution (envelope has its minimum exactly here).</span><span data-tr="zh"><strong>情形 2c：</strong><code>g_min &lt; 0</code> 且 <code>g_max &gt; 0</code> → <code>(xₘ, yₘ)</code> <strong>就是</strong>最佳解（envelope 的最小值剛好在這裡）。</span></li>
 </ul>
-<p>The Fig. 7-6 plot draws a convex envelope with three test abscissae on the x-axis: the slide maps <strong>Case 2a → <code>xₘ,₃</code></strong>, <strong>Case 2b → <code>xₘ,₁</code></strong>, <strong>Case 2c → <code>xₘ,₂</code></strong> (with the <code>g_min</code>/<code>g_max</code> slope labels on the active lines at each intersection). The single-constraint Case 1 is the separate <strong>Fig. 7-5</strong> (slide 16).</p>
+<p><span data-tr="en">The Fig. 7-6 plot draws a convex envelope with three test abscissae on the x-axis: the slide maps <strong>Case 2a → <code>xₘ,₃</code></strong>, <strong>Case 2b → <code>xₘ,₁</code></strong>, <strong>Case 2c → <code>xₘ,₂</code></strong> (with the <code>g_min</code>/<code>g_max</code> slope labels on the active lines at each intersection). The single-constraint Case 1 is the separate <strong>Fig. 7-5</strong> (slide 16).</span><span data-tr="zh">Fig. 7-6 那張圖畫了一條凸 envelope，x 軸上有三個測試橫座標：投影片把 <strong>情形 2a → <code>xₘ,₃</code></strong>、<strong>情形 2b → <code>xₘ,₁</code></strong>、<strong>情形 2c → <code>xₘ,₂</code></strong> 一一對應（每個交點上 active 的線都標了 <code>g_min</code>/<code>g_max</code>）。只落單一條限制式的情形 1，是另外那張 <strong>Fig. 7-5</strong>（slide 16）。</span></p>
 <p>&lt;img class="figure" src="../render/A06full/slide-17.png" alt="Fig. 7-6: convex envelope with three test abscissae xm,1 &lt; xm,2 &lt; xm,3, gmin/gmax slope labels on active lines, and the 2a/2b/2c rules mapped to xm,3 / xm,1 / xm,2"&gt;</p>
-<figcaption>Slide 17 (Fig. 7-6) — <code>xₘ</code> on the intersection of several constraints. Case 2a (<code>xₘ,₃</code>) ⇒ <code>x₀&lt;xₘ</code>; Case 2b (<code>xₘ,₁</code>) ⇒ <code>x₀&gt;xₘ</code>; Case 2c (<code>xₘ,₂</code>) ⇒ optimum.</figcaption>
+<figcaption><span data-tr="en">Slide 17 (Fig. 7-6) — <code>xₘ</code> on the intersection of several constraints. Case 2a (<code>xₘ,₃</code>) ⇒ <code>x₀&lt;xₘ</code>; Case 2b (<code>xₘ,₁</code>) ⇒ <code>x₀&gt;xₘ</code>; Case 2c (<code>xₘ,₂</code>) ⇒ optimum.</span><span data-tr="zh">Slide 17（Fig. 7-6）—<code>xₘ</code> 落在好幾條限制式的交點上。情形 2a（<code>xₘ,₃</code>）⇒ <code>x₀&lt;xₘ</code>；情形 2b（<code>xₘ,₁</code>）⇒ <code>x₀&gt;xₘ</code>；情形 2c（<code>xₘ,₂</code>）⇒ 最佳解。</span></figcaption>
 
-<h3 id="pruning-constraints">Pruning constraints</h3>
-<p>Once we know <code>x₀</code>'s side relative to <code>xₘ</code>, we can <strong>delete</strong> constraints (Fig. 7-3):</p>
+<h3 id="pruning-constraints"><span data-tr="en">Pruning constraints</span><span data-tr="zh">修剪限制式</span></h3>
+<p><span data-tr="en">Once we know <code>x₀</code>'s side relative to <code>xₘ</code>, we can <strong>delete</strong> constraints (Fig. 7-3):</span><span data-tr="zh">一旦知道 <code>x₀</code> 相對 <code>xₘ</code> 在哪一邊，我們就能<strong>砍掉</strong>一些限制式（Fig. 7-3）：</span></p>
 <blockquote>
-<p>If <code>x₀ &lt; xₘ</code> and the intersection of <code>a₃x + b₃</code> and <code>a₂x + b₂</code> is <strong>greater than</strong> <code>xₘ</code>, then for all <code>x &lt; xₘ</code> one of these two constraints is always smaller than the other. The always-smaller constraint <strong>cannot</strong> contribute to the upper envelope near the optimum, so it can be <strong>deleted</strong>. (Symmetric reasoning for <code>x₀ &gt; xₘ</code>.)</p>
+<p><span data-tr="en">If <code>x₀ &lt; xₘ</code> and the intersection of <code>a₃x + b₃</code> and <code>a₂x + b₂</code> is <strong>greater than</strong> <code>xₘ</code>, then for all <code>x &lt; xₘ</code> one of these two constraints is always smaller than the other. The always-smaller constraint <strong>cannot</strong> contribute to the upper envelope near the optimum, so it can be <strong>deleted</strong>. (Symmetric reasoning for <code>x₀ &gt; xₘ</code>.)</span><span data-tr="zh">如果 <code>x₀ &lt; xₘ</code>，而且 <code>a₃x + b₃</code> 跟 <code>a₂x + b₂</code> 的交點<strong>大於</strong> <code>xₘ</code>，那麼對所有 <code>x &lt; xₘ</code>，這兩條限制式裡總有一條永遠比另一條小。那條永遠比較小的限制式，在最佳解附近<strong>不可能</strong>跑到 upper envelope 上，所以可以<strong>砍掉</strong>。（<code>x₀ &gt; xₘ</code> 的情形對稱地推一遍。）</span></p>
 </blockquote>
 <p>&lt;img class="figure" src="../render/A06full/slide-15.png" alt="Fig. 7-3: convex envelope with dashed vertical at xm, x0 to its left (case x0<xm), one constraint annotated 'May be deleted', and a green dot marking the optimum"></p>
-<figcaption>Slide 15 (Fig. 7-3) — constraints which may be eliminated. With <code>x₀ &lt; xₘ</code>, the line annotated "May be deleted" never reaches the envelope for <code>x &lt; xₘ</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 15 (Fig. 7-3) — constraints which may be eliminated. With <code>x₀ &lt; xₘ</code>, the line annotated "May be deleted" never reaches the envelope for <code>x &lt; xₘ</code>.</span><span data-tr="zh">Slide 15（Fig. 7-3）—可以被刪掉的限制式。在 <code>x₀ &lt; xₘ</code> 的情況下，標著「May be deleted」的那條線，在 <code>x &lt; xₘ</code> 的範圍裡永遠碰不到 envelope。</span></figcaption>
 
-<h3 id="choosing-xm-so-that-a-constant-fraction-is-pruned">Choosing <code>xₘ</code> (so that a constant fraction is pruned)</h3>
+<h3 id="choosing-xm-so-that-a-constant-fraction-is-pruned"><span data-tr="en">Choosing <code>xₘ</code> (so that a constant fraction is pruned)</span><span data-tr="zh">怎麼挑 <code>xₘ</code>（好讓固定比例被砍掉）</span></h3>
 <blockquote>
-<p>Arbitrarily group the <code>n</code> constraints into <code>n/2</code> <strong>pairs</strong>. For each pair, find their intersection. Among these <code>n/2</code> intersection x-coordinates, choose the <strong>median</strong> as <code>xₘ</code>.</p>
+<p><span data-tr="en">Arbitrarily group the <code>n</code> constraints into <code>n/2</code> <strong>pairs</strong>. For each pair, find their intersection. Among these <code>n/2</code> intersection x-coordinates, choose the <strong>median</strong> as <code>xₘ</code>.</span><span data-tr="zh">隨便把這 <code>n</code> 條限制式湊成 <code>n/2</code> <strong>對</strong>。每一對算出它們的交點，然後在這 <code>n/2</code> 個交點 x 座標裡，挑 <strong>median</strong> 當作 <code>xₘ</code>。</span></p>
 </blockquote>
-<p>This guarantees that for half the pairs the intersection lies on the "deletable" side, so <strong><code>n/4</code> constraints are pruned per iteration</strong>.</p>
-<h3 id="algorithm-simplified-two-variable-lp">Algorithm (simplified two-variable LP)</h3>
+<p><span data-tr="en">This guarantees that for half the pairs the intersection lies on the "deletable" side, so <strong><code>n/4</code> constraints are pruned per iteration</strong>.</span><span data-tr="zh">這樣就能保證：有一半的對，它們的交點會落在「可砍」的那一側，所以<strong>每一輪砍掉 <code>n/4</code> 條限制式</strong>。</span></p>
+<h3 id="algorithm-simplified-two-variable-lp"><span data-tr="en">Algorithm (simplified two-variable LP)</span><span data-tr="zh">演算法（簡化版 two-variable LP）</span></h3>
 <ul>
-<li><strong>Input:</strong> constraints <code>S</code>: <code>aⱼx + bⱼ</code>, <code>j = 1, …, n</code>.</li>
-<li><strong>Output:</strong> the value <code>x₀</code> minimizing <code>y</code> subject to <code>y ≥ aⱼx + bⱼ</code> for all <code>j</code>.</li>
+<li><span data-tr="en"><strong>Input:</strong> constraints <code>S</code>: <code>aⱼx + bⱼ</code>, <code>j = 1, …, n</code>.</span><span data-tr="zh"><strong>輸入：</strong>限制式 <code>S</code>：<code>aⱼx + bⱼ</code>，<code>j = 1, …, n</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> the value <code>x₀</code> minimizing <code>y</code> subject to <code>y ≥ aⱼx + bⱼ</code> for all <code>j</code>.</span><span data-tr="zh"><strong>輸出：</strong>在所有 <code>j</code> 都滿足 <code>y ≥ aⱼx + bⱼ</code> 的前提下，讓 <code>y</code> 最小的那個 <code>x₀</code>。</span></li>
 </ul>
 <ol>
-<li><strong>Step 1.</strong> If <code>S</code> has ≤ 2 constraints, solve by brute force.</li>
-<li><strong>Step 2.</strong> Divide <code>S</code> into <code>n/2</code> pairs. For each pair <code>(aᵢx+bᵢ, aⱼx+bⱼ)</code>, find their intersection <code>pᵢⱼ</code> with x-value <code>xᵢⱼ</code>.</li>
-<li><strong>Step 3.</strong> Among the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them), find the median <code>xₘ</code>.</li>
-<li><strong>Step 4.</strong> Determine <code>yₘ = F(xₘ)</code>, <code>g_min</code>, and <code>g_max</code>.</li>
-<li><strong>Step 5.</strong>
+<li><span data-tr="en"><strong>Step 1.</strong> If <code>S</code> has ≤ 2 constraints, solve by brute force.</span><span data-tr="zh"><strong>Step 1.</strong> 如果 <code>S</code> 只剩 ≤ 2 條限制式，直接暴力解。</span></li>
+<li><span data-tr="en"><strong>Step 2.</strong> Divide <code>S</code> into <code>n/2</code> pairs. For each pair <code>(aᵢx+bᵢ, aⱼx+bⱼ)</code>, find their intersection <code>pᵢⱼ</code> with x-value <code>xᵢⱼ</code>.</span><span data-tr="zh"><strong>Step 2.</strong> 把 <code>S</code> 分成 <code>n/2</code> 對。每一對 <code>(aᵢx+bᵢ, aⱼx+bⱼ)</code> 算出交點 <code>pᵢⱼ</code>，它的 x 值是 <code>xᵢⱼ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 3.</strong> Among the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them), find the median <code>xₘ</code>.</span><span data-tr="zh"><strong>Step 3.</strong> 在這些 <code>xᵢⱼ</code>（最多 <code>n/2</code> 個）裡找 median <code>xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 4.</strong> Determine <code>yₘ = F(xₘ)</code>, <code>g_min</code>, and <code>g_max</code>.</span><span data-tr="zh"><strong>Step 4.</strong> 算出 <code>yₘ = F(xₘ)</code>、<code>g_min</code> 跟 <code>g_max</code>。</span></li>
+<li><span data-tr="en"><strong>Step 5.</strong>
    - <strong>5a.</strong> If <code>g_min</code> and <code>g_max</code> are <strong>not</strong> of the same sign → <code>yₘ</code> is the solution. <strong>Exit.</strong>
-   - <strong>5b.</strong> Otherwise: <code>x₀ &lt; xₘ</code> if <code>g_min &gt; 0</code>; <code>x₀ &gt; xₘ</code> if <code>g_min &lt; 0</code>.</li>
-<li><strong>Step 6.</strong> Prune:
+   - <strong>5b.</strong> Otherwise: <code>x₀ &lt; xₘ</code> if <code>g_min &gt; 0</code>; <code>x₀ &gt; xₘ</code> if <code>g_min &lt; 0</code>.</span><span data-tr="zh"><strong>Step 5.</strong>
+   - <strong>5a.</strong> 如果 <code>g_min</code> 跟 <code>g_max</code> 號<strong>不</strong>同號 → <code>yₘ</code> 就是解，<strong>結束</strong>。
+   - <strong>5b.</strong> 否則：<code>g_min &gt; 0</code> 時 <code>x₀ &lt; xₘ</code>；<code>g_min &lt; 0</code> 時 <code>x₀ &gt; xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 6.</strong> Prune:
    - <strong>6a.</strong> If <code>x₀ &lt; xₘ</code>: for each pair whose intersection x-coordinate is <strong>larger</strong> than <code>xₘ</code>, prune the constraint that is always smaller for <code>x ≤ xₘ</code>.
-   - <strong>6b.</strong> If <code>x₀ &gt; xₘ</code>: for each pair whose intersection x-coordinate is <strong>less</strong> than <code>xₘ</code>, prune the constraint that is always smaller for <code>x ≥ xₘ</code>.</li>
+   - <strong>6b.</strong> If <code>x₀ &gt; xₘ</code>: for each pair whose intersection x-coordinate is <strong>less</strong> than <code>xₘ</code>, prune the constraint that is always smaller for <code>x ≥ xₘ</code>.</span><span data-tr="zh"><strong>Step 6.</strong> 修剪：
+   - <strong>6a.</strong> 如果 <code>x₀ &lt; xₘ</code>：對每一對交點 x 座標<strong>大於</strong> <code>xₘ</code> 的，砍掉在 <code>x ≤ xₘ</code> 時永遠比較小的那條。
+   - <strong>6b.</strong> 如果 <code>x₀ &gt; xₘ</code>：對每一對交點 x 座標<strong>小於</strong> <code>xₘ</code> 的，砍掉在 <code>x ≥ xₘ</code> 時永遠比較小的那條。</span></li>
 </ol>
-<p>Let <code>S</code> be the remaining constraints. <strong>Go to Step 2.</strong></p>
-<p><strong>Pruning rate:</strong> there are <code>n/2</code> intersections, so <strong><code>n/4</code> constraints pruned per iteration</strong>.
-<strong>Time complexity:</strong> <code>O(n)</code>. The slide states only "O(n)"; by the same prune-and-search argument each iteration does <code>O(n)</code> work and prunes a constant fraction (≈1/4 of constraints), giving <code>T(n) = T(3n/4) + O(n) = O(n)</code>.</p>
-<h3 id="reducing-the-general-problem-to-the-simplified-one">Reducing the general problem to the simplified one</h3>
-<p>The general two-variable LP <code>Minimize ax + by  s.t.  aᵢx + bᵢy ≤ cᵢ</code> is transformed by the substitution:</p>
+<p><span data-tr="en">Let <code>S</code> be the remaining constraints. <strong>Go to Step 2.</strong></span><span data-tr="zh">把剩下的限制式當成新的 <code>S</code>，<strong>回到 Step 2。</strong></span></p>
+<p><span data-tr="en"><strong>Pruning rate:</strong> there are <code>n/2</code> intersections, so <strong><code>n/4</code> constraints pruned per iteration</strong>.
+<strong>Time complexity:</strong> <code>O(n)</code>. The slide states only "O(n)"; by the same prune-and-search argument each iteration does <code>O(n)</code> work and prunes a constant fraction (≈1/4 of constraints), giving <code>T(n) = T(3n/4) + O(n) = O(n)</code>.</span><span data-tr="zh"><strong>修剪速率：</strong>總共有 <code>n/2</code> 個交點，所以<strong>每一輪砍掉 <code>n/4</code> 條限制式</strong>。
+<strong>時間複雜度：</strong><code>O(n)</code>。投影片只寫「O(n)」；用同一套 prune-and-search 論證：每一輪做 <code>O(n)</code> 的工、砍掉固定比例（約 1/4 的限制式），就得到 <code>T(n) = T(3n/4) + O(n) = O(n)</code>。</span></p>
+<h3 id="reducing-the-general-problem-to-the-simplified-one"><span data-tr="en">Reducing the general problem to the simplified one</span><span data-tr="zh">把一般問題化簡成簡化版</span></h3>
+<p><span data-tr="en">The general two-variable LP <code>Minimize ax + by  s.t.  aᵢx + bᵢy ≤ cᵢ</code> is transformed by the substitution:</span><span data-tr="zh">一般的 two-variable LP <code>Minimize ax + by  s.t.  aᵢx + bᵢy ≤ cᵢ</code>，用下面這個代換轉一下：</span></p>
 <pre><code>x′ = x
 y′ = ax + by
 </code></pre>
-<p>giving</p>
+<p><span data-tr="en">giving</span><span data-tr="zh">就得到</span></p>
 <pre><code>Minimize    y′
 subject to  aᵢ′·x′ + bᵢ′·y′ ≤ cᵢ′ ,   i = 1, …, n
 where   aᵢ′ = aᵢ − bᵢ·a/b ,   bᵢ′ = bᵢ/b ,   cᵢ′ = cᵢ
 </code></pre>
-<p>Rewriting (changing symbols), the general problem splits the constraints into two index sets <code>I₁</code> and <code>I₂</code> (constraints whose <code>y</code>-coefficient sign differs become "<code>y ≥</code>" or "<code>y ≤</code>" constraints):</p>
+<p><span data-tr="en">Rewriting (changing symbols), the general problem splits the constraints into two index sets <code>I₁</code> and <code>I₂</code> (constraints whose <code>y</code>-coefficient sign differs become "<code>y ≥</code>" or "<code>y ≤</code>" constraints):</span><span data-tr="zh">換個符號重寫一下，一般問題會把限制式分成兩個 index 集合 <code>I₁</code> 跟 <code>I₂</code>（<code>y</code> 係數正負號不同的限制式，分別變成「<code>y ≥</code>」或「<code>y ≤</code>」型）：</span></p>
 <pre><code>Minimize    y
 subject to  y ≥ aᵢx + bᵢ   (i ∈ I₁)
             y ≤ aᵢx + bᵢ   (i ∈ I₂)
             a ≤ x ≤ b
 </code></pre>
-<p>Define:</p>
+<p><span data-tr="en">Define:</span><span data-tr="zh">定義：</span></p>
 <pre><code>F₁(x) = max { aᵢx + bᵢ : i ∈ I₁ }   (lower envelope constraint — must lie above)
 F₂(x) = min { aᵢx + bᵢ : i ∈ I₂ }   (upper envelope constraint — must lie below)
 </code></pre>
-<p>Then the problem becomes:</p>
+<p><span data-tr="en">Then the problem becomes:</span><span data-tr="zh">於是問題變成：</span></p>
 <pre><code>Minimize    F₁(x)
 subject to  F₁(x) ≤ F₂(x),   a ≤ x ≤ b
 </code></pre>
-<p>(Fig. 7-9: feasible where <code>F₁(x) ≤ F₂(x)</code>, between <code>x = a</code> and <code>x = b</code>.)</p>
+<p><span data-tr="en">(Fig. 7-9: feasible where <code>F₁(x) ≤ F₂(x)</code>, between <code>x = a</code> and <code>x = b</code>.)</span><span data-tr="zh">（Fig. 7-9：在 <code>x = a</code> 到 <code>x = b</code> 之間、<code>F₁(x) ≤ F₂(x)</code> 的地方就是可行區。）</span></p>
 <p><img class="figure" src="../render/A06full/slide-23.png" alt="General two-variable LP: shaded lens-shaped feasible region between the lower envelope F1(x) (must lie above) and the upper envelope F2(x) (must lie below), over a ≤ x ≤ b"></p>
-<figcaption>Slide 23 — the general problem rewritten with <code>F₁(x)=max{aᵢx+bᵢ : i∈I₁}</code> and <code>F₂(x)=min{aᵢx+bᵢ : i∈I₂}</code>; feasible region is the shaded lens where <code>F₁(x) ≤ F₂(x)</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 23 — the general problem rewritten with <code>F₁(x)=max{aᵢx+bᵢ : i∈I₁}</code> and <code>F₂(x)=min{aᵢx+bᵢ : i∈I₂}</code>; feasible region is the shaded lens where <code>F₁(x) ≤ F₂(x)</code>.</span><span data-tr="zh">Slide 23 — 把一般問題改寫成 <code>F₁(x)=max{aᵢx+bᵢ : i∈I₁}</code> 跟 <code>F₂(x)=min{aᵢx+bᵢ : i∈I₂}</code>；可行區就是 <code>F₁(x) ≤ F₂(x)</code> 那塊陰影透鏡形。</span></figcaption>
 
-<h3 id="pruning-and-feasibility-test-for-the-general-problem">Pruning and feasibility test for the general problem</h3>
-<p>Define <code>F(x) = F₁(x) − F₂(x)</code>. Then <strong><code>xₘ</code> is feasible ⟺ <code>F(xₘ) ≤ 0</code></strong>.</p>
-<p>Slopes at <code>xₘ</code>:</p>
+<h3 id="pruning-and-feasibility-test-for-the-general-problem"><span data-tr="en">Pruning and feasibility test for the general problem</span><span data-tr="zh">一般問題的修剪與可行性測試</span></h3>
+<p><span data-tr="en">Define <code>F(x) = F₁(x) − F₂(x)</code>. Then <strong><code>xₘ</code> is feasible ⟺ <code>F(xₘ) ≤ 0</code></strong>.</span><span data-tr="zh">定義 <code>F(x) = F₁(x) − F₂(x)</code>。那麼 <strong><code>xₘ</code> 可行 ⟺ <code>F(xₘ) ≤ 0</code></strong>。</span></p>
+<p><span data-tr="en">Slopes at <code>xₘ</code>:</span><span data-tr="zh"><code>xₘ</code> 處的斜率：</span></p>
 <pre><code>g_min = min { aᵢ : i ∈ I₁, aᵢxₘ + bᵢ = F₁(xₘ) }   (min slope of active I₁ lines)
 g_max = max { aᵢ : i ∈ I₁, aᵢxₘ + bᵢ = F₁(xₘ) }   (max slope of active I₁ lines)
 h_min = min { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (min slope of active I₂ lines)
 h_max = max { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (max slope of active I₂ lines)
 </code></pre>
 <blockquote>
-<p>⚠️ Note: the slide lists <code>hmin = …</code> <strong>twice</strong> (once for min, once for max) — clearly a typo; the second should be <code>h_max</code>. Corrected above.</p>
+<p><span data-tr="en">⚠️ Note: the slide lists <code>hmin = …</code> <strong>twice</strong> (once for min, once for max) — clearly a typo; the second should be <code>h_max</code>. Corrected above.</span><span data-tr="zh">⚠️ 注意：投影片把 <code>hmin = …</code> 列了<strong>兩次</strong>（一次當 min、一次當 max）——明顯打錯，第二個應該是 <code>h_max</code>。上面已經改正。</span></p>
 </blockquote>
 <p>&lt;img class="figure" src="../render/A06full/slide-24.png" alt="Fig. 7-9: shaded convex feasible region with dashed verticals at x0 and xm (x0<xm), a green dot optimum, and the right column listing gmin/gmax over I1 and hmin/hmax over I2 — the slide's fourth bullet reads hmin twice, the typo for hmax"></p>
-<figcaption>Slide 24 (Fig. 7-9) — pruning constraints for the general problem; <code>F(x)=F₁(x)−F₂(x)</code>, <code>xₘ</code> feasible ⟺ <code>F(xₘ)≤0</code>. The slope definitions appear at right (the second <code>hmin</code> is the slide's typo for <code>h_max</code>).</figcaption>
+<figcaption><span data-tr="en">Slide 24 (Fig. 7-9) — pruning constraints for the general problem; <code>F(x)=F₁(x)−F₂(x)</code>, <code>xₘ</code> feasible ⟺ <code>F(xₘ)≤0</code>. The slope definitions appear at right (the second <code>hmin</code> is the slide's typo for <code>h_max</code>).</span><span data-tr="zh">Slide 24（Fig. 7-9）—一般問題的限制式修剪；<code>F(x)=F₁(x)−F₂(x)</code>，<code>xₘ</code> 可行 ⟺ <code>F(xₘ)≤0</code>。斜率定義列在右邊（第二個 <code>hmin</code> 是投影片把 <code>h_max</code> 打錯）。</span></figcaption>
 
-<p><strong>Case 1: <code>F(xₘ) ≤ 0</code> (<code>xₘ</code> feasible).</strong>
+<p><span data-tr="en"><strong>Case 1: <code>F(xₘ) ≤ 0</code> (<code>xₘ</code> feasible).</strong>
 - <code>g_min &gt; 0</code> and <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>.
 - <code>g_min &lt; 0</code> and <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>.
-- <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>xₘ = x₀</code> is the <strong>optimum</strong>.</p>
-<p><strong>Case 2: <code>F(xₘ) &gt; 0</code> (<code>xₘ</code> infeasible).</strong>
+- <code>g_min &lt; 0</code> and <code>g_max &gt; 0</code> → <code>xₘ = x₀</code> is the <strong>optimum</strong>.</span><span data-tr="zh"><strong>情形 1：<code>F(xₘ) ≤ 0</code>（<code>xₘ</code> 可行）。</strong>
+- <code>g_min &gt; 0</code> 且 <code>g_max &gt; 0</code> → <code>x₀ &lt; xₘ</code>。
+- <code>g_min &lt; 0</code> 且 <code>g_max &lt; 0</code> → <code>x₀ &gt; xₘ</code>。
+- <code>g_min &lt; 0</code> 且 <code>g_max &gt; 0</code> → <code>xₘ = x₀</code> 就是<strong>最佳解</strong>。</span></p>
+<p><span data-tr="en"><strong>Case 2: <code>F(xₘ) &gt; 0</code> (<code>xₘ</code> infeasible).</strong>
 - <code>g_min &gt; h_max</code> → <code>x₀ &lt; xₘ</code>.
 - <code>g_min &lt; h_max</code> → <code>x₀ &gt; xₘ</code>.
-- <code>g_min ≤ h_max</code> <strong>and</strong> <code>g_max ≥ h_min</code> → <strong>no feasible solution exists</strong>.</p>
-<h3 id="algorithm-general-two-variable-lp">Algorithm (general two-variable LP)</h3>
+- <code>g_min ≤ h_max</code> <strong>and</strong> <code>g_max ≥ h_min</code> → <strong>no feasible solution exists</strong>.</span><span data-tr="zh"><strong>情形 2：<code>F(xₘ) &gt; 0</code>（<code>xₘ</code> 不可行）。</strong>
+- <code>g_min &gt; h_max</code> → <code>x₀ &lt; xₘ</code>。
+- <code>g_min &lt; h_max</code> → <code>x₀ &gt; xₘ</code>。
+- <code>g_min ≤ h_max</code> <strong>且</strong> <code>g_max ≥ h_min</code> → <strong>無可行解</strong>。</span></p>
+<h3 id="algorithm-general-two-variable-lp"><span data-tr="en">Algorithm (general two-variable LP)</span><span data-tr="zh">演算法（一般版 two-variable LP）</span></h3>
 <ul>
-<li><strong>Input:</strong> <code>I₁</code>: <code>y ≥ aᵢx + bᵢ</code>, <code>i = 1…n₁</code>;  <code>I₂</code>: <code>y ≤ aᵢx + bᵢ</code>, <code>i = n₁+1…n</code>;  <code>a ≤ x ≤ b</code>.</li>
-<li><strong>Output:</strong> <code>x₀</code> minimizing <code>y</code> subject to all constraints.</li>
+<li><span data-tr="en"><strong>Input:</strong> <code>I₁</code>: <code>y ≥ aᵢx + bᵢ</code>, <code>i = 1…n₁</code>;  <code>I₂</code>: <code>y ≤ aᵢx + bᵢ</code>, <code>i = n₁+1…n</code>;  <code>a ≤ x ≤ b</code>.</span><span data-tr="zh"><strong>輸入：</strong><code>I₁</code>：<code>y ≥ aᵢx + bᵢ</code>，<code>i = 1…n₁</code>；<code>I₂</code>：<code>y ≤ aᵢx + bᵢ</code>，<code>i = n₁+1…n</code>；<code>a ≤ x ≤ b</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> <code>x₀</code> minimizing <code>y</code> subject to all constraints.</span><span data-tr="zh"><strong>輸出：</strong>在所有限制式下讓 <code>y</code> 最小的 <code>x₀</code>。</span></li>
 </ul>
 <ol>
-<li><strong>Step 1.</strong> Arrange the constraints in <code>I₁</code> and <code>I₂</code> into arbitrary disjoint pairs (within each set). For each pair: if <code>aᵢx + bᵢ</code> is <strong>parallel</strong> to <code>aⱼx + bⱼ</code>, delete <code>aᵢx + bᵢ</code> if <code>bᵢ &lt; bⱼ</code> for <code>i,j ∈ I₁</code> (or if <code>bᵢ &gt; bⱼ</code> for <code>i,j ∈ I₂</code>). Otherwise find the intersection <code>pᵢⱼ</code> with x-coordinate <code>xᵢⱼ</code>.</li>
-<li><strong>Step 2.</strong> Find the median <code>xₘ</code> of the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them).</li>
-<li><strong>Step 3.</strong>
+<li><span data-tr="en"><strong>Step 1.</strong> Arrange the constraints in <code>I₁</code> and <code>I₂</code> into arbitrary disjoint pairs (within each set). For each pair: if <code>aᵢx + bᵢ</code> is <strong>parallel</strong> to <code>aⱼx + bⱼ</code>, delete <code>aᵢx + bᵢ</code> if <code>bᵢ &lt; bⱼ</code> for <code>i,j ∈ I₁</code> (or if <code>bᵢ &gt; bⱼ</code> for <code>i,j ∈ I₂</code>). Otherwise find the intersection <code>pᵢⱼ</code> with x-coordinate <code>xᵢⱼ</code>.</span><span data-tr="zh"><strong>Step 1.</strong> 把 <code>I₁</code> 跟 <code>I₂</code> 裡的限制式各自隨便湊成不重疊的對（同一集合內配對）。每一對：如果 <code>aᵢx + bᵢ</code> 跟 <code>aⱼx + bⱼ</code> <strong>平行</strong>，那麼在 <code>i,j ∈ I₁</code> 時，<code>bᵢ &lt; bⱼ</code> 就刪掉 <code>aᵢx + bᵢ</code>（在 <code>i,j ∈ I₂</code> 時則是 <code>bᵢ &gt; bⱼ</code> 才刪）。不平行的話，就算出交點 <code>pᵢⱼ</code>，其 x 座標為 <code>xᵢⱼ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 2.</strong> Find the median <code>xₘ</code> of the <code>xᵢⱼ</code>'s (at most <code>n/2</code> of them).</span><span data-tr="zh"><strong>Step 2.</strong> 找這些 <code>xᵢⱼ</code>（最多 <code>n/2</code> 個）的 median <code>xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 3.</strong>
    - If <code>xₘ</code> is optimal → report and exit.
    - If no feasible solution exists → report and exit.
-   - Otherwise → determine whether <code>x₀</code> lies to the <strong>left</strong> or <strong>right</strong> of <code>xₘ</code>.</li>
-<li><strong>Step 4.</strong> Discard at least <strong>1/4</strong> of the constraints. <strong>Go to Step 1.</strong></li>
+   - Otherwise → determine whether <code>x₀</code> lies to the <strong>left</strong> or <strong>right</strong> of <code>xₘ</code>.</span><span data-tr="zh"><strong>Step 3.</strong>
+   - 如果 <code>xₘ</code> 就是最佳解 → 回報並結束。
+   - 如果無可行解 → 回報並結束。
+   - 不然 → 判斷 <code>x₀</code> 是在 <code>xₘ</code> 的<strong>左邊</strong>還是<strong>右邊</strong>。</span></li>
+<li><span data-tr="en"><strong>Step 4.</strong> Discard at least <strong>1/4</strong> of the constraints. <strong>Go to Step 1.</strong></span><span data-tr="zh"><strong>Step 4.</strong> 砍掉至少 <strong>1/4</strong> 的限制式，<strong>回到 Step 1。</strong></span></li>
 </ol>
-<p><strong>Time complexity:</strong> <code>O(n)</code>.</p>
+<p><span data-tr="en"><strong>Time complexity:</strong> <code>O(n)</code>.</span><span data-tr="zh"><strong>時間複雜度：</strong><code>O(n)</code>。</span></p>
 <hr />
-<h2 id="7-the-1-center-problem-smallest-enclosing-circle">7. The 1-Center Problem (Smallest Enclosing Circle)</h2>
-<h3 id="definition_1">Definition</h3>
-<p>Given <code>n</code> planar points, find the <strong>smallest circle</strong> that covers (encloses) all <code>n</code> points. (Fig. 7-16.)</p>
-<p>The center of the optimum circle lies in a region bounded by <strong>perpendicular bisectors</strong>: <code>L₁₂</code> = bisector of the segment joining <code>p₁, p₂</code>; <code>L₃₄</code> = bisector of segment joining <code>p₃, p₄</code>; etc. A point such as <code>p₁</code> can be <strong>eliminated</strong> without affecting the solution if it is dominated. ✅ <strong>Verified against slide 34</strong> (= Figure A.3): two bisectors <code>L₁₂</code> (positive slope) and <code>L₃₄</code> (negative slope) cross at origin <code>p</code>; points <code>p₁, p₂</code> on the right, <code>p₃, p₄</code> in the upper-left inside the shaded admissible region (upper-left quadrant). Slide 34's red caption reads "The area where the center of the optimum circle may be located." (The same figure is reused on slide 50 for Step 10.)</p>
+<h2 id="7-the-1-center-problem-smallest-enclosing-circle"><span data-tr="en">7. The 1-Center Problem (Smallest Enclosing Circle)</span><span data-tr="zh">7. 1-Center Problem（最小包覆圓）</span></h2>
+<h3 id="definition_1"><span data-tr="en">Definition</span><span data-tr="zh">定義</span></h3>
+<p><span data-tr="en">Given <code>n</code> planar points, find the <strong>smallest circle</strong> that covers (encloses) all <code>n</code> points. (Fig. 7-16.)</span><span data-tr="zh">給平面上 <code>n</code> 個點，找出能把全部 <code>n</code> 個點都罩住（包進去）的<strong>最小圓</strong>。（Fig. 7-16。）</span></p>
+<p><span data-tr="en">The center of the optimum circle lies in a region bounded by <strong>perpendicular bisectors</strong>: <code>L₁₂</code> = bisector of the segment joining <code>p₁, p₂</code>; <code>L₃₄</code> = bisector of segment joining <code>p₃, p₄</code>; etc. A point such as <code>p₁</code> can be <strong>eliminated</strong> without affecting the solution if it is dominated. ✅ <strong>Verified against slide 34</strong> (= Figure A.3): two bisectors <code>L₁₂</code> (positive slope) and <code>L₃₄</code> (negative slope) cross at origin <code>p</code>; points <code>p₁, p₂</code> on the right, <code>p₃, p₄</code> in the upper-left inside the shaded admissible region (upper-left quadrant). Slide 34's red caption reads "The area where the center of the optimum circle may be located." (The same figure is reused on slide 50 for Step 10.)</span><span data-tr="zh">最佳圓的圓心，落在一塊由<strong>垂直平分線</strong>圍出來的區域裡：<code>L₁₂</code> = 連 <code>p₁, p₂</code> 那段的平分線；<code>L₃₄</code> = 連 <code>p₃, p₄</code> 那段的平分線；以此類推。像 <code>p₁</code> 這種被支配掉的點，可以<strong>直接刪掉</strong>，不影響答案。✅ <strong>已對照 slide 34 確認</strong>（= Figure A.3）：兩條平分線 <code>L₁₂</code>（正斜率）跟 <code>L₃₄</code>（負斜率）在原點 <code>p</code> 交會；<code>p₁, p₂</code> 在右邊，<code>p₃, p₄</code> 在左上、落在陰影的可行區域裡（左上象限）。Slide 34 的紅字標題寫「The area where the center of the optimum circle may be located.」（同一張圖在 slide 50 的 Step 10 又被用了一次。）</span></p>
 <p><img class="figure" src="../render/A06full/slide-34.png" alt="The 1-center problem: bisectors L12 (positive slope) and L34 (negative slope) cross at origin; p1,p2 on the right, p3,p4 in the shaded upper-left admissible region where the optimum center may lie"></p>
-<figcaption>Slide 34 — perpendicular-bisector elimination. <code>L₁₂</code> and <code>L₃₄</code> bound the shaded region "where the center of the optimum circle may be located"; <code>p₁</code> can be eliminated.</figcaption>
+<figcaption><span data-tr="en">Slide 34 — perpendicular-bisector elimination. <code>L₁₂</code> and <code>L₃₄</code> bound the shaded region "where the center of the optimum circle may be located"; <code>p₁</code> can be eliminated.</span><span data-tr="zh">Slide 34 — 用垂直平分線做刪點。<code>L₁₂</code> 跟 <code>L₃₄</code> 圍出陰影區「最佳圓心可能落在的地方」；<code>p₁</code> 可以刪掉。</span></figcaption>
 
-<h3 id="71-the-constrained-1-center-problem">7.1 The Constrained 1-Center Problem</h3>
-<p>The center is <strong>restricted to lie on a given straight line</strong> <code>y = y′</code>.</p>
+<h3 id="71-the-constrained-1-center-problem"><span data-tr="en">7.1 The Constrained 1-Center Problem</span><span data-tr="zh">7.1 受限的 1-Center Problem</span></h3>
+<p><span data-tr="en">The center is <strong>restricted to lie on a given straight line</strong> <code>y = y′</code>.</span><span data-tr="zh">圓心被<strong>限制必須落在一條給定的直線</strong> <code>y = y′</code> 上。</span></p>
 <ul>
-<li><strong>Input:</strong> <code>n</code> points and a straight line <code>y = y′</code>.</li>
-<li><strong>Output:</strong> the constrained center <code>x*</code> on the line <code>y = y′</code>.</li>
+<li><span data-tr="en"><strong>Input:</strong> <code>n</code> points and a straight line <code>y = y′</code>.</span><span data-tr="zh"><strong>輸入：</strong><code>n</code> 個點，加一條直線 <code>y = y′</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> the constrained center <code>x*</code> on the line <code>y = y′</code>.</span><span data-tr="zh"><strong>輸出：</strong>線 <code>y = y′</code> 上的受限圓心 <code>x*</code>。</span></li>
 </ul>
-<p>✅ Illustrated by <strong>Figure A.2</strong> (carved image) and confirmed by <strong>slide 35</strong> (statement "The center is restricted to lying on a straight line") and <strong>slide 38 / Fig. 7-18</strong> (the pruning geometry on <code>y = 0</code>).</p>
-<p><strong>Algorithm:</strong></p>
+<p><span data-tr="en">✅ Illustrated by <strong>Figure A.2</strong> (carved image) and confirmed by <strong>slide 35</strong> (statement "The center is restricted to lying on a straight line") and <strong>slide 38 / Fig. 7-18</strong> (the pruning geometry on <code>y = 0</code>).</span><span data-tr="zh">✅ 由 <strong>Figure A.2</strong>（碎出來的圖）示意，並由 <strong>slide 35</strong>（寫著「The center is restricted to lying on a straight line」）和 <strong>slide 38 / Fig. 7-18</strong>（<code>y = 0</code> 上的修剪幾何）佐證。</span></p>
+<p><span data-tr="en"><strong>Algorithm:</strong></span><span data-tr="zh"><strong>演算法：</strong></span></p>
 <ol>
-<li><strong>Step 1.</strong> If <code>n ≤ 2</code>, solve by brute force.</li>
-<li><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), (p₃,p₄), …, (pₙ₋₁,pₙ)</code>. If there is an odd number of points, let the final pair be <code>(pₙ, p₁)</code>.</li>
-<li><strong>Step 3.</strong> For each pair <code>(pᵢ, pᵢ₊₁)</code>, find the point <code>xᵢ,ᵢ₊₁</code> on the line <code>y = y′</code> <strong>equidistant</strong> from both: <code>d(pᵢ, xᵢ,ᵢ₊₁) = d(pᵢ₊₁, xᵢ,ᵢ₊₁)</code>.</li>
-<li><strong>Step 4.</strong> Find the <strong>median</strong> of the <code>n/2</code> values <code>xᵢ,ᵢ₊₁</code>. Denote it <code>xₘ</code>.</li>
-<li><strong>Step 5.</strong> Compute the distance from every <code>pᵢ</code> to <code>xₘ</code>. Let <code>pⱼ</code> be the <strong>farthest</strong> point. Let <code>xⱼ</code> be the projection of <code>pⱼ</code> onto <code>y = y′</code>. If <code>xⱼ</code> is to the <strong>left (right)</strong> of <code>xₘ</code>, then the optimal solution <code>x*</code> must be to the <strong>left (right)</strong> of <code>xₘ</code>.</li>
-<li><strong>Step 6.</strong> Prune:
+<li><span data-tr="en"><strong>Step 1.</strong> If <code>n ≤ 2</code>, solve by brute force.</span><span data-tr="zh"><strong>Step 1.</strong> 如果 <code>n ≤ 2</code>，直接暴力解。</span></li>
+<li><span data-tr="en"><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), (p₃,p₄), …, (pₙ₋₁,pₙ)</code>. If there is an odd number of points, let the final pair be <code>(pₙ, p₁)</code>.</span><span data-tr="zh"><strong>Step 2.</strong> 配成不重疊的對 <code>(p₁,p₂), (p₃,p₄), …, (pₙ₋₁,pₙ)</code>。如果點數是奇數，最後一對就湊 <code>(pₙ, p₁)</code>。</span></li>
+<li><span data-tr="en"><strong>Step 3.</strong> For each pair <code>(pᵢ, pᵢ₊₁)</code>, find the point <code>xᵢ,ᵢ₊₁</code> on the line <code>y = y′</code> <strong>equidistant</strong> from both: <code>d(pᵢ, xᵢ,ᵢ₊₁) = d(pᵢ₊₁, xᵢ,ᵢ₊₁)</code>.</span><span data-tr="zh"><strong>Step 3.</strong> 對每一對 <code>(pᵢ, pᵢ₊₁)</code>，在線 <code>y = y′</code> 上找一個到兩點<strong>等距</strong>的點 <code>xᵢ,ᵢ₊₁</code>：<code>d(pᵢ, xᵢ,ᵢ₊₁) = d(pᵢ₊₁, xᵢ,ᵢ₊₁)</code>。</span></li>
+<li><span data-tr="en"><strong>Step 4.</strong> Find the <strong>median</strong> of the <code>n/2</code> values <code>xᵢ,ᵢ₊₁</code>. Denote it <code>xₘ</code>.</span><span data-tr="zh"><strong>Step 4.</strong> 找這 <code>n/2</code> 個 <code>xᵢ,ᵢ₊₁</code> 的 <strong>median</strong>，記成 <code>xₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 5.</strong> Compute the distance from every <code>pᵢ</code> to <code>xₘ</code>. Let <code>pⱼ</code> be the <strong>farthest</strong> point. Let <code>xⱼ</code> be the projection of <code>pⱼ</code> onto <code>y = y′</code>. If <code>xⱼ</code> is to the <strong>left (right)</strong> of <code>xₘ</code>, then the optimal solution <code>x*</code> must be to the <strong>left (right)</strong> of <code>xₘ</code>.</span><span data-tr="zh"><strong>Step 5.</strong> 算每個 <code>pᵢ</code> 到 <code>xₘ</code> 的距離。令 <code>pⱼ</code> 是<strong>最遠</strong>的那個點，<code>xⱼ</code> 是 <code>pⱼ</code> 投影到 <code>y = y′</code> 上的位置。如果 <code>xⱼ</code> 在 <code>xₘ</code> 的<strong>左邊（右邊）</strong>，那最佳解 <code>x*</code> 一定也在 <code>xₘ</code> 的<strong>左邊（右邊）</strong>。</span></li>
+<li><span data-tr="en"><strong>Step 6.</strong> Prune:
    - If <code>x* &lt; xₘ</code>: for each <code>xᵢ,ᵢ₊₁ &gt; xₘ</code>, prune <code>pᵢ</code> if <code>pᵢ</code> is closer to <code>xₘ</code> than <code>pᵢ₊₁</code>, otherwise prune <code>pᵢ₊₁</code>.
-   - If <code>x* &gt; xₘ</code>: for each <code>xᵢ,ᵢ₊₁ &lt; xₘ</code>, prune <code>pᵢ</code> if <code>pᵢ</code> is closer to <code>xₘ</code> than <code>pᵢ₊₁</code>, otherwise prune <code>pᵢ₊₁</code>.</li>
-<li><strong>Step 7.</strong> <strong>Go to Step 1.</strong></li>
+   - If <code>x* &gt; xₘ</code>: for each <code>xᵢ,ᵢ₊₁ &lt; xₘ</code>, prune <code>pᵢ</code> if <code>pᵢ</code> is closer to <code>xₘ</code> than <code>pᵢ₊₁</code>, otherwise prune <code>pᵢ₊₁</code>.</span><span data-tr="zh"><strong>Step 6.</strong> 修剪：
+   - 如果 <code>x* &lt; xₘ</code>：對每個 <code>xᵢ,ᵢ₊₁ &gt; xₘ</code> 的對，若 <code>pᵢ</code> 比 <code>pᵢ₊₁</code> 更靠近 <code>xₘ</code> 就砍 <code>pᵢ</code>，否則砍 <code>pᵢ₊₁</code>。
+   - 如果 <code>x* &gt; xₘ</code>：對每個 <code>xᵢ,ᵢ₊₁ &lt; xₘ</code> 的對，若 <code>pᵢ</code> 比 <code>pᵢ₊₁</code> 更靠近 <code>xₘ</code> 就砍 <code>pᵢ</code>，否則砍 <code>pᵢ₊₁</code>。</span></li>
+<li><span data-tr="en"><strong>Step 7.</strong> <strong>Go to Step 1.</strong></span><span data-tr="zh"><strong>Step 7.</strong> <strong>回到 Step 1。</strong></span></li>
 </ol>
-<p><strong>Intuition for pruning:</strong> of the two points in a pair, the one <strong>closer</strong> to <code>xₘ</code> (on the far side from <code>x*</code>) can never be the farthest point determining the radius, so it is discarded. (Fig. 7-18.)</p>
+<p><span data-tr="en"><strong>Intuition for pruning:</strong> of the two points in a pair, the one <strong>closer</strong> to <code>xₘ</code> (on the far side from <code>x*</code>) can never be the farthest point determining the radius, so it is discarded. (Fig. 7-18.)</span><span data-tr="zh"><strong>修剪的直覺：</strong>一對裡的兩個點，那個<strong>比較靠近</strong> <code>xₘ</code>（在離 <code>x*</code> 比較遠那一側）的點，永遠不可能變成決定半徑的最遠點，所以丟掉。（Fig. 7-18。）</span></p>
 <p><img class="figure" src="../render/A06full/slide-38.png" alt="Fig. 7-18: line y=0 with bisector Lij of positive slope crossing at xij; point Pi above-left (boxed) and Pj to the right; xm marked with a leftward arrow toward x*"></p>
-<figcaption>Slide 38 (Fig. 7-18) — pruning points in the constrained 1-center problem. With <code>x*</code> to the left of <code>xₘ</code>, of the pair <code>(Pᵢ,Pⱼ)</code> the point closer to <code>xₘ</code> is pruned.</figcaption>
+<figcaption><span data-tr="en">Slide 38 (Fig. 7-18) — pruning points in the constrained 1-center problem. With <code>x*</code> to the left of <code>xₘ</code>, of the pair <code>(Pᵢ,Pⱼ)</code> the point closer to <code>xₘ</code> is pruned.</span><span data-tr="zh">Slide 38（Fig. 7-18）—受限 1-center 問題的刪點。當 <code>x*</code> 在 <code>xₘ</code> 左邊時，一對 <code>(Pᵢ,Pⱼ)</code> 裡比較靠近 <code>xₘ</code> 的那個會被砍掉。</span></figcaption>
 
-<p><strong>Time complexity:</strong> <code>O(n)</code>.</p>
-<h3 id="72-the-general-1-center-problem">7.2 The General 1-Center Problem</h3>
-<p>Using the <strong>constrained</strong> 1-center algorithm we can pin <code>x*</code> to a given line. We can do more: determine the sign of the optimum center's coordinates.</p>
-<p>Let <code>(xₛ, yₛ)</code> be the center of the optimum (unconstrained) circle. We can determine whether <code>yₛ &gt; 0</code>, <code>yₛ &lt; 0</code>, or <code>yₛ = 0</code>; similarly for <code>xₛ</code>.</p>
-<p><strong>Setup:</strong> For the constrained problem on <code>y = 0</code>, let <code>(x*, 0)</code> be the constrained center. Let <code>I</code> be the set of points <strong>farthest</strong> from <code>(x*, 0)</code>.</p>
-<p><strong>Case 1: <code>I</code> contains one point <code>P = (xₚ, yₚ)</code>.</strong>
-- <code>yₛ</code> has the <strong>same sign</strong> as <code>yₚ</code>. (We should move the center toward that farthest point.) ✅ <strong>Verified against slide 40 (Fig. 7-20, Case 1)</strong> = Figure A.4: the constrained circle on <code>y = 0</code> has its single farthest point <code>p</code> directly above center <code>x*</code> (apex of the half-disk), so the unconstrained optimum moves <strong>upward</strong> toward <code>p</code>. Slide 40 prints the rule "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</p>
+<p><span data-tr="en"><strong>Time complexity:</strong> <code>O(n)</code>.</span><span data-tr="zh"><strong>時間複雜度：</strong><code>O(n)</code>。</span></p>
+<h3 id="72-the-general-1-center-problem"><span data-tr="en">7.2 The General 1-Center Problem</span><span data-tr="zh">7.2 一般的 1-Center Problem</span></h3>
+<p><span data-tr="en">Using the <strong>constrained</strong> 1-center algorithm we can pin <code>x*</code> to a given line. We can do more: determine the sign of the optimum center's coordinates.</span><span data-tr="zh">用<strong>受限</strong>版的 1-center 演算法，我們可以把 <code>x*</code> 釘在一條給定的線上。其實還能更進一步：判斷最佳圓心座標的正負號。</span></p>
+<p><span data-tr="en">Let <code>(xₛ, yₛ)</code> be the center of the optimum (unconstrained) circle. We can determine whether <code>yₛ &gt; 0</code>, <code>yₛ &lt; 0</code>, or <code>yₛ = 0</code>; similarly for <code>xₛ</code>.</span><span data-tr="zh">令 <code>(xₛ, yₛ)</code> 是最佳（不受限）圓的圓心。我們能判斷出 <code>yₛ &gt; 0</code>、<code>yₛ &lt; 0</code> 還是 <code>yₛ = 0</code>；<code>xₛ</code> 同理。</span></p>
+<p><span data-tr="en"><strong>Setup:</strong> For the constrained problem on <code>y = 0</code>, let <code>(x*, 0)</code> be the constrained center. Let <code>I</code> be the set of points <strong>farthest</strong> from <code>(x*, 0)</code>.</span><span data-tr="zh"><strong>設定：</strong>先解線 <code>y = 0</code> 上的受限問題，令 <code>(x*, 0)</code> 是受限圓心。令 <code>I</code> 是離 <code>(x*, 0)</code> <strong>最遠</strong>的那些點的集合。</span></p>
+<p><span data-tr="en"><strong>Case 1: <code>I</code> contains one point <code>P = (xₚ, yₚ)</code>.</strong>
+- <code>yₛ</code> has the <strong>same sign</strong> as <code>yₚ</code>. (We should move the center toward that farthest point.) ✅ <strong>Verified against slide 40 (Fig. 7-20, Case 1)</strong> = Figure A.4: the constrained circle on <code>y = 0</code> has its single farthest point <code>p</code> directly above center <code>x*</code> (apex of the half-disk), so the unconstrained optimum moves <strong>upward</strong> toward <code>p</code>. Slide 40 prints the rule "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</span><span data-tr="zh"><strong>情形 1：<code>I</code> 只有一個點 <code>P = (xₚ, yₚ)</code>。</strong>
+- <code>yₛ</code> 跟 <code>yₚ</code> <strong>同號</strong>。（圓心應該往那個最遠點的方向移。）✅ <strong>已對照 slide 40（Fig. 7-20，情形 1）確認</strong> = Figure A.4：線 <code>y = 0</code> 上的受限圓，它唯一的最遠點 <code>p</code> 就正在圓心 <code>x*</code> 的正上方（半圓盤的頂點），所以不受限的最佳解會<strong>往上</strong>朝 <code>p</code> 移。Slide 40 印出規則「<code>yₛ</code> has the same sign as that of <code>yₚ</code>.」</span></p>
 <p><img class="figure" src="../render/A06full/slide-40.png" alt="Fig. 7-20 Case 1: an upper half-disk on the line y=0 with single farthest point p at the apex directly above center x*; interior points scattered below"></p>
-<figcaption>Slide 40 (Fig. 7-20, Case 1) — <code>I</code> contains one farthest point <code>p</code> directly above <code>x*</code>, so the unconstrained optimum moves upward: <code>yₛ</code> has the same sign as <code>yₚ</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 40 (Fig. 7-20, Case 1) — <code>I</code> contains one farthest point <code>p</code> directly above <code>x*</code>, so the unconstrained optimum moves upward: <code>yₛ</code> has the same sign as <code>yₚ</code>.</span><span data-tr="zh">Slide 40（Fig. 7-20，情形 1）—<code>I</code> 只有一個最遠點 <code>p</code>，正在 <code>x*</code> 上方，所以不受限的最佳解往上移：<code>yₛ</code> 跟 <code>yₚ</code> 同號。</span></figcaption>
 
-<p><strong>Case 2: <code>I</code> contains more than one point.</strong> ✅ <strong>Verified against slide 41 (Fig. 7-20(b)).</strong>
+<p><span data-tr="en"><strong>Case 2: <code>I</code> contains more than one point.</strong> ✅ <strong>Verified against slide 41 (Fig. 7-20(b)).</strong>
 - Find the <strong>smallest arc</strong> spanning all points in <code>I</code>. Let <code>P₁ = (x₁, y₁)</code> and <code>P₂ = (x₂, y₂)</code> be the two <strong>endpoints</strong> of that smallest spanning arc.
 - If the arc <strong>≥ 180°</strong> → <code>yₛ = 0</code> (the circle is already optimal — the farthest points "surround" the center).
-- Else (<code>&lt; 180°</code>) → <strong><code>yₛ</code> has the same sign as that of <code>(y₁ + y₂)/2</code></strong> (this expression IS printed on slide 41 — i.e. the sign of the midpoint-of-arc-endpoints' y-coordinate). Slide 41(b) draws the circle with farthest points <code>P₁,P₃,P₄,P₂</code> clustered on a short upper-right arc, center <code>(x*,0)</code>.</p>
+- Else (<code>&lt; 180°</code>) → <strong><code>yₛ</code> has the same sign as that of <code>(y₁ + y₂)/2</code></strong> (this expression IS printed on slide 41 — i.e. the sign of the midpoint-of-arc-endpoints' y-coordinate). Slide 41(b) draws the circle with farthest points <code>P₁,P₃,P₄,P₂</code> clustered on a short upper-right arc, center <code>(x*,0)</code>.</span><span data-tr="zh"><strong>情形 2：<code>I</code> 不只一個點。</strong>✅ <strong>已對照 slide 41（Fig. 7-20(b)）確認。</strong>
+- 找出能把 <code>I</code> 裡所有點都包進去的<strong>最小弧</strong>。令 <code>P₁ = (x₁, y₁)</code> 跟 <code>P₂ = (x₂, y₂)</code> 是這段最小弧的兩個<strong>端點</strong>。
+- 如果這段弧 <strong>≥ 180°</strong> → <code>yₛ = 0</code>（圓已經最佳了——最遠點把圓心「圍住」了）。
+- 否則（<code>&lt; 180°</code>）→ <strong><code>yₛ</code> 跟 <code>(y₁ + y₂)/2</code> 同號</strong>（這個式子真的印在 slide 41 上——也就是弧端點中點的 y 座標的正負號）。Slide 41(b) 畫的圓，最遠點 <code>P₁,P₃,P₄,P₂</code> 擠在右上一小段弧上，圓心 <code>(x*,0)</code>。</span></p>
 <p>&lt;img class="figure" src="../render/A06full/slide-41.png" alt="Fig. 7-20 Case 2: (a) farthest points P1,P2,P3 spanning an arc ≥180° around center (x*,0) giving ys=0; (b) farthest points P1,P3,P4,P2 clustered on a short upper-right arc &lt;180°, so ys follows the sign of (y1+y2)/2"&gt;</p>
-<figcaption>Slide 41 (Fig. 7-20(a)/(b)) — <code>I</code> contains several farthest points. Arc ≥180° ⇒ <code>yₛ=0</code>; arc &lt;180° ⇒ <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</figcaption>
+<figcaption><span data-tr="en">Slide 41 (Fig. 7-20(a)/(b)) — <code>I</code> contains several farthest points. Arc ≥180° ⇒ <code>yₛ=0</code>; arc &lt;180° ⇒ <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</span><span data-tr="zh">Slide 41（Fig. 7-20(a)/(b)）—<code>I</code> 有好幾個最遠點。弧 ≥180° ⇒ <code>yₛ=0</code>；弧 &lt;180° ⇒ <code>yₛ</code> 跟 <code>(y₁+y₂)/2</code> 同號。</span></figcaption>
 
-<p><strong>Why (acute vs obtuse):</strong>
+<p><span data-tr="en"><strong>Why (acute vs obtuse):</strong>
 - If the farthest points form an <strong>acute triangle</strong> with respect to the center → the circle <strong>is optimal</strong>.
-- If they form an <strong>obtuse</strong> configuration (spanning arc <code>&lt; 180°</code>) → the circle is <strong>not</strong> optimal; the center can be moved.</p>
+- If they form an <strong>obtuse</strong> configuration (spanning arc <code>&lt; 180°</code>) → the circle is <strong>not</strong> optimal; the center can be moved.</span><span data-tr="zh"><strong>為什麼（銳角 vs 鈍角）：</strong>
+- 如果這些最遠點對圓心構成一個<strong>銳角三角形</strong> → 這個圓<strong>就是最佳的</strong>。
+- 如果構成<strong>鈍角</strong>的擺法（包覆弧 <code>&lt; 180°</code>）→ 這個圓<strong>還不</strong>最佳，圓心還可以再移。</span></p>
 <p><img class="figure" src="../render/A06full/slide-42.png" alt="Two circumscribed triangles: an acute triangle (circle is optimal) and an obtuse triangle (circle is not optimal — a smaller dotted circle encloses the points)"></p>
-<figcaption>Slide 42 — why: farthest points forming an acute triangle ⇒ the circle is optimal; an obtuse configuration ⇒ not optimal (a smaller circle exists).</figcaption>
+<figcaption><span data-tr="en">Slide 42 — why: farthest points forming an acute triangle ⇒ the circle is optimal; an obtuse configuration ⇒ not optimal (a smaller circle exists).</span><span data-tr="zh">Slide 42 — 原因：最遠點構成銳角三角形 ⇒ 圓最佳；構成鈍角擺法 ⇒ 不最佳（存在更小的圓）。</span></figcaption>
 
-<p><strong>Direction of <code>x*</code> / sign of <code>yₛ</code> when arc <code>&lt; 180°</code>:</strong></p>
-<p>When the smallest spanning arc is <code>&lt; 180°</code> (slide 43, <strong>Fig. 7-23</strong>), <code>(x₁ − x*)</code> and <code>(x₂ − x*)</code> must be of <strong>opposite signs</strong> — otherwise we could move <code>x*</code> toward where both <code>P₁</code> and <code>P₂</code> lie and shrink the circle.</p>
+<p><span data-tr="en"><strong>Direction of <code>x*</code> / sign of <code>yₛ</code> when arc <code>&lt; 180°</code>:</strong></span><span data-tr="zh"><strong>弧 <code>&lt; 180°</code> 時，<code>x*</code> 的方向 / <code>yₛ</code> 的正負號：</strong></span></p>
+<p><span data-tr="en">When the smallest spanning arc is <code>&lt; 180°</code> (slide 43, <strong>Fig. 7-23</strong>), <code>(x₁ − x*)</code> and <code>(x₂ − x*)</code> must be of <strong>opposite signs</strong> — otherwise we could move <code>x*</code> toward where both <code>P₁</code> and <code>P₂</code> lie and shrink the circle.</span><span data-tr="zh">當最小包覆弧 <code>&lt; 180°</code> 時（slide 43，<strong>Fig. 7-23</strong>），<code>(x₁ − x*)</code> 跟 <code>(x₂ − x*)</code> 一定<strong>異號</strong>——不然我們就能把 <code>x*</code> 往 <code>P₁</code> 跟 <code>P₂</code> 共同所在的方向移，把圓縮小。</span></p>
 <p><img class="figure" src="../render/A06full/slide-43.png" alt="Fig. 7-23: circle centered at (x*,0) on line y=0, with arc endpoints P1 in the upper-left and P2 in the lower-left, on opposite sides of the line — the spanning arc is less than 180°"></p>
-<figcaption>Slide 43 (Fig. 7-23) — direction of <code>x*</code> when the arc is &lt;180°: <code>(x₁−x*)</code> and <code>(x₂−x*)</code> have opposite signs.</figcaption>
+<figcaption><span data-tr="en">Slide 43 (Fig. 7-23) — direction of <code>x*</code> when the arc is &lt;180°: <code>(x₁−x*)</code> and <code>(x₂−x*)</code> have opposite signs.</span><span data-tr="zh">Slide 43（Fig. 7-23）—弧 &lt;180° 時 <code>x*</code> 的方向：<code>(x₁−x*)</code> 跟 <code>(x₂−x*)</code> 異號。</span></figcaption>
 
-<p>Let <code>P₁ = (a, b)</code> and <code>P₂ = (c, d)</code>. <strong>Without loss of generality assume <code>a &gt; x*</code>, <code>b &gt; 0</code> and <code>c &lt; x*</code>, <code>d &lt; 0</code></strong> (this WLOG is stated verbatim on slide 44). Let the current radius be <code>r</code>. Slide 44 draws four sub-figures (a)-(d), each shading the candidate region (regions 1, 2, 3, 4) where a smaller enclosing circle's center could lie; the optimum center must lie in <strong>region 3</strong> (the shaded region of sub-figure (c), the lower-left wedge between the two equal-radius arcs through <code>P₁</code> and <code>P₂</code>).</p>
+<p><span data-tr="en">Let <code>P₁ = (a, b)</code> and <code>P₂ = (c, d)</code>. <strong>Without loss of generality assume <code>a &gt; x*</code>, <code>b &gt; 0</code> and <code>c &lt; x*</code>, <code>d &lt; 0</code></strong> (this WLOG is stated verbatim on slide 44). Let the current radius be <code>r</code>. Slide 44 draws four sub-figures (a)-(d), each shading the candidate region (regions 1, 2, 3, 4) where a smaller enclosing circle's center could lie; the optimum center must lie in <strong>region 3</strong> (the shaded region of sub-figure (c), the lower-left wedge between the two equal-radius arcs through <code>P₁</code> and <code>P₂</code>).</span><span data-tr="zh">令 <code>P₁ = (a, b)</code>、<code>P₂ = (c, d)</code>。<strong>不失一般性，假設 <code>a &gt; x*</code>、<code>b &gt; 0</code> 而 <code>c &lt; x*</code>、<code>d &lt; 0</code></strong>（這個 WLOG 在 slide 44 上原封不動寫出來）。令目前半徑為 <code>r</code>。Slide 44 畫了四張子圖 (a)-(d)，各自把更小包覆圓圓心可能落在的候選區域（區域 1、2、3、4）塗陰影；最佳圓心一定落在<strong>區域 3</strong>（子圖 (c) 的陰影，也就是穿過 <code>P₁</code> 跟 <code>P₂</code> 的兩條等半徑弧之間、左下角那塊楔形）。</span></p>
 <p><img class="figure" src="../render/A06full/slide-44.png" alt="Four sub-figures (a)-(d) each shading one candidate region 1-4 formed by two equal-radius r arcs through P1=(a,b) and P2=(c,d); WLOG a>x<em>, b&gt;0, c&lt;x</em>, d&lt;0"&gt;</p>
-<figcaption>Slide 44 — the four candidate regions. The optimum center must lie in <strong>region 3</strong> (sub-figure (c), the lower-left wedge).</figcaption>
+<figcaption><span data-tr="en">Slide 44 — the four candidate regions. The optimum center must lie in <strong>region 3</strong> (sub-figure (c), the lower-left wedge).</span><span data-tr="zh">Slide 44 — 四個候選區域。最佳圓心一定落在<strong>區域 3</strong>（子圖 (c)，左下角的楔形）。</span></figcaption>
 
-<p>✅ <strong>Verified against slide 45.</strong> The slide <strong>does</strong> print the closed-form sign expressions (the note's earlier "blank" claim was wrong — the formulas were merely typeset as overlapping fractions). The slide says "the sign of <code>yₛ</code> must be the sign of" and "similarly, <code>xₛ</code> has the same sign as that of", with the fractions:</p>
+<p><span data-tr="en">✅ <strong>Verified against slide 45.</strong> The slide <strong>does</strong> print the closed-form sign expressions (the note's earlier "blank" claim was wrong — the formulas were merely typeset as overlapping fractions). The slide says "the sign of <code>yₛ</code> must be the sign of" and "similarly, <code>xₛ</code> has the same sign as that of", with the fractions:</span><span data-tr="zh">✅ <strong>已對照 slide 45 確認。</strong>投影片<strong>確實</strong>印出了正負號的封閉形式（之前說「空白」是搞錯了——那些公式只是被排版成互相重疊的分數）。投影片寫著「the sign of <code>yₛ</code> must be the sign of」跟「similarly, <code>xₛ</code> has the same sign as that of」，配上這幾個分數：</span></p>
 <pre><code>sign(yₛ) = sign( (b + d)/2 )  =  sign( (y₁ + y₂)/2 )
 sign(xₛ) = sign( (a + c)/2 )  =  sign( (x₁ + x₂)/2 )
 </code></pre>
 <p><img class="figure" src="../render/A06full/slide-45.png" alt="Slide 45: the optimum center must be in region 3; sign(ys) = sign((b+d)/2) = sign((y1+y2)/2) and sign(xs) = sign((a+c)/2) = sign((x1+x2)/2), shown as overlapping fractions"></p>
-<figcaption>Slide 45 — the closed-form sign rules: <code>sign(yₛ)=sign((b+d)/2)=sign((y₁+y₂)/2)</code> and <code>sign(xₛ)=sign((a+c)/2)=sign((x₁+x₂)/2)</code>, with the optimum center in region 3.</figcaption>
+<figcaption><span data-tr="en">Slide 45 — the closed-form sign rules: <code>sign(yₛ)=sign((b+d)/2)=sign((y₁+y₂)/2)</code> and <code>sign(xₛ)=sign((a+c)/2)=sign((x₁+x₂)/2)</code>, with the optimum center in region 3.</span><span data-tr="zh">Slide 45 — 正負號的封閉形式規則：<code>sign(yₛ)=sign((b+d)/2)=sign((y₁+y₂)/2)</code> 跟 <code>sign(xₛ)=sign((a+c)/2)=sign((x₁+x₂)/2)</code>，最佳圓心落在區域 3。</span></figcaption>
 
-<p>i.e. the optimum center's coordinates take the sign of the <strong>midpoint of the two spanning-arc endpoints</strong> <code>P₁=(a,b)=(x₁,y₁)</code> and <code>P₂=(c,d)=(x₂,y₂)</code>. (Since <code>P₁,P₂</code> are the arc endpoints, <code>(a,b)≡(x₁,y₁)</code> and <code>(c,d)≡(x₂,y₂)</code>, so the two forms of each line are identical.) This is consistent with slide 41's Case-2 statement that <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</p>
+<p><span data-tr="en">i.e. the optimum center's coordinates take the sign of the <strong>midpoint of the two spanning-arc endpoints</strong> <code>P₁=(a,b)=(x₁,y₁)</code> and <code>P₂=(c,d)=(x₂,y₂)</code>. (Since <code>P₁,P₂</code> are the arc endpoints, <code>(a,b)≡(x₁,y₁)</code> and <code>(c,d)≡(x₂,y₂)</code>, so the two forms of each line are identical.) This is consistent with slide 41's Case-2 statement that <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</span><span data-tr="zh">也就是說，最佳圓心的座標，取的是<strong>兩個弧端點中點</strong> <code>P₁=(a,b)=(x₁,y₁)</code> 跟 <code>P₂=(c,d)=(x₂,y₂)</code> 的正負號。（因為 <code>P₁,P₂</code> 就是弧端點，所以 <code>(a,b)≡(x₁,y₁)</code>、<code>(c,d)≡(x₂,y₂)</code>，每一行的兩種寫法其實是同一回事。）這跟 slide 41 情形 2 講的「<code>yₛ</code> 跟 <code>(y₁+y₂)/2</code> 同號」是一致的。</span></p>
 <blockquote>
-<p>✅ Resolved: the §7.2 sign formulas are present on slides 41 and 45 and are now transcribed above. The slide-45 layout has the two text boxes overlapping the fraction objects, which is why an earlier text dump appeared blank; under the clean per-slide render the fractions <code>(b+d)/2</code>, <code>(y₁+y₂)/2</code>, <code>(a+c)/2</code>, <code>(x₁+x₂)/2</code> are legible.</p>
+<p><span data-tr="en">✅ Resolved: the §7.2 sign formulas are present on slides 41 and 45 and are now transcribed above. The slide-45 layout has the two text boxes overlapping the fraction objects, which is why an earlier text dump appeared blank; under the clean per-slide render the fractions <code>(b+d)/2</code>, <code>(y₁+y₂)/2</code>, <code>(a+c)/2</code>, <code>(x₁+x₂)/2</code> are legible.</span><span data-tr="zh">✅ 已解決：§7.2 的正負號公式確實在 slide 41 跟 45 上，現在已經抄到上面。Slide 45 的排版把兩個文字框疊在分數物件上面，所以先前的文字 dump 才會看起來空白；換成乾淨的逐張 render 之後，分數 <code>(b+d)/2</code>、<code>(y₁+y₂)/2</code>、<code>(a+c)/2</code>、<code>(x₁+x₂)/2</code> 都看得清楚了。</span></p>
 </blockquote>
-<h3 id="73-the-general-1-center-algorithm-full">7.3 The General 1-Center Algorithm (full)</h3>
+<h3 id="73-the-general-1-center-algorithm-full"><span data-tr="en">7.3 The General 1-Center Algorithm (full)</span><span data-tr="zh">7.3 一般的 1-Center 演算法（完整版）</span></h3>
 <ul>
-<li><strong>Input:</strong> a set <code>S = {p₁, …, pₙ}</code> of <code>n</code> points.</li>
-<li><strong>Output:</strong> the smallest enclosing circle for <code>S</code>.</li>
+<li><span data-tr="en"><strong>Input:</strong> a set <code>S = {p₁, …, pₙ}</code> of <code>n</code> points.</span><span data-tr="zh"><strong>輸入：</strong>一個有 <code>n</code> 個點的集合 <code>S = {p₁, …, pₙ}</code>。</span></li>
+<li><span data-tr="en"><strong>Output:</strong> the smallest enclosing circle for <code>S</code>.</span><span data-tr="zh"><strong>輸出：</strong><code>S</code> 的最小包覆圓。</span></li>
 </ul>
 <ol>
-<li><strong>Step 1.</strong> If <code>S</code> has ≤ <strong>16</strong> points, solve by brute force.</li>
-<li><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), …, (pₙ₋₁,pₙ)</code>. For each pair <code>(pᵢ, pᵢ₊₁)</code> find the perpendicular bisector of segment <code>pᵢpᵢ₊₁</code>. Denote them <code>Lₖ</code> (<code>k = 1,…,n/2</code>) and compute their slopes <code>sₖ</code>.</li>
-<li><strong>Step 3.</strong> Compute the <strong>median</strong> of the slopes <code>sₖ</code>; denote it <code>sₘ</code>.</li>
-<li><strong>Step 4.</strong> Rotate the coordinate system so the x-axis coincides with <code>y = sₘ·x</code>. Let <code>I⁺</code> (<code>I⁻</code>) be the set of <code>Lₖ</code> with positive (negative) slope. (Each has size <code>n/4</code>.)</li>
-<li><strong>Step 5.</strong> Construct disjoint pairs <code>(Lᵢ⁺, Lᵢ⁻)</code>, <code>i = 1,…,n/4</code>, with <code>Lᵢ⁺ ∈ I⁺</code>, <code>Lᵢ⁻ ∈ I⁻</code>. Find each pair's intersection <code>(aᵢ, bᵢ)</code>.</li>
-<li><strong>Step 6.</strong> Find the <strong>median of the <code>bᵢ</code>'s</strong>; denote it <code>y*</code>. Apply the <strong>constrained 1-center</strong> subroutine to <code>S</code> with the center forced onto <code>y = y*</code>. Let its solution be <code>(x′, y*)</code>.</li>
-<li><strong>Step 7.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x′, y*)</code>. If <code>yₛ = y*</code> → report "the circle from step 6 with center <code>(x′, y*)</code> is optimal" and exit. Otherwise record whether <code>yₛ &gt; y*</code> or <code>yₛ &lt; y*</code>.</li>
-<li><strong>Step 8.</strong> If <code>yₛ &gt; y*</code>, find the median of the <code>aᵢ</code>'s among <code>(aᵢ,bᵢ)</code> with <code>bᵢ &lt; y*</code>. If <code>yₛ &lt; y*</code>, find the median of <code>aᵢ</code>'s among those with <code>bᵢ &gt; y*</code>. Denote the median <code>x*</code>. Apply the constrained 1-center algorithm forcing the center onto <code>x = x*</code>. Let its solution be <code>(x*, y′)</code>.</li>
-<li><strong>Step 9.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x*, y′)</code>. If <code>xₛ = x*</code> → report "the circle from step 8 with center <code>(x*, y′)</code> is optimal" and exit. Otherwise record <code>xₛ &gt; x*</code> or <code>xₛ &lt; x*</code>.</li>
-<li><strong>Step 10.</strong> Prune based on the quadrant of the optimum relative to <code>(x*, y*)</code>. In each case <code>(aᵢ, bᵢ)</code> is the intersection of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code>:<ul>
-<li><strong>Case 1: <code>xₛ &gt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the one of <code>pⱼ/pₖ</code> that is closer to <code>(x*, y*)</code>.</li>
-<li><strong>Case 2: <code>xₛ &lt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
-<li><strong>Case 3: <code>xₛ &lt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
-<li><strong>Case 4: <code>xₛ &gt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</li>
+<li><span data-tr="en"><strong>Step 1.</strong> If <code>S</code> has ≤ <strong>16</strong> points, solve by brute force.</span><span data-tr="zh"><strong>Step 1.</strong> 如果 <code>S</code> 剩 ≤ <strong>16</strong> 個點，直接暴力解。</span></li>
+<li><span data-tr="en"><strong>Step 2.</strong> Form disjoint pairs <code>(p₁,p₂), …, (pₙ₋₁,pₙ)</code>. For each pair <code>(pᵢ, pᵢ₊₁)</code> find the perpendicular bisector of segment <code>pᵢpᵢ₊₁</code>. Denote them <code>Lₖ</code> (<code>k = 1,…,n/2</code>) and compute their slopes <code>sₖ</code>.</span><span data-tr="zh"><strong>Step 2.</strong> 配成不重疊的對 <code>(p₁,p₂), …, (pₙ₋₁,pₙ)</code>。對每一對 <code>(pᵢ, pᵢ₊₁)</code> 求 <code>pᵢpᵢ₊₁</code> 那段的垂直平分線，記成 <code>Lₖ</code>（<code>k = 1,…,n/2</code>），並算出它們的斜率 <code>sₖ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 3.</strong> Compute the <strong>median</strong> of the slopes <code>sₖ</code>; denote it <code>sₘ</code>.</span><span data-tr="zh"><strong>Step 3.</strong> 算斜率 <code>sₖ</code> 的 <strong>median</strong>，記成 <code>sₘ</code>。</span></li>
+<li><span data-tr="en"><strong>Step 4.</strong> Rotate the coordinate system so the x-axis coincides with <code>y = sₘ·x</code>. Let <code>I⁺</code> (<code>I⁻</code>) be the set of <code>Lₖ</code> with positive (negative) slope. (Each has size <code>n/4</code>.)</span><span data-tr="zh"><strong>Step 4.</strong> 把座標系旋轉，讓 x 軸對齊 <code>y = sₘ·x</code>。令 <code>I⁺</code>（<code>I⁻</code>）是斜率為正（負）的那些 <code>Lₖ</code> 的集合。（各有 <code>n/4</code> 個。）</span></li>
+<li><span data-tr="en"><strong>Step 5.</strong> Construct disjoint pairs <code>(Lᵢ⁺, Lᵢ⁻)</code>, <code>i = 1,…,n/4</code>, with <code>Lᵢ⁺ ∈ I⁺</code>, <code>Lᵢ⁻ ∈ I⁻</code>. Find each pair's intersection <code>(aᵢ, bᵢ)</code>.</span><span data-tr="zh"><strong>Step 5.</strong> 配成不重疊的對 <code>(Lᵢ⁺, Lᵢ⁻)</code>，<code>i = 1,…,n/4</code>，其中 <code>Lᵢ⁺ ∈ I⁺</code>、<code>Lᵢ⁻ ∈ I⁻</code>。求每一對的交點 <code>(aᵢ, bᵢ)</code>。</span></li>
+<li><span data-tr="en"><strong>Step 6.</strong> Find the <strong>median of the <code>bᵢ</code>'s</strong>; denote it <code>y*</code>. Apply the <strong>constrained 1-center</strong> subroutine to <code>S</code> with the center forced onto <code>y = y*</code>. Let its solution be <code>(x′, y*)</code>.</span><span data-tr="zh"><strong>Step 6.</strong> 求這些 <code>bᵢ</code> 的 <strong>median</strong>，記成 <code>y*</code>。對 <code>S</code> 跑<strong>受限 1-center</strong> 副程式，把圓心釘在 <code>y = y*</code> 上。設它的解是 <code>(x′, y*)</code>。</span></li>
+<li><span data-tr="en"><strong>Step 7.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x′, y*)</code>. If <code>yₛ = y*</code> → report "the circle from step 6 with center <code>(x′, y*)</code> is optimal" and exit. Otherwise record whether <code>yₛ &gt; y*</code> or <code>yₛ &lt; y*</code>.</span><span data-tr="zh"><strong>Step 7.</strong> 拿 <code>S</code> 跟 <code>(x′, y*)</code> 跑 7.2 的程序。如果 <code>yₛ = y*</code> → 回報「Step 6 圓心 <code>(x′, y*)</code> 的圓就是最佳」並結束。不然就記下是 <code>yₛ &gt; y*</code> 還是 <code>yₛ &lt; y*</code>。</span></li>
+<li><span data-tr="en"><strong>Step 8.</strong> If <code>yₛ &gt; y*</code>, find the median of the <code>aᵢ</code>'s among <code>(aᵢ,bᵢ)</code> with <code>bᵢ &lt; y*</code>. If <code>yₛ &lt; y*</code>, find the median of <code>aᵢ</code>'s among those with <code>bᵢ &gt; y*</code>. Denote the median <code>x*</code>. Apply the constrained 1-center algorithm forcing the center onto <code>x = x*</code>. Let its solution be <code>(x*, y′)</code>.</span><span data-tr="zh"><strong>Step 8.</strong> 如果 <code>yₛ &gt; y*</code>，就在那些 <code>bᵢ &lt; y*</code> 的 <code>(aᵢ,bᵢ)</code> 裡找 <code>aᵢ</code> 的 median；如果 <code>yₛ &lt; y*</code>，就在那些 <code>bᵢ &gt; y*</code> 的裡面找。把這個 median 記成 <code>x*</code>。再跑受限 1-center 演算法，把圓心釘在 <code>x = x*</code> 上。設它的解是 <code>(x*, y′)</code>。</span></li>
+<li><span data-tr="en"><strong>Step 9.</strong> Apply procedure 7.2 with <code>S</code> and <code>(x*, y′)</code>. If <code>xₛ = x*</code> → report "the circle from step 8 with center <code>(x*, y′)</code> is optimal" and exit. Otherwise record <code>xₛ &gt; x*</code> or <code>xₛ &lt; x*</code>.</span><span data-tr="zh"><strong>Step 9.</strong> 拿 <code>S</code> 跟 <code>(x*, y′)</code> 跑 7.2 的程序。如果 <code>xₛ = x*</code> → 回報「Step 8 圓心 <code>(x*, y′)</code> 的圓就是最佳」並結束。不然就記下 <code>xₛ &gt; x*</code> 還是 <code>xₛ &lt; x*</code>。</span></li>
+<li><span data-tr="en"><strong>Step 10.</strong> Prune based on the quadrant of the optimum relative to <code>(x*, y*)</code>. In each case <code>(aᵢ, bᵢ)</code> is the intersection of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code>:</span><span data-tr="zh"><strong>Step 10.</strong> 根據最佳解相對 <code>(x*, y*)</code> 落在哪個象限來修剪。每個情形裡 <code>(aᵢ, bᵢ)</code> 都是 <code>Lᵢ⁺</code> 跟 <code>Lᵢ⁻</code> 的交點：</span><ul>
+<li><span data-tr="en"><strong>Case 1: <code>xₛ &gt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the one of <code>pⱼ/pₖ</code> that is closer to <code>(x*, y*)</code>.</span><span data-tr="zh"><strong>情形 1：<code>xₛ &gt; x*</code> 且 <code>yₛ &gt; y*</code>。</strong>對所有 <code>aᵢ &lt; x*</code> 且 <code>bᵢ &lt; y*</code> 的 <code>(aᵢ,bᵢ)</code>：令 <code>Lᵢ⁻</code> 是 <code>pⱼ, pₖ</code> 的平分線，砍掉 <code>pⱼ/pₖ</code> 裡比較靠近 <code>(x*, y*)</code> 的那個。</span></li>
+<li><span data-tr="en"><strong>Case 2: <code>xₛ &lt; x*</code> and <code>yₛ &gt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &lt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</span><span data-tr="zh"><strong>情形 2：<code>xₛ &lt; x*</code> 且 <code>yₛ &gt; y*</code>。</strong>對所有 <code>aᵢ &gt; x*</code> 且 <code>bᵢ &lt; y*</code> 的 <code>(aᵢ,bᵢ)</code>：令 <code>Lᵢ⁺</code> 是 <code>pⱼ, pₖ</code> 的平分線，砍掉比較近的那個。</span></li>
+<li><span data-tr="en"><strong>Case 3: <code>xₛ &lt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &gt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁻</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</span><span data-tr="zh"><strong>情形 3：<code>xₛ &lt; x*</code> 且 <code>yₛ &lt; y*</code>。</strong>對所有 <code>aᵢ &gt; x*</code> 且 <code>bᵢ &gt; y*</code> 的 <code>(aᵢ,bᵢ)</code>：令 <code>Lᵢ⁻</code> 是 <code>pⱼ, pₖ</code> 的平分線，砍掉比較近的那個。</span></li>
+<li><span data-tr="en"><strong>Case 4: <code>xₛ &gt; x*</code> and <code>yₛ &lt; y*</code>.</strong> For all <code>(aᵢ,bᵢ)</code> with <code>aᵢ &lt; x*</code> and <code>bᵢ &gt; y*</code>: let <code>Lᵢ⁺</code> be the bisector of <code>pⱼ, pₖ</code>; prune the closer one.</span><span data-tr="zh"><strong>情形 4：<code>xₛ &gt; x*</code> 且 <code>yₛ &lt; y*</code>。</strong>對所有 <code>aᵢ &lt; x*</code> 且 <code>bᵢ &gt; y*</code> 的 <code>(aᵢ,bᵢ)</code>：令 <code>Lᵢ⁺</code> 是 <code>pⱼ, pₖ</code> 的平分線，砍掉比較近的那個。</span></li>
 </ul>
 </li>
-<li><strong>Step 11.</strong> Let <code>S</code> be the remaining points. <strong>Go to Step 1.</strong></li>
+<li><span data-tr="en"><strong>Step 11.</strong> Let <code>S</code> be the remaining points. <strong>Go to Step 1.</strong></span><span data-tr="zh"><strong>Step 11.</strong> 把剩下的點當成新的 <code>S</code>，<strong>回到 Step 1。</strong></span></li>
 </ol>
-<p><strong>Pruning rate:</strong> ✅ <strong>Verified against slide 52</strong> ("One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration."). Only the intersections in the correct quadrant (relative to <code>(x*, y*)</code>) qualify, giving <strong><code>n/16</code> points pruned per iteration</strong>. Slide 52's figure shows the four quadrants about <code>(xₘ, yₘ)</code> with the prunable quadrant shaded and bisector-pair crosses scattered in each.</p>
+<p><span data-tr="en"><strong>Pruning rate:</strong> ✅ <strong>Verified against slide 52</strong> ("One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration."). Only the intersections in the correct quadrant (relative to <code>(x*, y*)</code>) qualify, giving <strong><code>n/16</code> points pruned per iteration</strong>. Slide 52's figure shows the four quadrants about <code>(xₘ, yₘ)</code> with the prunable quadrant shaded and bisector-pair crosses scattered in each.</span><span data-tr="zh"><strong>修剪速率：</strong>✅ <strong>已對照 slide 52 確認</strong>（「One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration.」）。只有落在正確象限（相對 <code>(x*, y*)</code>）的交點才算數，所以<strong>每一輪砍掉 <code>n/16</code> 個點</strong>。Slide 52 的圖畫出繞著 <code>(xₘ, yₘ)</code> 的四個象限，可砍的那個象限塗了陰影，每個象限裡散著一些平分線對的交點記號。</span></p>
 <p><img class="figure" src="../render/A06full/slide-52.png" alt="Four quadrants about (xm,ym) with bisector-pair intersection crosses scattered in each; the lower-left quadrant shaded — one point pruned per qualifying intersection, n/16 points pruned per iteration"></p>
-<figcaption>Slide 52 — pruning in the general 1-center step. Only intersections in the correct quadrant relative to <code>(xₘ,yₘ)</code> qualify; one point is pruned per qualifying intersection, giving <code>n/16</code> pruned per iteration.</figcaption>
+<figcaption><span data-tr="en">Slide 52 — pruning in the general 1-center step. Only intersections in the correct quadrant relative to <code>(xₘ,yₘ)</code> qualify; one point is pruned per qualifying intersection, giving <code>n/16</code> pruned per iteration.</span><span data-tr="zh">Slide 52 — 一般 1-center 步驟的修剪。只有落在相對 <code>(xₘ,yₘ)</code> 正確象限的交點才算數；每個符合的交點砍掉一個點，所以每輪砍 <code>n/16</code> 個。</span></figcaption>
 
-<p><strong>Time complexity:</strong></p>
+<p><span data-tr="en"><strong>Time complexity:</strong></span><span data-tr="zh"><strong>時間複雜度：</strong></span></p>
 <pre><code>T(n) = T(15n/16) + O(n) = O(n)
 </code></pre>
-<p>(Since <code>15/16 &lt; 1</code> and per-iteration work is <code>O(n)</code>, the geometric series sums to <code>O(n)</code> — same general-method argument as §1.)</p>
+<p><span data-tr="en">(Since <code>15/16 &lt; 1</code> and per-iteration work is <code>O(n)</code>, the geometric series sums to <code>O(n)</code> — same general-method argument as §1.)</span><span data-tr="zh">（因為 <code>15/16 &lt; 1</code>，而且每一輪做 <code>O(n)</code> 的工，等比級數加起來就是 <code>O(n)</code>——跟 §1 的通用方法同一套論證。）</span></p>
 <hr />
-<h2 id="verification-status-after-reading-the-full-53-slide-render-rendera06full">Verification status (after reading the full 53-slide render <code>render/A06full/</code>)</h2>
-<h3 id="resolved-verified-against-specific-slides">✅ Resolved / verified against specific slides</h3>
+<h2 id="verification-status-after-reading-the-full-53-slide-render-rendera06full"><span data-tr="en">Verification status (after reading the full 53-slide render <code>render/A06full/</code>)</span><span data-tr="zh">驗證狀態（讀完整份 53 張投影片 render <code>render/A06full/</code> 之後）</span></h2>
+<h3 id="resolved-verified-against-specific-slides"><span data-tr="en">✅ Resolved / verified against specific slides</span><span data-tr="zh">✅ 已解決／已對照特定投影片確認</span></h3>
 <ol>
-<li><strong>Geometric-series closed form (§1)</strong> → <strong>slide 4.</strong> The slide genuinely stops at "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>"; the closed form <code>1/(1 − (1−f)ᵏ)</code> is a legitimate fill-in but is <strong>not on the slide</strong> (correctly flagged).</li>
-<li><strong>Median definition (§2)</strong> → <strong>slide 5.</strong> Slide explicitly writes <code>⌈n/2⌉</code>-th smallest. No placeholder. Verified.</li>
-<li><strong>Selection boundary conditions (§3, §5)</strong> → <strong>slides 6 &amp; 9.</strong> The deck really is inconsistent: slide 6 uses strict <code>&gt;</code>; slide 9 (formal Step 5) uses <code>≥</code>. The <code>≥</code> version is correct. Verified.</li>
-<li><strong>Median-of-medians "1/4" grid (§4)</strong> → <strong>slide 7.</strong> The grid figure IS in the deck (columns of 5 sorted top-to-bottom, dotted median row <code>M</code>, boxed <code>P</code>, two solid rectangles for the ≥1/4-each regions). The §4 ASCII was replaced with the real layout. Verified.</li>
-<li><strong>Boundary function <code>F(x)</code> (§6)</strong> → <strong>slide 14 (Fig. 7-2).</strong> <strong>The note's "F(x) = blank" claim was WRONG.</strong> The slide prints <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (typeset <code>1≤x≤n</code>, a typo) and <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>, over a gray convex region with eight labelled lines and optimum <code>(x₀,y₀)</code>. Corrected + verified.</li>
-<li><strong>Fig. 7-6 three-subcase plot + Case-2 slopes (§6)</strong> → <strong>slide 17.</strong> Real plot; slide prints <code>g_max</code>/<code>g_min</code> set-builder definitions and the 2a/2b/2c rules. Case→point map: 2a↔xₘ,₃, 2b↔xₘ,₁, 2c↔xₘ,₂. Verified. (Single-constraint Case 1 = <strong>Fig. 7-5, slide 16</strong>.)</li>
-<li><strong><code>F₁</code>/<code>F₂</code> definitions &amp; general-LP reduction (§6)</strong> → <strong>slides 22–23.</strong> Slide 22 prints the substitution <code>x'=x, y'=ax+by</code> and <code>aᵢ'=aᵢ−bᵢa/b, bᵢ'=bᵢ/b, cᵢ'=cᵢ</code>; slide 23 prints <code>F₁(x)=max{aᵢx+bᵢ, i∈I₁}</code>, <code>F₂(x)=min{aᵢx+bᵢ, i∈I₂}</code> and Fig. 7-9-style region. Verified.</li>
-<li><strong><code>h_min</code> listed twice (§6)</strong> → <strong>slide 24.</strong> Confirmed: the slide's 4th bullet really reads <code>h_min = max{…}</code> — a slide typo; should be <code>h_max</code>. The note's correction stands. Verified.</li>
-<li><strong>§7.2 sign expressions</strong> → ✅ <strong>NOW RESOLVED — slides 41 &amp; 45.</strong> The note's "STILL UNVERIFIED / blank" claim was WRONG. The closed forms are printed on the slides:
+<li><span data-tr="en"><strong>Geometric-series closed form (§1)</strong> → <strong>slide 4.</strong> The slide genuinely stops at "Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>"; the closed form <code>1/(1 − (1−f)ᵏ)</code> is a legitimate fill-in but is <strong>not on the slide</strong> (correctly flagged).</span><span data-tr="zh"><strong>等比級數封閉形式（§1）</strong> → <strong>slide 4。</strong>投影片真的只停在「Since <code>1 − f &lt; 1</code>, as <code>n → ∞</code>, <code>∴ T(n) = O(nᵏ)</code>」；封閉形式 <code>1/(1 − (1−f)ᵏ)</code> 是合理的補白，但<strong>不在投影片上</strong>（標註正確）。</span></li>
+<li><span data-tr="en"><strong>Median definition (§2)</strong> → <strong>slide 5.</strong> Slide explicitly writes <code>⌈n/2⌉</code>-th smallest. No placeholder. Verified.</span><span data-tr="zh"><strong>median 定義（§2）</strong> → <strong>slide 5。</strong>投影片明白寫第 <code>⌈n/2⌉</code> 小，沒有佔位符。已確認。</span></li>
+<li><span data-tr="en"><strong>Selection boundary conditions (§3, §5)</strong> → <strong>slides 6 &amp; 9.</strong> The deck really is inconsistent: slide 6 uses strict <code>&gt;</code>; slide 9 (formal Step 5) uses <code>≥</code>. The <code>≥</code> version is correct. Verified.</span><span data-tr="zh"><strong>Selection 邊界條件（§3、§5）</strong> → <strong>slide 6 &amp; 9。</strong>投影片本身真的不一致：slide 6 用嚴格 <code>&gt;</code>；slide 9（正式 Step 5）用 <code>≥</code>。<code>≥</code> 版才對。已確認。</span></li>
+<li><span data-tr="en"><strong>Median-of-medians "1/4" grid (§4)</strong> → <strong>slide 7.</strong> The grid figure IS in the deck (columns of 5 sorted top-to-bottom, dotted median row <code>M</code>, boxed <code>P</code>, two solid rectangles for the ≥1/4-each regions). The §4 ASCII was replaced with the real layout. Verified.</span><span data-tr="zh"><strong>median-of-medians「1/4」格子圖（§4）</strong> → <strong>slide 7。</strong>這張格子圖確實在投影片裡（每欄 5 個由上到下排序、虛線 median 列 <code>M</code>、框起來的 <code>P</code>、兩個各 ≥1/4 區域的實線框）。§4 原本的 ASCII 已換成真實排版。已確認。</span></li>
+<li><span data-tr="en"><strong>Boundary function <code>F(x)</code> (§6)</strong> → <strong>slide 14 (Fig. 7-2).</strong> <strong>The note's "F(x) = blank" claim was WRONG.</strong> The slide prints <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (typeset <code>1≤x≤n</code>, a typo) and <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>, over a gray convex region with eight labelled lines and optimum <code>(x₀,y₀)</code>. Corrected + verified.</span><span data-tr="zh"><strong>邊界函數 <code>F(x)</code>（§6）</strong> → <strong>slide 14（Fig. 7-2）。</strong><strong>原筆記說「F(x) = 空白」是錯的。</strong>投影片印出 <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code>（排成 <code>1≤x≤n</code>，打錯）跟 <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>，畫在一塊灰色凸區域上，標了八條線、最佳解 <code>(x₀,y₀)</code>。已改正並確認。</span></li>
+<li><span data-tr="en"><strong>Fig. 7-6 three-subcase plot + Case-2 slopes (§6)</strong> → <strong>slide 17.</strong> Real plot; slide prints <code>g_max</code>/<code>g_min</code> set-builder definitions and the 2a/2b/2c rules. Case→point map: 2a↔xₘ,₃, 2b↔xₘ,₁, 2c↔xₘ,₂. Verified. (Single-constraint Case 1 = <strong>Fig. 7-5, slide 16</strong>.)</span><span data-tr="zh"><strong>Fig. 7-6 三子情形圖 + 情形 2 的斜率（§6）</strong> → <strong>slide 17。</strong>真有這張圖；投影片印出 <code>g_max</code>/<code>g_min</code> 的集合建構式定義跟 2a/2b/2c 規則。情形→點的對應：2a↔xₘ,₃、2b↔xₘ,₁、2c↔xₘ,₂。已確認。（單一限制式的情形 1 = <strong>Fig. 7-5，slide 16</strong>。）</span></li>
+<li><span data-tr="en"><strong><code>F₁</code>/<code>F₂</code> definitions &amp; general-LP reduction (§6)</strong> → <strong>slides 22–23.</strong> Slide 22 prints the substitution <code>x'=x, y'=ax+by</code> and <code>aᵢ'=aᵢ−bᵢa/b, bᵢ'=bᵢ/b, cᵢ'=cᵢ</code>; slide 23 prints <code>F₁(x)=max{aᵢx+bᵢ, i∈I₁}</code>, <code>F₂(x)=min{aᵢx+bᵢ, i∈I₂}</code> and Fig. 7-9-style region. Verified.</span><span data-tr="zh"><strong><code>F₁</code>/<code>F₂</code> 定義與一般 LP 化簡（§6）</strong> → <strong>slide 22–23。</strong>Slide 22 印出代換 <code>x'=x, y'=ax+by</code> 跟 <code>aᵢ'=aᵢ−bᵢa/b, bᵢ'=bᵢ/b, cᵢ'=cᵢ</code>；slide 23 印出 <code>F₁(x)=max{aᵢx+bᵢ, i∈I₁}</code>、<code>F₂(x)=min{aᵢx+bᵢ, i∈I₂}</code> 跟 Fig. 7-9 那類的區域。已確認。</span></li>
+<li><span data-tr="en"><strong><code>h_min</code> listed twice (§6)</strong> → <strong>slide 24.</strong> Confirmed: the slide's 4th bullet really reads <code>h_min = max{…}</code> — a slide typo; should be <code>h_max</code>. The note's correction stands. Verified.</span><span data-tr="zh"><strong><code>h_min</code> 列了兩次（§6）</strong> → <strong>slide 24。</strong>已確認：投影片第 4 點真的寫 <code>h_min = max{…}</code>——投影片打錯，應該是 <code>h_max</code>。筆記的改正成立。已確認。</span></li>
+<li><span data-tr="en"><strong>§7.2 sign expressions</strong> → ✅ <strong>NOW RESOLVED — slides 41 &amp; 45.</strong> The note's "STILL UNVERIFIED / blank" claim was WRONG. The closed forms are printed on the slides:
    - <code>sign(yₛ) = sign((b+d)/2) = sign((y₁+y₂)/2)</code>
    - <code>sign(xₛ) = sign((a+c)/2) = sign((x₁+x₂)/2)</code>
-   (slide 45; slide 41 also shows <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code>). The overlap of text boxes in the original dump made them look blank. Transcribed into §7.2.</li>
-<li><strong>1-center <code>n/16</code> pruning rate (§7.3)</strong> → <strong>slide 52.</strong> Slide states "One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration." Figure shows the four quadrants around <code>(xₘ, yₘ)</code> with the prunable quadrant shaded. Verified; <code>T(n)=T(15n/16)+O(n)=O(n)</code> on slide 53.</li>
+   (slide 45; slide 41 also shows <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code>). The overlap of text boxes in the original dump made them look blank. Transcribed into §7.2.</span><span data-tr="zh"><strong>§7.2 正負號式子</strong> → ✅ <strong>現已解決 — slide 41 &amp; 45。</strong>原筆記說「仍未驗證／空白」是錯的。封閉形式就印在投影片上：
+   - <code>sign(yₛ) = sign((b+d)/2) = sign((y₁+y₂)/2)</code>
+   - <code>sign(xₛ) = sign((a+c)/2) = sign((x₁+x₂)/2)</code>
+   （slide 45；slide 41 也顯示 <code>yₛ</code> 跟 <code>sign((y₁+y₂)/2)</code> 同號）。原本的 dump 因為文字框互相重疊才看起來空白。已抄進 §7.2。</span></li>
+<li><span data-tr="en"><strong>1-center <code>n/16</code> pruning rate (§7.3)</strong> → <strong>slide 52.</strong> Slide states "One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration." Figure shows the four quadrants around <code>(xₘ, yₘ)</code> with the prunable quadrant shaded. Verified; <code>T(n)=T(15n/16)+O(n)=O(n)</code> on slide 53.</span><span data-tr="zh"><strong>1-center <code>n/16</code> 修剪速率（§7.3）</strong> → <strong>slide 52。</strong>投影片寫「One point for each of n/4 intersections of <code>Lᵢ⁺</code> and <code>Lᵢ⁻</code> is pruned away. Thus, n/16 points are pruned away in each iteration.」圖裡畫出繞 <code>(xₘ, yₘ)</code> 的四象限、可砍象限塗陰影。已確認；<code>T(n)=T(15n/16)+O(n)=O(n)</code> 在 slide 53。</span></li>
 </ol>
-<h3 id="remaining-genuinely-reconstructed-not-on-any-slide">Remaining genuinely-reconstructed (not on any slide)</h3>
+<h3 id="remaining-genuinely-reconstructed-not-on-any-slide"><span data-tr="en">Remaining genuinely-reconstructed (not on any slide)</span><span data-tr="zh">剩下真正靠重建補出來的（任何投影片上都沒有）</span></h3>
 <ul>
-<li><strong>Geometric-series closed form <code>1/(1−(1−f)ᵏ)</code> (§1):</strong> confirmed absent from slide 4 (the slide leaves it implicit). Standard fill-in only.</li>
-<li><strong>Step-5 coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (§5):</strong> slide 11 asserts <code>T(3n/4)+T(n/5) ≤ a₀ + T(19n/20)</code> directly without the comparison; the <code>241/400 &lt; 361/400</code> justification remains my fill-in (the slide does print the <code>(9/16)</code>, <code>(1/25)</code>, <code>(361/400)</code> quadratic coefficients, so the comparison is trivially supported, but is not spelled out).</li>
+<li><span data-tr="en"><strong>Geometric-series closed form <code>1/(1−(1−f)ᵏ)</code> (§1):</strong> confirmed absent from slide 4 (the slide leaves it implicit). Standard fill-in only.</span><span data-tr="zh"><strong>等比級數封閉形式 <code>1/(1−(1−f)ᵏ)</code>（§1）：</strong>已確認 slide 4 上沒有（投影片省略不寫）。純屬標準補白。</span></li>
+<li><span data-tr="en"><strong>Step-5 coefficient comparison <code>9/16 + 1/25 = 241/400 &lt; 361/400</code> (§5):</strong> slide 11 asserts <code>T(3n/4)+T(n/5) ≤ a₀ + T(19n/20)</code> directly without the comparison; the <code>241/400 &lt; 361/400</code> justification remains my fill-in (the slide does print the <code>(9/16)</code>, <code>(1/25)</code>, <code>(361/400)</code> quadratic coefficients, so the comparison is trivially supported, but is not spelled out).</span><span data-tr="zh"><strong>Step 5 係數比對 <code>9/16 + 1/25 = 241/400 &lt; 361/400</code>（§5）：</strong>slide 11 直接斷言 <code>T(3n/4)+T(n/5) ≤ a₀ + T(19n/20)</code>，沒寫比對過程；<code>241/400 &lt; 361/400</code> 這個理由是我補的（投影片確實印了 <code>(9/16)</code>、<code>(1/25)</code>、<code>(361/400)</code> 這些二次項係數，所以比對其實一目了然，只是沒寫出來而已）。</span></li>
 </ul>
 <hr />
-<h2 id="appendix-a-figures">Appendix A — Figures</h2>
+<h2 id="appendix-a-figures"><span data-tr="en">Appendix A — Figures</span><span data-tr="zh">附錄 A — 圖</span></h2>
 <blockquote>
-<p><strong>Two sources.</strong> (1) The original carved images from <code>/home/brant/finals_study/algo/render/A06/</code> — figures A.1–A.4 below (nine images, five decorative junk: red rose, panda doodles, house icon, the "ohmygoodness.com" green-car cartoon). (2) The <strong>clean per-slide render</strong> <code>/home/brant/finals_study/algo/render/A06full/slide-NN.png</code> (53 slides), which I have now read in full — figures A.5–A.10 below.</p>
-<p><strong>Correction to the earlier note:</strong> the full render set <strong>does</strong> contain the median-of-medians grid (slide 7), the F(x)/x₀ envelope plot Fig. 7-2 (slide 14), and the Fig. 7-6 three-subcase plot (slide 17). The earlier claim that these were absent was based only on the carved-image subset. They are transcribed below and the body sections (§4, §6) are upgraded to ✅ Verified.</p>
+<p><span data-tr="en"><strong>Two sources.</strong> (1) The original carved images from <code>/home/brant/finals_study/algo/render/A06/</code> — figures A.1–A.4 below (nine images, five decorative junk: red rose, panda doodles, house icon, the "ohmygoodness.com" green-car cartoon). (2) The <strong>clean per-slide render</strong> <code>/home/brant/finals_study/algo/render/A06full/slide-NN.png</code> (53 slides), which I have now read in full — figures A.5–A.10 below.</span><span data-tr="zh"><strong>兩個來源。</strong>(1) 從 <code>/home/brant/finals_study/algo/render/A06/</code> 碎出來的原始圖——就是下面的 figure A.1–A.4（九張圖，其中五張是裝飾廢圖：紅玫瑰、熊貓塗鴉、房子圖示、那張「ohmygoodness.com」的綠車卡通）。(2) <strong>乾淨的逐張 render</strong> <code>/home/brant/finals_study/algo/render/A06full/slide-NN.png</code>（53 張），我現在已經整份讀完——就是下面的 figure A.5–A.10。</span></p>
+<p><span data-tr="en"><strong>Correction to the earlier note:</strong> the full render set <strong>does</strong> contain the median-of-medians grid (slide 7), the F(x)/x₀ envelope plot Fig. 7-2 (slide 14), and the Fig. 7-6 three-subcase plot (slide 17). The earlier claim that these were absent was based only on the carved-image subset. They are transcribed below and the body sections (§4, §6) are upgraded to ✅ Verified.</span><span data-tr="zh"><strong>更正先前的筆記：</strong>完整 render 那一套<strong>確實</strong>有 median-of-medians 格子圖（slide 7）、F(x)/x₀ envelope 圖 Fig. 7-2（slide 14）、跟 Fig. 7-6 三子情形圖（slide 17）。之前說沒有，是只看了碎圖那一小部分。它們都抄在下面，正文 §4、§6 也升級成 ✅ 已確認。</span></p>
 </blockquote>
-<h3 id="figure-a1-two-variable-lp-convex-feasible-region-and-the-optimum-x0">Figure A.1 — Two-variable LP: convex feasible region and the optimum <code>x₀</code></h3>
+<h3 id="figure-a1-two-variable-lp-convex-feasible-region-and-the-optimum-x0"><span data-tr="en">Figure A.1 — Two-variable LP: convex feasible region and the optimum <code>x₀</code></span><span data-tr="zh">Figure A.1 — Two-variable LP：凸可行區域與最佳解 <code>x₀</code></span></h3>
 <ul>
-<li><strong>Source:</strong> <code>png_003.png</code></li>
-<li><strong>Axes:</strong> vertical <code>y</code>, horizontal <code>x</code>, origin at lower-left.</li>
-<li><strong>Content:</strong> a shaded <strong>convex region</strong> (the feasible region) bounded by straight constraint lines. Five lines are labelled, each with an <strong>outward-pointing normal arrow</strong> (the half-plane direction): <code>a₁x+b₁</code> and <code>a₄x+b₄</code> on the right (shallow positive / shallow negative slope), <code>a₂x+b₂</code> lower-right, <code>a₃x+b₃</code> a steep near-vertical line on the right, <code>a₅x+b₅</code> on the upper-right. The remaining (unlabelled) edges bound the left side of the region.</li>
-<li><strong>Markers:</strong> two <strong>dashed vertical lines</strong> drop to the x-axis at <code>x₀</code> and <code>xₘ</code>, with <strong><code>x₀</code> to the LEFT of <code>xₘ</code></strong>. <code>x₀</code> is the abscissa of the lowest point of the convex boundary (the optimum); <code>xₘ</code> is the test abscissa.</li>
-<li><strong>What it resolves:</strong> confirms <code>F(x)</code> is the convex lower-boundary envelope of the constraints and that the optimum is its lowest point. This figure depicts the decision case <strong><code>x₀ &lt; xₘ</code></strong>.</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>png_003.png</code></span><span data-tr="zh"><strong>來源：</strong><code>png_003.png</code></span></li>
+<li><span data-tr="en"><strong>Axes:</strong> vertical <code>y</code>, horizontal <code>x</code>, origin at lower-left.</span><span data-tr="zh"><strong>座標軸：</strong>直軸 <code>y</code>、橫軸 <code>x</code>，原點在左下。</span></li>
+<li><span data-tr="en"><strong>Content:</strong> a shaded <strong>convex region</strong> (the feasible region) bounded by straight constraint lines. Five lines are labelled, each with an <strong>outward-pointing normal arrow</strong> (the half-plane direction): <code>a₁x+b₁</code> and <code>a₄x+b₄</code> on the right (shallow positive / shallow negative slope), <code>a₂x+b₂</code> lower-right, <code>a₃x+b₃</code> a steep near-vertical line on the right, <code>a₅x+b₅</code> on the upper-right. The remaining (unlabelled) edges bound the left side of the region.</span><span data-tr="zh"><strong>內容：</strong>一塊陰影的<strong>凸區域</strong>（可行區），被一堆直線限制式圍住。標了五條線，每條都有一個<strong>朝外的法向量箭頭</strong>（代表半平面方向）：<code>a₁x+b₁</code> 跟 <code>a₄x+b₄</code> 在右邊（一個緩正斜率、一個緩負斜率）、<code>a₂x+b₂</code> 在右下、<code>a₃x+b₃</code> 是右邊一條近乎垂直的陡線、<code>a₅x+b₅</code> 在右上。其餘（沒標）的邊圍住區域左側。</span></li>
+<li><span data-tr="en"><strong>Markers:</strong> two <strong>dashed vertical lines</strong> drop to the x-axis at <code>x₀</code> and <code>xₘ</code>, with <strong><code>x₀</code> to the LEFT of <code>xₘ</code></strong>. <code>x₀</code> is the abscissa of the lowest point of the convex boundary (the optimum); <code>xₘ</code> is the test abscissa.</span><span data-tr="zh"><strong>標記：</strong>兩條<strong>虛線垂直線</strong>落到 x 軸的 <code>x₀</code> 跟 <code>xₘ</code>，其中 <strong><code>x₀</code> 在 <code>xₘ</code> 左邊</strong>。<code>x₀</code> 是凸邊界最低點的橫座標（最佳解）；<code>xₘ</code> 是測試橫座標。</span></li>
+<li><span data-tr="en"><strong>What it resolves:</strong> confirms <code>F(x)</code> is the convex lower-boundary envelope of the constraints and that the optimum is its lowest point. This figure depicts the decision case <strong><code>x₀ &lt; xₘ</code></strong>.</span><span data-tr="zh"><strong>它釐清了什麼：</strong>確認 <code>F(x)</code> 是限制式的凸下邊界 envelope，而最佳解就是它的最低點。這張圖畫的是 <strong><code>x₀ &lt; xₘ</code></strong> 的判斷情形。</span></li>
 </ul>
-<h3 id="figure-a2-constrained-1-center-center-on-line-y-0">Figure A.2 — Constrained 1-center (center on line <code>y = 0</code>)</h3>
+<h3 id="figure-a2-constrained-1-center-center-on-line-y-0"><span data-tr="en">Figure A.2 — Constrained 1-center (center on line <code>y = 0</code>)</span><span data-tr="zh">Figure A.2 — 受限 1-center（圓心在線 <code>y = 0</code> 上）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>png_005.png</code></li>
-<li><strong>Content:</strong> a single <strong>circle</strong> whose <strong>center is marked <code>x*</code></strong> lying <strong>on the horizontal line <code>y = 0</code></strong> (line drawn with an arrowhead, labelled <code>y=0</code> at right). Approximately <strong>eleven points</strong> (filled dots) are scattered inside the circle; two lie essentially on the <code>y=0</code> line and the rest above/below it.</li>
-<li><strong>What it shows:</strong> the constrained 1-center problem — the smallest enclosing circle subject to its center being pinned to the given line <code>y = y′</code> (here <code>y′ = 0</code>). The radius is set by the farthest point(s) from <code>x*</code>.</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>png_005.png</code></span><span data-tr="zh"><strong>來源：</strong><code>png_005.png</code></span></li>
+<li><span data-tr="en"><strong>Content:</strong> a single <strong>circle</strong> whose <strong>center is marked <code>x*</code></strong> lying <strong>on the horizontal line <code>y = 0</code></strong> (line drawn with an arrowhead, labelled <code>y=0</code> at right). Approximately <strong>eleven points</strong> (filled dots) are scattered inside the circle; two lie essentially on the <code>y=0</code> line and the rest above/below it.</span><span data-tr="zh"><strong>內容：</strong>一個<strong>圓</strong>，<strong>圓心標著 <code>x*</code></strong>，落在<strong>水平線 <code>y = 0</code></strong> 上（這條線畫了箭頭，右邊標 <code>y=0</code>）。圓內散著大約<strong>十一個點</strong>（實心點）；其中兩個差不多就在 <code>y=0</code> 線上，其餘在線的上方/下方。</span></li>
+<li><span data-tr="en"><strong>What it shows:</strong> the constrained 1-center problem — the smallest enclosing circle subject to its center being pinned to the given line <code>y = y′</code> (here <code>y′ = 0</code>). The radius is set by the farthest point(s) from <code>x*</code>.</span><span data-tr="zh"><strong>它在講什麼：</strong>受限 1-center 問題——在圓心被釘在給定線 <code>y = y′</code>（這裡 <code>y′ = 0</code>）的條件下的最小包覆圓。半徑由離 <code>x*</code> 最遠的那個（些）點決定。</span></li>
 </ul>
-<h3 id="figure-a3-general-1-center-perpendicular-bisector-elimination-region">Figure A.3 — General 1-center: perpendicular-bisector elimination region</h3>
+<h3 id="figure-a3-general-1-center-perpendicular-bisector-elimination-region"><span data-tr="en">Figure A.3 — General 1-center: perpendicular-bisector elimination region</span><span data-tr="zh">Figure A.3 — 一般 1-center：垂直平分線刪點區域</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>png_008.png</code></li>
-<li><strong>Axes:</strong> <code>y</code> vertical, <code>x</code> horizontal; the crossing point of the axes / bisectors is labelled <strong><code>p</code></strong>.</li>
-<li><strong>Bisectors:</strong> <strong><code>L₁₂</code></strong> — a line of <strong>positive slope</strong> through <code>p</code>, arrowheads pointing up-right (toward its label <code>L₁₂</code>) and down-left. <strong><code>L₃₄</code></strong> — a line of <strong>negative slope</strong> through <code>p</code>, arrowheads pointing down-right (toward label <code>L₃₄</code>) and up-left.</li>
-<li><strong>Points:</strong> <code>p₁</code> and <code>p₂</code> on the <strong>right</strong> half (<code>p₁</code> above <code>p₂</code>); <code>p₃</code> and <code>p₄</code> in the <strong>upper-left</strong>, inside the shaded region (<code>p₃</code> above <code>p₄</code>).</li>
-<li><strong>Shaded region:</strong> the <strong>upper-left wedge/quadrant</strong> bounded by the two bisectors and the positive <code>y</code>-axis — the admissible region for the optimum center after the bisector constraints <code>L₁₂</code> (perp. bisector of <code>p₁p₂</code>) and <code>L₃₄</code> (perp. bisector of <code>p₃p₄</code>) are imposed. Points outside the relevant half-plane (e.g. <code>p₁</code>) can be eliminated.</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>png_008.png</code></span><span data-tr="zh"><strong>來源：</strong><code>png_008.png</code></span></li>
+<li><span data-tr="en"><strong>Axes:</strong> <code>y</code> vertical, <code>x</code> horizontal; the crossing point of the axes / bisectors is labelled <strong><code>p</code></strong>.</span><span data-tr="zh"><strong>座標軸：</strong><code>y</code> 直、<code>x</code> 橫；軸／平分線的交會點標著 <strong><code>p</code></strong>。</span></li>
+<li><span data-tr="en"><strong>Bisectors:</strong> <strong><code>L₁₂</code></strong> — a line of <strong>positive slope</strong> through <code>p</code>, arrowheads pointing up-right (toward its label <code>L₁₂</code>) and down-left. <strong><code>L₃₄</code></strong> — a line of <strong>negative slope</strong> through <code>p</code>, arrowheads pointing down-right (toward label <code>L₃₄</code>) and up-left.</span><span data-tr="zh"><strong>平分線：</strong><strong><code>L₁₂</code></strong>——一條過 <code>p</code> 的<strong>正斜率</strong>線，箭頭指右上（朝它的標籤 <code>L₁₂</code>）跟左下。<strong><code>L₃₄</code></strong>——一條過 <code>p</code> 的<strong>負斜率</strong>線，箭頭指右下（朝標籤 <code>L₃₄</code>）跟左上。</span></li>
+<li><span data-tr="en"><strong>Points:</strong> <code>p₁</code> and <code>p₂</code> on the <strong>right</strong> half (<code>p₁</code> above <code>p₂</code>); <code>p₃</code> and <code>p₄</code> in the <strong>upper-left</strong>, inside the shaded region (<code>p₃</code> above <code>p₄</code>).</span><span data-tr="zh"><strong>點：</strong><code>p₁</code> 跟 <code>p₂</code> 在<strong>右</strong>半邊（<code>p₁</code> 在 <code>p₂</code> 上方）；<code>p₃</code> 跟 <code>p₄</code> 在<strong>左上</strong>，落在陰影區裡（<code>p₃</code> 在 <code>p₄</code> 上方）。</span></li>
+<li><span data-tr="en"><strong>Shaded region:</strong> the <strong>upper-left wedge/quadrant</strong> bounded by the two bisectors and the positive <code>y</code>-axis — the admissible region for the optimum center after the bisector constraints <code>L₁₂</code> (perp. bisector of <code>p₁p₂</code>) and <code>L₃₄</code> (perp. bisector of <code>p₃p₄</code>) are imposed. Points outside the relevant half-plane (e.g. <code>p₁</code>) can be eliminated.</span><span data-tr="zh"><strong>陰影區：</strong>由兩條平分線跟正 <code>y</code> 軸圍出的<strong>左上楔形/象限</strong>——加上平分線限制 <code>L₁₂</code>（<code>p₁p₂</code> 的垂直平分線）跟 <code>L₃₄</code>（<code>p₃p₄</code> 的垂直平分線）之後，最佳圓心的可行區域。落在相關半平面之外的點（例如 <code>p₁</code>）就能刪掉。</span></li>
 </ul>
-<h3 id="figure-a4-sign-determination-single-farthest-point-ys-follows-yp">Figure A.4 — Sign determination, single farthest point (<code>yₛ</code> follows <code>yₚ</code>)</h3>
+<h3 id="figure-a4-sign-determination-single-farthest-point-ys-follows-yp"><span data-tr="en">Figure A.4 — Sign determination, single farthest point (<code>yₛ</code> follows <code>yₚ</code>)</span><span data-tr="zh">Figure A.4 — 判斷正負號，單一最遠點（<code>yₛ</code> 跟著 <code>yₚ</code>）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>png_006.png</code></li>
-<li><strong>Content:</strong> an <strong>upper half-disk</strong> (semicircle) sitting on the horizontal line <code>y = 0</code> (labelled <code>y=0</code>, arrow at right). The <strong>apex of the arc is labelled <code>p</code></strong> and a <strong>dashed vertical segment</strong> drops from <code>p</code> to the center <strong><code>x*</code></strong> on the line. Four interior points (filled dots) are scattered below the apex (two left of the dashed line, two right).</li>
-<li><strong>What it resolves:</strong> the §7.2 <strong>Case 1</strong> geometry. The single farthest point <code>p</code> lies <strong>directly above</strong> the constrained center <code>x*</code> (on <code>y = 0</code>); therefore the unconstrained optimum center should move <strong>upward toward <code>p</code></strong>, i.e. <code>yₛ</code> has the <strong>same sign as <code>yₚ</code></strong> (here positive). Confirms the qualitative "move toward the farthest point" rule. This is <strong>slide 40 (Fig. 7-20, Case 1)</strong> in the full render; slide 40 prints "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>png_006.png</code></span><span data-tr="zh"><strong>來源：</strong><code>png_006.png</code></span></li>
+<li><span data-tr="en"><strong>Content:</strong> an <strong>upper half-disk</strong> (semicircle) sitting on the horizontal line <code>y = 0</code> (labelled <code>y=0</code>, arrow at right). The <strong>apex of the arc is labelled <code>p</code></strong> and a <strong>dashed vertical segment</strong> drops from <code>p</code> to the center <strong><code>x*</code></strong> on the line. Four interior points (filled dots) are scattered below the apex (two left of the dashed line, two right).</span><span data-tr="zh"><strong>內容：</strong>一個<strong>上半圓盤</strong>（半圓）坐在水平線 <code>y = 0</code> 上（標 <code>y=0</code>，右邊有箭頭）。<strong>弧的頂點標著 <code>p</code></strong>，一條<strong>虛線垂直線段</strong>從 <code>p</code> 落到線上的圓心 <strong><code>x*</code></strong>。內部有四個點（實心點）散在頂點下方（虛線左邊兩個、右邊兩個）。</span></li>
+<li><span data-tr="en"><strong>What it resolves:</strong> the §7.2 <strong>Case 1</strong> geometry. The single farthest point <code>p</code> lies <strong>directly above</strong> the constrained center <code>x*</code> (on <code>y = 0</code>); therefore the unconstrained optimum center should move <strong>upward toward <code>p</code></strong>, i.e. <code>yₛ</code> has the <strong>same sign as <code>yₚ</code></strong> (here positive). Confirms the qualitative "move toward the farthest point" rule. This is <strong>slide 40 (Fig. 7-20, Case 1)</strong> in the full render; slide 40 prints "<code>yₛ</code> has the same sign as that of <code>yₚ</code>."</span><span data-tr="zh"><strong>它釐清了什麼：</strong>§7.2 <strong>情形 1</strong> 的幾何。唯一的最遠點 <code>p</code> 就<strong>正在</strong>受限圓心 <code>x*</code>（在 <code>y = 0</code> 上）的<strong>正上方</strong>；所以不受限的最佳圓心應該<strong>往上朝 <code>p</code></strong> 移，也就是 <code>yₛ</code> 跟 <code>yₚ</code> <strong>同號</strong>（這裡是正的）。這印證了「往最遠點方向移」這個定性規則。在完整 render 裡這就是 <strong>slide 40（Fig. 7-20，情形 1）</strong>；slide 40 印出「<code>yₛ</code> has the same sign as that of <code>yₚ</code>.」</span></li>
 </ul>
-<h3 id="figure-a5-median-of-medians-grid-slide-7">Figure A.5 — Median-of-medians grid (slide 7)</h3>
+<h3 id="figure-a5-median-of-medians-grid-slide-7"><span data-tr="en">Figure A.5 — Median-of-medians grid (slide 7)</span><span data-tr="zh">Figure A.5 — Median-of-medians 格子圖（slide 7）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>render/A06full/slide-07.png</code> ("How to select P?").</li>
-<li><strong>Layout:</strong> <code>⌈n/5⌉</code> columns (drawn as 7), each a 5-element subset of dots; left-side down-arrow labelled "Each 5-element subset is sorted in non-decreasing sequence" (smallest top, largest bottom). Middle (3rd) row = group medians, in a <strong>dotted rectangle labelled <code>M</code></strong> at the right. The median-of-medians <strong><code>P</code></strong> is the boxed dot in the middle of that row (label + arrow).</li>
-<li><strong>Guarantee rectangles:</strong> a solid <strong>upper-left</strong> rectangle labelled "At least 1/4 of S known to be less than or equal to P" (arrow from top); a solid <strong>lower-right</strong> rectangle labelled "At least 1/4 of S known to be greater than or equal to P" (arrow from bottom). These staircase around <code>P</code>.</li>
-<li><strong>Resolves:</strong> §4 grid (was ASCII reconstruction → now ✅ verified).</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>render/A06full/slide-07.png</code> ("How to select P?").</span><span data-tr="zh"><strong>來源：</strong><code>render/A06full/slide-07.png</code>（「How to select P?」）。</span></li>
+<li><span data-tr="en"><strong>Layout:</strong> <code>⌈n/5⌉</code> columns (drawn as 7), each a 5-element subset of dots; left-side down-arrow labelled "Each 5-element subset is sorted in non-decreasing sequence" (smallest top, largest bottom). Middle (3rd) row = group medians, in a <strong>dotted rectangle labelled <code>M</code></strong> at the right. The median-of-medians <strong><code>P</code></strong> is the boxed dot in the middle of that row (label + arrow).</span><span data-tr="zh"><strong>排版：</strong><code>⌈n/5⌉</code> 欄（畫成 7 欄），每欄是一組 5 個點；左邊向下的箭頭標著「Each 5-element subset is sorted in non-decreasing sequence」（最小在上、最大在下）。中間（第 3）列 = 各組 median，框在右邊一個<strong>標著 <code>M</code> 的虛線框</strong>裡。median-of-medians <strong><code>P</code></strong> 是那一列正中間被框起來的點（有標籤加箭頭）。</span></li>
+<li><span data-tr="en"><strong>Guarantee rectangles:</strong> a solid <strong>upper-left</strong> rectangle labelled "At least 1/4 of S known to be less than or equal to P" (arrow from top); a solid <strong>lower-right</strong> rectangle labelled "At least 1/4 of S known to be greater than or equal to P" (arrow from bottom). These staircase around <code>P</code>.</span><span data-tr="zh"><strong>保證框：</strong>一個<strong>左上</strong>實線框，標著「At least 1/4 of S known to be less than or equal to P」（箭頭從上方指進去）；一個<strong>右下</strong>實線框，標著「At least 1/4 of S known to be greater than or equal to P」（箭頭從下方指進去）。這兩個框像階梯一樣繞著 <code>P</code>。</span></li>
+<li><span data-tr="en"><strong>Resolves:</strong> §4 grid (was ASCII reconstruction → now ✅ verified).</span><span data-tr="zh"><strong>釐清：</strong>§4 的格子圖（本來是 ASCII 重建 → 現在 ✅ 已確認）。</span></li>
 </ul>
-<h3 id="figure-a6-fig-7-2-fx-upper-envelope-plot-slide-14">Figure A.6 — Fig. 7-2: F(x) upper-envelope plot (slide 14)</h3>
+<h3 id="figure-a6-fig-7-2-fx-upper-envelope-plot-slide-14"><span data-tr="en">Figure A.6 — Fig. 7-2: F(x) upper-envelope plot (slide 14)</span><span data-tr="zh">Figure A.6 — Fig. 7-2：F(x) upper-envelope 圖（slide 14）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>render/A06full/slide-14.png</code> ("Fig. 7-2 An Example of the Special Two-Variable Linear Programming Problem").</li>
-<li><strong>Axes:</strong> <code>y</code> up, <code>x</code> right. Gray <strong>convex feasible region</strong> sitting above the upper envelope of <strong>eight</strong> constraint lines, each with an outward normal arrow, labelled <code>a₁x+b₁ … a₈x+b₈</code>. Optimum <code>(x₀, y₀)</code> at the lowest envelope point, marked with a short <strong>red vertical segment</strong>.</li>
-<li><strong>Formulas printed on slide (right column):</strong> <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (printed <code>1≤x≤n</code>, a typo) and the optimum <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>.</li>
-<li><strong>Resolves:</strong> §6 <code>F(x)</code> definition (was wrongly flagged "blank" → now ✅ verified; formula IS on the slide).</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>render/A06full/slide-14.png</code> ("Fig. 7-2 An Example of the Special Two-Variable Linear Programming Problem").</span><span data-tr="zh"><strong>來源：</strong><code>render/A06full/slide-14.png</code>（「Fig. 7-2 An Example of the Special Two-Variable Linear Programming Problem」）。</span></li>
+<li><span data-tr="en"><strong>Axes:</strong> <code>y</code> up, <code>x</code> right. Gray <strong>convex feasible region</strong> sitting above the upper envelope of <strong>eight</strong> constraint lines, each with an outward normal arrow, labelled <code>a₁x+b₁ … a₈x+b₈</code>. Optimum <code>(x₀, y₀)</code> at the lowest envelope point, marked with a short <strong>red vertical segment</strong>.</span><span data-tr="zh"><strong>座標軸：</strong><code>y</code> 朝上、<code>x</code> 朝右。灰色的<strong>凸可行區域</strong>坐在<strong>八</strong>條限制線的 upper envelope 上方，每條都有朝外的法向量箭頭，標著 <code>a₁x+b₁ … a₈x+b₈</code>。最佳解 <code>(x₀, y₀)</code> 在 envelope 最低點，用一條<strong>紅色短垂直線段</strong>標出。</span></li>
+<li><span data-tr="en"><strong>Formulas printed on slide (right column):</strong> <code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code> (printed <code>1≤x≤n</code>, a typo) and the optimum <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>.</span><span data-tr="zh"><strong>投影片上印的公式（右欄）：</strong><code>F(x) = max_{1≤i≤n}{aᵢx+bᵢ}</code>（印成 <code>1≤x≤n</code>，打錯）跟最佳解 <code>F(x₀) = min_{-∞&lt;x&lt;∞} F(x)</code>。</span></li>
+<li><span data-tr="en"><strong>Resolves:</strong> §6 <code>F(x)</code> definition (was wrongly flagged "blank" → now ✅ verified; formula IS on the slide).</span><span data-tr="zh"><strong>釐清：</strong>§6 的 <code>F(x)</code> 定義（之前被誤標「空白」→ 現在 ✅ 已確認；公式真的在投影片上）。</span></li>
 </ul>
-<h3 id="figure-a7-fig-7-3-7-5-7-6-constraint-pruning-xm-cases-slides-15-16-17">Figure A.7 — Fig. 7-3 / 7-5 / 7-6: constraint pruning &amp; xₘ cases (slides 15, 16, 17)</h3>
+<h3 id="figure-a7-fig-7-3-7-5-7-6-constraint-pruning-xm-cases-slides-15-16-17"><span data-tr="en">Figure A.7 — Fig. 7-3 / 7-5 / 7-6: constraint pruning &amp; xₘ cases (slides 15, 16, 17)</span><span data-tr="zh">Figure A.7 — Fig. 7-3 / 7-5 / 7-6：限制式修剪與 xₘ 各情形（slide 15, 16, 17）</span></h3>
 <ul>
-<li><strong>Fig. 7-3 (slide 15):</strong> convex envelope, dashed vertical at <code>xₘ</code>, <code>x₀</code> to its left (case <code>x₀&lt;xₘ</code>), one line annotated "May be deleted"; green dot = optimum. Resolves §6 "deleting constraints".</li>
-<li><strong>Fig. 7-5 (slide 16):</strong> Case 1, <code>yₘ</code> on a single constraint of slope <code>g</code>; <code>g&gt;0 ⇒ x₀&lt;xₘ</code>, <code>g&lt;0 ⇒ x₀&gt;xₘ</code>. Shows two test verticals.</li>
-<li><strong>Fig. 7-6 (slide 17):</strong> three test abscissae <code>xₘ,₁ &lt; xₘ,₂ &lt; xₘ,₃</code> on a convex envelope, with <code>g_min</code>/<code>g_max</code> slope labels on active lines. Right column prints <code>g_max = max{aᵢ|aᵢxₘ+bᵢ=F(xₘ)}</code>, <code>g_min = min{…}</code>, and Cases 2a (<code>g_min,g_max&gt;0 ⇒ x₀&lt;xₘ</code>, at <code>xₘ,₃</code>), 2b (<code>&lt;0 ⇒ x₀&gt;xₘ</code>, at <code>xₘ,₁</code>), 2c (<code>g_min&lt;0&lt;g_max ⇒ optimum</code>, at <code>xₘ,₂</code>). Resolves §6 Case 2 (→ ✅ verified).</li>
+<li><span data-tr="en"><strong>Fig. 7-3 (slide 15):</strong> convex envelope, dashed vertical at <code>xₘ</code>, <code>x₀</code> to its left (case <code>x₀&lt;xₘ</code>), one line annotated "May be deleted"; green dot = optimum. Resolves §6 "deleting constraints".</span><span data-tr="zh"><strong>Fig. 7-3（slide 15）：</strong>凸 envelope，<code>xₘ</code> 處一條虛線垂直線，<code>x₀</code> 在它左邊（<code>x₀&lt;xₘ</code> 的情形），有一條線標著「May be deleted」；綠點 = 最佳解。釐清 §6 的「刪限制式」。</span></li>
+<li><span data-tr="en"><strong>Fig. 7-5 (slide 16):</strong> Case 1, <code>yₘ</code> on a single constraint of slope <code>g</code>; <code>g&gt;0 ⇒ x₀&lt;xₘ</code>, <code>g&lt;0 ⇒ x₀&gt;xₘ</code>. Shows two test verticals.</span><span data-tr="zh"><strong>Fig. 7-5（slide 16）：</strong>情形 1，<code>yₘ</code> 落在單一條斜率為 <code>g</code> 的限制式上；<code>g&gt;0 ⇒ x₀&lt;xₘ</code>、<code>g&lt;0 ⇒ x₀&gt;xₘ</code>。畫了兩條測試垂直線。</span></li>
+<li><span data-tr="en"><strong>Fig. 7-6 (slide 17):</strong> three test abscissae <code>xₘ,₁ &lt; xₘ,₂ &lt; xₘ,₃</code> on a convex envelope, with <code>g_min</code>/<code>g_max</code> slope labels on active lines. Right column prints <code>g_max = max{aᵢ|aᵢxₘ+bᵢ=F(xₘ)}</code>, <code>g_min = min{…}</code>, and Cases 2a (<code>g_min,g_max&gt;0 ⇒ x₀&lt;xₘ</code>, at <code>xₘ,₃</code>), 2b (<code>&lt;0 ⇒ x₀&gt;xₘ</code>, at <code>xₘ,₁</code>), 2c (<code>g_min&lt;0&lt;g_max ⇒ optimum</code>, at <code>xₘ,₂</code>). Resolves §6 Case 2 (→ ✅ verified).</span><span data-tr="zh"><strong>Fig. 7-6（slide 17）：</strong>凸 envelope 上有三個測試橫座標 <code>xₘ,₁ &lt; xₘ,₂ &lt; xₘ,₃</code>，active 的線上標著 <code>g_min</code>/<code>g_max</code>。右欄印出 <code>g_max = max{aᵢ|aᵢxₘ+bᵢ=F(xₘ)}</code>、<code>g_min = min{…}</code>，跟情形 2a（<code>g_min,g_max&gt;0 ⇒ x₀&lt;xₘ</code>，在 <code>xₘ,₃</code>）、2b（<code>&lt;0 ⇒ x₀&gt;xₘ</code>，在 <code>xₘ,₁</code>）、2c（<code>g_min&lt;0&lt;g_max ⇒ 最佳解</code>，在 <code>xₘ,₂</code>）。釐清 §6 情形 2（→ ✅ 已確認）。</span></li>
 </ul>
-<h3 id="figure-a8-general-lp-feasibility-cases-f1f2-slides-2530-fig-7-9-slide-24">Figure A.8 — General-LP feasibility cases F₁/F₂ (slides 25–30, Fig. 7-9 = slide 24)</h3>
+<h3 id="figure-a8-general-lp-feasibility-cases-f1f2-slides-2530-fig-7-9-slide-24"><span data-tr="en">Figure A.8 — General-LP feasibility cases F₁/F₂ (slides 25–30, Fig. 7-9 = slide 24)</span><span data-tr="zh">Figure A.8 — 一般 LP 的可行性情形 F₁/F₂（slide 25–30，Fig. 7-9 = slide 24）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>render/A06full/slide-24..30.png</code>.</li>
-<li><strong>Slide 23:</strong> definitions <code>F₁(x)=max{aᵢx+bᵢ:i∈I₁}</code> (lower env., must lie above), <code>F₂(x)=min{…:i∈I₂}</code> (upper env., must lie below); shaded lens between them over <code>a≤x≤b</code>.</li>
-<li><strong>Slide 24 (Fig. 7-9):</strong> pruning picture, optimum (green dot), <code>x₀&lt;xₘ</code>; right column lists <code>g_min,g_max</code> (over <code>I₁</code>) and <code>h_min, h_min</code>(sic — second is the slide's typo for <code>h_max</code>) over <code>I₂</code>.</li>
-<li><strong>Slides 25–27 (Case 1, <code>F(xₘ)≤0</code> feasible):</strong> 1a <code>g_min&gt;0,g_max&gt;0 ⇒ x₀&lt;xₘ</code>; 1b <code>&lt;0,&lt;0 ⇒ x₀&gt;xₘ</code>; 1c <code>g_min&lt;0&lt;g_max ⇒ xₘ=x₀</code> optimum.</li>
-<li><strong>Slides 28–30 (Case 2, <code>F(xₘ)&gt;0</code> infeasible):</strong> 2a <code>g_min&gt;h_max ⇒ x₀&lt;xₘ</code>; 2b <code>g_min&lt;h_max ⇒ x₀&gt;xₘ</code>; 2c <code>g_min≤h_max &amp; g_max≥h_min ⇒ no feasible solution</code>.</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>render/A06full/slide-24..30.png</code>.</span><span data-tr="zh"><strong>來源：</strong><code>render/A06full/slide-24..30.png</code>。</span></li>
+<li><span data-tr="en"><strong>Slide 23:</strong> definitions <code>F₁(x)=max{aᵢx+bᵢ:i∈I₁}</code> (lower env., must lie above), <code>F₂(x)=min{…:i∈I₂}</code> (upper env., must lie below); shaded lens between them over <code>a≤x≤b</code>.</span><span data-tr="zh"><strong>Slide 23：</strong>定義 <code>F₁(x)=max{aᵢx+bᵢ:i∈I₁}</code>（下 envelope，要在它上面）、<code>F₂(x)=min{…:i∈I₂}</code>（上 envelope，要在它下面）；在 <code>a≤x≤b</code> 之間、兩者之間的陰影透鏡形。</span></li>
+<li><span data-tr="en"><strong>Slide 24 (Fig. 7-9):</strong> pruning picture, optimum (green dot), <code>x₀&lt;xₘ</code>; right column lists <code>g_min,g_max</code> (over <code>I₁</code>) and <code>h_min, h_min</code>(sic — second is the slide's typo for <code>h_max</code>) over <code>I₂</code>.</span><span data-tr="zh"><strong>Slide 24（Fig. 7-9）：</strong>修剪圖，最佳解（綠點），<code>x₀&lt;xₘ</code>；右欄列出 <code>g_min,g_max</code>（在 <code>I₁</code> 上）跟 <code>h_min, h_min</code>（原文如此——第二個是投影片把 <code>h_max</code> 打錯）在 <code>I₂</code> 上。</span></li>
+<li><span data-tr="en"><strong>Slides 25–27 (Case 1, <code>F(xₘ)≤0</code> feasible):</strong> 1a <code>g_min&gt;0,g_max&gt;0 ⇒ x₀&lt;xₘ</code>; 1b <code>&lt;0,&lt;0 ⇒ x₀&gt;xₘ</code>; 1c <code>g_min&lt;0&lt;g_max ⇒ xₘ=x₀</code> optimum.</span><span data-tr="zh"><strong>Slide 25–27（情形 1，<code>F(xₘ)≤0</code> 可行）：</strong>1a <code>g_min&gt;0,g_max&gt;0 ⇒ x₀&lt;xₘ</code>；1b <code>&lt;0,&lt;0 ⇒ x₀&gt;xₘ</code>；1c <code>g_min&lt;0&lt;g_max ⇒ xₘ=x₀</code> 最佳解。</span></li>
+<li><span data-tr="en"><strong>Slides 28–30 (Case 2, <code>F(xₘ)&gt;0</code> infeasible):</strong> 2a <code>g_min&gt;h_max ⇒ x₀&lt;xₘ</code>; 2b <code>g_min&lt;h_max ⇒ x₀&gt;xₘ</code>; 2c <code>g_min≤h_max &amp; g_max≥h_min ⇒ no feasible solution</code>.</span><span data-tr="zh"><strong>Slide 28–30（情形 2，<code>F(xₘ)&gt;0</code> 不可行）：</strong>2a <code>g_min&gt;h_max ⇒ x₀&lt;xₘ</code>；2b <code>g_min&lt;h_max ⇒ x₀&gt;xₘ</code>；2c <code>g_min≤h_max &amp; g_max≥h_min ⇒ 無可行解</code>。</span></li>
 </ul>
-<h3 id="figure-a9-fig-7-18-pruning-in-the-constrained-1-center-problem-slide-38">Figure A.9 — Fig. 7-18: pruning in the constrained 1-center problem (slide 38)</h3>
+<h3 id="figure-a9-fig-7-18-pruning-in-the-constrained-1-center-problem-slide-38"><span data-tr="en">Figure A.9 — Fig. 7-18: pruning in the constrained 1-center problem (slide 38)</span><span data-tr="zh">Figure A.9 — Fig. 7-18：受限 1-center 問題的刪點（slide 38）</span></h3>
 <ul>
-<li><strong>Source:</strong> <code>render/A06full/slide-38.png</code>.</li>
-<li><strong>Content:</strong> horizontal line <code>y=0</code>; bisector <code>Lᵢⱼ</code> (positive slope) crossing <code>y=0</code> at <code>xᵢⱼ</code>; points <code>Pᵢ</code> (above-left, boxed dot) and <code>Pⱼ</code> (right). <code>xₘ</code> marked with leftward arrow to <code>x*</code>. Illustrates: of a pair, the point closer to <code>xₘ</code> on the far side from <code>x*</code> is pruned.</li>
+<li><span data-tr="en"><strong>Source:</strong> <code>render/A06full/slide-38.png</code>.</span><span data-tr="zh"><strong>來源：</strong><code>render/A06full/slide-38.png</code>。</span></li>
+<li><span data-tr="en"><strong>Content:</strong> horizontal line <code>y=0</code>; bisector <code>Lᵢⱼ</code> (positive slope) crossing <code>y=0</code> at <code>xᵢⱼ</code>; points <code>Pᵢ</code> (above-left, boxed dot) and <code>Pⱼ</code> (right). <code>xₘ</code> marked with leftward arrow to <code>x*</code>. Illustrates: of a pair, the point closer to <code>xₘ</code> on the far side from <code>x*</code> is pruned.</span><span data-tr="zh"><strong>內容：</strong>水平線 <code>y=0</code>；平分線 <code>Lᵢⱼ</code>（正斜率）在 <code>xᵢⱼ</code> 處穿過 <code>y=0</code>；點 <code>Pᵢ</code>（左上，框起來的點）跟 <code>Pⱼ</code>（右邊）。<code>xₘ</code> 標著一個往左指向 <code>x*</code> 的箭頭。畫出：一對之中，在離 <code>x*</code> 較遠那側、比較靠近 <code>xₘ</code> 的點會被砍掉。</span></li>
 </ul>
-<h3 id="figure-a10-fig-7-23-region-14-sub-figures-sign-of-xsys-slides-4145">Figure A.10 — Fig. 7-23 &amp; "region 1–4" sub-figures; sign of xₛ/yₛ (slides 41–45)</h3>
+<h3 id="figure-a10-fig-7-23-region-14-sub-figures-sign-of-xsys-slides-4145"><span data-tr="en">Figure A.10 — Fig. 7-23 &amp; "region 1–4" sub-figures; sign of xₛ/yₛ (slides 41–45)</span><span data-tr="zh">Figure A.10 — Fig. 7-23 與「區域 1–4」子圖；xₛ/yₛ 的正負號（slide 41–45）</span></h3>
 <ul>
-<li><strong>Sources:</strong> <code>render/A06full/slide-41.png</code> (Fig. 7-20(a)/(b)), <code>slide-42.png</code> (acute vs obtuse triangle: "circle is optimal" / "not optimal"), <code>slide-43.png</code> (Fig. 7-23, arc &lt; 180°, <code>P₁</code> upper-left and <code>P₂</code> lower-left of <code>(x*,0)</code>), <code>slide-44.png</code> (four sub-figures (a)-(d) shading regions 1–4; WLOG <code>a&gt;x*,b&gt;0,c&lt;x*,d&lt;0</code>, radius <code>r</code>), <code>slide-45.png</code> (the sign formulas).</li>
-<li><strong>Key recovered formulas (slide 45):</strong></li>
+<li><span data-tr="en"><strong>Sources:</strong> <code>render/A06full/slide-41.png</code> (Fig. 7-20(a)/(b)), <code>slide-42.png</code> (acute vs obtuse triangle: "circle is optimal" / "not optimal"), <code>slide-43.png</code> (Fig. 7-23, arc &lt; 180°, <code>P₁</code> upper-left and <code>P₂</code> lower-left of <code>(x*,0)</code>), <code>slide-44.png</code> (four sub-figures (a)-(d) shading regions 1–4; WLOG <code>a&gt;x*,b&gt;0,c&lt;x*,d&lt;0</code>, radius <code>r</code>), <code>slide-45.png</code> (the sign formulas).</span><span data-tr="zh"><strong>來源：</strong><code>render/A06full/slide-41.png</code>（Fig. 7-20(a)/(b)）、<code>slide-42.png</code>（銳角 vs 鈍角三角形：「circle is optimal」/「not optimal」）、<code>slide-43.png</code>（Fig. 7-23，弧 &lt; 180°，<code>P₁</code> 在 <code>(x*,0)</code> 左上、<code>P₂</code> 在左下）、<code>slide-44.png</code>（四張子圖 (a)-(d) 塗出區域 1–4；WLOG <code>a&gt;x*,b&gt;0,c&lt;x*,d&lt;0</code>，半徑 <code>r</code>）、<code>slide-45.png</code>（正負號公式）。</span></li>
+<li><span data-tr="en"><strong>Key recovered formulas (slide 45):</strong></span><span data-tr="zh"><strong>救回來的關鍵公式（slide 45）：</strong></span></li>
 <li><code>sign(yₛ) = sign((b+d)/2) = sign((y₁+y₂)/2)</code></li>
 <li><code>sign(xₛ) = sign((a+c)/2) = sign((x₁+x₂)/2)</code>
-  with the optimum center forced into <strong>region 3</strong> (slide-44(c)). Slide 41(b) independently states <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code> for the arc-<code>&lt;180°</code> case.</li>
-<li><strong>Resolves:</strong> §7.2 sign determination — the closed forms ARE on the slides (earlier marked unrecovered → now ✅ verified).</li>
+  <span data-tr="en">with the optimum center forced into <strong>region 3</strong> (slide-44(c)). Slide 41(b) independently states <code>yₛ</code> follows <code>sign((y₁+y₂)/2)</code> for the arc-<code>&lt;180°</code> case.</span><span data-tr="zh">最佳圓心被逼進<strong>區域 3</strong>（slide-44(c)）。Slide 41(b) 也獨立講了：弧 <code>&lt;180°</code> 的情形下，<code>yₛ</code> 跟 <code>sign((y₁+y₂)/2)</code> 同號。</span></li>
+<li><span data-tr="en"><strong>Resolves:</strong> §7.2 sign determination — the closed forms ARE on the slides (earlier marked unrecovered → now ✅ verified).</span><span data-tr="zh"><strong>釐清：</strong>§7.2 的正負號判斷——封閉形式真的在投影片上（之前標成沒救回 → 現在 ✅ 已確認）。</span></li>
 </ul>
 <hr>
-<p class="lede">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
-The original slides are rendered as images in <code>render/</code> for eyeball validation.</p>
+<p class="lede"><span data-tr="en">Questions on anything here? Ask your teacher (the agent) — that's what I'm for.
+The original slides are rendered as images in <code>render/</code> for eyeball validation.</span><span data-tr="zh">這裡有任何問題嗎？問你的老師（就是這個 agent）——我就是幹這個的。
+原始投影片都 render 成圖片放在 <code>render/</code> 裡，方便你用眼睛核對。</span></p>
 </div><script src="../assets/i18n.js"></script>
 </body></html>
