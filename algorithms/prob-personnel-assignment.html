@@ -149,13 +149,13 @@ const frames = [
   { stage:'colred',
     cap:`<b>Column reduction.</b> Column J2 still has no 0, so subtract its minimum <b>−3</b>. Now every row AND every column owns a 0. Total subtracted = <b>51 + 3 = 54</b> — a guaranteed <b>lower bound</b>: no feasible assignment costs less than 54.` },
   { stage:'tree-root',
-    cap:`<b>Branch.</b> Now search the feasible assignments as a tree: level 1 picks <b>P1's job</b>, level 2 picks P2's, etc. — only choices that keep a legal (topological) job order survive. Each node carries the <b>running cost</b> of the choices above it.` },
+    cap:`<b>Branch.</b> Now search the feasible assignments as a tree: level 1 picks <b>P1's job</b>, level 2 picks P2's, and so on — only choices that keep a legal (topological) job order survive. Each node carries the <b>running cost</b> of the choices above it. That running cost is itself a <b>lower bound</b> on any way of finishing, because adding the remaining people can only <em>add</em> cost, never subtract.` },
   { stage:'tree-p1',
-    cap:`Two feasible first moves for P1: <b>P1→J1</b> (cost 29) or <b>P1→J2</b> (cost 19). Best-first expands the cheaper-looking branches first. (P1→J3 would put J3 before J1 — illegal; P1→J4 puts J4 before J2 — illegal — so both are cut at the root.)` },
-  { stage:'tree-prune',
-    cap:`Down the P1→J1 branch, the node <b>P2→J3 (55) → P3→J2 (76)</b> blows past better feasible costs — its subtree is <b>pruned</b>. The deck notes "only one node is pruned away": bounding does the rest by guiding the search, not by mass elimination.` },
+    cap:`Two legal first moves: <b>P1→J1</b> (29) or <b>P1→J2</b> (19). Best-first always expands the <b>cheapest-looking</b> live node, so it dives into the <b>P1→J2 (19)</b> branch first. (P1→J3 would put J3 before J1, P1→J4 puts J4 before J2 — both break the order, so they never appear.)` },
   { stage:'tree-opt',
-    cap:`The winning spine is <b>P1→J2 (19) → P2→J1 (51) → P3→J4 (60) → P4→J3 (70)</b>. Job sequence J2,J1,J4,J3 is a legal topological order. <b>Optimal cost = 70</b> (the bounding tree confirms it: 0(54)→…→70).` },
+    cap:`Following that cheap branch all the way down gives a <b>complete</b>, legal assignment: <b>P1→J2 (19) → P2→J1 (51) → P3→J4 (60) → P4→J3 (70)</b>. Cost <b>70</b> — record it as the <b>best-so-far</b>. (Job order J2,J1,J4,J3 keeps J1 before J3 and J2 before J4 — legal.)` },
+  { stage:'tree-prune',
+    cap:`Now the only rival is the P1→J1 branch. Its node <b>P2→J3 (55) → P3→J2 (76)</b> already costs <b>76</b> with one person still unplaced — and a running cost <b>only grows</b>. So every assignment under it costs <b>at least 76</b>. <b>Why prune?</b> 76 ≥ our best-so-far <b>70</b>, so nothing down there can beat 70 — the whole subtree is thrown away unexplored. (The deck notes only this one node needs pruning; the bound mostly just <em>guides</em> best-first to the cheap branch first.)` },
 ];
 
 function reducedCls(stage){
