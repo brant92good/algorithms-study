@@ -37,10 +37,16 @@
 <div class="note"><strong><span data-tr="en">A tiny concrete instance.</span><span data-tr="zh">來個小例子。</span></strong> <span data-tr="en">Three points: <code>A=(0,0)</code>, <code>B=(4,0)</code>, <code>C=(2,1)</code>. Standing at <code>A</code> makes the farthest point <code>B</code>, distance 4. Standing at the midpoint <code>(2,0)</code> drops the farthest distance to 2 (both <code>A</code> and <code>B</code> are exactly 2 away, and <code>C</code> is only ≈1.4 away). No spot does better — the smallest enclosing circle is centred at <code>(2,0)</code> with radius 2. Notice the answer is pinned by the two <em>extreme</em> points, not the middle one.</span><span data-tr="zh">三個點：<code>A=(0,0)</code>、<code>B=(4,0)</code>、<code>C=(2,1)</code>。站在 <code>A</code>，最遠的是 <code>B</code>，距離 4。站在中點 <code>(2,0)</code>，最遠距離就降到 2（<code>A</code> 和 <code>B</code> 都剛好 2 遠，<code>C</code> 只有約 1.4 遠）。沒有別的位置更好——最小包覆圓的圓心就在 <code>(2,0)</code>，半徑 2。注意：答案是被兩個<em>最外側</em>的點釘住的，不是中間那個。</span></p></div>
 
 <h2><span data-tr="en">Watch it solved</span><span data-tr="zh">跑一遍給你看</span></h2>
-<p><span data-tr="en">Eight points (the dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one that still covers everything. The red dot is the current <b>farthest</b> point (it sets the radius). Green dots are points <b>pruned</b> because they sit safely deep inside — they can never be the farthest, so the algorithm drops them. Step through.</span><span data-tr="zh">八個點（深色的點）。看著包覆圓一邊縮小、一邊重新調整圓心，逼近那個還能蓋住全部的最小圓。紅點是當下<b>最遠</b>的點（半徑就是它決定的）。綠點是被<b>砍掉</b>的，因為它們穩穩待在很裡面——永遠不可能是最遠的，所以演算法把它們丟掉。一步步點下去看。</span></p>
+<p><span data-tr="en">Eight points (the dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one that still covers everything — at every step the circle below really does enclose all eight points. The red dot is the current <b>farthest</b> point (it sets the radius). Green dots are points <b>pruned</b> because their distance from the centre is far <em>smaller</em> than the radius — they can never be the farthest, so the algorithm drops them. The points that stay dark and end up on the rim are the ones that pin the answer. One caption mentions a "constrained step" on a line: that just means we temporarily force the centre to sit on a chosen line and find the best spot on it — the trick is defined in full just below the viz. Step through.</span><span data-tr="zh">八個點（深色的點）。看著包覆圓一邊縮小、一邊重新調整圓心，逼近那個還能蓋住全部的最小圓——每一步下面那個圓都真的把八個點全部框住。紅點是當下<b>最遠</b>的點（半徑就是它決定的）。綠點是被<b>砍掉</b>的，因為它們離圓心的距離遠<em>小於</em>半徑——永遠不可能變成最遠的點，所以演算法把它們丟掉。那些一直維持深色、最後落在圓周上的點，就是釘住答案的點。有一句說明會提到在一條線上的「constrained step」：那只是暫時強迫圓心待在某條選定的線上、再找出線上最好的位置而已——這個技巧在viz下面會完整講。一步步點下去看。</span></p>
 <div id="viz"></div>
 
-<p><strong><span data-tr="en">How the solver works (prune-and-search).</span><span data-tr="zh">解法怎麼跑（prune-and-search）。</span></strong> <span data-tr="en">The slides solve 1-center in two stages. First the <strong>constrained</strong> version (§7.1): force the centre onto a given line, which is solvable in <code>O(n)</code> by pairing points, taking a median, and discarding the closer point of each pair. Then the <strong>general</strong> version (§7.2–7.3) uses that constrained solver plus a sign-determination test — "should the centre move up or down? left or right?" — to decide which side the true optimum lies on, and <strong>prunes ~n/16 of the points each round</strong>. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</span><span data-tr="zh">投影片把 1-center 分兩階段解。先是 <strong>constrained（受限）</strong>版本（§7.1）：強迫圓心落在一條給定的線上，這可以在 <code>O(n)</code> 解出來——把點兩兩配對，取中位數，再把每一對裡比較近的那個丟掉。接著 <strong>general（一般）</strong>版本（§7.2–7.3）拿這個受限解法，再加上一個正負號判定測試——「圓心該往上還往下？往左還往右？」——來決定真正的最佳解在哪一邊，並且<strong>每輪砍掉 ~n/16 個點</strong>。因為每輪都消掉固定比例，工作量是幾何級數縮小：<code>T(n) = T(15n/16) + O(n) = O(n)</code>——線性時間。</span></p>
+<p><strong><span data-tr="en">How the solver works (prune-and-search).</span><span data-tr="zh">解法怎麼跑（prune-and-search）。</span></strong> <span data-tr="en">The slides solve 1-center in two stages. First the <strong>constrained</strong> version (§7.1): force the centre to lie on a given line, then find the best spot <em>on that line</em> in <code>O(n)</code>. Then the <strong>general</strong> version (§7.2–7.3) calls that constrained solver repeatedly to home in on the true free centre, pruning a constant fraction of the points each round.</span><span data-tr="zh">投影片把 1-center 分兩階段解。先解 <strong>constrained（受限）</strong>版本（§7.1）：強迫圓心一定要落在某條給定的線上，然後在 <code>O(n)</code> 時間內找出<em>那條線上</em>最好的位置。接著 <strong>general（一般）</strong>版本（§7.2–7.3）就反覆呼叫這個受限解法，一步步逼近真正自由的圓心，每一輪都砍掉固定比例的點。</span></p>
+
+<p><strong><span data-tr="en">Why the sign test works.</span><span data-tr="zh">正負號測試為什麼有用。</span></strong> <span data-tr="en">After solving on a line, the algorithm asks "is the true free optimum above this line or below it?" Intuition: the centre wants to move in whatever direction <em>shrinks the current worst distance</em>. The farthest points pull like rubber bands — the combined pull of the binding farthest points points the way to move, and its sign (up vs. down) tells you which half-plane the optimum is in. That lets you throw away the other half.</span><span data-tr="zh">在線上解完之後，演算法會問：「真正自由的最佳圓心是在這條線上面、還是下面？」直覺是這樣：圓心會想往那個能<em>把目前最糟距離變小</em>的方向移動。最遠的那幾個點就像橡皮筋一樣在拉——這些卡住結果的最遠點合起來的拉力，就指出該往哪邊移，而它的正負號（往上還往下）就告訴你最佳解在哪半邊。這樣你就能把另外那半邊直接丟掉。</span></p>
+
+<p><strong><span data-tr="en">Why discarding the closer point of a pair is safe.</span><span data-tr="zh">為什麼丟掉每對裡比較近的那個是安全的。</span></strong> <span data-tr="en">In the constrained version the centre is pinned to a known line, so for any point you can read off how its distance changes as the centre slides. Pair the points up; for each pair, where their two distance curves cross splits the line into "point A is the farther one" on one side and "point B is the farther one" on the other. A <strong>median</strong> of those crossover positions tells you which side of the line the optimum sits on — and on that side, the <em>closer</em> point of each pair is provably never the binding farthest one, so it can be dropped with no effect on the answer. Each median split kills about a quarter of the points; doing it across both coordinate directions compounds to roughly <code>¼ × ¼ ≈ 1/16</code>, which is where the <strong>~n/16 pruned per round</strong> figure comes from.</span><span data-tr="zh">在受限版本裡，圓心被釘在一條已知的線上，所以對任何一個點，你都能看出圓心沿線滑動時它的距離怎麼變。把點兩兩配對；每一對的兩條距離曲線交叉的地方，會把這條線切成兩半——一半是「A 比較遠」，另一半是「B 比較遠」。取這些交叉位置的<strong>中位數</strong>，就能判斷最佳解落在線的哪一側；而在那一側，每一對裡<em>比較近</em>的那個點可以證明永遠不會是卡住結果的最遠點，所以丟掉它完全不影響答案。每次中位數切割大約砍掉四分之一的點；在兩個座標方向都做一次，疊起來大約是 <code>¼ × ¼ ≈ 1/16</code>，這就是<strong>每輪砍掉 ~n/16</strong> 這個數字的由來。</span></p>
+
+<p><span data-tr="en">Because a constant fraction (~1/16) vanishes every round, the surviving size shrinks geometrically: <code>n → 15n/16 → (15/16)²n → …</code>. The work follows <code>T(n) = T(15n/16) + O(n)</code>, and summing that geometric series gives <code>O(n)</code> — linear time. Once the survivors drop to a tiny constant (the slides stop at <code>≤ 16 points</code>), the algorithm just brute-forces the answer directly. <em>Note: the exact <code>1/16</code> is the bound proved in the source; treat it as a quoted constant — the takeaway you must reconstruct is only that <strong>some</strong> fixed fraction is removed every round, which is what forces linearity.</em></span><span data-tr="zh">因為每一輪都消掉固定比例（約 1/16），活下來的數量是幾何級數縮小：<code>n → 15n/16 → (15/16)²n → …</code>。工作量滿足 <code>T(n) = T(15n/16) + O(n)</code>，把這個幾何級數加起來就是 <code>O(n)</code>——線性時間。當活下來的點少到只剩一個小常數（投影片是停在 <code>≤ 16 個點</code>），演算法就直接暴力算出答案。<em>注意：精確的 <code>1/16</code> 是來源裡證明出來的界限，把它當成一個引用的常數就好——你真正要會推的重點，只是每輪都會砍掉<strong>某個</strong>固定比例，這才是線性的關鍵。</em></span></p>
 
 <div class="chips">
   <span class="chip"><span data-tr="en">Time:</span><span data-tr="zh">時間：</span> <b>O(n)</b></span>
@@ -60,7 +66,7 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="Each round provably discards a constant fraction (~n/16) of the points, so the surviving size is 15n/16, then (15/16)²n, and so on. That geometric shrinkage makes the total work T(n)=T(15n/16)+O(n) sum to O(n). Halving the radius or sorting is not what gives linearity." data-explain-zh="每一輪都能證明丟掉固定比例（~n/16）的點，所以活下來的剩 15n/16，再下一輪 (15/16)²n，依此類推。這種幾何級數的縮小讓總工作量 T(n)=T(15n/16)+O(n) 加起來是 O(n)。半徑減半或排序都不是線性的來源。">
+<div class="quiz" data-correct="2" data-explain="Each round provably discards a constant fraction of the points. The pairing + median split kills ~¼ of the points, and applying it across both coordinate directions compounds to ~¼×¼ = 1/16 (the bound proved in the source), so survivors drop n → 15n/16 → (15/16)²n → …. That geometric shrinkage makes the total work T(n)=T(15n/16)+O(n) sum to O(n). The exact fraction is a quoted constant; what matters is that SOME fixed fraction goes every round. Halving the radius or sorting is not what gives linearity." data-explain-zh="每一輪都能證明丟掉固定比例的點。配對加上中位數切割大約砍掉 ¼ 的點，在兩個座標方向都做一次就疊成 ~¼×¼ = 1/16（這是來源裡證明的界限），所以活下來的數量是 n → 15n/16 → (15/16)²n → …。這種幾何級數的縮小讓總工作量 T(n)=T(15n/16)+O(n) 加起來是 O(n)。精確的比例是引用來的常數；重點是每輪都會砍掉<strong>某個</strong>固定比例。半徑減半或排序都不是線性的來源。">
   <div class="q"><span data-tr="en">Why does the prune-and-search 1-center algorithm run in O(n) rather than O(n log n)?</span><span data-tr="zh">為什麼 prune-and-search 的 1-center 演算法是 O(n) 而不是 O(n log n)？</span></div>
   <button class="opt"><span data-tr="en">it sorts the points once and then scans them</span><span data-tr="zh">它把點排序一次，然後掃一遍</span></button>
   <button class="opt"><span data-tr="en">it halves the radius of the circle every step</span><span data-tr="zh">它每一步都把圓的半徑減半</span></button>
@@ -87,23 +93,27 @@ const P = [
   {x:62, y:52}, {x:50, y:62}, {x:74, y:40}, {x:46, y:40}
 ];
 // Frames: cx,cy,r = circle; pruned = indices shown as safely-inside (green); far = index of farthest point.
+// INVARIANT (checked): every circle below encloses ALL 8 points; `far` is the genuinely most-distant
+// surviving point; only points that are numerically deep inside (small distance) are ever pruned.
+// The 3 rim points 0=(30,30), 5=(50,62), 6=(74,40) all sit ~23 from the final centre (51,39) and are
+// never pruned — they are exactly what pins the answer.
 const frames = [
   {cx:50, cy:42, r:40, pruned:[], far:6,
-   cap:'Eight points. Start with a big circle that covers them all — far too large.'},
+   cap:'Eight points. Start with a big circle (r=40) that covers them all — far too large. Right now point 6 (74,40) is the farthest, ~24 away.'},
   {cx:50, cy:42, r:34, pruned:[], far:6,
-   cap:'Shrink the circle until it just touches the <b>farthest</b> point (right). Its distance is the radius.'},
-  {cx:48, cy:42, r:30, pruned:[], far:6,
-   cap:'Constrained step: slide the centre along a line toward the farthest point to reduce the worst distance.'},
-  {cx:48, cy:42, r:30, pruned:[7,0,3], far:6,
-   cap:'Points sitting <b>deep inside</b> can never be the farthest — <b>prune</b> them (~n/16 each round).'},
-  {cx:50, cy:40, r:26, pruned:[7,0,3,1], far:6,
-   cap:'Re-centre using the survivors; the circle keeps tightening around the boundary points.'},
-  {cx:51, cy:41, r:24, pruned:[7,0,3,1,5], far:6,
-   cap:'Another round prunes more interior points. Only points that touch the rim still matter.'},
-  {cx:52, cy:40, r:22, pruned:[7,0,3,1,5], far:6,
-   cap:'The boundary points (left cluster + the far right point) pin the centre — it can move no further.'},
-  {cx:52, cy:40, r:22, pruned:[7,0,3,1,5], far:6, done:true,
-   cap:'<b>Smallest enclosing circle found.</b> Its radius is the minimised maximum distance — the 1-center.'}
+   cap:'Shrink the circle (r=34) until it hugs the points more tightly. The <b>farthest</b> survivor still sets the radius — keep tracking it.'},
+  {cx:51, cy:40, r:30, pruned:[], far:0,
+   cap:'Constrained step: pretend the centre must lie on this line (the constrained sub-problem, explained below) and slide it to the spot that minimises the worst distance. Now point 0 (30,30) is the farthest, ~23 away.'},
+  {cx:51, cy:40, r:30, pruned:[7,2], far:0,
+   cap:'<b>Prune rule:</b> the farthest survivor is ~23 away. Point 7 (46,40) is only 5.0 away and point 2 (55,34) only 7.2 — far below 23, so they can NEVER become the farthest. Drop them (green).'},
+  {cx:51, cy:39, r:27, pruned:[7,2], far:5,
+   cap:'Re-centre (51,39) using the survivors; circle tightens to r=27. The farthest is now point 5 (50,62), ~23 away.'},
+  {cx:51, cy:39, r:25, pruned:[7,2,3,4], far:5,
+   cap:'<b>Prune again:</b> points 3 (38,50) and 4 (62,52) are each only ~17 from the centre — still comfortably less than the ~23 of the farthest, so neither can be binding. Prune both.'},
+  {cx:51, cy:39, r:23.5, pruned:[7,2,3,4,1], far:5,
+   cap:'Point 1 (42,24) is ~17.5 away, below the ~23 rim — prune it too. Only points 0, 5, 6 remain, all ~23 from the centre: they touch the rim and pin it.'},
+  {cx:51, cy:39, r:23.5, pruned:[7,2,3,4,1], far:5, done:true,
+   cap:'<b>Smallest enclosing circle found</b> (centre 51,39, r≈23.5). All 8 points lie inside or on it; the three rim points 0, 5, 6 are tied at the radius. That radius is the minimised maximum distance — the 1-center.'}
 ];
 
 function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }

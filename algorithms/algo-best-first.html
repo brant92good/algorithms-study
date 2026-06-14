@@ -45,7 +45,7 @@
   <li><strong>Step 3.</strong> <span data-tr="en">Sort the <em>entire</em> list by the values of the estimation function.</span><span data-tr="zh">把<em>整份</em> list 照估計函數的值排序。</span></li>
   <li><strong>Step 4.</strong> <span data-tr="en">If the list is empty, <strong>failure</strong>. Otherwise go to Step 2.</span><span data-tr="zh">如果 list 空了，就是<strong>失敗</strong>。否則回到 Step 2。</span></li>
 </ol>
-<p><span data-tr="en">The sort in Step&nbsp;3 over the <em>whole</em> list is the global view in action: it guarantees the "first element" pulled in Step&nbsp;2 is always the globally best-looking open node. <strong>Complexity:</strong> like BFS, the list can grow to hold the whole frontier, so worst-case time and space are exponential in the depth — best-first trades memory for the ability to recover from a bad-looking branch.</span><span data-tr="zh">Step&nbsp;3 對<em>整份</em> list 排序，就是全域視野實際在運作的地方：它保證 Step&nbsp;2 拿出的「第一個元素」永遠是全域看起來最好的 open 節點。<strong>複雜度：</strong>跟 BFS 一樣，這份 list 可能膨脹到裝下整個 frontier，所以最差情況下時間和空間都是深度的指數級——best-first 是拿記憶體去換「能從爛分支繞回來」這個能力。</span></p>
+<p><span data-tr="en">The sort in Step&nbsp;3 over the <em>whole</em> list is the global view in action: it guarantees the "first element" pulled in Step&nbsp;2 is always the globally best-looking open node. <strong>Tie-breaking:</strong> when two open nodes have the same <code>f</code>, we break the tie by <em>node id</em> (the order they were generated — lower id first), so the expansion order is fully reproducible. <strong>Complexity:</strong> like BFS, the list can grow to hold the whole frontier, so worst-case time and space are exponential in the depth — best-first trades memory for the ability to recover from a bad-looking branch.</span><span data-tr="zh">Step&nbsp;3 對<em>整份</em> list 排序，就是全域視野實際在運作的地方：它保證 Step&nbsp;2 拿出的「第一個元素」永遠是全域看起來最好的 open 節點。<strong>同分怎麼辦：</strong>如果兩個 open 節點 <code>f</code> 一樣，就用 <em>node id</em> 決勝（也就是生出來的先後，id 小的先），這樣展開順序才會固定、可以重現。<strong>複雜度：</strong>跟 BFS 一樣，這份 list 可能膨脹到裝下整個 frontier，所以最差情況下時間和空間都是深度的指數級——best-first 是拿記憶體去換「能從爛分支繞回來」這個能力。</span></p>
 
 <h2><span data-tr="en">A small illustration</span><span data-tr="zh">一個小例子</span></h2>
 <p><span data-tr="en">The same 8-puzzle Fig. 6-16 the slides use. Start board <code>2 8 3 / 1 _ 4 / 7 6 5</code>, goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>; the number under each board is its <code>f = d + w</code>. We track the global open list across expansions; dimmed nodes stay in the list, the green node is the global best we expand next.</span><span data-tr="zh">就是投影片用的那個 8-puzzle Fig. 6-16。起始盤面 <code>2 8 3 / 1 _ 4 / 7 6 5</code>，目標 <code>1 2 3 / 8 _ 4 / 7 6 5</code>；每個盤面底下的數字是它的 <code>f = d + w</code>。我們會在每次展開時追蹤這份全域 open list；變暗的節點還留在 list 裡，綠色那個是我們下一步要展開的全域最好節點。</span></p>
@@ -60,7 +60,7 @@
 
 <h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡有）</span></h2>
 <ul>
-  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> <span data-tr="en">— slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal. The <em>same</em> instance where hill climbing stalls: best-first keeps every generated board in one list and recovers by jumping to the globally best-<code>f</code> board, reaching the goal at node 10 via root→2→7→9→10.</span><span data-tr="zh">——在 3×3 格子上滑動 1–8 的方塊（外加一個 blank），從起始排法推到目標。就是 hill climbing 會卡死的<em>同一個</em>例子：best-first 把每個生出來的盤面都放進同一份 list，靠跳到全域 <code>f</code> 最好的盤面繞回來，走 root→2→7→9→10 在 node 10 抵達目標。</span></li>
+  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> <span data-tr="en">— slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal. The <em>same</em> instance where hill climbing stalls: best-first keeps every generated board in one list and recovers by jumping to the globally best-<code>f</code> board, reaching the goal at node 10. Here <strong>root→2→7→9→10</strong> is the goal's <em>ancestor chain</em> — the solution path you follow from the start to the goal. It is <em>not</em> the order nodes were expanded (that order was root, 1, 2, 7, 9): node 1 is expanded but is a dead-ish branch, so it never appears on the path TO the goal.</span><span data-tr="zh">——在 3×3 格子上滑動 1–8 的方塊（外加一個 blank），從起始排法推到目標。就是 hill climbing 會卡死的<em>同一個</em>例子：best-first 把每個生出來的盤面都放進同一份 list，靠跳到全域 <code>f</code> 最好的盤面繞回來，在 node 10 抵達目標。這裡的 <strong>root→2→7→9→10</strong> 是目標的<em>祖先鏈</em>，也就是從起點走到目標的解路徑。它<em>不是</em>節點被展開的順序（展開順序其實是 root、1、2、7、9）：node 1 有被展開，但那條分支沒走通，所以它不會出現在通往目標的路徑上。</span></li>
 </ul>
 
 <div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares the CHILDREN of the node it is currently at; if none improves on the current node it stalls, with no way to return to a promising node on a branch it already left. Best-first keeps ALL open nodes in one sorted list, so that abandoned-but-promising node is still there and gets expanded the moment it becomes the global minimum. It is not about a better heuristic (both use f = d + w here), nor about exploring level-by-level (that is BFS), nor about never revisiting nodes." data-explain-zh="Hill climbing 永遠只比它目前所在節點的<strong>子節點</strong>；如果沒有一個比現在更好，它就卡住，而且沒辦法回到先前離開的分支上、那個有希望的節點。Best-first 把<strong>所有</strong> open 節點放在同一份排好序的 list 裡，所以那個「被放棄但其實有希望」的節點還在，一旦它變成全域最小值，馬上就會被展開。重點不是 heuristic 比較聰明（這裡兩邊都用 f = d + w），也不是一層一層展開（那是 BFS），更不是不重複走節點。">
@@ -86,12 +86,18 @@
 <script>
 // ---- Fig. 6-16: best-first on the 8-puzzle, tracked as a global open list ----
 // Boards stored as 9-char strings, '_' = blank. f = d + w shown beneath each.
-// Node ids & f-values from the verified note (Fig. 6-16):
-//   root(3); under root: 1(4),2(4),3(5),4(5); under 1: 5(5),6(6);
-//   under 2: 7(4),8(6); under 7: 9(4); under 9: 10(4 = GOAL),11(6).
+// Every board below is a REAL single-tile slide from its parent, and its label is
+// exactly f = depth + misplaced-tiles (verify by eye against goal 123 / 8_4 / 765):
+//   root(d0,f3)=283 1_4 765
+//   children of root: 1(d1,f4), 2(d1,f4), 3(d1,f5), 4(d1,f5)
+//   children of 1:    5(d2,f5), 6(d2,f6)
+//   children of 2:    7(d2,f4), 8(d2,f6)
+//   child   of 7:     9(d3,f4)   [one tile, the 8, still misplaced]
+//   children of 9:    10(d4,f4 = GOAL), 11(d4,f6)
+// Goal ancestry (the solution path) is root->2->7->9->10.
 const B = {
-  root:'283 1_4 765', n1:'2_3 184 765', n2:'283 _14 765', n3:'283 14_ 765',
-  n4:'283 164 7_5', n5:'_23 184 765', n6:'2_3 184 765', n7:'23_ 184 765',
+  root:'283 1_4 765', n1:'283 _14 765', n2:'2_3 184 765', n3:'283 164 7_5',
+  n4:'283 14_ 765', n5:'_83 214 765', n6:'283 714 _65', n7:'_23 184 765',
   n8:'23_ 184 765', n9:'123 _84 765', n10:'123 8_4 765', n11:'123 784 _65'
 };
 const F = {root:3,n1:4,n2:4,n3:5,n4:5,n5:5,n6:6,n7:4,n8:6,n9:4,n10:4,n11:6};
@@ -110,15 +116,15 @@ function board(id, state){
 // expanded/closed nodes ('done'), and a caption.
 const frames = [
   { exp:'root', open:['n1','n2','n3','n4'], done:[],
-    cap:`<b>Step 1–2.</b> List = {root}. Expand root, generate children 1–4. None is the goal. Open list now holds all four; sort by f: 1(4), 2(4), 3(5), 4(5).` },
+    cap:`<b>Step 1–2.</b> List = {root}, f=3 (d=0, w=3 misplaced tiles). Expand root, slide the blank 4 ways → children 1–4. None is the goal. Sort the whole list by f: 1(4), 2(4), 3(5), 4(5). Nodes 1 and 2 TIE at f=4 (the lowest); we break ties by node id (insertion order), so node 1 goes first.` },
   { exp:'n1', open:['n2','n3','n4','n5','n6'], done:['n1'],
-    cap:`<b>Best so far is node 1 (f=4).</b> Expand it → children 5(5), 6(6). They go into the same list. After sorting, node 2 (f=4) is now the global best — note 1's children did NOT beat node 2 on another branch.` },
+    cap:`<b>Global best is node 1 (f=4).</b> Expand it → children 5(f=5) and 6(f=6). They join the same list. After re-sorting, node 1's children did NOT beat node 2, so node 2 (f=4, the other root-child) is now the unique global best.` },
   { exp:'n2', open:['n3','n4','n5','n6','n7','n8'], done:['n1','n2'],
-    cap:`<b>Global best is node 2 (f=4)</b>, sitting on a different branch from where we just were. A hill climber committed to node 1 could not come back here — best-first simply picks it from the list. Expand → 7(4), 8(6).` },
+    cap:`<b>Global best is node 2 (f=4)</b>, on a different branch from node 1 where we just were. A hill climber committed to node 1 could not jump back here — best-first just picks it off the sorted list. Expand → 7(f=4), 8(f=6).` },
   { exp:'n7', open:['n3','n4','n5','n6','n8','n9'], done:['n1','n2','n7'],
-    cap:`<b>Node 7 (f=4) is the new global minimum.</b> Expand it → child 9(4). The frontier keeps every other open board available, but none beats f=4.` },
+    cap:`<b>Node 7 (f=4) is the new global minimum.</b> Expand it → child 9 (f=4: depth 3, w=1 — only the tile 8 is still out of place). Every other open board still sits in the list, but none beats f=4.` },
   { exp:'n9', open:['n3','n4','n5','n6','n8','n11'], done:['n1','n2','n7','n9'],
-    cap:`<b>Expand node 9 (f=4).</b> Its children are 10(4) and 11(6). Node 10 is a <b>goal node</b> (1 2 3 / 8 _ 4 / 7 6 5) → <b>STOP</b>. Solved via root→2→7→9→10, recovering on a branch hill climbing would have abandoned.` },
+    cap:`<b>Expand node 9 (f=4).</b> Its children are 10 (f=4) and 11 (f=6). Node 10 is a <b>goal node</b> (1 2 3 / 8 _ 4 / 7 6 5) → <b>STOP</b> (Step 2 stops the instant a goal is generated). The goal's ancestor chain — its solution path — is root→2→7→9→10. (That is the path TO the goal, NOT the order nodes were expanded, which was root,1,2,7,9.)` },
 ];
 
 ZOO.stepper({

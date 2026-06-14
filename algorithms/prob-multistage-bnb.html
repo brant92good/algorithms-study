@@ -35,7 +35,7 @@
 </div>
 <p><span data-tr="en">The cheapest source-to-sink path costs <strong>5</strong> — for example <code>V₀→V₁,₁→V₂,₃→V₃ = 1+3+1</code>, or equally <code>V₀→V₁,₃→V₂,₂→V₃ = 2+2+1</code>. The interesting part is <em>how</em> branch-and-bound finds it while <em>skipping</em> branches that clearly can't win.</span><span data-tr="zh">最便宜的起點到終點 path 成本是 <strong>5</strong>——例如 <code>V₀→V₁,₁→V₂,₃→V₃ = 1+3+1</code>，或同樣是 5 的 <code>V₀→V₁,₃→V₂,₂→V₃ = 2+2+1</code>。有趣的是 branch-and-bound <em>怎麼</em>找到它，而且能<em>跳過</em>那些明顯贏不了的分支。</span></p>
 
-<div class="note"><strong><span data-tr="en">The key idea — best-first with a bound.</span><span data-tr="zh">關鍵想法——帶著下界的 best-first。</span></strong> <span data-tr="en">Each partial path so far has a cost (the weights you've already committed to). That cost is a valid <strong>lower bound</strong>: extending the path can only add more. Branch-and-bound keeps all the open partial paths and always <strong>expands the one with the smallest bound</strong> (best-first). When a full source-to-sink path is completed, its cost becomes the <strong>best-so-far</strong>; any open node whose bound is <strong>≥ best-so-far</strong> gets <strong>pruned</strong> — it can't possibly do better. That's the <code>x &gt; k</code> annotation on the slide's leaves.</span><span data-tr="zh">每條走到一半的 path 都有一個目前成本（你已經選定的那些權重）。這個成本就是一個有效的<strong>下界</strong>：再接下去只會更貴、不會更便宜。Branch-and-bound 把所有開著的半成品 path 都留著，每次都<strong>挑下界最小的那個來展開</strong>（best-first）。一旦有一條完整的起點到終點 path 走完，它的成本就成為<strong>目前最佳（best-so-far）</strong>；任何下界 <strong>≥ best-so-far</strong> 的節點就直接<strong>剪掉</strong>——它再怎麼走都不可能更好。這就是投影片葉子上那個 <code>x &gt; k</code> 的標記。</span></p></div>
+<div class="note"><strong><span data-tr="en">The key idea — best-first with a bound.</span><span data-tr="zh">關鍵想法——帶著下界的 best-first。</span></strong> <span data-tr="en">Each partial path so far has a cost (the weights you've already committed to). That cost is a valid <strong>lower bound</strong>: extending the path can only add more. Branch-and-bound keeps all the open partial paths and always <strong>expands the one with the smallest bound</strong> (best-first). When a full source-to-sink path is completed, its cost becomes the <strong>best-so-far</strong>; any open node whose bound is <strong>≥ best-so-far</strong> gets <strong>pruned</strong> — it can't possibly do better. <strong>The <code>x &gt; k</code> notation:</strong> on a pruned leaf, <code>x</code> means "the eventual cost of any full path that goes through this node", and the printed number <code>k</code> is that node's own bound. Since <code>x ≥ k ≥ best-so-far</code>, the whole branch is hopeless. So <code>x&gt;6</code> on a node simply reads "every completion here costs at least 6, which already loses to our 5". <strong>Pruning ties is safe too:</strong> we only need <em>one</em> cheapest path, and we already hold one — so discarding a node whose bound merely ties best-so-far loses nothing.</span><span data-tr="zh">每條走到一半的 path 都有一個目前成本（你已經選定的那些權重）。這個成本就是一個有效的<strong>下界</strong>：再接下去只會更貴、不會更便宜。Branch-and-bound 把所有開著的半成品 path 都留著，每次都<strong>挑下界最小的那個來展開</strong>（best-first）。一旦有一條完整的起點到終點 path 走完，它的成本就成為<strong>目前最佳（best-so-far）</strong>；任何下界 <strong>≥ best-so-far</strong> 的節點就直接<strong>剪掉</strong>——它再怎麼走都不可能更好。<strong>那個 <code>x &gt; k</code> 標記是什麼意思：</strong>在被剪掉的葉子上，<code>x</code> 代表「任何經過這個節點的完整 path 最後會花的成本」，印出來的數字 <code>k</code> 就是這個節點自己的下界。因為 <code>x ≥ k ≥ best-so-far</code>，整條分支都沒救了。所以節點上的 <code>x&gt;6</code> 就是在講「從這裡走完至少要 6，已經輸給我們手上的 5 了」。<strong>就算下界剛好打平也照剪沒問題：</strong>我們只需要<em>一條</em>最便宜的 path，而且手上已經有一條了——所以把下界只是跟 best-so-far 打平的節點丟掉，不會少掉任何東西。</span></p></div>
 
 <h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
 <p><span data-tr="en">Top: the layered graph (source <code>V₀</code> on the left, sink <code>V₃</code> on the right, edge weights shown). Bottom: the best-first B&amp;B search tree from slide 13, grown step by step. Each tree node shows its path cost; <span style="color:var(--mut)">dimmed</span> = pruned (bound ≥ best-so-far). Step through.</span><span data-tr="zh">上面：分層的圖（起點 <code>V₀</code> 在左、終點 <code>V₃</code> 在右，邊上標權重）。下面：slide 13 的 best-first B&amp;B 搜尋樹，一步步長出來。每個樹節點標的是它的 path 成本；<span style="color:var(--mut)">變淡</span>＝被剪掉（下界 ≥ best-so-far）。一步步看。</span></p>
@@ -125,9 +125,11 @@ const frames = [];
 
 // Frame 0 — the bare graph
 frames.push(gframe({
-  cap: `<b>The graph.</b> Source <b>V₀</b> on the left, sink <b>V₃</b> on the right, four stages. Every edge points to the next stage and carries a weight. Goal: cheapest V₀→V₃ path.`,
+  cap: `<b>The graph.</b> Source <b>V₀</b> on the left, sink <b>V₃</b> on the right, four stages. Every edge points to the next stage and carries a weight. Goal: cheapest V₀→V₃ path. <em>In the tree below, letters a,b,c… are just node names; the colored number after each is its bound (= path cost so far).</em>`,
   tree: tree([
     `Best-first B&B search tree  (slide 13)`,
+    `  letters a,b,c… = tree-node names;`,
+    `  the number after each = its bound (path cost so far)`,
     ``,
     `   a  V₀  cost ${C.cost("0")}`,
     `   (frontier: expand the cheapest open node)`
@@ -204,7 +206,7 @@ frames.push(gframe({
 
 // Frame 5 — prune everything with bound >= 5
 frames.push(gframe({
-  cap: `<b>Prune.</b> Best-so-far = 5, so any open node with bound <b>≥ 5</b> can't win → ${C.dim("dimmed")}. e=6 (x&gt;6), i=6 (x&gt;6), h=7 (x&gt;7), k=9 (x&gt;9) all die. Node j=4 is still &lt; 5, so it stays alive — we must check it.`,
+  cap: `<b>Prune.</b> Best-so-far = 5, so any open node with bound <b>≥ 5</b> can't win → ${C.dim("dimmed")}. The <b>x&gt;k</b> tag means "any full path through this node costs x ≥ its bound k ≥ 5": e=6 (x&gt;6), i=6 (x&gt;6), h=7 (x&gt;7), k=9 (x&gt;9) all die. Node j=4 is still &lt; 5, so it stays alive — we must check it.`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([
@@ -220,9 +222,9 @@ frames.push(gframe({
   ])
 }));
 
-// Frame 6 — expand j (V2,2, bound 4) -> second complete path cost 6, not better
+// Frame 6 — expand j (V2,2, bound 4) -> second complete path cost 5, a TIE (not better)
 frames.push(gframe({
-  cap: `<b>Expand V₂,₂ (node j, bound 4).</b> Exit V₂,₂→V₃ weight 1 → <b>6</b> (node l). That's a complete path <b>V₀→V₁,₃→V₂,₂→V₃ = 6</b> — but 6 ≥ 5, so it does <em>not</em> beat best-so-far. (Note: the equal-cost path V₀→V₁,₃→V₂,₂→V₃ = 5 lives on the other V₂,₂ branch; either way the optimum is 5.)`,
+  cap: `<b>Expand V₂,₂ (node j, bound 4).</b> Exit V₂,₂→V₃ weight 1 → bound 4 + edge 1 = <b>5</b> (node l). That completes <b>V₀→V₁,₃→V₂,₂→V₃ = 2+2+1 = 5</b> — a second optimal path, but it only <em>ties</em> best-so-far (5), so it does <em>not</em> replace it. We keep the path we already hold. Either 5-cost path is a valid answer.`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([
@@ -231,10 +233,10 @@ frames.push(gframe({
     `   b V₁,₁ ${C.cost("1")}     ${C.dim("c V₁,₂ 3")}     d V₁,₃ ${C.cost("2")}`,
     `   /5  \\3                    /2  \\7`,
     `  ${C.dim("e 6")}  f ${C.cost("4")}              j ${C.cost("4")}  ${C.dim("k 9")}`,
-    `       | 1                 | 1`,
-    `       g V₃ ${C.best("5")}            l V₃ ${C.cost("6")}  (≥5, no win)`,
+    `       | 1                 | 1   (bound 4 + edge 1)`,
+    `       g V₃ ${C.best("5")}            l V₃ ${C.best("5")}  (ties 5, no improvement)`,
     ``,
-    `   ${C.frnt("no live node has bound < 5")}`
+    `   ${C.frnt("two paths reach 5; we keep the first. No live node has bound < 5")}`
   ])
 }));
 

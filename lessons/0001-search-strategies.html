@@ -125,6 +125,8 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
       ┌─┐            ┌─┐
     E(6)F(3)       G(1)H(7)   &larr; G is the goal</div>
 
+<p style="color:var(--mut);font-size:.92rem"><span data-tr="en">These f-values are supplied directly for the exercise (not computed from any 8-puzzle board) — so don't try to match them to <code>f(n)=d(n)+w(n)</code>. The root <code>A</code> has no f because it is always the starting node you expand first, so nothing ever needs to compare it.</span><span data-tr="zh">這裡的 f 值是直接給你練習用的（不是從哪個 8-puzzle 盤面算出來的），所以別硬要把它們對到 <code>f(n)=d(n)+w(n)</code>。root <code>A</code> 沒有 f，是因為它永遠是你第一個展開的起點，根本不會有人需要拿它去跟別人比。</span></p>
+
 <p><span data-tr="en">Work each out on paper, then open the answer. Give the <strong>order nodes are expanded</strong>.</span><span data-tr="zh">每一種都先自己在紙上算一遍，再打開答案對。要寫出的是 <strong>nodes 被展開的順序</strong>。</span></p>
 
 <details><summary><span data-tr="en">DFS (deepest first, left-to-right)</span><span data-tr="zh">DFS（最深優先，由左到右）</span></summary>
@@ -133,7 +135,7 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
 
 <details><summary><span data-tr="en">BFS (shallowest first)</span><span data-tr="zh">BFS（最淺優先）</span></summary>
 <p><code>A → B → C → D → E → F → G ✓</code><br>
-<span data-tr="en">Clears a whole level before the next. Also ignores f-values. Finds G after finishing level 1.</span><span data-tr="zh">它是把一整層清完才往下一層走。一樣不理 f 值。做完第 1 層之後就找到 G 了。</span></p></details>
+<span data-tr="en">Clears a whole level before the next. Also ignores f-values. G is a child of D, so it sits at level 2 (A=level 0; B,C,D=level 1; E,F,G,H=level 2). BFS finds G only after finishing level 1 and reaching level 2 — G is the last node expanded.</span><span data-tr="zh">它是把一整層清完才往下一層走。一樣不理 f 值。G 是 D 的 child，所以它在第 2 層（A 是第 0 層；B、C、D 是第 1 層；E、F、G、H 是第 2 層）。所以 BFS 要先把第 1 層做完、再走到第 2 層才會找到 G——G 是最後一個被展開的 node。</span></p></details>
 
 <details><summary><span data-tr="en">Hill climbing (greedy, children only)</span><span data-tr="zh">Hill climbing（貪婪，只看 children）</span></summary>
 <p><code>A → C … stuck.</code><br>
@@ -141,7 +143,7 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
 
 <details><summary><span data-tr="en">Best-first (global best open node)</span><span data-tr="zh">Best-first（全域最佳的 open node）</span></summary>
 <p><code>A → C → D → G ✓</code><br>
-<span data-tr="en">Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}; take D4 → adds G1,H7 → open {B5,G1,H7}; take G1 = goal. It explored C just like hill climbing, but kept B and D on the list and recovered. <strong>Fewest expansions here.</strong></span><span data-tr="zh">展開 A → open {B5, C2, D4}，挑 C2。C 是 leaf、不是 goal → open {B5, D4}，挑 D4 → 把 G1、H7 加進來 → open {B5,G1,H7}，挑 G1 = goal。注意它跟 hill climbing 一樣有去碰 C，但因為它把 B 跟 D 留在清單上，所以卡住之後還繞得回來。<strong>這題它展開的次數最少。</strong></span></p></details>
+<span data-tr="en">Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}; take D4 → adds G1,H7 → open {B5,G1,H7}; take G1 = goal. It explored C just like hill climbing, but kept B and D on the list and recovered. <strong>Fewest expansions here.</strong> Note that B(5) stayed on the open list the whole time and at the last step was compared against the newly-added G(1) and H(7) — which are one level deeper. Best-first ranks purely by f, regardless of depth: G(1) wins over the leftover B(5) even though B sits higher up. That's why it can "jump" to a node out of left-to-right order.</span><span data-tr="zh">展開 A → open {B5, C2, D4}，挑 C2。C 是 leaf、不是 goal → open {B5, D4}，挑 D4 → 把 G1、H7 加進來 → open {B5,G1,H7}，挑 G1 = goal。注意它跟 hill climbing 一樣有去碰 C，但因為它把 B 跟 D 留在清單上，所以卡住之後還繞得回來。<strong>這題它展開的次數最少。</strong>再注意一點：B(5) 從頭到尾都留在 open list 上，到最後一步還被拿去跟剛加進來、深了一層的 G(1)、H(7) 一起比。Best-first 純粹照 f 排，不管深度：就算 B 在上面那層，G(1) 還是贏過沒被挑走的 B(5)。這就是為什麼它能不照由左到右的順序、直接「跳」去某個 node。</span></p></details>
 
 <h2 class="qa-head"><span data-tr="en">4 · Retrieve (no peeking)</span><span data-tr="zh">4 · 自我測驗（不准偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
 <p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先選答案，再看解析。<em>先答錯、再去搞懂為什麼</em>，記得會比你重讀一遍還牢喔。</span></p>

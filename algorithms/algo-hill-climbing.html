@@ -98,7 +98,7 @@ function board(arr,f,chosen){ return {b:arr, f, chosen:!!chosen}; }
 const STEPS = [
   { lead: board([2,8,3, 1,0,4, 7,6,5], 3, true),
     kids: [], // shown alone as the start
-    cap: `<b>Start.</b> f = d+w = 0 + 3 = <b>3</b> (tiles 1, 8 and the 2/8 swap are misplaced). We expand its children next.` },
+    cap: `<b>Start.</b> f = d+w = 0 + 3 = <b>3</b>. Compare to the goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>: tiles <b>1, 2 and 8</b> are not in their goal cells, so w = 3 (the highlighted tiles). Depth is 0, so f = 3. We expand its children next.` },
   { lead: board([2,8,3, 1,0,4, 7,6,5], 3),
     kids: [ board([2,0,3, 1,8,4, 7,6,5], 4, true),   // node 1 (blank up)
             board([2,8,3, 0,1,4, 7,6,5], 4),          // node 2
@@ -113,9 +113,9 @@ const STEPS = [
     kids: [ board([1,2,3, 0,8,4, 7,6,5], 4, true) ],  // node 7
     cap: `<b>Step 3.</b> Its best child has <b>f = 4</b> (blank slides down; tile 1 lands home). Take it.` },
   { lead: board([1,2,3, 0,8,4, 7,6,5], 4),
-    kids: [ board([1,2,3, 8,0,4, 7,6,5], 0, true),   // node 8 GOAL
+    kids: [ board([1,2,3, 8,0,4, 7,6,5], 4, true),   // node 8 GOAL: d=4, w=0, so f=4+0=4
             board([1,2,3, 7,8,4, 0,6,5], 6) ],        // node 9
-    cap: `<b>Step 4.</b> The best child is the <b>GOAL</b>: <code>1 2 3 / 8 _ 4 / 7 6 5</code>, f = 0. Solved in a single greedy descent: initial → 1 → 5 → 7 → 8.` },
+    cap: `<b>Step 4.</b> The best child is the <b>GOAL</b>: <code>1 2 3 / 8 _ 4 / 7 6 5</code>. It sits at depth 4 with 0 misplaced tiles, so by the same formula f = d+w = 4+0 = <b>4</b> (NOT 0 — f always counts the depth too). A goal is recognized by <b>w = 0</b> (zero misplaced tiles), not by f = 0; the goal's f is simply its depth. Note f went 3 → 4 → 4 → 4 → 4 along this path: hill climbing only takes the minimum child, so f need never strictly decrease. Solved in a single greedy descent: initial → 1 → 5 → 7 → 8.` },
 ];
 
 function pzHTML(cell){

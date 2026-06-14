@@ -41,7 +41,9 @@
   <li><b>U.B.</b> <span data-tr="en">(upper bound) = the value of some <em>feasible whole-item</em> packing — a solution we could actually accept. The best U.B. seen so far is our "best yet."</span><span data-tr="zh">（upper bound）＝某個<em>可行的整件裝法</em>的值——一個我們真的能接受的解。目前看過最好的 U.B. 就是我們的「目前最佳」。</span></li>
   <li><b>L.B.</b> <span data-tr="en">(lower bound) = the value of the <em>fractional relaxation</em> (allow <code>0 ≤ Xᵢ ≤ 1</code>, fill greedily by density, take a fraction of the last item). Because fractions can only help, this L.B. is the <em>best the subtree could ever reach</em> — no integer packing under this node can beat it.</span><span data-tr="zh">（lower bound）＝<em>fractional relaxation</em> 的值（允許 <code>0 ≤ Xᵢ ≤ 1</code>，照密度貪婪地裝，最後一件可以只拿一部分）。因為能拿分數只會更好，所以這個 L.B. 是<em>整棵子樹最好能到的程度</em>——這個節點底下任何整數裝法都贏不過它。</span></li>
 </ul>
-<p><span data-tr="en">Step through. The viz shows where the root bounds come from, how the tree branches, where the winning packing is found, and how the bounds prove it optimal.</span><span data-tr="zh">一步步看下去。這個視覺化會帶你看：根節點的 bounds 從哪來、樹怎麼 branch、勝出的裝法在哪被找到，以及 bounds 怎麼證明它就是最佳解。</span></p>
+<div class="note"><strong><span data-tr="en">Mind the signs (this is the #1 confusion).</span><span data-tr="zh">先搞清楚正負號（這裡最容易搞混）。</span></strong> <span data-tr="en">Because we <em>minimize</em> <code>−profit</code>, "upper" and "lower" are about the number line, not about which is "bigger profit." The feasible value <b>U.B. = −16</b> is the <em>upper</em> (less-negative) end and the relaxation <b>L.B. = −18</b> is the <em>lower</em> (more-negative) end, so the optimum is boxed in: <code>−18 ≤ opt ≤ −16</code>. Here <em>higher = worse</em>: −16 is a worse objective than −17, because −16 means less profit. The relaxation L.B. is the dreamier (better, more-negative) target nothing can pass; the feasible U.B. is a real packing we can already accept.</span><span data-tr="zh">因為我們是在<em>最小化</em> <code>−profit</code>，「upper／lower」講的是數線上的位置，不是「誰利潤比較大」。可行值 <b>U.B. = −16</b> 是<em>上</em>（比較不負）那端，relaxation <b>L.B. = −18</b> 是<em>下</em>（比較負）那端，所以最佳解被夾在 <code>−18 ≤ opt ≤ −16</code> 之間。重點是這裡<em>越高＝越爛</em>：−16 比 −17 還爛，因為 −16 代表利潤比較少。L.B. 是那個誰都超不過、比較夢幻（比較負、比較好）的目標；U.B. 則是一個我們現在就能收下的真實裝法。</span></div>
+<div class="note"><strong><span data-tr="en">"Round inward" means round toward zero.</span><span data-tr="zh">「Round inward（往內取整）」就是往 0 的方向取整。</span></strong> <span data-tr="en">Every real 0/1 packing earns an <em>integer</em> profit, so a fractional bound like <code>−18.5</code> can be tightened to the nearest integer that does <em>not</em> claim more than is actually possible. The true profit can't exceed 18, so the objective can't beat <code>−18</code> — we move <code>−18.5</code> <em>inward toward zero</em> to <code>−18</code> (not outward to −19). That tightened <code>−18</code> is still a valid lower bound, just a sharper one.</span><span data-tr="zh">每個真實的 0/1 裝法賺到的利潤一定是<em>整數</em>，所以像 <code>−18.5</code> 這種分數 bound，可以收緊到最接近、又<em>不會</em>誇大成做不到的那個整數。真實利潤不可能超過 18，所以目標值也不可能比 <code>−18</code> 更好——我們把 <code>−18.5</code> <em>往 0 的方向（往內）</em>移到 <code>−18</code>（不是往外變 −19）。收緊後的 <code>−18</code> 仍然是有效的下界，只是更銳利。</span></div>
+<p><strong><span data-tr="en">How we walk the tree (so the steps aren't magic).</span><span data-tr="zh">我們怎麼走這棵樹（這樣每一步就不是憑空冒出來的）。</span></strong> <span data-tr="en">We do a <em>depth-first</em> search and always try <strong>take-first</strong>: at item <code>i</code> we dive down the <code>Xᵢ = 1</code> (left) edge before the <code>Xᵢ = 0</code> (right) edge, fixing one more variable at every step. So the very first leaf we reach is the path <code>X1=1, X2=0, X3=0, X4=1, X5=1, X6=0</code>. Instead of the slide's jumpy node numbers, the viz labels each node by <em>the choices fixed so far</em> — that is all a node really is — and re-computes its U.B. (a feasible packing) and L.B. (the fractional relaxation) from the items still free. Watch where the root bounds come from, how the dive finds the winning packing, and how the L.B.s prove it optimal.</span><span data-tr="zh">我們做的是<em>depth-first</em>（DFS）搜尋，而且固定<strong>先拿（take-first）</strong>：在物品 <code>i</code> 這層，先往 <code>Xᵢ = 1</code>（左）那條邊鑽，再考慮 <code>Xᵢ = 0</code>（右），每一步多固定一個變數。所以我們碰到的第一個葉子，就是路徑 <code>X1=1, X2=0, X3=0, X4=1, X5=1, X6=0</code>。視覺化不用投影片那種跳來跳去的節點編號，而是直接用<em>目前固定了哪些選擇</em>來標每個節點——一個節點本來就只是這樣而已——再從還沒決定的物品重算它的 U.B.（一個可行裝法）和 L.B.（fractional relaxation）。看著根節點 bounds 怎麼來、這趟下鑽怎麼找到勝出裝法，以及 L.B. 怎麼證明它最佳。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -62,7 +64,7 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="L.B. is the fractional relaxation — the BEST any integer packing in that subtree could possibly do (fractions only help). So if a node's L.B. is already no better than the best feasible solution we hold, nothing under it can win, and we prune. Concretely: once a feasible −17 packing is found (node 14, 'a good upper bound is found here'), any live node with L.B. ≥ −17 (i.e. −16, −15, −14 …) is hopeless and gets cut. The distractors invert the logic: pruning on U.B., or on a single node's weight/feasibility, would discard branches that might still contain the optimum." data-explain-zh="L.B. 就是 fractional relaxation——那棵子樹裡任何整數裝法<b>最好</b>能做到的程度（拿分數只會更好）。所以只要某個節點的 L.B. 已經贏不過我們手上的最佳可行解，它底下就不可能有更好的，剪掉。具體來說：一旦找到一個可行的 −17 裝法（node 14，投影片寫「a good upper bound is found here」），任何 L.B. ≥ −17 的存活節點（也就是 −16、−15、−14…）都沒救，砍掉。其他選項都把邏輯弄反了：改用 U.B. 來剪、或只看單一節點的重量／可行性來剪，都會把可能還藏著最佳解的分支丟掉。">
+<div class="quiz" data-correct="0" data-explain="L.B. is the fractional relaxation — the BEST any integer packing in that subtree could possibly do (fractions only help). So if a node's L.B. is already no better than the best feasible solution we hold, nothing under it can win, and we prune. Concretely: once we hold a feasible −17 packing (found at node [X1=1,X2=0,X3=0], where greedy fills items 4,5 → {1,4,5}), any live node with L.B. ≥ −17 is hopeless and gets cut — including the entire X1=0 branch, whose L.B. is exactly −17. The distractors invert the logic: pruning on U.B., or on a single node's weight/feasibility, would discard branches that might still contain the optimum." data-explain-zh="L.B. 就是 fractional relaxation——那棵子樹裡任何整數裝法<b>最好</b>能做到的程度（拿分數只會更好）。所以只要某個節點的 L.B. 已經贏不過我們手上的最佳可行解，它底下就不可能有更好的，剪掉。具體來說：一旦手上握有一個可行的 −17 裝法（在 [X1=1,X2=0,X3=0] 這個節點找到的，greedy 把物品 4、5 補進去 → {1,4,5}），任何 L.B. ≥ −17 的存活節點都沒救，砍掉——包含整條 X1=0 分支，因為它的 L.B. 剛好就是 −17。其他選項都把邏輯弄反了：改用 U.B. 來剪、或只看單一節點的重量／可行性來剪，都會把可能還藏著最佳解的分支丟掉。">
   <div class="q"><span data-tr="en">We are minimizing −profit. A node should be pruned exactly when…</span><span data-tr="zh">我們是在最小化 −利潤。一個節點應該被剪掉，剛好是在什麼時候？</span></div>
   <button class="opt"><span data-tr="en">its L.B. is no better (≥) than the best feasible value found so far — its subtree can't beat what we already have</span><span data-tr="zh">它的 L.B. 已經不比目前找到的最佳可行值更好（≥）——它的子樹贏不過我們手上的</span></button>
   <button class="opt"><span data-tr="en">its U.B. is worse than the best L.B. anywhere in the tree</span><span data-tr="zh">它的 U.B. 比樹上任何地方的最佳 L.B. 還差</span></button>
@@ -102,7 +104,7 @@ const frames = [];
 
 // Frame 0 — the data + the upper bound (a feasible packing)
 frames.push({
-  cap: `<b>Upper bound — a feasible packing.</b> Greedily take whole items 1 and 2: weight 10+19 = <b>29 ≤ 34</b> ✓. Profit 6+10 = 16, objective <b>U.B. = −16</b>. "Any solution higher than −16 cannot be optimal" — it is our best-yet.`,
+  cap: `<b>Upper bound — a feasible packing.</b> Greedily take whole items 1 and 2: weight 10+19 = <b>29 ≤ 34</b> ✓. Profit 6+10 = 16, objective <b>U.B. = −16</b>. A real feasible −16 means the optimum is <b>at most −16</b> (at least as good): it is our current best-yet that any later packing must BEAT. (Higher = worse here, since we minimize −profit.)`,
   html: tree([
     `n = 6 items,  capacity M = 34   (densities sorted high → low)`,
     ``,
@@ -138,48 +140,52 @@ frames.push({
 
 // Frame 2 — branching mechanism (Fig. 6-27)
 frames.push({
-  cap: `<b>Branch (Fig. 6-27).</b> At level i, split on item i: left edge <b>Xᵢ = 1</b> (take it), right edge <b>Xᵢ = 0</b> (skip it). The root holds the bounds we just computed. We dive down the most promising side.`,
+  cap: `<b>Branch (Fig. 6-27).</b> Split on item 1: left edge <b>X1 = 1</b> (take it), right edge <b>X1 = 0</b> (skip it). Each child re-computes its own U.B. (a feasible packing) and L.B. (fractional fill of the still-free items). The X1=1 child keeps the full window [−18,−16]; the X1=0 child's best feasible drops to −16 and its fractional L.B. tightens to −17. We dive take-first, down X1=1.`,
   html: tree([
-    `                 node 0  (root)`,
+    `                  root  (nothing fixed)`,
     `              ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
     `                /              \\`,
     `          X1 = 1            X1 = 0`,
     `             /                  \\`,
-    `         node 1               node 2`,
-    `     ${C.ub("U.B. −16")} ${C.lb("L.B. −18")}     ${C.ub("U.B. −14")} ${C.lb("L.B. −17")}`,
+    `        [X1=1]               [X1=0]`,
+    `     ${C.ub("U.B. −16")} ${C.lb("L.B. −18")}     ${C.ub("U.B. −16")} ${C.lb("L.B. −17")}`,
+    `   ${C.hi("greedy 1,2 → 16")}      ${C.dim("greedy 2,4 → 16")}`,
     ``,
-    `   ${C.hi("each node re-computes a feasible U.B. and a")}`,
-    `   ${C.hi("fractional L.B. for the items still undecided")}`
+    `   ${C.hi("U.B. = profit of a real packing of the free items")}`,
+    `   ${C.hi("L.B. = fractional fill of the free items (floored)")}`
   ])
 });
 
-// Frame 3 — the X1=0 side finds a good upper bound (node 14)
+// Frame 3 — the X1=1 dive finds a good feasible upper bound −17 ({1,4,5})
 frames.push({
-  cap: `<b>A good upper bound appears.</b> Following the X1 = 0 sub-branch, node <b>14</b> (X1=0, X2=0, X3=0) finds a feasible packing worth <b>−17</b> — better than −16. The slide labels it "a good upper bound is found here." Best-yet is now −17.`,
+  cap: `<b>A good upper bound appears.</b> Dive take-first down X1=1, then X2=0, then X3=0. At node <b>[X1=1,X2=0,X3=0]</b> the greedy fill of the still-free items 4,5,6 grabs items 4 and 5 → packing {1,4,5}, profit 6+5+6 = 17, objective <b>−17</b> — better than −16. THIS is where the slide's "a good upper bound is found here" really belongs (it sits on the X1=1 branch, not under any X1=0 node). Best-yet is now −17.`,
   html: tree([
-    `   node 0   ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
-    `      |  X1 = 0`,
-    `   node 2   ${C.ub("U.B. −14")}  ${C.lb("L.B. −17")}`,
+    `   root         ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
+    `      |  X1 = 1`,
+    `   [X1=1]       ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
     `      |  X2 = 0`,
-    `   node 4   ${C.ub("U.B. −15")}  ${C.lb("L.B. −18")}`,
+    `   [X1=1,X2=0]  ${C.ub("U.B. −15")}  ${C.lb("L.B. −18")}`,
     `      |  X3 = 0`,
-    `   node 14  ${C.ub("U.B. −17")}  ${C.lb("L.B. −18")}   ${C.best("← good U.B. found")}`,
+    `   [X1=1,X2=0,X3=0]  ${C.ub("U.B. −17")} ${C.lb("L.B. −18")}  ${C.best("← good U.B. found")}`,
+    `        free items 4,5,6: greedy takes 4,5 → {1,4,5}`,
     ``,
-    `   best feasible so far  =  ${C.best("−17")}`
+    `   best feasible so far  =  ${C.best("−17")}   (a real packing)`
   ])
 });
 
 // Frame 4 — confirm the optimal packing on this branch
 frames.push({
-  cap: `<b>The winning packing.</b> Below node 14 the search closes on <b>X1=1, X4=1, X5=1</b> (rest 0). Weight 10+10+12 = <b>32 ≤ 34</b> ✓, profit 6+5+6 = 17 → objective <b>−17</b>. Nodes 15·17·18·20 carry this −17.`,
+  cap: `<b>The winning packing.</b> Continue the same X1=1 dive: X4=1, X5=1, X6=0. This reaches the leaf <b>X1=1, X4=1, X5=1</b> (X2=X3=X6=0). Weight 10+10+12 = <b>32 ≤ 34</b> ✓, profit 6+5+6 = 17 → objective <b>−17</b>. Note it lives on the X1=1 branch — exactly where an X1=1 set belongs (it could never sit under an X1=0 node).`,
   html: tree([
-    `   node 14  ${C.ub("−17")}`,
+    `   [X1=1,X2=0,X3=0]  ${C.ub("−17")}`,
     `      |  X4 = 1`,
-    `   node 15  ${C.ub("−17")}  ${C.lb("−17")}`,
+    `   [..,X4=1]         ${C.ub("−17")}  ${C.lb("−18")}`,
     `      |  X5 = 1`,
-    `   node 17  ${C.ub("−17")}  ${C.lb("−17")}  ⋯ node 20  ${C.ub("−17")}`,
+    `   [..,X4=1,X5=1]    ${C.ub("−17")}  ${C.lb("−18")}`,
+    `      |  X6 = 0   (taking 6 would overflow: 32+8 = 40 > 34)`,
+    `   leaf [X1=1,X4=1,X5=1]   ${C.best("−17")}  ${C.lb("L.B. −17")}`,
     ``,
-    `   OPTIMAL SET   X1=1, X4=1, X5=1   (X2=X3=X6=0)`,
+    `   SET   X1=1, X4=1, X5=1   (X2=X3=X6=0)`,
     `      weight = 10 + 10 + 12 = ${C.hi("32 ≤ 34")}  ✓`,
     `      profit = 6 + 5 + 6 = 17   →   ${C.best("objective −17")}`
   ])
@@ -187,17 +193,18 @@ frames.push({
 
 // Frame 5 — pruning: nodes whose L.B. cannot beat −17 are cut
 frames.push({
-  cap: `<b>Prune with the bounds.</b> We hold −17. Any live node whose <b>L.B. ≥ −17</b> can never do better, so its whole subtree is cut — e.g. nodes 12 (−16), 24 (−14), 26 (−16), 30 (−15). Many "infeasible" nodes (weight &gt; 34) die too.`,
+  cap: `<b>Prune with the bounds.</b> We hold −17. Any live node whose <b>L.B. ≥ −17</b> can never do better, so its whole subtree is cut. The big win: the entire <b>X1=0</b> branch has L.B. = −17 (its best fractional fill is only profit 17.5 → floored 17), so it ties but can't IMPROVE on −17 — cut it all. Skipping the dense item 1 simply costs too much.`,
   html: tree([
     `   best feasible held  =  ${C.best("−17")}`,
-    ``,
     `   prune rule:  cut any node with  ${C.lb("L.B.")} ≥ ${C.best("−17")}`,
     ``,
-    `   ${C.dim("node 12  L.B. −16  ✗  ≥ −17")}`,
-    `   ${C.dim("node 24  L.B. −14  ✗  ≥ −17")}`,
-    `   ${C.dim("node 26  L.B. −16  ✗  ≥ −17")}`,
-    `   ${C.dim("node 30  L.B. −15  ✗  ≥ −17")}`,
-    `   ${C.dim("nodes 5,7,9,11,19,25,27,29 … infeasible (weight > 34)")}`,
+    `   ${C.dim("[X1=0]          L.B. −17  ✗ ≥ −17   whole branch cut")}`,
+    `   ${C.dim("[X1=0,X2=1]     L.B. −17  ✗ ≥ −17")}`,
+    `   ${C.dim("[X1=0,X2=0,X3=1] L.B. −17 ✗ ≥ −17")}`,
+    `   ${C.dim("[X1=0,X2=0,X3=0] best feasible only −15  ✗")}`,
+    ``,
+    `   also cut: any node already overweight (weight > 34),`,
+    `   ${C.dim("e.g. X1=1,X2=1 → 10+19 = 29, +X4 = 39 > 34  infeasible")}`,
     ``,
     `   (use ≥ , not > : a node tying −17 still can't IMPROVE it)`
   ])
@@ -205,7 +212,7 @@ frames.push({
 
 // Frame 6 — done / proof of optimality
 frames.push({
-  cap: `<b>Done.</b> Every un-pruned branch has L.B. ≥ −17, so none can beat the packing we hold. Optimum is <b>−17</b> = items <b>{1, 4, 5}</b>, comfortably inside the root window <b>[−18, −16]</b> — found without enumerating all 2⁶ = 64 subsets.`,
+  cap: `<b>Done.</b> No live node has L.B. &lt; −17, so nothing can beat the packing we hold. Optimum is <b>−17</b> = items <b>{1, 4, 5}</b> (X1=X4=X5=1), comfortably inside the root window <b>[−18, −16]</b> — found by one take-first dive plus pruning, without enumerating all 2⁶ = 64 subsets.`,
   html: tree([
     `   No live node has L.B. < −17.`,
     `   ⇒ no unexplored subtree can beat the best packing.`,

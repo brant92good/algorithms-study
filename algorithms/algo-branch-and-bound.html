@@ -29,18 +29,32 @@
   <li><b>Bound</b> — <span data-tr="en">for <em>every</em> node, compute a <strong>lower bound</strong>: a number that is guaranteed to be ≤ the cost of <em>any</em> complete solution living in that subtree. It's an optimistic estimate — the best the subtree could conceivably do.</span><span data-tr="zh">對<em>每個</em>節點算一個<strong>下界</strong>：一個保證 ≤ 那棵子樹裡<em>任何</em>完整解成本的數字。它是個樂觀的估計——這棵子樹最理想能做到的程度。</span></li>
 </ul>
 
-<p><span data-tr="en">You expand nodes <strong>best-first</strong> (always open the live node with the smallest lower bound, using the <a href="algo-best-first.html">Step 1–4 best-first scheme</a>). You also keep the <strong>best complete solution found so far</strong> — call its cost <code>best</code>. Then the whole payoff is one rule:</span><span data-tr="zh">你用 <strong>best-first</strong> 展開節點（永遠先打開下界最小的那個存活節點，照 <a href="algo-best-first.html">Step 1–4 best-first 流程</a>）。同時你也一直記著<strong>目前找到的最佳完整解</strong>——把它的成本叫做 <code>best</code>。整個威力就濃縮成一條規則：</span></p>
+<p><span data-tr="en">You expand nodes <strong>best-first</strong> (always open the live node with the smallest lower bound, using the <a href="algo-best-first.html">Step 1–4 best-first scheme</a>). When several live nodes are <em>tied</em> for smallest bound, you may break the tie by diving toward a complete solution first — that gets you an <strong>incumbent</strong> (a real <code>best</code>) early, which is what powers the pruning. You keep the <strong>best complete solution found so far</strong> — call its cost <code>best</code>. Then the whole payoff is one rule:</span><span data-tr="zh">你用 <strong>best-first</strong> 展開節點（永遠先打開下界最小的那個存活節點，照 <a href="algo-best-first.html">Step 1–4 best-first 流程</a>）。如果有好幾個存活節點下界<em>一樣小（平手）</em>，你可以先挑一條往下鑽到完整解——這樣能早點拿到一個 <strong>incumbent</strong>（真正的 <code>best</code>），而剪枝靠的就是它。你會一直記著<strong>目前找到的最佳完整解</strong>——把它的成本叫做 <code>best</code>。整個威力就濃縮成一條規則：</span></p>
 
 <div class="note"><strong><span data-tr="en">The prune rule.</span><span data-tr="zh">剪枝規則。</span></strong> <span data-tr="en">If a node's lower bound <code>≥ best</code>, <strong>kill the entire subtree</strong>. Reason: every solution down there costs at least the bound, which is already no better than a solution you <em>already have in hand</em> — so nothing in that subtree can win. No need to look.</span><span data-tr="zh">如果一個節點的下界 <code>≥ best</code>，就<strong>把整棵子樹砍掉</strong>。理由：那裡面每個解的成本至少都是這個下界，而這已經不比你<em>手上已經有的</em>解更好——所以那棵子樹裡不可能有贏家，根本不用看。</span></div>
 
 <p><span data-tr="en">Why a <em>lower</em> bound (and why <code>≥</code>, not <code>&gt;</code>)? Because we're <strong>minimizing</strong>. The bound is a promise: "you can't do better than this here." If that promise is already as bad as your current champion, the branch is hopeless. (Maximization problems flip the signs — the slides actually turn the knapsack into a minimization by minimizing <em>negative</em> profit, so the same lower-bound machinery applies.)</span><span data-tr="zh">為什麼是<em>下</em>界（又為什麼是 <code>≥</code> 而不是 <code>&gt;</code>）？因為我們在<strong>最小化</strong>。下界等於一個保證：「這裡你不可能比它更好。」如果這個保證已經跟你現在的冠軍一樣爛，這條分支就沒希望了。（最大化問題只要翻正負號——投影片其實就是把 knapsack 改成最小化<em>負</em>利潤，這樣同一套下界機制照樣能用。）</span></p>
 
-<p><span data-tr="en">A common way to get the lower bound is a <strong>relaxation</strong>: solve an easier version whose answer can only be optimistic. For assignment and TSP that's the <em>reduced cost matrix</em> (subtract a constant from each row/column until each has a zero; the total subtracted can't be avoided, so it's a lower bound). For knapsack it's the <em>fractional</em> knapsack (allow taking part of an item), solved greedily.</span><span data-tr="zh">拿下界常見的招數是 <strong>relaxation（鬆弛）</strong>：解一個比較簡單、答案只會偏樂觀的版本。對 assignment 和 TSP 來說，那就是 <em>reduced cost matrix</em>（每列每行各減一個常數直到都有 0；減掉的總量躲不掉，所以是個下界）。對 knapsack 來說，那就是 <em>fractional</em> knapsack（允許只拿一件物品的一部分），用貪婪解。</span></p>
+<p><span data-tr="en">A common way to get the lower bound is a <strong>relaxation</strong>: solve an easier version whose answer can only be optimistic. The mechanism depends on the problem, so the formula is worked out on each problem's own page:</span><span data-tr="zh">拿下界常見的招數是 <strong>relaxation（鬆弛）</strong>：解一個比較簡單、答案只會偏樂觀的版本。用哪種機制要看是哪個問題，所以實際公式都放在各自的問題頁面裡細講：</span></p>
+<ul>
+  <li><span data-tr="en">For the <strong>multi-stage graph</strong> below, the relaxation is the simplest one: "cost so far + the cheapest edge in each remaining stage." We work it out fully right here.</span><span data-tr="zh">下面這個 <strong>multi-stage graph</strong> 用的是最簡單的版本：「目前成本 ＋ 之後每個 stage 最便宜的邊」。這個我們等下會完整算給你看。</span></li>
+  <li><span data-tr="en">For <strong>assignment</strong> and <strong>TSP</strong> it's the <em>reduced cost matrix</em> (subtract a constant from each row/column until each has a zero; the total subtracted can't be avoided, so it's a lower bound) — worked through on the <a href="prob-personnel-assignment.html">assignment</a> and <a href="prob-tsp-bnb.html">TSP</a> pages.</span><span data-tr="zh">對 <strong>assignment</strong> 和 <strong>TSP</strong> 來說是 <em>reduced cost matrix</em>（每列每行各減一個常數直到都有 0；減掉的總量躲不掉，所以是個下界）——詳細算法在 <a href="prob-personnel-assignment.html">assignment</a> 和 <a href="prob-tsp-bnb.html">TSP</a> 頁面。</span></li>
+  <li><span data-tr="en">For <strong>knapsack</strong> it's the <em>fractional</em> knapsack (allow taking part of an item), solved greedily — see the <a href="prob-knapsack-bnb.html">knapsack</a> page.</span><span data-tr="zh">對 <strong>knapsack</strong> 來說是 <em>fractional</em> knapsack（允許只拿一件物品的一部分），用貪婪解——看 <a href="prob-knapsack-bnb.html">knapsack</a> 頁面。</span></li>
+</ul>
 
 <p><strong><span data-tr="en">Complexity:</span><span data-tr="zh">複雜度：</span></strong> <span data-tr="en">worst case still exponential — these are NP-complete problems (TSP, knapsack) and B&B does not change that. Its value is <em>pruning</em>: a good bound chops away enormous subtrees, so in practice it explores far fewer nodes than brute force. A&nbsp;tighter bound prunes more.</span><span data-tr="zh">最壞情況還是指數級——這些是 NP-complete 問題（TSP、knapsack），B&B 改變不了這點。它的價值在<em>剪枝</em>：一個好的 bound 能砍掉超大片的子樹，所以實務上它探索的節點數遠少於硬爆搜。bound 越緊，剪掉的越多。</span></p>
 
 <h2><span data-tr="en">A tiny illustration</span><span data-tr="zh">一個小示範</span></h2>
-<p><span data-tr="en">The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V₀</code> to sink <code>V₃</code>, choosing one vertex per layer. Each tree node's number is its lower bound (cost so far + cheapest possible finish). We expand best-first and prune any node whose bound is already ≥ the best path cost we can reach (here a path of cost <b>5</b> via <code>V₀→V₁,₁→V₂,₃→V₃</code>). Step through.</span><span data-tr="zh">投影片裡最乾淨的例子（Fig. 6-17）是一張 <strong>multi-stage graph</strong>：從源點 <code>V₀</code> 到匯點 <code>V₃</code> 找最便宜的路徑，每層挑一個頂點。樹上每個節點的數字就是它的下界（目前累積成本 + 之後最便宜的收尾）。我們用 best-first 展開，並把任何下界已經 ≥ 我們能到的最佳路徑成本的節點剪掉（這裡是一條成本 <b>5</b> 的路徑，走 <code>V₀→V₁,₁→V₂,₃→V₃</code>）。一步步看。</span></p>
+<p><span data-tr="en">The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V₀</code> to sink <code>V₃</code>, choosing one vertex per layer. Here is the actual graph, with its edge weights — every number below is derived from <em>these</em> weights, nothing is assumed:</span><span data-tr="zh">投影片裡最乾淨的例子（Fig. 6-17）是一張 <strong>multi-stage graph</strong>：從源點 <code>V₀</code> 到匯點 <code>V₃</code> 找最便宜的路徑，每層挑一個頂點。下面就是那張圖，連邊上的權重都畫出來了——後面每個數字都是從<em>這些</em>權重算出來的，沒有任何用猜的：</span></p>
+<div id="mgraph"></div>
+<p><span data-tr="en"><strong>How we get the lower bound here.</strong> The bound is a <strong>relaxation</strong>: "cost committed so far + the cheapest edge in <em>each</em> stage still ahead." That's optimistic (no real path can spend <em>less</em> than the cheapest edge per stage), so it's a legitimate lower bound. The cheapest edge in stage 0 is 1, in stage 1 is 1, in stage 2 is 1. Worked examples you can check against the graph:</span><span data-tr="zh"><strong>這裡的下界怎麼來的。</strong>這個 bound 用的是 <strong>relaxation（鬆弛）</strong>：「目前已付出的成本 ＋ 之後<em>每一個</em>還沒走的 stage 裡最便宜的那條邊」。這很樂觀（沒有任何真實路徑能花得比「每個 stage 最便宜的邊」還少），所以它是合法的下界。stage 0 最便宜的邊是 1、stage 1 是 1、stage 2 是 1。你可以對著上面的圖驗算：</span></p>
+<ul>
+  <li><span data-tr="en"><code>bound(root V₀)</code> = 0 committed + cheapest edge of stages 0,1,2 = 0 + 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(root V₀)</code> ＝ 已付 0 ＋ stage 0、1、2 各自最便宜的邊 ＝ 0 + 1 + 1 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(b = V₁,₁)</code> = cost(V₀→V₁,₁)=1, then 2 stages ahead (min 1+1) = 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(b = V₁,₁)</code> ＝ cost(V₀→V₁,₁)=1，後面還有 2 個 stage（min 1+1）＝ 1 + 1 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(f = V₂,₃)</code> = cost(V₀→V₁,₁→V₂,₃)=1+1=2, then 1 stage ahead (min 1) = 2 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(f = V₂,₃)</code> ＝ cost(V₀→V₁,₁→V₂,₃)=1+1=2，後面剩 1 個 stage（min 1）＝ 2 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(e = V₂,₁)</code> = cost(V₀→V₁,₁→V₂,₁)=1+6=7, + 1 = <b>8</b>. (Costly first edge → loose-but-honest bound, here ≥ best so it gets pruned.)</span><span data-tr="zh"><code>bound(e = V₂,₁)</code> ＝ cost(V₀→V₁,₁→V₂,₁)=1+6=7，＋ 1 ＝ <b>8</b>。（第一條邊就很貴 → 下界雖鬆但誠實，這裡 ≥ best 就被剪掉。）</span></li>
+</ul>
+<p><span data-tr="en">The true cheapest path turns out to cost <b>5</b> via <code>V₀→V₁,₁→V₂,₃→V₃</code> (1+1+3). We expand best-first (smallest bound first) and prune any node whose bound is already ≥ the best <em>complete</em> path found so far. Notice the bounds are concrete integers, not "&gt; something" — every one is a single number you can recompute. Step through.</span><span data-tr="zh">真正最便宜的路徑成本是 <b>5</b>，走 <code>V₀→V₁,₁→V₂,₃→V₃</code>（1+1+3）。我們用 best-first 展開（下界最小的先開），並把任何下界已經 ≥ 目前找到的最佳<em>完整</em>路徑的節點剪掉。注意這些下界都是確定的整數，不是「&gt; 某個值」——每一個都是你能自己重算出來的單一數字。一步步看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -74,27 +88,52 @@
 
 <h2><span data-tr="en">Go deeper</span><span data-tr="zh">延伸閱讀</span></h2>
 <p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §7–10 (deck <code>Alg05</code>). Branch-and-bound = best-first search + a per-node lower bound that prunes any subtree whose bound is no better than the incumbent.</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, 第六章 §7–10（投影片 <code>Alg05</code>）。Branch-and-bound＝best-first search ＋ 每個節點一個下界，把任何下界已經贏不過現有最佳解的子樹剪掉。</span></p>
-<div class="note"><strong><span data-tr="en">Sibling strategy:</span><span data-tr="zh">姊妹策略：</span></strong> <a href="prob-knapsack-bnb.html">A\*</a> <span data-tr="en">is branch-and-bound's close cousin — best-first search with <code>f(n) = g(n) + h(n)</code> where the admissible heuristic <code>h(n) ≤ h*(n)</code> is exactly a lower bound, so the first goal <em>selected for expansion</em> is guaranteed optimal.</span><span data-tr="zh">是 branch-and-bound 的近親——它是用 <code>f(n) = g(n) + h(n)</code> 的 best-first search，其中 admissible heuristic <code>h(n) ≤ h*(n)</code> 正好就是一個下界，所以第一個<em>被挑出來展開</em>的 goal 保證是最佳解。</span></div>
+<div class="note"><strong><span data-tr="en">Sibling strategy:</span><span data-tr="zh">姊妹策略：</span></strong> <a href="algo-astar.html">A\*</a> <span data-tr="en">is branch-and-bound's close cousin — best-first search with <code>f(n) = g(n) + h(n)</code>. Here <code>g(n)</code> = cost actually paid to reach node <code>n</code> (the "cost so far"), <code>h*(n)</code> = the <em>true</em> cheapest remaining cost from <code>n</code> to a goal, and <code>h(n)</code> = an optimistic <em>estimate</em> of that remaining cost. When the heuristic is <strong>admissible</strong> — meaning <code>h(n) ≤ h*(n)</code>, it never over-estimates — then <code>f(n)</code> is exactly a lower bound on any complete solution through <code>n</code>, so the first goal <em>selected for expansion</em> is guaranteed optimal. (In our multi-stage example, <code>g</code> = cost committed, and <code>h</code> = "sum of the cheapest edge per remaining stage" — that's the relaxation we used.)</span><span data-tr="zh">是 branch-and-bound 的近親——它是用 <code>f(n) = g(n) + h(n)</code> 的 best-first search。這裡 <code>g(n)</code> ＝ 真正走到節點 <code>n</code> 已經付的成本（也就是「cost so far」）、<code>h*(n)</code> ＝ 從 <code>n</code> 到 goal <em>真正</em>最便宜的剩餘成本、<code>h(n)</code> ＝ 對這段剩餘成本的樂觀<em>估計</em>。當這個 heuristic 是 <strong>admissible</strong>（也就是 <code>h(n) ≤ h*(n)</code>，永遠不會高估）時，<code>f(n)</code> 剛好就是「經過 <code>n</code> 的任何完整解」的下界，所以第一個<em>被挑出來展開</em>的 goal 保證是最佳解。（在我們的 multi-stage 例子裡，<code>g</code> ＝ 已付出的成本，<code>h</code> ＝「每個剩餘 stage 最便宜的邊加起來」——就是我們用的那個 relaxation。）</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>
 <script>
-// ---- Fig. 6-17 multi-stage graph, as a B&B tree (node label = lower bound) ----
-// Tree: a(1) root → b/c/d (V1,*); under b: e(>6 pruned), f → g(=5 best);
-//       under c: h(>7 pruned), i(>6 pruned); under d: j → l(6), k(>9 pruned).
+// ---- Fig. 6-17 multi-stage graph: the ACTUAL graph, with edge weights ----
+// Vertices: V0 (source); layer1 V1,1 V1,2 V1,3; layer2 V2,1 V2,2 V2,3; V3 (sink).
+// Stage mins (cheapest edge in each stage): stage0=1, stage1=1, stage2=1.
+// Lower bound of a node = (cost committed to reach it) + (sum of the stage-min
+//   edge of every stage still ahead). Every completion must spend >= that, so it
+//   is a valid LOWER bound (a relaxation: cheapest edge per remaining stage).
+const G = {
+  nodes:[
+    {id:'V0', x:50, y:8,  label:'V₀'},
+    {id:'V11',x:20, y:38, label:'V₁₁'},
+    {id:'V12',x:50, y:38, label:'V₁₂'},
+    {id:'V13',x:80, y:38, label:'V₁₃'},
+    {id:'V21',x:20, y:68, label:'V₂₁'},
+    {id:'V22',x:50, y:68, label:'V₂₂'},
+    {id:'V23',x:80, y:68, label:'V₂₃'},
+    {id:'V3', x:50, y:94, label:'V₃'},
+  ],
+  edges:[
+    {u:'V0',v:'V11',w:1},{u:'V0',v:'V12',w:1},{u:'V0',v:'V13',w:1},
+    {u:'V11',v:'V21',w:6},{u:'V11',v:'V23',w:1},
+    {u:'V12',v:'V21',w:7},{u:'V12',v:'V22',w:6},
+    {u:'V13',v:'V22',w:4},{u:'V13',v:'V23',w:9},
+    {u:'V21',v:'V3',w:1},{u:'V22',v:'V3',w:3},{u:'V23',v:'V3',w:3},
+  ]
+};
+document.getElementById('mgraph').innerHTML = ZOO.graph(G, {});
+
+// ---- The same graph searched as a B&B tree (node label = vertex · lower bound) ----
 const nodes = [
-  {id:'a', x:50, y:8,  label:'V₀·1'},
-  {id:'b', x:20, y:34, label:'V₁₁·2'},
-  {id:'c', x:50, y:34, label:'V₁₂·2'},
-  {id:'d', x:80, y:34, label:'V₁₃·2'},
-  {id:'e', x:8,  y:62, label:'V₂₁·>6'},
+  {id:'a', x:50, y:8,  label:'V₀·3'},
+  {id:'b', x:20, y:34, label:'V₁₁·3'},
+  {id:'c', x:50, y:34, label:'V₁₂·3'},
+  {id:'d', x:80, y:34, label:'V₁₃·3'},
+  {id:'e', x:8,  y:62, label:'V₂₁·8'},
   {id:'f', x:28, y:62, label:'V₂₃·3'},
-  {id:'h', x:44, y:62, label:'V₂₁·>7'},
-  {id:'i', x:58, y:62, label:'V₂₂·>6'},
-  {id:'j', x:74, y:62, label:'V₂₂·5'},
-  {id:'k', x:92, y:62, label:'V₂₃·>9'},
+  {id:'h', x:44, y:62, label:'V₂₁·9'},
+  {id:'i', x:58, y:62, label:'V₂₂·8'},
+  {id:'j', x:74, y:62, label:'V₂₂·6'},
+  {id:'k', x:92, y:62, label:'V₂₃·11'},
   {id:'g', x:28, y:90, label:'V₃·5'},
-  {id:'l', x:74, y:90, label:'V₃·6'},
+  {id:'l', x:74, y:90, label:'V₃·8'},
 ];
 const edges = [
   {u:'a',v:'b'},{u:'a',v:'c'},{u:'a',v:'d'},
@@ -105,20 +144,20 @@ const edges = [
 ];
 
 const frames = [
-  { cap:`Root <b>a</b> = source V₀, lower bound <b>1</b>. We'll expand best-first and keep the cheapest complete path as <code>best</code>.`,
+  { cap:`Root <b>a</b> = source V₀, cost so far 0. Three stages lie ahead, cheapest edge in each is 1, so lower bound = 0+1+1+1 = <b>3</b>. We expand best-first (open the smallest bound first) and keep the cheapest complete path as <code>best</code>.`,
     node:{a:'act'} },
-  { cap:`Branch on layer 1: paths through V₁,₁ (<b>b</b>), V₁,₂ (<b>c</b>), V₁,₃ (<b>d</b>). Each gets a lower bound of <b>2</b> so far. All still alive.`,
+  { cap:`Branch on layer 1. Each of V₀→V₁,₁ (<b>b</b>), V₀→V₁,₂ (<b>c</b>), V₀→V₁,₃ (<b>d</b>) costs 1; two stages remain (min 1+1), so each bound = 1+1+1 = <b>3</b>. Three-way tie, all alive.`,
     node:{a:'done', b:'frontier', c:'frontier', d:'frontier'} },
-  { cap:`Expand <b>b</b> (V₁,₁). Its children: <b>e</b> (V₂,₁) bound <b>&gt;6</b>, and <b>f</b> (V₂,₃) bound <b>3</b>. We follow <b>f</b> down to sink <b>g</b> (V₃): a complete path of cost <b>5</b>. Set <code>best = 5</code>.`,
+  { cap:`Tie at 3 — break it by diving to <i>finish a path fast</i> (we want an incumbent to prune with). Expand <b>b</b> (V₁,₁): child <b>e</b> (V₂,₁) cost 1+6=7, bound 7+1=<b>8</b>; child <b>f</b> (V₂,₃) cost 1+1=2, bound 2+1=<b>3</b>. f ties the smallest bound, so follow f to sink <b>g</b>: full path cost 1+1+3=<b>5</b>. Set <code>best = 5</code>.`,
     node:{a:'done', b:'done', c:'frontier', d:'frontier', e:'dim', f:'done', g:'act'} },
-  { cap:`Now <code>best = 5</code>. <b>Prune anything with bound ≥ 5.</b> Node <b>e</b> (bound &gt;6) ≥ 5 → killed. So is its whole subtree — never explored.`,
+  { cap:`Now <code>best = 5</code>. <b>Prune any live node with bound ≥ 5.</b> Node <b>e</b> has bound 8 ≥ 5 → killed, and its whole subtree with it. Still alive: c (3) and d (3), both below 5.`,
     node:{a:'done', b:'done', g:'done', f:'done', e:'dim', c:'frontier', d:'frontier'} },
-  { cap:`Expand <b>c</b> (V₁,₂): children <b>h</b> (&gt;7) and <b>i</b> (&gt;6). Both bounds ≥ 5 → <b>both pruned</b>. The entire V₁,₂ branch dies without finishing a single path.`,
+  { cap:`Smallest live bound is 3 (tie c, d). Expand <b>c</b> (V₁,₂): child <b>h</b> (V₂,₁) cost 1+7=8, bound <b>9</b>; child <b>i</b> (V₂,₂) cost 1+6=7, bound <b>8</b>. Both ≥ 5 → <b>both pruned</b>. The V₁,₂ branch dies without finishing a path.`,
     node:{a:'done', b:'done', g:'done', f:'done', c:'done', h:'dim', i:'dim', d:'frontier'} },
-  { cap:`Expand <b>d</b> (V₁,₃): <b>j</b> (bound 5) and <b>k</b> (&gt;9, pruned). Following <b>j</b> reaches sink <b>l</b> with cost <b>6</b> — worse than best=5, so it doesn't improve the champion.`,
-    node:{a:'done', b:'done', g:'done', f:'done', c:'done', d:'done', j:'frontier', k:'dim', l:'frontier'} },
-  { cap:`No live node beats 5. Answer: cheapest path <b>V₀→V₁,₁→V₂,₃→V₃</b>, cost <b>5</b> (node <b>g</b>). Bounding pruned e, h, i, k — four subtrees never searched.`,
-    node:{a:'done', b:'done', f:'done', g:'done', c:'done', d:'done', j:'done', l:'done', e:'dim', h:'dim', i:'dim', k:'dim'} },
+  { cap:`Expand <b>d</b> (V₁,₃): child <b>j</b> (V₂,₂) cost 1+4=5, bound 5+1=<b>6</b>; child <b>k</b> (V₂,₃) cost 1+9=10, bound <b>11</b>. Both 6 ≥ 5 and 11 ≥ 5 → <b>both pruned</b>. We do NOT expand j — the rule kills it (sink l below it would have cost 8 anyway).`,
+    node:{a:'done', b:'done', g:'done', f:'done', c:'done', d:'done', j:'dim', k:'dim', l:'dim'} },
+  { cap:`No live node has bound < 5, so nothing can beat the incumbent. Answer: cheapest path <b>V₀→V₁,₁→V₂,₃→V₃</b>, cost <b>5</b> (node <b>g</b>). Bounding pruned e, h, i, j, k — five subtrees never searched.`,
+    node:{a:'done', b:'done', f:'done', g:'done', c:'done', d:'done', j:'dim', k:'dim', l:'dim', e:'dim', h:'dim', i:'dim'} },
 ];
 
 ZOO.stepper({

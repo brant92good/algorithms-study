@@ -55,17 +55,18 @@
 <p><span data-tr="en"><strong>Lower <code>f</code> is better.</strong> For the START board above: no slides made yet so <code>d = 0</code>; the tiles <code>2</code>, <code>8</code> and <code>1</code> are off their goal squares so <code>w = 3</code>; hence <code>f = 0 + 3 = 3</code>. The whole question is just: <em>in what order do we expand nodes of this tree?</em> Two strategies below answer it differently — and that single difference decides whether the search gets stuck.</span><span data-tr="zh"><strong><code>f</code> 越小越好。</strong>拿上面的 START 盤面來看：還沒滑過所以 <code>d = 0</code>；方塊 <code>2</code>、<code>8</code>、<code>1</code> 都沒在自己的目標位置上，所以 <code>w = 3</code>；算出來 <code>f = 0 + 3 = 3</code>。整題講白了就一個問題：<em>我們要用什麼順序展開這棵樹的節點？</em>下面兩種策略給的答案不一樣——而就是這一個差別，決定了搜尋會不會卡住。</span></p>
 
 <h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它一步步解出來</span></h2>
-<p><span data-tr="en">Both runs start from the same board and aim at the same goal. Misplaced tiles are tinted; each frame shows that board's <code>f = d + w</code>. The two strategies share the scoring — only the <strong>selection rule</strong> changes.</span><span data-tr="zh">兩種跑法都從同一個盤面出發、瞄準同一個目標。沒擺對的方塊會被標上顏色；每一格都會顯示那個盤面的 <code>f = d + w</code>。兩種策略用的評分一模一樣——差別只在<strong>挑下一個節點的規則</strong>。</span></p>
+<p><span data-tr="en">Both runs start from the same board and aim at the same goal. In each grid, misplaced tiles are tinted <strong>orange</strong>, correctly-placed tiles <strong>green</strong>, and the blank is drawn with a <strong>dashed</strong> border; <code>w</code> counts only the orange tiles. Each frame shows that board's <code>f = d + w</code>. The two strategies share the scoring — only the <strong>selection rule</strong> changes.</span><span data-tr="zh">兩種跑法都從同一個盤面出發、瞄準同一個目標。每個格子裡，擺錯位置的方塊會標成<strong>橘色</strong>，擺對的標成<strong>綠色</strong>，blank 則用<strong>虛線</strong>框；<code>w</code> 只數橘色那些。每一格都會顯示那個盤面的 <code>f = d + w</code>。兩種策略用的評分一模一樣——差別只在<strong>挑下一個節點的規則</strong>。</span></p>
 
 <div class="way">
   <h3><span data-tr="en">① Hill Climbing — greedy, local view</span><span data-tr="zh">① Hill Climbing——貪婪、只看眼前</span></h3>
-  <p class="tagline"><span data-tr="en">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. Fast — until every child looks worse and it has nothing saved to fall back on.</span><span data-tr="zh">展開目前的盤面，<em>只</em>看它自己的子節點，跳到 <code>f</code> 最小的那一個，其他通通忘掉。很快——但只要每個子節點都更糟，而它又沒留任何後路，就完了。</span></p>
+  <p class="tagline"><span data-tr="en">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. It only commits to a child whose <code>f</code> is <strong>strictly lower</strong> than the current node's — a tie (equal <code>f</code>) or worse counts as <em>no improvement</em>, so it halts. Fast — until every child looks no better and it has nothing saved to fall back on.</span><span data-tr="zh">展開目前的盤面，<em>只</em>看它自己的子節點，跳到 <code>f</code> 最小的那一個，其他通通忘掉。注意它只會跳到 <code>f</code> 比目前節點<strong>嚴格更小</strong>的子節點——如果只是打平（<code>f</code> 一樣）或更糟，都算<em>沒有進步</em>，它就停下來。很快——但只要每個子節點都沒比較好，而它又沒留任何後路，就完了。</span></p>
   <div id="viz-hc"></div>
 </div>
 
 <div class="way">
   <h3><span data-tr="en">② Best-First Search — global open list, recovers</span><span data-tr="zh">② Best-First Search——全域 open list，卡住能繞回來</span></h3>
   <p class="tagline"><span data-tr="en">Keep an <strong>open list</strong> of every discovered-but-unexpanded node across the <em>whole</em> tree, sort it by <code>f</code>, and always expand the globally cheapest node — so a sour branch is no trap: just jump back to a better node seen earlier.</span><span data-tr="zh">維護一個 <strong>open list</strong>，把<em>整棵</em>樹裡「已經發現但還沒展開」的節點全部記著，照 <code>f</code> 排序，每次都展開全域最便宜的那個——這樣一來，走進爛分支也不怕：直接跳回先前看過、比較好的節點就好。</span></p>
+  <p class="tagline"><span data-tr="en"><strong>The loop the captions follow:</strong> <strong>1.</strong> take the lowest-<code>f</code> node off the open list; <strong>2.</strong> if it is the goal, stop; <strong>3.</strong> otherwise expand it, score its children, add them to the list; <strong>4.</strong> sort the list by <code>f</code>; then repeat from <strong>1</strong>. So a caption saying "Step 2" just means we are back at that step of this loop on a new node. In the <em>Open list (by f)</em> lane below, each entry is written <code>node-id(f-value)</code> — e.g. <code>7(4)</code> means node 7 with <code>f = 4</code>.</span><span data-tr="zh"><strong>下面字幕跟著跑的迴圈：</strong><strong>1.</strong> 從 open list 拿出 <code>f</code> 最小的節點；<strong>2.</strong> 如果它就是目標，停；<strong>3.</strong> 不然就展開它、幫子節點打分、全部加進 list；<strong>4.</strong> 把 list 照 <code>f</code> 重新排序；然後從第 <strong>1</strong> 步再來一次。所以字幕寫「Step 2」，意思就是換一個新節點、又回到這個迴圈的那一步。下面 <em>Open list (by f)</em> 那一排裡，每一項的寫法是 <code>node-id(f-value)</code>——舉例來說 <code>7(4)</code> 就是「node 7，<code>f = 4</code>」。</span></p>
   <div id="viz-bf"></div>
 </div>
 
@@ -132,7 +133,7 @@ const hcFrames = [
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true,
     cap:`<b>The lesson.</b> Suppose an early step had instead landed here (d=1, w=4 → <b>f = 5</b>). Now look at every neighbour's f…` },
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true, showNbr:true,
-    cap:`Every legal slide gives a board with f = 5 or <b>worse</b> — no neighbour beats the current 5. This is a <b>local optimum</b>.` },
+    cap:`The three legal slides give f = 5, 7, 7. Hill climbing only moves to a STRICTLY-lower-f child, so the f=5 tie does NOT count as an improvement (it does not "rescue" the search) and 7 is worse — no neighbour is below the current 5. This is a <b>local optimum</b>.` },
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, dead:true,
     cap:`<b>STUCK.</b> Greedy + local view = no improving child, and hill climbing kept <b>no other open nodes</b> to back up to. It cannot reach the goal, even though a better path existed earlier. That global view is exactly what Best-First Search adds below.` },
 ];
@@ -173,7 +174,7 @@ ZOO.stepper({
     let nbr = '';
     if (f.showNbr) {
       nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--mut,#777)">
-        neighbour f-values: <b>5</b> · <b>7</b> · <b>7</b>  → none below the current 5</div>`;
+        neighbour f-values: <b>5</b> · <b>7</b> · <b>7</b>  → the 5 only TIES (not strictly lower), so none beats the current 5</div>`;
     }
     if (f.dead) {
       nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--bad,#d9534f);font-weight:600">
