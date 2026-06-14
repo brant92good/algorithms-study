@@ -200,6 +200,9 @@ Empty clause `□` derived ⇒ **unsatisfiable**.
 
 ### Semantic Tree (slide 13)
 
+<img class="figure" src="../render/A08/slide-13.png" alt="Semantic tree for the unsatisfiable formula: a binary tree branching on x2, x3, x1; every leaf is attached to a falsifying clause (1)-(7)">
+<figcaption>Slide 13 — Semantic tree for the slide-12 unsatisfiable example. Every leaf is falsified by some clause ⇒ unsatisfiable.</figcaption>
+
 - In a **semantic tree**, each **path from root to a leaf** represents a *class of truth assignments* (each level branches on one variable: true vs. false).
 - If **every leaf node** can be attached (falsified by) some clause of the formula, then the formula is **unsatisfiable** (no assignment escapes contradiction).
 
@@ -355,6 +358,9 @@ Searching for 7 but `x(1)≠7, x(2)≠7`. CNF (note clauses (9),(10) flip to `x(
    x(2)≠7                            (10)
 ```
 
+<img class="figure" src="../render/A08/slide-25.png" alt="Semantic tree for searching-to-SAT with both inputs not equal to 7: a right-leaning chain branching on SUCCESS, FAILURE, X(1)=7, X(2)=7, i; every leaf labelled by a falsifying clause">
+<figcaption>Slide 25 — Semantic tree for the "both inputs ≠ 7" CNF. Every leaf is attached to a clause ⇒ unsatisfiable ⇒ 7 is absent.</figcaption>
+
 **Apply resolution (slide 27):**
 
 ```
@@ -389,6 +395,9 @@ Searching for 7 where `x(1)=7, x(2)=7`. CNF:
 ```
 
 The semantic tree shows **both** assignments (`i=1` and `i=2`) satisfy the clauses — either index witnesses the answer "Yes."
+
+<img class="figure" src="../render/A08/slide-29.png" alt="Semantic tree for searching-to-SAT with both inputs equal to 7: branch order X(1)=7, X(2)=7, SUCCESS, FAILURE, i; two root-to-leaf paths survive without contradiction">
+<figcaption>Slide 29 — Semantic tree for the "both inputs = 7" CNF. Caption (red): "It implies that both assignments (i=1, i=2) satisfy the clauses." ⇒ satisfiable.</figcaption>
 
 ---
 
@@ -482,6 +491,9 @@ Transformed 3-SAT instance:
 
 > Example (slide 45): a graph is 3-colorable with `f(a)=1, f(b)=2, f(c)=1, f(d)=2, f(e)=3`.
 
+<img class="figure" src="../render/A08/slide-45.png" alt="Chromatic-number example: 5-vertex graph a,b,c,d,e (a 5-cycle) 3-colored with f(a)=1,f(b)=2,f(c)=1,f(d)=2,f(e)=3">
+<figcaption>Slide 45 — Chromatic-number example graph, 3-colorable.</figcaption>
+
 > **Theorem:** Satisfiability with **at most 3 literals per clause (SATY)** → CN.
 
 **Construction (slide 46).** Instance of SATY: variables `x₁,…,xₙ` (with **n ≥ 4**), clauses `c₁,…,c_r`. Build graph `G=(V,E)`:
@@ -507,6 +519,9 @@ E = { (xᵢ, ¬xᵢ)        | 1 ≤ i ≤ n }          // a variable and its neg
 > ✅ Verified against slides 46 & 47. Slide 46 prints the edge set verbatim: `E = {(xᵢ,¬xᵢ)|1≤i≤n} ∪ {(yᵢ,yⱼ)|i≠j} ∪ {(yᵢ,xⱼ)|i≠j} ∪ {(yᵢ,¬xⱼ)|i≠j} ∪ {(xᵢ,cⱼ)|xᵢ∉cⱼ} ∪ {(¬xᵢ,cⱼ)|¬xᵢ∉cⱼ}`. The clause-vertex edges use **`∉`** (joined to literals NOT in the clause) exactly as reconstructed. Slide 47's drawn graph + 5-coloring confirms the worked instance. See Appendix A — Slide 47.
 
 > ✅ Worked example (slide 47, verified): clauses `(1) x₁ ∨ x₂ ∨ x₃` and `(2) ¬x₃ ∨ ¬x₄ ∨ x₂`, **n=4**. The deck draws the resulting graph (8 literal vertices, the y₁..y₄ clique, clause nodes c₁,c₂ wired to non-member literals) with a 5-coloring: x₁=1, x₂=5, x₃=5, x₄=4, ¬x₁=5, ¬x₂=2, ¬x₃=3, ¬x₄=5, y₁..y₄=1..4, c₁=1, c₂=3 — encoding the assignment x₁=T, x₂=F, x₃=F, x₄=T. **Full transcription + edge list in Appendix A — Slide 47.**
+
+<img class="figure" src="../render/A08/slide-47.png" alt="SATY-to-CN graph for clauses (x1∨x2∨x3) and (¬x3∨¬x4∨x2), n=4: top row of 8 literal vertices, bottom row of y1..y4 clique and clause vertices c1,c2, with the (n+1)=5-coloring labels">
+<figcaption>Slide 47 — SATY→CN construction (worked instance). Numeric labels are the 5-coloring; it reads off the satisfying assignment x₁=T, x₂=F, x₃=F, x₄=T.</figcaption>
 
 **Claim: satisfiable ⇔ (n+1)-colorable.**
 
@@ -535,6 +550,9 @@ This shows how the **node cover** decision problem is encoded as a SAT instance 
 **Node cover (slide 30).** Given `G=(V,E)`, `S ⊆ V` is a **node cover** if for every edge `(u,v) ∈ E`, `u ∈ S` or `v ∈ S`. **Decision version:** does there exist S with **|S| ≤ K**?
 
 > Example (slide 30): node covers `{1,3}` and `{5,2,4}`.
+
+<img class="figure" src="../render/A08/slide-30.png" alt="Node cover example: undirected graph on vertices 1-5 with edges (1,2),(1,5),(2,3),(3,4); node covers {1,3} and {5,2,4}">
+<figcaption>Slide 30 — Node cover example graph (5 vertices). Node covers shown: {1,3} and {5,2,4}.</figcaption>
 
 **Nondeterministic construction (slide 31)** — guess K vertices, check every edge is covered:
 
@@ -600,6 +618,9 @@ The SAT instance is satisfiable **iff** there is a choice of k vertices covering
 > `T = {s₁, s₃, s₄}` is a set cover.
 > `T = {s₁, s₂}` is a set cover **and an exact cover** (disjoint, covers everything).
 
+<img class="figure" src="../render/A08/slide-50.png" alt="Set cover decision problem example: F={(a1,a3),(a2,a4),(a2,a3),(a4)}=s1..s4; T={s1,s3,s4} is a set cover; T={s1,s2} is a set cover and exact cover">
+<figcaption>Slide 50 — Set cover decision problem with worked example. {s₁,s₂} is both a set cover and an exact cover.</figcaption>
+
 **Exact cover problem (slide 51).** Same notation. Determine if F has an **exact cover** T: a cover of F whose sets are **pairwise disjoint**.
 
 > **Theorem: CN → exact cover.** *(The deck states the theorem; the construction details are not expanded in the dump — see flagged items.)*
@@ -627,6 +648,9 @@ C = Σ_{i=0..n−1} (k+1)^i = ((k+1)ⁿ − 1) / k     (all-ones in base k+1)
 **Why base (k+1)?** There are k sets, so any subset of them sums **at most k** ones into any single digit position. Using base **k+1** guarantees **no carries** across digit positions: a subset of A sums to C (the all-ones number) **iff** every universe element uᵢ is covered **exactly once** ⇒ exactly an **exact cover.** A smaller base could let carries fake a sum.
 
 **Worked example (slide 54).** `u₁=1, u₂=2, u₃=3`, `n=3`.
+
+<img class="figure" src="../render/A08/slide-54.png" alt="Exact cover to sum of subsets worked example: left variant base 4 with a1=5,a2=16,a3=17,C=21; right variant base 2 with a1=3,a2=2,a3=2,a4=6,C=7">
+<figcaption>Slide 54 — Exact cover → sum of subsets. Left: proper base k+1=4. Right: deliberately too-small base 2 (the set list prints "S₃" twice — a slide typo for S₄={1,3}).</figcaption>
 
 *Variant E (k=3 sets):* `S₁={1,2}, S₂={3}, S₃={1,3}`, `F = {u₁,u₂,u₃} = {1,2,3}`. Base `k+1 = 4`:
 ```
@@ -718,6 +742,9 @@ So the partition is `{ bᵢ | aᵢ ∈ S } ∪ {b_{n+2}}` and `{ bᵢ | aᵢ ∉
 
 > Example: maximal cliques `{a,b}, {a,c,d}, {c,d,e,f}`; **maximum** clique `{c,d,e,f}`.
 
+<img class="figure" src="../render/A08/slide-61.png" alt="Max clique example: 6-vertex graph a,b,c,d,e,f with b a pendant on a; maximal cliques {a,b},{a,c,d},{c,d,e,f}; maximum clique {c,d,e,f}">
+<figcaption>Slide 61 — Max clique example graph. Maximum clique {c,d,e,f} (a 4-clique).</figcaption>
+
 The **clique decision problem:** does G have a clique of size ≥ k?
 
 > **Theorem: SAT → clique decision problem.**
@@ -748,6 +775,9 @@ The **clique decision problem:** does G have a clique of size ≥ k?
 
 > Worked example (slide 63): vertices `{a,b,c,d,e,f}`. The deck draws G with a clique and its complement G′ with the corresponding node cover `V∖clique`. (G's clique of size k ⇔ G′'s node cover of size n−k = 6−k.)
 
+<img class="figure" src="../render/A08/slide-63.png" alt="Clique-to-node-cover: left graph G with clique {c,d,e,f} highlighted yellow; right complement graph G' on the same 6 vertices with node cover {a,b} (size n-k=2)">
+<figcaption>Slide 63 — G (left) with clique {c,d,e,f} of size k=4 ⇔ complement G′ (right) with node cover {a,b} of size n−k=2.</figcaption>
+
 ⇒ **Node cover decision is NP-complete.**
 
 ---
@@ -757,6 +787,9 @@ The **clique decision problem:** does G have a clique of size ≥ k?
 **Hamiltonian cycle problem (slide 64).** A **Hamiltonian cycle** is a round-trip path along n edges of G that **visits every vertex exactly once** and returns to its start.
 
 > Example: Hamiltonian cycle `1, 2, 8, 7, 6, 5, 4, 3, 1`.
+
+<img class="figure" src="../render/A08/slide-64.png" alt="Hamiltonian cycle example: 8-vertex undirected graph in two rows (top 1,2,3,4; bottom 8,7,6,5) with crossing diagonals; Hamiltonian cycle 1,2,8,7,6,5,4,3,1">
+<figcaption>Slide 64 — Hamiltonian cycle example graph. Cycle drawn: 1, 2, 8, 7, 6, 5, 4, 3, 1.</figcaption>
 
 > **Theorem: SAT → directed Hamiltonian cycle** (in a **directed** graph).
 
@@ -772,7 +805,12 @@ The **clique decision problem:** does G have a clique of size ≥ k?
 
 > **Theorem: Directed Hamiltonian cycle → traveling salesperson decision problem.**
 
-**Construction (slide 66).** Given directed graph `G=(V,E)` (a Hamiltonian-cycle instance), build a complete weighted directed graph on the same vertices with edge weights:
+**Construction (slide 66).**
+
+<img class="figure" src="../render/A08/slide-66.png" alt="Directed Hamiltonian-to-TSP gadget: left, the original sparse graph G on 7 vertices (edges cost 1); right, the completed graph with added edges in blue labelled cost 2">
+<figcaption>Slide 66 — TSP gadget. Left: original G (black edges, cost 1). Right: completed graph; edges added to complete it (blue) have cost 2. A tour of cost ≤ n uses only cost-1 edges ⇒ a Hamiltonian cycle of G.</figcaption>
+
+Given directed graph `G=(V,E)` (a Hamiltonian-cycle instance), build a complete weighted directed graph on the same vertices with edge weights:
 ```
 cost(u,v) = 1   if (u,v) ∈ E
 cost(u,v) = 2   if (u,v) ∉ E      (a larger value; "2" per the slide)

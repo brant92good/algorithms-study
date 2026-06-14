@@ -164,6 +164,9 @@ Schematic reproduction (P boxed on the median row M; the two ≥1/4 blocks stair
    └─ lower-right block: ≥ 1/4 of S is ≥ P
 ```
 
+<img class="figure" src="../render/A06full/slide-07.png" alt="Median-of-medians grid: columns of 5 sorted dots, dotted median row M, boxed median-of-medians P, and two solid rectangles marking the ≥1/4-of-S regions">
+<figcaption>Slide 7 — "How to select P?" Each column is one sorted 5-element subset; the dotted row <code>M</code> holds the group medians and <code>P</code> is their median. The upper-left rectangle holds ≥1/4 of S known to be ≤ P; the lower-right rectangle holds ≥1/4 known to be ≥ P.</figcaption>
+
 - Every group whose median is `≤ p`: at least 3 of its 5 elements (the median and the two above it in the sorted column) are `≤ p`. About **half** the groups have median `≤ p`. Hence **at least about `n/4` elements are `≤ p`** (the upper-left block).
 - Symmetrically, **at least about `n/4` elements are `≥ p`** (the lower-right block).
 
@@ -304,6 +307,9 @@ F(x) = max { aᵢ·x + bᵢ : i = 1, 2, …, n }
 
 `F(x)` is a **convex**, piecewise-linear function (the pointwise maximum of linear functions). ✅ **Verified against slide 14 (Fig. 7-2).** The slide explicitly prints the formula `F(x) = max_{1≤i≤n} {aᵢx + bᵢ}` (printed as `1≤x≤n` on the slide — an obvious typo for `1≤i≤n`). The figure shows a gray convex feasible region above the upper envelope of eight constraint lines `a₁x+b₁ … a₈x+b₈`, with the optimum `(x₀, y₀)` at the lowest boundary point (marked by a red vertical segment). Earlier carved render (Figure A.1) showed the same kind of plot with five labelled lines; slide 14 is the authoritative version. So the F(x) body is **not** blank on the slide.
 
+<img class="figure" src="../render/A06full/slide-14.png" alt="Fig. 7-2: gray convex feasible region above the upper envelope of eight constraint lines a1x+b1 … a8x+b8, with optimum (x0,y0) at the lowest envelope point marked by a red vertical segment">
+<figcaption>Slide 14 (Fig. 7-2) — the upper envelope <code>F(x) = max{aᵢx+bᵢ}</code> of eight constraint lines, with the optimum <code>(x₀, y₀)</code> at the lowest boundary point (red segment).</figcaption>
+
 ### The optimum
 
 The optimum `x₀` minimizes the boundary:
@@ -322,6 +328,9 @@ Suppose a test abscissa `xₘ` is known. How do we know whether `x₀ < xₘ` or
 - If `g > 0` → `x₀ < xₘ` (envelope still descending to the left).
 - If `g < 0` → `x₀ > xₘ` (envelope still descending to the right).
 
+<img class="figure" src="../render/A06full/slide-16.png" alt="Fig. 7-5: convex envelope with two test verticals; ym sits on a single constraint of slope g, with g>0 giving x0<xm and g<0 giving x0>xm">
+<figcaption>Slide 16 (Fig. 7-5) — the cases where <code>xₘ</code> is on only one constraint of slope <code>g</code>.</figcaption>
+
 **Case 2: `yₘ` is the intersection of several constraints.** ✅ **Verified against slide 17 (Fig. 7-6).** The slide prints the slope definitions explicitly:
 ```
 g_max = max_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (max slope of constraints achieving F(xₘ))
@@ -333,11 +342,17 @@ g_min = min_{1≤i≤n} { aᵢ : aᵢxₘ + bᵢ = F(xₘ) }   (min slope of con
 
 The Fig. 7-6 plot draws a convex envelope with three test abscissae on the x-axis: the slide maps **Case 2a → `xₘ,₃`**, **Case 2b → `xₘ,₁`**, **Case 2c → `xₘ,₂`** (with the `g_min`/`g_max` slope labels on the active lines at each intersection). The single-constraint Case 1 is the separate **Fig. 7-5** (slide 16).
 
+<img class="figure" src="../render/A06full/slide-17.png" alt="Fig. 7-6: convex envelope with three test abscissae xm,1 < xm,2 < xm,3, gmin/gmax slope labels on active lines, and the 2a/2b/2c rules mapped to xm,3 / xm,1 / xm,2">
+<figcaption>Slide 17 (Fig. 7-6) — <code>xₘ</code> on the intersection of several constraints. Case 2a (<code>xₘ,₃</code>) ⇒ <code>x₀&lt;xₘ</code>; Case 2b (<code>xₘ,₁</code>) ⇒ <code>x₀&gt;xₘ</code>; Case 2c (<code>xₘ,₂</code>) ⇒ optimum.</figcaption>
+
 ### Pruning constraints
 
 Once we know `x₀`'s side relative to `xₘ`, we can **delete** constraints (Fig. 7-3):
 
 > If `x₀ < xₘ` and the intersection of `a₃x + b₃` and `a₂x + b₂` is **greater than** `xₘ`, then for all `x < xₘ` one of these two constraints is always smaller than the other. The always-smaller constraint **cannot** contribute to the upper envelope near the optimum, so it can be **deleted**. (Symmetric reasoning for `x₀ > xₘ`.)
+
+<img class="figure" src="../render/A06full/slide-15.png" alt="Fig. 7-3: convex envelope with dashed vertical at xm, x0 to its left (case x0<xm), one constraint annotated 'May be deleted', and a green dot marking the optimum">
+<figcaption>Slide 15 (Fig. 7-3) — constraints which may be eliminated. With <code>x₀ &lt; xₘ</code>, the line annotated "May be deleted" never reaches the envelope for <code>x &lt; xₘ</code>.</figcaption>
 
 ### Choosing `xₘ` (so that a constant fraction is pruned)
 
@@ -408,6 +423,9 @@ subject to  F₁(x) ≤ F₂(x),   a ≤ x ≤ b
 
 (Fig. 7-9: feasible where `F₁(x) ≤ F₂(x)`, between `x = a` and `x = b`.)
 
+<img class="figure" src="../render/A06full/slide-23.png" alt="General two-variable LP: shaded lens-shaped feasible region between the lower envelope F1(x) (must lie above) and the upper envelope F2(x) (must lie below), over a ≤ x ≤ b">
+<figcaption>Slide 23 — the general problem rewritten with <code>F₁(x)=max{aᵢx+bᵢ : i∈I₁}</code> and <code>F₂(x)=min{aᵢx+bᵢ : i∈I₂}</code>; feasible region is the shaded lens where <code>F₁(x) ≤ F₂(x)</code>.</figcaption>
+
 ### Pruning and feasibility test for the general problem
 
 Define `F(x) = F₁(x) − F₂(x)`. Then **`xₘ` is feasible ⟺ `F(xₘ) ≤ 0`**.
@@ -420,6 +438,9 @@ h_min = min { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (min slope of 
 h_max = max { aᵢ : i ∈ I₂, aᵢxₘ + bᵢ = F₂(xₘ) }   (max slope of active I₂ lines)
 ```
 > ⚠️ Note: the slide lists `hmin = …` **twice** (once for min, once for max) — clearly a typo; the second should be `h_max`. Corrected above.
+
+<img class="figure" src="../render/A06full/slide-24.png" alt="Fig. 7-9: shaded convex feasible region with dashed verticals at x0 and xm (x0<xm), a green dot optimum, and the right column listing gmin/gmax over I1 and hmin/hmax over I2 — the slide's fourth bullet reads hmin twice, the typo for hmax">
+<figcaption>Slide 24 (Fig. 7-9) — pruning constraints for the general problem; <code>F(x)=F₁(x)−F₂(x)</code>, <code>xₘ</code> feasible ⟺ <code>F(xₘ)≤0</code>. The slope definitions appear at right (the second <code>hmin</code> is the slide's typo for <code>h_max</code>).</figcaption>
 
 **Case 1: `F(xₘ) ≤ 0` (`xₘ` feasible).**
 - `g_min > 0` and `g_max > 0` → `x₀ < xₘ`.
@@ -456,6 +477,9 @@ Given `n` planar points, find the **smallest circle** that covers (encloses) all
 
 The center of the optimum circle lies in a region bounded by **perpendicular bisectors**: `L₁₂` = bisector of the segment joining `p₁, p₂`; `L₃₄` = bisector of segment joining `p₃, p₄`; etc. A point such as `p₁` can be **eliminated** without affecting the solution if it is dominated. ✅ **Verified against slide 34** (= Figure A.3): two bisectors `L₁₂` (positive slope) and `L₃₄` (negative slope) cross at origin `p`; points `p₁, p₂` on the right, `p₃, p₄` in the upper-left inside the shaded admissible region (upper-left quadrant). Slide 34's red caption reads "The area where the center of the optimum circle may be located." (The same figure is reused on slide 50 for Step 10.)
 
+<img class="figure" src="../render/A06full/slide-34.png" alt="The 1-center problem: bisectors L12 (positive slope) and L34 (negative slope) cross at origin; p1,p2 on the right, p3,p4 in the shaded upper-left admissible region where the optimum center may lie">
+<figcaption>Slide 34 — perpendicular-bisector elimination. <code>L₁₂</code> and <code>L₃₄</code> bound the shaded region "where the center of the optimum circle may be located"; <code>p₁</code> can be eliminated.</figcaption>
+
 ### 7.1 The Constrained 1-Center Problem
 
 The center is **restricted to lie on a given straight line** `y = y′`.
@@ -479,6 +503,9 @@ The center is **restricted to lie on a given straight line** `y = y′`.
 
 **Intuition for pruning:** of the two points in a pair, the one **closer** to `xₘ` (on the far side from `x*`) can never be the farthest point determining the radius, so it is discarded. (Fig. 7-18.)
 
+<img class="figure" src="../render/A06full/slide-38.png" alt="Fig. 7-18: line y=0 with bisector Lij of positive slope crossing at xij; point Pi above-left (boxed) and Pj to the right; xm marked with a leftward arrow toward x*">
+<figcaption>Slide 38 (Fig. 7-18) — pruning points in the constrained 1-center problem. With <code>x*</code> to the left of <code>xₘ</code>, of the pair <code>(Pᵢ,Pⱼ)</code> the point closer to <code>xₘ</code> is pruned.</figcaption>
+
 **Time complexity:** `O(n)`.
 
 ### 7.2 The General 1-Center Problem
@@ -492,20 +519,35 @@ Let `(xₛ, yₛ)` be the center of the optimum (unconstrained) circle. We can d
 **Case 1: `I` contains one point `P = (xₚ, yₚ)`.**
 - `yₛ` has the **same sign** as `yₚ`. (We should move the center toward that farthest point.) ✅ **Verified against slide 40 (Fig. 7-20, Case 1)** = Figure A.4: the constrained circle on `y = 0` has its single farthest point `p` directly above center `x*` (apex of the half-disk), so the unconstrained optimum moves **upward** toward `p`. Slide 40 prints the rule "`yₛ` has the same sign as that of `yₚ`."
 
+<img class="figure" src="../render/A06full/slide-40.png" alt="Fig. 7-20 Case 1: an upper half-disk on the line y=0 with single farthest point p at the apex directly above center x*; interior points scattered below">
+<figcaption>Slide 40 (Fig. 7-20, Case 1) — <code>I</code> contains one farthest point <code>p</code> directly above <code>x*</code>, so the unconstrained optimum moves upward: <code>yₛ</code> has the same sign as <code>yₚ</code>.</figcaption>
+
 **Case 2: `I` contains more than one point.** ✅ **Verified against slide 41 (Fig. 7-20(b)).**
 - Find the **smallest arc** spanning all points in `I`. Let `P₁ = (x₁, y₁)` and `P₂ = (x₂, y₂)` be the two **endpoints** of that smallest spanning arc.
 - If the arc **≥ 180°** → `yₛ = 0` (the circle is already optimal — the farthest points "surround" the center).
 - Else (`< 180°`) → **`yₛ` has the same sign as that of `(y₁ + y₂)/2`** (this expression IS printed on slide 41 — i.e. the sign of the midpoint-of-arc-endpoints' y-coordinate). Slide 41(b) draws the circle with farthest points `P₁,P₃,P₄,P₂` clustered on a short upper-right arc, center `(x*,0)`.
 
+<img class="figure" src="../render/A06full/slide-41.png" alt="Fig. 7-20 Case 2: (a) farthest points P1,P2,P3 spanning an arc ≥180° around center (x*,0) giving ys=0; (b) farthest points P1,P3,P4,P2 clustered on a short upper-right arc <180°, so ys follows the sign of (y1+y2)/2">
+<figcaption>Slide 41 (Fig. 7-20(a)/(b)) — <code>I</code> contains several farthest points. Arc ≥180° ⇒ <code>yₛ=0</code>; arc &lt;180° ⇒ <code>yₛ</code> follows the sign of <code>(y₁+y₂)/2</code>.</figcaption>
+
 **Why (acute vs obtuse):**
 - If the farthest points form an **acute triangle** with respect to the center → the circle **is optimal**.
 - If they form an **obtuse** configuration (spanning arc `< 180°`) → the circle is **not** optimal; the center can be moved.
+
+<img class="figure" src="../render/A06full/slide-42.png" alt="Two circumscribed triangles: an acute triangle (circle is optimal) and an obtuse triangle (circle is not optimal — a smaller dotted circle encloses the points)">
+<figcaption>Slide 42 — why: farthest points forming an acute triangle ⇒ the circle is optimal; an obtuse configuration ⇒ not optimal (a smaller circle exists).</figcaption>
 
 **Direction of `x*` / sign of `yₛ` when arc `< 180°`:**
 
 When the smallest spanning arc is `< 180°` (slide 43, **Fig. 7-23**), `(x₁ − x*)` and `(x₂ − x*)` must be of **opposite signs** — otherwise we could move `x*` toward where both `P₁` and `P₂` lie and shrink the circle.
 
+<img class="figure" src="../render/A06full/slide-43.png" alt="Fig. 7-23: circle centered at (x*,0) on line y=0, with arc endpoints P1 in the upper-left and P2 in the lower-left, on opposite sides of the line — the spanning arc is less than 180°">
+<figcaption>Slide 43 (Fig. 7-23) — direction of <code>x*</code> when the arc is &lt;180°: <code>(x₁−x*)</code> and <code>(x₂−x*)</code> have opposite signs.</figcaption>
+
 Let `P₁ = (a, b)` and `P₂ = (c, d)`. **Without loss of generality assume `a > x*`, `b > 0` and `c < x*`, `d < 0`** (this WLOG is stated verbatim on slide 44). Let the current radius be `r`. Slide 44 draws four sub-figures (a)-(d), each shading the candidate region (regions 1, 2, 3, 4) where a smaller enclosing circle's center could lie; the optimum center must lie in **region 3** (the shaded region of sub-figure (c), the lower-left wedge between the two equal-radius arcs through `P₁` and `P₂`).
+
+<img class="figure" src="../render/A06full/slide-44.png" alt="Four sub-figures (a)-(d) each shading one candidate region 1-4 formed by two equal-radius r arcs through P1=(a,b) and P2=(c,d); WLOG a>x*, b>0, c<x*, d<0">
+<figcaption>Slide 44 — the four candidate regions. The optimum center must lie in <strong>region 3</strong> (sub-figure (c), the lower-left wedge).</figcaption>
 
 ✅ **Verified against slide 45.** The slide **does** print the closed-form sign expressions (the note's earlier "blank" claim was wrong — the formulas were merely typeset as overlapping fractions). The slide says "the sign of `yₛ` must be the sign of" and "similarly, `xₛ` has the same sign as that of", with the fractions:
 
@@ -513,6 +555,9 @@ Let `P₁ = (a, b)` and `P₂ = (c, d)`. **Without loss of generality assume `a 
 sign(yₛ) = sign( (b + d)/2 )  =  sign( (y₁ + y₂)/2 )
 sign(xₛ) = sign( (a + c)/2 )  =  sign( (x₁ + x₂)/2 )
 ```
+
+<img class="figure" src="../render/A06full/slide-45.png" alt="Slide 45: the optimum center must be in region 3; sign(ys) = sign((b+d)/2) = sign((y1+y2)/2) and sign(xs) = sign((a+c)/2) = sign((x1+x2)/2), shown as overlapping fractions">
+<figcaption>Slide 45 — the closed-form sign rules: <code>sign(yₛ)=sign((b+d)/2)=sign((y₁+y₂)/2)</code> and <code>sign(xₛ)=sign((a+c)/2)=sign((x₁+x₂)/2)</code>, with the optimum center in region 3.</figcaption>
 
 i.e. the optimum center's coordinates take the sign of the **midpoint of the two spanning-arc endpoints** `P₁=(a,b)=(x₁,y₁)` and `P₂=(c,d)=(x₂,y₂)`. (Since `P₁,P₂` are the arc endpoints, `(a,b)≡(x₁,y₁)` and `(c,d)≡(x₂,y₂)`, so the two forms of each line are identical.) This is consistent with slide 41's Case-2 statement that `yₛ` follows the sign of `(y₁+y₂)/2`.
 
@@ -540,6 +585,9 @@ i.e. the optimum center's coordinates take the sign of the **midpoint of the two
 11. **Step 11.** Let `S` be the remaining points. **Go to Step 1.**
 
 **Pruning rate:** ✅ **Verified against slide 52** ("One point for each of n/4 intersections of `Lᵢ⁺` and `Lᵢ⁻` is pruned away. Thus, n/16 points are pruned away in each iteration."). Only the intersections in the correct quadrant (relative to `(x*, y*)`) qualify, giving **`n/16` points pruned per iteration**. Slide 52's figure shows the four quadrants about `(xₘ, yₘ)` with the prunable quadrant shaded and bisector-pair crosses scattered in each.
+
+<img class="figure" src="../render/A06full/slide-52.png" alt="Four quadrants about (xm,ym) with bisector-pair intersection crosses scattered in each; the lower-left quadrant shaded — one point pruned per qualifying intersection, n/16 points pruned per iteration">
+<figcaption>Slide 52 — pruning in the general 1-center step. Only intersections in the correct quadrant relative to <code>(xₘ,yₘ)</code> qualify; one point is pruned per qualifying intersection, giving <code>n/16</code> pruned per iteration.</figcaption>
 
 **Time complexity:**
 ```

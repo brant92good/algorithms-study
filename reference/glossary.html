@@ -26,58 +26,61 @@
   :root[data-theme="dark"] dd .sym{background:#2b291f;}
   @media print{body{margin:0;max-width:none}a{color:var(--ink);text-decoration:none}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
-<h1>Glossary</h1>
-<div class="sub">Shared vocabulary for the Algorithms final. Every lesson uses these exact terms.</div>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<h1><span data-tr="en">Glossary</span><span data-tr="zh">術語表</span></h1>
+<div class="sub"><span data-tr="en">Shared vocabulary for the Algorithms final. Every lesson uses these exact terms.</span><span data-tr="zh">演算法期末考的共用詞彙。每一課都使用這些確切的術語。</span></div>
 
-<section><h2>Ch6 · Searching Strategies</h2>
+<section><h2><span data-tr="en">Ch6 · Searching Strategies</span><span data-tr="zh">Ch6 · Searching 策略</span></h2>
 <dl>
-  <dt>Solution tree</dt><dd>Tree whose root-to-leaf paths enumerate all candidate solutions; each level fixes one decision. Searching = walking this tree.</dd>
-  <dt>DFS (depth-first search)</dt><dd>Expand the <em>deepest</em> unexpanded node first. Implemented with a <span class="sym">stack</span>. Backtracks on dead ends.</dd>
-  <dt>BFS (breadth-first search)</dt><dd>Expand the <em>shallowest</em> unexpanded node first. Implemented with a <span class="sym">queue</span>.</dd>
-  <dt>Hill climbing</dt><dd>DFS variant: among the children of the current node, expand the locally best one (greedy). No global view — can stall in a local optimum.</dd>
-  <dt>Best-first search</dt><dd>Expand the node with the best estimate among <em>all</em> open nodes (global view). Combines DFS + BFS reach.</dd>
-  <dt>Evaluation function <span class="sym">f(n)</span></dt><dd>Estimated promise of node n. 8-puzzle: <span class="sym">f(n)=d(n)+w(n)</span>, d=depth, w=# misplaced tiles.</dd>
-  <dt>Branch-and-bound</dt><dd>Strategy for <em>optimization</em> problems: prune any subtree whose bound can't beat the best solution found. (DFS/BFS/hill/best-first solve only feasibility, not optimization.)</dd>
-  <dt>Lower bound (reduced cost matrix)</dt><dd>Subtract the row min from each row, then the column min from each column, so every row & column has a 0. The total subtracted is a lower bound on any tour cost.</dd>
-  <dt>A* algorithm</dt><dd>Best-first for optimization with <span class="sym">f(n)=g(n)+h(n)</span>: g=cost root→n, h=estimate n→goal. If <span class="sym">h(n)≤h*(n)</span> (never overestimates), the first goal popped is optimal.</dd>
+  <dt>Solution tree</dt><dd><span data-tr="en">Tree whose root-to-leaf paths enumerate all candidate solutions; each level fixes one decision. Searching = walking this tree.</span><span data-tr="zh">一棵樹，其 root-to-leaf 路徑列舉出所有候選解；每一層固定一個決策。Searching 就是走訪這棵樹。</span></dd>
+  <dt>DFS (depth-first search)</dt><dd><span data-tr="en">Expand the <em>deepest</em> unexpanded node first. Implemented with a <span class="sym">stack</span>. Backtracks on dead ends.</span><span data-tr="zh">先展開<em>最深</em>的未展開節點。用 <span class="sym">stack</span> 實作。遇到死路就 backtrack。</span></dd>
+  <dt>BFS (breadth-first search)</dt><dd><span data-tr="en">Expand the <em>shallowest</em> unexpanded node first. Implemented with a <span class="sym">queue</span>.</span><span data-tr="zh">先展開<em>最淺</em>的未展開節點。用 <span class="sym">queue</span> 實作。</span></dd>
+  <dt>Hill climbing</dt><dd><span data-tr="en">DFS variant: among the children of the current node, expand the locally best one (greedy). No global view — can stall in a local optimum.</span><span data-tr="zh">DFS 的變體：在目前節點的子節點中，展開局部最佳的那一個（greedy）。沒有全域視野——可能卡在 local optimum。</span></dd>
+  <dt>Best-first search</dt><dd><span data-tr="en">Expand the node with the best estimate among <em>all</em> open nodes (global view). Combines DFS + BFS reach.</span><span data-tr="zh">在<em>所有</em> open 節點中展開估計值最佳的那一個（全域視野）。結合了 DFS 與 BFS 的觸及範圍。</span></dd>
+  <dt>Evaluation function <span class="sym">f(n)</span></dt><dd><span data-tr="en">Estimated promise of node n. 8-puzzle: <span class="sym">f(n)=d(n)+w(n)</span>, d=depth, w=# misplaced tiles.</span><span data-tr="zh">節點 n 的估計潛力。8-puzzle：<span class="sym">f(n)=d(n)+w(n)</span>，d=深度，w=放錯位置的方塊數。</span></dd>
+  <dt>Branch-and-bound</dt><dd><span data-tr="en">Strategy for <em>optimization</em> problems: prune any subtree whose bound can't beat the best solution found. (DFS/BFS/hill/best-first solve only feasibility, not optimization.)</span><span data-tr="zh">用於<em>optimization</em>問題的策略：修剪任何 bound 無法勝過目前最佳解的子樹。（DFS/BFS/hill/best-first 只解 feasibility，不解 optimization。）</span></dd>
+  <dt>Lower bound (reduced cost matrix)</dt><dd><span data-tr="en">Subtract the row min from each row, then the column min from each column, so every row & column has a 0. The total subtracted is a lower bound on any tour cost.</span><span data-tr="zh">每一列減去該列的最小值，再讓每一行減去該行的最小值，使每一列與每一行都有一個 0。減去的總和就是任何 tour 成本的 lower bound。</span></dd>
+  <dt>A* algorithm</dt><dd><span data-tr="en">Best-first for optimization with <span class="sym">f(n)=g(n)+h(n)</span>: g=cost root→n, h=estimate n→goal. If <span class="sym">h(n)≤h*(n)</span> (never overestimates), the first goal popped is optimal.</span><span data-tr="zh">用於 optimization 的 best-first，<span class="sym">f(n)=g(n)+h(n)</span>：g=root→n 的成本，h=n→goal 的估計值。若 <span class="sym">h(n)≤h*(n)</span>（永不高估，即 admissible），第一個被取出的 goal 即為最佳解。</span></dd>
 </dl>
 </section>
 
-<section><h2>Prune-and-Search</h2>
+<section><h2><span data-tr="en">Prune-and-Search</span><span data-tr="zh">Prune-and-Search</span></h2>
 <dl>
-  <dt>Prune-and-search</dt><dd>Each iteration discards a fixed fraction f of the data, then recurses on the rest. <span class="sym">T(n)=T((1−f)n)+O(n^k) ⇒ O(n^k)</span>.</dd>
-  <dt>Selection problem</dt><dd>Find the k-th smallest of n elements. Median = the (n/2)-th smallest.</dd>
-  <dt>Median of medians</dt><dd>Split into groups of 5, take each group's median, take the median of those as pivot p. Guarantees ≥ n/4 pruned per step ⇒ selection in <span class="sym">O(n)</span>.</dd>
+  <dt>Prune-and-search</dt><dd><span data-tr="en">Each iteration discards a fixed fraction f of the data, then recurses on the rest. <span class="sym">T(n)=T((1−f)n)+O(n^k) ⇒ O(n^k)</span>.</span><span data-tr="zh">每次疊代丟棄資料中固定比例 f，再對其餘部分遞迴。<span class="sym">T(n)=T((1−f)n)+O(n^k) ⇒ O(n^k)</span>。</span></dd>
+  <dt>Selection problem</dt><dd><span data-tr="en">Find the k-th smallest of n elements. Median = the (n/2)-th smallest.</span><span data-tr="zh">在 n 個元素中找出第 k 小的元素。Median（中位數）= 第 (n/2) 小的元素。</span></dd>
+  <dt>Median of medians</dt><dd><span data-tr="en">Split into groups of 5, take each group's median, take the median of those as pivot p. Guarantees ≥ n/4 pruned per step ⇒ selection in <span class="sym">O(n)</span>.</span><span data-tr="zh">分成每組 5 個，取每組的 median，再取這些 median 的 median 當作 pivot p。保證每一步至少修剪 ≥ n/4 ⇒ selection 為 <span class="sym">O(n)</span>。</span></dd>
 </dl>
 </section>
 
-<section><h2>Ch7 · Dynamic Programming</h2>
+<section><h2><span data-tr="en">Ch7 · Dynamic Programming</span><span data-tr="zh">Ch7 · Dynamic Programming</span></h2>
 <dl>
-  <dt>Multistage graph</dt><dd>DAG with vertices partitioned into ordered stages V₁…V_k; edges go stage i→i+1. Goal: min-cost path s→t.</dd>
-  <dt>Principle of optimality</dt><dd>If a sequence of decisions D₁…Dₙ is optimal, then every suffix (last k decisions) is itself optimal. Lets us write a recurrence.</dd>
-  <dt>Forward reasoning</dt><dd>Express decision xᵢ via optimal sequences for x_{i+1}…xₙ. (Relations formed forward are solved backward.)</dd>
-  <dt>Backward reasoning</dt><dd>Express decision xᵢ via optimal sequences for x₁…x_{i−1}.</dd>
-  <dt>0/1 knapsack (DP)</dt><dd><span class="sym">gᵢ(y)=max{ g_{i+1}(y), g_{i+1}(y−w_{i+1})+p_{i+1} }</span>; answer g₀(M).</dd>
+  <dt>Multistage graph</dt><dd><span data-tr="en">DAG with vertices partitioned into ordered stages V₁…V_k; edges go stage i→i+1. Goal: min-cost path s→t.</span><span data-tr="zh">一個 DAG，其頂點被切分成有序的 stage V₁…V_k；邊只從 stage i→i+1。目標：s→t 的最小成本路徑。</span></dd>
+  <dt>Principle of optimality</dt><dd><span data-tr="en">If a sequence of decisions D₁…Dₙ is optimal, then every suffix (last k decisions) is itself optimal. Lets us write a recurrence.</span><span data-tr="zh">若一連串決策 D₁…Dₙ 是最佳的，則每個後綴（最後 k 個決策）本身也是最佳的。這讓我們能寫出 recurrence。</span></dd>
+  <dt>Forward reasoning</dt><dd><span data-tr="en">Express decision xᵢ via optimal sequences for x_{i+1}…xₙ. (Relations formed forward are solved backward.)</span><span data-tr="zh">用 x_{i+1}…xₙ 的最佳序列來表示決策 xᵢ。（往前建立的關係式，往後求解。）</span></dd>
+  <dt>Backward reasoning</dt><dd><span data-tr="en">Express decision xᵢ via optimal sequences for x₁…x_{i−1}.</span><span data-tr="zh">用 x₁…x_{i−1} 的最佳序列來表示決策 xᵢ。</span></dd>
+  <dt>0/1 knapsack (DP)</dt><dd><span data-tr="en"><span class="sym">gᵢ(y)=max{ g_{i+1}(y), g_{i+1}(y−w_{i+1})+p_{i+1} }</span>; answer g₀(M).</span><span data-tr="zh"><span class="sym">gᵢ(y)=max{ g_{i+1}(y), g_{i+1}(y−w_{i+1})+p_{i+1} }</span>；答案為 g₀(M)。</span></dd>
 </dl>
 </section>
 
-<section><h2>Ch8 · NP-Completeness</h2>
+<section><h2><span data-tr="en">Ch8 · NP-Completeness</span><span data-tr="zh">Ch8 · NP-Completeness</span></h2>
 <dl>
-  <dt>P</dt><dd>Problems solvable by a <em>deterministic</em> polynomial-time algorithm.</dd>
-  <dt>NP</dt><dd><em>Decision</em> problems solvable by a <em>nondeterministic</em> polynomial algorithm = guess a certificate, <em>check</em> it in poly time.</dd>
-  <dt>Reduction <span class="sym">A → B</span></dt><dd>A solvable in poly time using a poly-time algorithm for B. "A is no harder than B."</dd>
-  <dt>NP-hard</dt><dd>Every NP problem reduces to it. (May not be in NP — e.g. the halting problem.)</dd>
-  <dt>NP-complete (NPC)</dt><dd>NP-hard <em>and</em> in NP. If any NPC problem ∈ P then P = NP.</dd>
-  <dt>Nondeterministic algorithm</dt><dd>Two phases: <span class="sym">choice()</span> guesses; then a deterministic check. NP if the check is polynomial.</dd>
-  <dt>Cook's theorem</dt><dd>SAT is NP-complete — the first one. Every NP problem reduces to SAT.</dd>
-  <dt>Decision vs optimization</dt><dd>Decision answers Yes/No ("is there a tour ≤ C?"). Solve optimization by binary-searching C with the decision algorithm.</dd>
+  <dt>P</dt><dd><span data-tr="en">Problems solvable by a <em>deterministic</em> polynomial-time algorithm.</span><span data-tr="zh">能由<em>deterministic</em>（確定性）多項式時間演算法求解的問題。</span></dd>
+  <dt>NP</dt><dd><span data-tr="en"><em>Decision</em> problems solvable by a <em>nondeterministic</em> polynomial algorithm = guess a certificate, <em>check</em> it in poly time.</span><span data-tr="zh">能由<em>nondeterministic</em>（非確定性）多項式演算法求解的<em>decision</em>問題 = 猜一個 certificate，再在多項式時間內<em>檢查</em>它。</span></dd>
+  <dt>Reduction <span class="sym">A → B</span></dt><dd><span data-tr="en">A solvable in poly time using a poly-time algorithm for B. "A is no harder than B."</span><span data-tr="zh">利用 B 的多項式時間演算法，就能在多項式時間內解 A。「A 不會比 B 難。」</span></dd>
+  <dt>NP-hard</dt><dd><span data-tr="en">Every NP problem reduces to it. (May not be in NP — e.g. the halting problem.)</span><span data-tr="zh">每個 NP 問題都能 reduce 到它。（它本身不一定在 NP 內——例如 halting problem。）</span></dd>
+  <dt>NP-complete (NPC)</dt><dd><span data-tr="en">NP-hard <em>and</em> in NP. If any NPC problem ∈ P then P = NP.</span><span data-tr="zh">既是 NP-hard <em>又</em>在 NP 內。只要有任何一個 NPC 問題 ∈ P，就會推得 P = NP。</span></dd>
+  <dt>Nondeterministic algorithm</dt><dd><span data-tr="en">Two phases: <span class="sym">choice()</span> guesses; then a deterministic check. NP if the check is polynomial.</span><span data-tr="zh">兩個階段：<span class="sym">choice()</span> 進行猜測；接著做 deterministic 檢查。若檢查是多項式時間，即屬於 NP。</span></dd>
+  <dt>Cook's theorem</dt><dd><span data-tr="en">SAT is NP-complete — the first one. Every NP problem reduces to SAT.</span><span data-tr="zh">SAT 是 NP-complete——而且是第一個被證明的。每個 NP 問題都能 reduce 到 SAT。</span></dd>
+  <dt>Decision vs optimization</dt><dd><span data-tr="en">Decision answers Yes/No ("is there a tour ≤ C?"). Solve optimization by binary-searching C with the decision algorithm.</span><span data-tr="zh">Decision 回答 Yes/No（「是否存在 ≤ C 的 tour？」）。對 C 做 binary search 並搭配 decision 演算法，即可解 optimization。</span></dd>
 </dl>
 </section>
 
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

@@ -153,10 +153,12 @@
     const scoreEl = document.getElementById('score');
     const upd = () => { if (scoreEl) scoreEl.textContent = right + ' / ' + total + (answered < total ? ' · ' + answered + ' answered' : ' — done'); };
     quizzes.forEach(q => {
-      const correct = +q.dataset.correct, explain = q.dataset.explain || '';
+      const correct = +q.dataset.correct;
       const opts = q.querySelectorAll('.opt'), fb = q.querySelector('.fb');
       opts.forEach((o, i) => o.addEventListener('click', () => {
         if (q.dataset.done) return; q.dataset.done = '1'; answered++;
+        const lang = document.documentElement.getAttribute('data-lang') || 'en';
+        const explain = (lang === 'zh' && q.dataset.explainZh) ? q.dataset.explainZh : (q.dataset.explain || '');
         opts.forEach(x => x.disabled = true);
         if (i === correct) { o.classList.add('correct'); right++; fb.className = 'fb ok'; fb.innerHTML = '<span class="v">✓ Correct.</span> ' + explain; }
         else { o.classList.add('wrong'); opts[correct].classList.add('correct'); fb.className = 'fb no'; fb.innerHTML = '<span class="v">✗ Not quite — ' + String.fromCharCode(65 + correct) + ' is right.</span> ' + explain; }

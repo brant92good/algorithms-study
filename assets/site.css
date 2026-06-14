@@ -60,3 +60,6 @@ img{max-width:100%;height:auto;border-radius:6px;border:1px solid var(--rule)}
 .lede{color:var(--mut);font-style:italic;border-left:3px solid var(--rule);padding-left:1rem}
 @media (max-width:480px){.wrap{padding:1.6rem 1rem 4rem}h1{font-size:1.6rem}}
 @media print{.topbar{display:none}.themebtn{display:none}body{background:#fff;color:#000}}
+
+img.figure{background:#fff;padding:.4rem;display:block;margin:.6rem auto;max-width:100%}
+figcaption{font-size:.85rem;color:var(--mut);text-align:center;margin:-.2rem 0 1rem}

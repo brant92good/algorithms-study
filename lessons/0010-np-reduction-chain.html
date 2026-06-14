@@ -62,40 +62,42 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 10 · Ch8 NP-Completeness II</div>
-<h1>The Reduction Chain</h1>
-<div class="mission">Exam goal: <strong>prove a problem is NP-complete</strong> and <strong>reproduce a reduction by hand</strong>. This is the highest-stakes proof/QA topic. The single win: lock in the 2-step recipe, memorize the reduction map, and be able to redraw the two cleanest constructions — <em>SAT → 3-SAT</em> and <em>sum of subsets → partition</em> — from scratch.</div>
+<div class="kicker"><span data-tr="en">Lesson 10 · Ch8 NP-Completeness II</span><span data-tr="zh">第 10 課 · 第 8 章 NP-Completeness II</span></div>
+<h1><span data-tr="en">The Reduction Chain</span><span data-tr="zh">The Reduction Chain（歸約鏈）</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>prove a problem is NP-complete</strong> and <strong>reproduce a reduction by hand</strong>. This is the highest-stakes proof/QA topic. The single win: lock in the 2-step recipe, memorize the reduction map, and be able to redraw the two cleanest constructions — <em>SAT → 3-SAT</em> and <em>sum of subsets → partition</em> — from scratch.</span><span data-tr="zh">考試目標：<strong>證明一個問題是 NP-complete</strong>，並能<strong>手寫重現一個 reduction</strong>。這是分數最關鍵的證明／QA 主題。唯一的致勝點：記牢這個兩步驟流程、背下 reduction map，並能從零重畫出兩個最乾淨的構造 — <em>SAT → 3-SAT</em> 和 <em>sum of subsets → partition</em>。</span></div>
 
-<h2>1 · What is all this? (start here)</h2>
-<p>This whole topic is about <strong>which problems are "hard"</strong> in a precise sense. A few plain-words definitions first — everything later is built on these, so don't skip them.</p>
+<h2><span data-tr="en">1 · What is all this? (start here)</span><span data-tr="zh">1 · 這些到底在講什麼？（從這裡開始）</span></h2>
+<p><span data-tr="en">This whole topic is about <strong>which problems are "hard"</strong> in a precise sense. A few plain-words definitions first — everything later is built on these, so don't skip them.</span><span data-tr="zh">整個主題在講的是：在一個精確的意義下，<strong>哪些問題算「難」</strong>。先給幾個白話定義 — 後面所有東西都建立在這些之上，所以別跳過。</span></p>
 
-<p><strong>Decision problem:</strong> a problem whose answer is just <em>Yes</em> or <em>No</em> (e.g. "is there a tour shorter than 100?"), as opposed to an <em>optimization</em> problem that asks for the best value. The whole theory is about decision problems.</p>
+<p><span data-tr="en"><strong>Decision problem:</strong> a problem whose answer is just <em>Yes</em> or <em>No</em> (e.g. "is there a tour shorter than 100?"), as opposed to an <em>optimization</em> problem that asks for the best value. The whole theory is about decision problems.</span><span data-tr="zh"><strong>Decision problem（決策問題）：</strong>答案只有 <em>Yes</em> 或 <em>No</em> 的問題（例如「存不存在一條長度小於 100 的 tour？」），相對於要求最佳值的 <em>optimization</em> 問題。整套理論談的都是 decision problem。</span></p>
 
-<p><strong>NP</strong> (informally): the class of decision problems where, <em>if</em> someone hands you a candidate answer, you can <strong>check</strong> it is correct in polynomial time (fast). You may not be able to <em>find</em> the answer quickly, but you can <em>verify</em> a proposed one. (Formally: a "guess a candidate, then check it quickly" algorithm.)</p>
+<p><span data-tr="en"><strong>NP</strong> (informally): the class of decision problems where, <em>if</em> someone hands you a candidate answer, you can <strong>check</strong> it is correct in polynomial time (fast). You may not be able to <em>find</em> the answer quickly, but you can <em>verify</em> a proposed one. (Formally: a "guess a candidate, then check it quickly" algorithm.)</span><span data-tr="zh"><strong>NP</strong>（非正式說法）：一類 decision problem，<em>如果</em>有人遞給你一個候選答案，你能在多項式時間內（很快）<strong>檢查</strong>它是否正確。你不一定能很快<em>找出</em>答案，但能<em>驗證</em>別人給的答案。（正式說法：一個「猜一個候選，再快速檢查」的演算法。）</span></p>
 
-<p><strong>NP-complete (NPC):</strong> the <em>hardest</em> problems inside NP. Two conditions: (a) the problem is in NP (answers are checkable fast), and (b) it is <strong>NP-hard</strong> — <em>every</em> NP problem can be transformed into it. So if you ever found a fast algorithm for one NP-complete problem, you'd get a fast algorithm for <em>all</em> of NP. Nobody has, which is why these are considered intractable.</p>
+<p><span data-tr="en"><strong>NP-complete (NPC):</strong> the <em>hardest</em> problems inside NP. Two conditions: (a) the problem is in NP (answers are checkable fast), and (b) it is <strong>NP-hard</strong> — <em>every</em> NP problem can be transformed into it. So if you ever found a fast algorithm for one NP-complete problem, you'd get a fast algorithm for <em>all</em> of NP. Nobody has, which is why these are considered intractable.</span><span data-tr="zh"><strong>NP-complete (NPC)：</strong>NP 裡<em>最難</em>的那些問題。兩個條件：(a) 問題在 NP 裡（答案可快速檢查），且 (b) 它是 <strong>NP-hard</strong> — <em>每一個</em> NP 問題都能被轉換成它。所以只要你對任何一個 NP-complete 問題找到快速演算法，你就等於對<em>整個</em> NP 都有了快速演算法。沒有人做到過，這就是為什麼這些問題被視為 intractable（難解的）。</span></p>
 
-<div class="note"><strong>What is a reduction?</strong> A <strong>reduction A → B</strong> is a recipe that turns <em>any</em> instance of problem A into an instance of problem B in polynomial time, so that the <strong>Yes/No answer is preserved</strong> (the A-instance is a "Yes" exactly when the built B-instance is a "Yes"). Intuition: if you can solve B, you can solve A by translating and asking B — so <strong>B is at least as hard as A</strong>. Read the arrow as "A reduces to B" = "B is at least as hard as A."</div>
+<div class="note"><span data-tr="en"><strong>What is a reduction?</strong> A <strong>reduction A → B</strong> is a recipe that turns <em>any</em> instance of problem A into an instance of problem B in polynomial time, so that the <strong>Yes/No answer is preserved</strong> (the A-instance is a "Yes" exactly when the built B-instance is a "Yes"). Intuition: if you can solve B, you can solve A by translating and asking B — so <strong>B is at least as hard as A</strong>. Read the arrow as "A reduces to B" = "B is at least as hard as A."</span><span data-tr="zh"><strong>什麼是 reduction？</strong>一個 <strong>reduction A → B</strong> 是一套作法，能在多項式時間內把問題 A 的<em>任何</em> instance 轉成問題 B 的 instance，並且<strong>保留 Yes/No 答案</strong>（A-instance 為「Yes」當且僅當建出的 B-instance 為「Yes」）。直覺：如果你能解 B，你就能透過轉換並去問 B 來解 A — 所以 <strong>B 至少和 A 一樣難</strong>。把箭頭讀作「A reduces to B」=「B 至少和 A 一樣難」。</span></div>
 
-<p><strong>Why "known NP-complete B reduces to A" makes A NP-complete.</strong> Suppose B is already known to be NP-complete (the hardest kind), and you exhibit a reduction <code>B → A</code>. That says A is at least as hard as B — and since B is at least as hard as <em>everything</em> in NP, so is A. That makes A NP-hard. If you <em>also</em> show A ∈ NP, then A is NP-hard <em>and</em> in NP = <strong>NP-complete</strong>. The two-step recipe below is exactly this.</p>
+<p><span data-tr="en"><strong>Why "known NP-complete B reduces to A" makes A NP-complete.</strong> Suppose B is already known to be NP-complete (the hardest kind), and you exhibit a reduction <code>B → A</code>. That says A is at least as hard as B — and since B is at least as hard as <em>everything</em> in NP, so is A. That makes A NP-hard. If you <em>also</em> show A ∈ NP, then A is NP-hard <em>and</em> in NP = <strong>NP-complete</strong>. The two-step recipe below is exactly this.</span><span data-tr="zh"><strong>為什麼「已知是 NP-complete 的 B reduces to A」就能讓 A 成為 NP-complete。</strong>假設 B 已知是 NP-complete（最難的那種），而你展示了一個 reduction <code>B → A</code>。這說明 A 至少和 B 一樣難 — 而既然 B 至少和 NP 裡<em>所有</em>問題一樣難，A 也是。這讓 A 成為 NP-hard。如果你<em>同時</em>證明 A ∈ NP，那麼 A 就是 NP-hard <em>而且</em>在 NP 裡 = <strong>NP-complete</strong>。下面的兩步驟流程正是在做這件事。</span></p>
 
-<h2>2 · How to prove A is NP-complete</h2>
-<p>Two steps, always (slide 35):</p>
+<h2><span data-tr="en">2 · How to prove A is NP-complete</span><span data-tr="zh">2 · 如何證明 A 是 NP-complete</span></h2>
+<p><span data-tr="en">Two steps, always (slide 35):</span><span data-tr="zh">永遠是兩個步驟（slide 35）：</span></p>
 <div class="tree">(I)  show  A ∈ NP        — give a nondeterministic poly-time
                             algorithm (guess + poly-time check)
 (II) show  B → A         — pick a KNOWN NPC problem B and
                             reduce it TO A  (B reduces to A)</div>
-<p>Recall the reduction arrow: <strong>B → A</strong> means "B can be solved using a poly-time algorithm for A as a subroutine," i.e. <strong>A is at least as hard as B</strong>.</p>
-<div class="note"><strong>Why this suffices:</strong> (II) shows A is at least as hard as an <em>already-hardest</em> problem B, so A is NP-hard. (I) places A inside NP. NP-hard + in NP = <strong>NP-complete</strong>. <br><br><strong>Direction trap (memorize):</strong> you reduce the <em>known</em> hard problem <strong>B → A</strong> (known → new). Reducing the other way (A → B) would only prove A is <em>easy</em>, not hard. Cook's theorem seeds the whole chain: every NP problem → SAT, so <strong>SAT is the first NPC problem</strong>.</div>
+<p><span data-tr="en">Recall the reduction arrow: <strong>B → A</strong> means "B can be solved using a poly-time algorithm for A as a subroutine," i.e. <strong>A is at least as hard as B</strong>.</span><span data-tr="zh">回想 reduction 箭頭：<strong>B → A</strong> 的意思是「B 可以用 A 的多項式時間演算法當作子程序來解」，也就是 <strong>A 至少和 B 一樣難</strong>。</span></p>
+<div class="note"><span data-tr="en"><strong>Why this suffices:</strong> (II) shows A is at least as hard as an <em>already-hardest</em> problem B, so A is NP-hard. (I) places A inside NP. NP-hard + in NP = <strong>NP-complete</strong>. <br><br><strong>Direction trap (memorize):</strong> you reduce the <em>known</em> hard problem <strong>B → A</strong> (known → new). Reducing the other way (A → B) would only prove A is <em>easy</em>, not hard. Cook's theorem seeds the whole chain: every NP problem → SAT, so <strong>SAT is the first NPC problem</strong>.</span><span data-tr="zh"><strong>為什麼這樣就夠了：</strong>(II) 證明 A 至少和一個<em>已知最難</em>的問題 B 一樣難，所以 A 是 NP-hard。(I) 把 A 放進 NP 裡。NP-hard + 在 NP 裡 = <strong>NP-complete</strong>。<br><br><strong>方向陷阱（要背）：</strong>你是把<em>已知</em>的難問題拿來做 <strong>B → A</strong>（known → new）。反過來做（A → B）只會證明 A 是<em>容易</em>的，不是難的。Cook's theorem 是整條鏈的源頭：every NP problem → SAT，所以 <strong>SAT 是第一個 NPC 問題</strong>。</span></div>
 
-<h2>3 · The reduction map</h2>
-<p>Every edge <code>X → Y</code> reads "<em>X reduces to Y</em>" and is used to prove <strong>Y is NPC given X is</strong>. Burn this picture in — it is gold for the exam.</p>
+<h2><span data-tr="en">3 · The reduction map</span><span data-tr="zh">3 · The reduction map（歸約地圖）</span></h2>
+<p><span data-tr="en">Every edge <code>X → Y</code> reads "<em>X reduces to Y</em>" and is used to prove <strong>Y is NPC given X is</strong>. Burn this picture in — it is gold for the exam.</span><span data-tr="zh">每一條邊 <code>X → Y</code> 讀作「<em>X reduces to Y</em>」，用來在已知 X 是 NPC 的前提下證明 <strong>Y 是 NPC</strong>。把這張圖烙進腦裡 — 考試時這是黃金。</span></p>
 <div class="tree">                     [ Cook's Theorem ]
             every NP problem → SAT  (SAT = first NPC)
                             │
@@ -123,18 +125,18 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
                     v
               VLSI DISCRETE LAYOUT
               (bin packing → VLSI)</div>
-<div class="note"><strong>Spine to recite:</strong> SAT → SATY → CN → exact cover → sum of subsets → <strong>partition</strong>, and from partition it branches to <strong>{bin packing → VLSI, 0/1 knapsack}</strong>. Separately SAT → 3-SAT; SAT → clique → node cover; SAT → directed Hamiltonian cycle → TSP.</div>
+<div class="note"><span data-tr="en"><strong>Spine to recite:</strong> SAT → SATY → CN → exact cover → sum of subsets → <strong>partition</strong>, and from partition it branches to <strong>{bin packing → VLSI, 0/1 knapsack}</strong>. Separately SAT → 3-SAT; SAT → clique → node cover; SAT → directed Hamiltonian cycle → TSP.</span><span data-tr="zh"><strong>要背的主幹：</strong>SAT → SATY → CN → exact cover → sum of subsets → <strong>partition</strong>，從 partition 再分岔到 <strong>{bin packing → VLSI, 0/1 knapsack}</strong>。另外獨立的幾條：SAT → 3-SAT；SAT → clique → node cover；SAT → directed Hamiltonian cycle → TSP。</span></div>
 
-<h2>4 · Meet SAT and 3-SAT</h2>
-<p>The first reduction is between two cousins, so define them before using them.</p>
-<p><strong>Literal:</strong> a variable or its negation — <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). <strong>Clause:</strong> a bunch of literals joined by OR (<code>∨</code>), e.g. <code>x₁ ∨ ¬x₂ ∨ x₃</code> — true if <em>any</em> of its literals is true. <strong>CNF (conjunctive normal form):</strong> several clauses joined by AND (<code>∧</code>) — true only if <em>every</em> clause is true.</p>
-<p><strong>SAT (satisfiability):</strong> given a CNF formula, is there a True/False assignment to the variables that makes the whole formula true? If yes it's <em>satisfiable</em>. By Cook's theorem SAT is the first NP-complete problem.</p>
+<h2><span data-tr="en">4 · Meet SAT and 3-SAT</span><span data-tr="zh">4 · 認識 SAT 與 3-SAT</span></h2>
+<p><span data-tr="en">The first reduction is between two cousins, so define them before using them.</span><span data-tr="zh">第一個 reduction 發生在兩個近親之間，所以先定義它們再使用。</span></p>
+<p><span data-tr="en"><strong>Literal:</strong> a variable or its negation — <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). <strong>Clause:</strong> a bunch of literals joined by OR (<code>∨</code>), e.g. <code>x₁ ∨ ¬x₂ ∨ x₃</code> — true if <em>any</em> of its literals is true. <strong>CNF (conjunctive normal form):</strong> several clauses joined by AND (<code>∧</code>) — true only if <em>every</em> clause is true.</span><span data-tr="zh"><strong>Literal（文字）：</strong>一個變數或它的否定 — <code>x₁</code> 或 <code>¬x₁</code>（讀作「not x₁」）。<strong>Clause（子句）：</strong>一堆 literal 用 OR（<code>∨</code>）連起來，例如 <code>x₁ ∨ ¬x₂ ∨ x₃</code> — 只要其中<em>任何一個</em> literal 為真就為真。<strong>CNF (conjunctive normal form，合取範式)：</strong>數個 clause 用 AND（<code>∧</code>）連起來 — 只有<em>每個</em> clause 都為真時才為真。</span></p>
+<p><span data-tr="en"><strong>SAT (satisfiability):</strong> given a CNF formula, is there a True/False assignment to the variables that makes the whole formula true? If yes it's <em>satisfiable</em>. By Cook's theorem SAT is the first NP-complete problem.</span><span data-tr="zh"><strong>SAT (satisfiability，可滿足性)：</strong>給定一個 CNF formula，是否存在一組對變數的 True/False 賦值，使整個 formula 為真？如果有，它就是 <em>satisfiable（可滿足的）</em>。由 Cook's theorem，SAT 是第一個 NP-complete 問題。</span></p>
 <div class="tree">tiny SAT instance:   (x₁ ∨ x₂ ∨ x₃) ∧ (¬x₁) ∧ (¬x₂)
 assignment x₁=F, x₂=F, x₃=T  →  every clause true  →  SATISFIABLE ✓</div>
-<p><strong>3-SAT:</strong> exactly the same question, but with the restriction that <strong>every clause has <em>exactly</em> three literals</strong>. So <code>(x₁ ∨ ¬x₂ ∨ x₃) ∧ (x₂ ∨ x₃ ∨ ¬x₄)</code> is a legal 3-SAT formula; a 2-literal or 4-literal clause is not.</p>
+<p><span data-tr="en"><strong>3-SAT:</strong> exactly the same question, but with the restriction that <strong>every clause has <em>exactly</em> three literals</strong>. So <code>(x₁ ∨ ¬x₂ ∨ x₃) ∧ (x₂ ∨ x₃ ∨ ¬x₄)</code> is a legal 3-SAT formula; a 2-literal or 4-literal clause is not.</span><span data-tr="zh"><strong>3-SAT：</strong>完全相同的問題，但加上限制：<strong>每個 clause 都<em>恰好</em>有三個 literal</strong>。所以 <code>(x₁ ∨ ¬x₂ ∨ x₃) ∧ (x₂ ∨ x₃ ∨ ¬x₄)</code> 是合法的 3-SAT formula；2 個或 4 個 literal 的 clause 則不是。</span></p>
 
-<h2>5 · Reduction in detail — SAT → 3-SAT</h2>
-<p>We show 3-SAT is NP-complete by reducing SAT (known NPC) <strong>to</strong> it. <strong>(I)</strong> 3-SAT is in NP (it's a restricted SAT: guess an assignment, check in poly time). <strong>(II)</strong> SAT → 3-SAT by <strong>padding each clause with fresh variables</strong> <code>yᵢ</code> so it ends up with exactly 3 literals, splitting by the clause's current size:</p>
+<h2><span data-tr="en">5 · Reduction in detail — SAT → 3-SAT</span><span data-tr="zh">5 · Reduction 細節 — SAT → 3-SAT</span></h2>
+<p><span data-tr="en">We show 3-SAT is NP-complete by reducing SAT (known NPC) <strong>to</strong> it. <strong>(I)</strong> 3-SAT is in NP (it's a restricted SAT: guess an assignment, check in poly time). <strong>(II)</strong> SAT → 3-SAT by <strong>padding each clause with fresh variables</strong> <code>yᵢ</code> so it ends up with exactly 3 literals, splitting by the clause's current size:</span><span data-tr="zh">我們透過把 SAT（已知 NPC）reduce <strong>到</strong> 3-SAT 來證明 3-SAT 是 NP-complete。<strong>(I)</strong> 3-SAT 在 NP 裡（它是受限的 SAT：猜一組賦值，多項式時間檢查）。<strong>(II)</strong> SAT → 3-SAT 的作法是<strong>用新變數 <code>yᵢ</code> 填補（pad）每個 clause</strong>，讓它最後恰好有 3 個 literal，並依 clause 目前的大小分情況處理：</span></p>
 <div class="tree">1 literal  L₁          → 4 clauses, 2 new vars (all 4 sign combos):
    L₁ ∨  y₁ ∨  y₂
    L₁ ∨ ¬y₁ ∨  y₂
@@ -153,8 +155,8 @@ k > 3 literals         → chain with k−3 new vars y₁…y_{k−3}:
    L₄     ∨ ¬y₂   ∨  y₃
             ⋮
    L_{k−1} ∨ Lₖ   ∨ ¬y_{k−3}</div>
-<p>Work the note's example before peeking. SAT instance: <code>x₁ ∨ x₂</code> &nbsp;·&nbsp; <code>¬x₃</code> &nbsp;·&nbsp; <code>x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅</code>.</p>
-<details><summary>The transformed 3-SAT instance (slide 39)</summary>
+<p><span data-tr="en">Work the note's example before peeking. SAT instance: <code>x₁ ∨ x₂</code> &nbsp;·&nbsp; <code>¬x₃</code> &nbsp;·&nbsp; <code>x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅</code>.</span><span data-tr="zh">先別偷看，自己做做看這個例子。SAT instance：<code>x₁ ∨ x₂</code> &nbsp;·&nbsp; <code>¬x₃</code> &nbsp;·&nbsp; <code>x₁ ∨ ¬x₂ ∨ x₃ ∨ ¬x₄ ∨ x₅</code>。</span></p>
+<details><summary><span data-tr="en">The transformed 3-SAT instance (slide 39)</span><span data-tr="zh">轉換後的 3-SAT instance（slide 39）</span></summary>
 <div class="tree"> x₁ ∨ x₂ ∨  y₁          (from the 2-literal clause)
  x₁ ∨ x₂ ∨ ¬y₁
 
@@ -167,107 +169,107 @@ k > 3 literals         → chain with k−3 new vars y₁…y_{k−3}:
  x₃ ∨ ¬y₄ ∨  y₅
 ¬x₄ ∨  x₅ ∨ ¬y₅</div>
 </details>
-<details><summary>Why it works (correctness sketch)</summary>
-<p><strong>S satisfiable ⇔ S′ satisfiable.</strong></p>
-<p><strong>(⇒)</strong> Some original literal <code>Lᵢ = T</code>. In the k&gt;3 chain, set the chain y's <em>true for the clauses before Lᵢ's clause and false for those after</em> — then every padding clause is covered by a y except Lᵢ's own clause, which <code>Lᵢ = T</code> already satisfies. (1- and 2-literal cases: the true literal carries over and the fresh y's can be set freely.)</p>
-<p><strong>(⇐)</strong> A satisfying assignment of S′ <em>cannot</em> ride on the y's alone: resolving the chain on all the <code>yᵢ</code> cancels the padding and yields back <code>L₁ ∨ … ∨ Lₖ</code>, so at least one original <code>Lᵢ</code> must be true ⇒ S is satisfiable.</p>
-<p>Hence <strong>3-SAT is NP-complete</strong>.</p>
+<details><summary><span data-tr="en">Why it works (correctness sketch)</span><span data-tr="zh">為什麼成立（正確性概要）</span></summary>
+<p><span data-tr="en"><strong>S satisfiable ⇔ S′ satisfiable.</strong></span><span data-tr="zh"><strong>S satisfiable ⇔ S′ satisfiable。</strong></span></p>
+<p><span data-tr="en"><strong>(⇒)</strong> Some original literal <code>Lᵢ = T</code>. In the k&gt;3 chain, set the chain y's <em>true for the clauses before Lᵢ's clause and false for those after</em> — then every padding clause is covered by a y except Lᵢ's own clause, which <code>Lᵢ = T</code> already satisfies. (1- and 2-literal cases: the true literal carries over and the fresh y's can be set freely.)</span><span data-tr="zh"><strong>(⇒)</strong> 某個原本的 literal <code>Lᵢ = T</code>。在 k&gt;3 的 chain 裡，把 chain 上的 y 設成<em>在 Lᵢ 所在 clause 之前的為真、之後的為假</em> — 這樣除了 Lᵢ 自己的 clause（已被 <code>Lᵢ = T</code> 滿足）外，每個填補 clause 都被某個 y 覆蓋。（1 個與 2 個 literal 的情況：為真的 literal 直接帶過去，新的 y 可以自由設定。）</span></p>
+<p><span data-tr="en"><strong>(⇐)</strong> A satisfying assignment of S′ <em>cannot</em> ride on the y's alone: resolving the chain on all the <code>yᵢ</code> cancels the padding and yields back <code>L₁ ∨ … ∨ Lₖ</code>, so at least one original <code>Lᵢ</code> must be true ⇒ S is satisfiable.</span><span data-tr="zh"><strong>(⇐)</strong> S′ 的一組滿足賦值<em>不可能</em>只靠 y 撐起來：把所有 <code>yᵢ</code> 沿著 chain 做 resolution 會抵銷掉填補部分，還原回 <code>L₁ ∨ … ∨ Lₖ</code>，所以至少有一個原本的 <code>Lᵢ</code> 必須為真 ⇒ S 是 satisfiable。</span></p>
+<p><span data-tr="en">Hence <strong>3-SAT is NP-complete</strong>.</span><span data-tr="zh">因此 <strong>3-SAT 是 NP-complete</strong>。</span></p>
 </details>
 
-<h2>6 · Meet sum-of-subsets and partition</h2>
-<p>The second reduction is between two number problems. Define them first.</p>
-<p><strong>Sum-of-subsets:</strong> given a set of positive numbers <code>A = {a₁,…,aₙ}</code> and a target <code>C</code>, is there <em>some</em> subset of A whose numbers add up to exactly <code>C</code>?</p>
+<h2><span data-tr="en">6 · Meet sum-of-subsets and partition</span><span data-tr="zh">6 · 認識 sum-of-subsets 與 partition</span></h2>
+<p><span data-tr="en">The second reduction is between two number problems. Define them first.</span><span data-tr="zh">第二個 reduction 發生在兩個數字問題之間。先定義它們。</span></p>
+<p><span data-tr="en"><strong>Sum-of-subsets:</strong> given a set of positive numbers <code>A = {a₁,…,aₙ}</code> and a target <code>C</code>, is there <em>some</em> subset of A whose numbers add up to exactly <code>C</code>?</span><span data-tr="zh"><strong>Sum-of-subsets：</strong>給定一組正數 <code>A = {a₁,…,aₙ}</code> 和一個目標 <code>C</code>，是否存在 A 的<em>某個</em> subset，其數字加總恰好等於 <code>C</code>？</span></p>
 <div class="tree">tiny instance:  A = {7, 5, 19, 1, 12, 8, 14},  C = 21
 subset {7, 14} sums to 21  →  YES ✓     (for C = 11, no subset works → NO)</div>
-<p><strong>Partition:</strong> given a set of positive numbers <code>A</code>, can you split it into two groups whose sums are <em>equal</em> (each group gets exactly half the total)?</p>
+<p><span data-tr="en"><strong>Partition:</strong> given a set of positive numbers <code>A</code>, can you split it into two groups whose sums are <em>equal</em> (each group gets exactly half the total)?</span><span data-tr="zh"><strong>Partition：</strong>給定一組正數 <code>A</code>，能否把它切成兩組，使兩組的總和<em>相等</em>（每組恰好拿到總和的一半）？</span></p>
 <div class="tree">tiny instance:  A = {1, 3, 8, 4, 10}   (total 26)
 {1, 8, 4} = 13   and   {3, 10} = 13   →  equal halves  →  YES ✓</div>
 
-<h2>7 · Reduction in detail — Sum of subsets → Partition</h2>
-<p>We show partition is NP-complete by reducing sum-of-subsets (known NPC, upstream in the map) <strong>to</strong> it. <strong>(I)</strong> partition is in NP (guess the split, add up both sides, check equal). <strong>(II)</strong> sum-of-subsets → partition by adding <strong>two</strong> numbers (slide 56). Let <code>Tsum = Σ aᵢ</code>:</p>
+<h2><span data-tr="en">7 · Reduction in detail — Sum of subsets → Partition</span><span data-tr="zh">7 · Reduction 細節 — Sum of subsets → Partition</span></h2>
+<p><span data-tr="en">We show partition is NP-complete by reducing sum-of-subsets (known NPC, upstream in the map) <strong>to</strong> it. <strong>(I)</strong> partition is in NP (guess the split, add up both sides, check equal). <strong>(II)</strong> sum-of-subsets → partition by adding <strong>two</strong> numbers (slide 56). Let <code>Tsum = Σ aᵢ</code>:</span><span data-tr="zh">我們透過把 sum-of-subsets（已知 NPC，在地圖上游）reduce <strong>到</strong> partition 來證明 partition 是 NP-complete。<strong>(I)</strong> partition 在 NP 裡（猜怎麼切、把兩邊加總、檢查是否相等）。<strong>(II)</strong> sum-of-subsets → partition 的作法是加入<strong>兩個</strong>數字（slide 56）。令 <code>Tsum = Σ aᵢ</code>：</span></p>
 <div class="tree">bᵢ      = aᵢ                 for 1 ≤ i ≤ n
 b_{n+1} = C + 1
 b_{n+2} = Tsum + 1 − C
 
 B = A ∪ { C+1 ,  Tsum+1−C }
 Σ B = 2·Tsum + 2   ⇒  each side must sum to  Tsum + 1</div>
-<p>Try the correspondence yourself, then reveal.</p>
-<details><summary>The partition that matches a subset summing to C</summary>
-<p>A subset <code>S ⊆ A</code> with <code>Σ_S = C</code> exists <strong>iff</strong> B has a balanced partition:</p>
+<p><span data-tr="en">Try the correspondence yourself, then reveal.</span><span data-tr="zh">先自己想想這個對應關係，再展開。</span></p>
+<details><summary><span data-tr="en">The partition that matches a subset summing to C</span><span data-tr="zh">對應到「子集總和為 C」的那個 partition</span></summary>
+<p><span data-tr="en">A subset <code>S ⊆ A</code> with <code>Σ_S = C</code> exists <strong>iff</strong> B has a balanced partition:</span><span data-tr="zh">存在一個滿足 <code>Σ_S = C</code> 的 subset <code>S ⊆ A</code> <strong>當且僅當</strong> B 有一個平衡的 partition：</span></p>
 <div class="tree">side 1:  S ∪ {b_{n+2}}     →  C + (Tsum+1−C) = Tsum + 1  ✓
 side 2: (A∖S) ∪ {b_{n+1}}  → (Tsum−C) + (C+1) = Tsum + 1  ✓</div>
 </details>
-<details><summary>Why C+1, not C? (slide 57)</summary>
-<p>The <code>+1</code> offsets <strong>force the two padding numbers onto different sides</strong>: <code>b_{n+1} + b_{n+2} = (C+1)+(Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they cannot both sit on one side. That pins the structure so a balanced partition of B corresponds <em>exactly</em> to a subset of A summing to C. With plain <code>C</code>, the two padding numbers could land together and break the correspondence.</p>
+<details><summary><span data-tr="en">Why C+1, not C? (slide 57)</span><span data-tr="zh">為什麼是 C+1，而不是 C？（slide 57）</span></summary>
+<p><span data-tr="en">The <code>+1</code> offsets <strong>force the two padding numbers onto different sides</strong>: <code>b_{n+1} + b_{n+2} = (C+1)+(Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>, so they cannot both sit on one side. That pins the structure so a balanced partition of B corresponds <em>exactly</em> to a subset of A summing to C. With plain <code>C</code>, the two padding numbers could land together and break the correspondence.</span><span data-tr="zh">這個 <code>+1</code> 偏移<strong>逼使兩個填補數字落到不同邊</strong>：<code>b_{n+1} + b_{n+2} = (C+1)+(Tsum+1−C) = Tsum + 2 &gt; Tsum + 1</code>，所以它們不可能同時落在同一邊。這把結構釘死，使得 B 的平衡 partition <em>恰好</em>對應到 A 中總和為 C 的 subset。若用單純的 <code>C</code>，兩個填補數字可能落在一起，破壞這個對應。</span></p>
 </details>
-<div class="note"><strong>Map context:</strong> CN → exact cover → sum of subsets → partition is the chain that lands here, and SATY → CN supplies the construction upstream (a graph whose vertices are the literals <code>xᵢ, ¬xᵢ</code>, a <code>y₁…yₙ</code> palette clique, and a clause vertex per <code>cⱼ</code> joined to the literals <em>not</em> in it; satisfiable ⇔ <code>(n+1)</code>-colorable). We keep depth to the two reductions above — those are the cleanest to reproduce under exam pressure.</div>
+<div class="note"><span data-tr="en"><strong>Map context:</strong> CN → exact cover → sum of subsets → partition is the chain that lands here, and SATY → CN supplies the construction upstream (a graph whose vertices are the literals <code>xᵢ, ¬xᵢ</code>, a <code>y₁…yₙ</code> palette clique, and a clause vertex per <code>cⱼ</code> joined to the literals <em>not</em> in it; satisfiable ⇔ <code>(n+1)</code>-colorable). We keep depth to the two reductions above — those are the cleanest to reproduce under exam pressure.</span><span data-tr="zh"><strong>地圖脈絡：</strong>CN → exact cover → sum of subsets → partition 就是落到這裡的那條鏈，而上游的 SATY → CN 提供了構造（一張圖，頂點是 literal <code>xᵢ, ¬xᵢ</code>、一個 <code>y₁…yₙ</code> 的 palette clique，以及每個 <code>cⱼ</code> 一個 clause 頂點，連到<em>不</em>在該 clause 中的 literal；satisfiable ⇔ 可 <code>(n+1)</code>-colorable）。我們只把深度放在上面那兩個 reduction — 它們是考試壓力下最乾淨、最好重現的。</span></span></div>
 
-<h2 class="qa-head">8 · Retrieve (no peeking) <span class="score" id="score">0 / 6 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">8 · Retrieve (no peeking)</span><span data-tr="zh">8 · 提取練習（不准偷看）</span> <span class="score" id="score">0 / 6 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先選答案再看回饋。<em>答錯再看為什麼</em>，比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="1" data-explain="A clause with k &gt; 3 literals is padded by <b>chaining</b>: it becomes k−2 three-literal clauses linked by k−3 fresh variables y₁…y_{k−3}. Here k=6, so <b>3 new variables and 4 clauses</b>. If you picked <i>2 vars / 4 clauses</i> you used the 1-literal rule's count; if you picked <i>6 vars</i> you confused k with k−3.">
-  <div class="q">Q1. You apply the SAT → 3-SAT padding to one clause with 6 literals, <code>L₁ ∨ L₂ ∨ L₃ ∨ L₄ ∨ L₅ ∨ L₆</code>. How many new variables and how many 3-literal clauses does it produce?</div>
-  <button class="opt">2 new variables, 4 clauses</button>
-  <button class="opt">3 new variables, 4 clauses</button>
-  <button class="opt">6 new variables, 6 clauses</button>
-  <button class="opt">0 new variables, 1 clause</button>
+<div class="quiz" data-correct="1" data-explain="A clause with k &gt; 3 literals is padded by <b>chaining</b>: it becomes k−2 three-literal clauses linked by k−3 fresh variables y₁…y_{k−3}. Here k=6, so <b>3 new variables and 4 clauses</b>. If you picked <i>2 vars / 4 clauses</i> you used the 1-literal rule's count; if you picked <i>6 vars</i> you confused k with k−3." data-explain-zh="k &gt; 3 的 clause 用 <b>chaining</b> 來填補：它變成 k−2 個 3-literal clause，由 k−3 個新變數 y₁…y_{k−3} 串起來。這裡 k=6，所以是 <b>3 個新變數、4 個 clause</b>。如果你選 <i>2 變數／4 clause</i>，你用成了 1-literal 規則的數字；如果你選 <i>6 變數</i>，你把 k 和 k−3 搞混了。">
+  <div class="q"><span data-tr="en">Q1. You apply the SAT → 3-SAT padding to one clause with 6 literals, <code>L₁ ∨ L₂ ∨ L₃ ∨ L₄ ∨ L₅ ∨ L₆</code>. How many new variables and how many 3-literal clauses does it produce?</span><span data-tr="zh">Q1. 你把 SAT → 3-SAT 的填補套用到一個有 6 個 literal 的 clause <code>L₁ ∨ L₂ ∨ L₃ ∨ L₄ ∨ L₅ ∨ L₆</code>。它會產生幾個新變數、幾個 3-literal clause？</span></div>
+  <button class="opt"><span data-tr="en">2 new variables, 4 clauses</span><span data-tr="zh">2 個新變數，4 個 clause</span></button>
+  <button class="opt"><span data-tr="en">3 new variables, 4 clauses</span><span data-tr="zh">3 個新變數，4 個 clause</span></button>
+  <button class="opt"><span data-tr="en">6 new variables, 6 clauses</span><span data-tr="zh">6 個新變數，6 個 clause</span></button>
+  <button class="opt"><span data-tr="en">0 new variables, 1 clause</span><span data-tr="zh">0 個新變數，1 個 clause</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="With Tsum = 4+5+6 = 15 and C = 9, the two added numbers are <b>b_{n+1} = C+1 = 10</b> and <b>b_{n+2} = Tsum+1−C = 7</b>. If you picked <i>9 and 6</i> you used C and Tsum−C (no +1 offset); if you picked <i>10 and 6</i> you added 1 to only one of them.">
-  <div class="q">Q2. Apply sum-of-subsets → partition to A = {4, 5, 6} with target C = 9. Which two numbers do you append to A to build the partition instance?</div>
-  <button class="opt">9 and 6</button>
-  <button class="opt">10 and 6</button>
-  <button class="opt">10 and 7</button>
-  <button class="opt">8 and 8</button>
+<div class="quiz" data-correct="2" data-explain="With Tsum = 4+5+6 = 15 and C = 9, the two added numbers are <b>b_{n+1} = C+1 = 10</b> and <b>b_{n+2} = Tsum+1−C = 7</b>. If you picked <i>9 and 6</i> you used C and Tsum−C (no +1 offset); if you picked <i>10 and 6</i> you added 1 to only one of them." data-explain-zh="當 Tsum = 4+5+6 = 15、C = 9，加入的兩個數字是 <b>b_{n+1} = C+1 = 10</b> 和 <b>b_{n+2} = Tsum+1−C = 7</b>。如果你選 <i>9 和 6</i>，你用了 C 和 Tsum−C（沒加 +1 偏移）；如果你選 <i>10 和 6</i>，你只對其中一個加了 1。">
+  <div class="q"><span data-tr="en">Q2. Apply sum-of-subsets → partition to A = {4, 5, 6} with target C = 9. Which two numbers do you append to A to build the partition instance?</span><span data-tr="zh">Q2. 把 sum-of-subsets → partition 套用到 A = {4, 5, 6}、目標 C = 9。你要在 A 後面加上哪兩個數字來建出 partition instance？</span></div>
+  <button class="opt"><span data-tr="en">9 and 6</span><span data-tr="zh">9 和 6</span></button>
+  <button class="opt"><span data-tr="en">10 and 6</span><span data-tr="zh">10 和 6</span></button>
+  <button class="opt"><span data-tr="en">10 and 7</span><span data-tr="zh">10 和 7</span></button>
+  <button class="opt"><span data-tr="en">8 and 8</span><span data-tr="zh">8 和 8</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="Using <b>C+1</b> (not C) makes the two padding numbers sum to (C+1)+(Tsum+1−C) = Tsum+2, which exceeds one side's required Tsum+1 — so they <b>cannot both sit on the same side</b>, forcing them apart. With plain C they could land together and break the correspondence. The +1 is not about avoiding negatives (Tsum+1−C is already positive when C ≤ Tsum) nor about making ΣB even.">
-  <div class="q">Q3. In sum-of-subsets → partition we add C+1, not C. Why the +1?</div>
-  <button class="opt">To keep b_{n+2} = Tsum+1−C from going negative</button>
-  <button class="opt">To make the total Σ B come out even</button>
-  <button class="opt">It is arbitrary; using C works just as well</button>
-  <button class="opt">So the two padding numbers can't share a side, forcing them apart</button>
+<div class="quiz" data-correct="3" data-explain="Using <b>C+1</b> (not C) makes the two padding numbers sum to (C+1)+(Tsum+1−C) = Tsum+2, which exceeds one side's required Tsum+1 — so they <b>cannot both sit on the same side</b>, forcing them apart. With plain C they could land together and break the correspondence. The +1 is not about avoiding negatives (Tsum+1−C is already positive when C ≤ Tsum) nor about making ΣB even." data-explain-zh="用 <b>C+1</b>（而非 C）讓兩個填補數字加總為 (C+1)+(Tsum+1−C) = Tsum+2，超過一邊所需的 Tsum+1 — 所以它們<b>不可能同時落在同一邊</b>，被迫分開。用單純的 C，它們可能落在一起並破壞對應。這個 +1 不是為了避免負數（當 C ≤ Tsum 時 Tsum+1−C 本來就是正的），也不是為了讓 ΣB 變成偶數。">
+  <div class="q"><span data-tr="en">Q3. In sum-of-subsets → partition we add C+1, not C. Why the +1?</span><span data-tr="zh">Q3. 在 sum-of-subsets → partition 中我們加的是 C+1 而不是 C。為什麼要 +1？</span></div>
+  <button class="opt"><span data-tr="en">To keep b_{n+2} = Tsum+1−C from going negative</span><span data-tr="zh">為了避免 b_{n+2} = Tsum+1−C 變成負數</span></button>
+  <button class="opt"><span data-tr="en">To make the total Σ B come out even</span><span data-tr="zh">為了讓總和 Σ B 變成偶數</span></button>
+  <button class="opt"><span data-tr="en">It is arbitrary; using C works just as well</span><span data-tr="zh">這是隨意的；用 C 也一樣行得通</span></button>
+  <button class="opt"><span data-tr="en">So the two padding numbers can't share a side, forcing them apart</span><span data-tr="zh">為了讓兩個填補數字不能落在同一邊，逼它們分開</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="To prove A is NP-complete you reduce a <b>known</b> NPC problem B <b>to</b> A: <b>B → A</b> (known → new). This shows A is at least as hard as B. Reducing <i>A → B</i> (the reversed direction) would only show A is no harder than B — i.e. that A is <i>easy</i>, not hard.">
-  <div class="q">Q4. "To prove A is NP-complete you reduce ___ → ___." Filling in B = a known NP-complete problem, the correct direction is:</div>
-  <button class="opt">B → A  (known → new)</button>
-  <button class="opt">A → B  (new → known)</button>
-  <button class="opt">A → every NP problem</button>
-  <button class="opt">B → every NP problem</button>
+<div class="quiz" data-correct="0" data-explain="To prove A is NP-complete you reduce a <b>known</b> NPC problem B <b>to</b> A: <b>B → A</b> (known → new). This shows A is at least as hard as B. Reducing <i>A → B</i> (the reversed direction) would only show A is no harder than B — i.e. that A is <i>easy</i>, not hard." data-explain-zh="要證明 A 是 NP-complete，你把一個<b>已知</b>的 NPC 問題 B reduce <b>到</b> A：<b>B → A</b>（known → new）。這顯示 A 至少和 B 一樣難。反過來做 <i>A → B</i>（方向相反）只會顯示 A 不會比 B 難 — 也就是 A 是<i>容易</i>的，而不是難的。">
+  <div class="q"><span data-tr="en">Q4. "To prove A is NP-complete you reduce ___ → ___." Filling in B = a known NP-complete problem, the correct direction is:</span><span data-tr="zh">Q4.「要證明 A 是 NP-complete，你 reduce ___ → ___。」令 B = 一個已知的 NP-complete 問題，正確的方向是：</span></div>
+  <button class="opt"><span data-tr="en">B → A  (known → new)</span><span data-tr="zh">B → A（known → new）</span></button>
+  <button class="opt"><span data-tr="en">A → B  (new → known)</span><span data-tr="zh">A → B（new → known）</span></button>
+  <button class="opt"><span data-tr="en">A → every NP problem</span><span data-tr="zh">A → 每一個 NP 問題</span></button>
+  <button class="opt"><span data-tr="en">B → every NP problem</span><span data-tr="zh">B → 每一個 NP 問題</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="A <b>1-literal</b> clause L₁ is padded into <b>4 clauses using 2 fresh variables</b> y₁,y₂ — one clause per sign combination of (±y₁, ±y₂). The 2-literal rule (2 clauses, 1 var) and the k&gt;3 chain (k−3 vars) are the cases people mix it up with.">
-  <div class="q">Q5. Apply the SAT → 3-SAT padding to a single-literal clause <code>¬x₃</code>. How many new variables and clauses does it become?</div>
-  <button class="opt">1 new variable, 2 clauses</button>
-  <button class="opt">0 new variables, 1 clause</button>
-  <button class="opt">2 new variables, 4 clauses</button>
-  <button class="opt">3 new variables, 4 clauses</button>
+<div class="quiz" data-correct="2" data-explain="A <b>1-literal</b> clause L₁ is padded into <b>4 clauses using 2 fresh variables</b> y₁,y₂ — one clause per sign combination of (±y₁, ±y₂). The 2-literal rule (2 clauses, 1 var) and the k&gt;3 chain (k−3 vars) are the cases people mix it up with." data-explain-zh="一個 <b>1-literal</b> 的 clause L₁ 被填補成 <b>4 個 clause、用 2 個新變數</b> y₁,y₂ — (±y₁, ±y₂) 的每種正負組合各一個 clause。常被搞混的是 2-literal 規則（2 個 clause、1 個變數）和 k&gt;3 的 chain（k−3 個變數）。">
+  <div class="q"><span data-tr="en">Q5. Apply the SAT → 3-SAT padding to a single-literal clause <code>¬x₃</code>. How many new variables and clauses does it become?</span><span data-tr="zh">Q5. 把 SAT → 3-SAT 的填補套用到一個單一 literal 的 clause <code>¬x₃</code>。它會變成幾個新變數、幾個 clause？</span></div>
+  <button class="opt"><span data-tr="en">1 new variable, 2 clauses</span><span data-tr="zh">1 個新變數，2 個 clause</span></button>
+  <button class="opt"><span data-tr="en">0 new variables, 1 clause</span><span data-tr="zh">0 個新變數，1 個 clause</span></button>
+  <button class="opt"><span data-tr="en">2 new variables, 4 clauses</span><span data-tr="zh">2 個新變數，4 個 clause</span></button>
+  <button class="opt"><span data-tr="en">3 new variables, 4 clauses</span><span data-tr="zh">3 個新變數，4 個 clause</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="<b>Cook's theorem</b>: every NP problem reduces to SAT, making SAT the <b>first</b> NP-complete problem and the seed of the whole reduction chain. (Lesson 9.) The halting problem is NP-hard but undecidable, so it is <i>not</i> in NP and not NP-complete.">
-  <div class="q">Q6. (Lesson 9 recall) Which problem is the first NP-complete problem, by Cook's theorem?</div>
-  <button class="opt">The clique problem</button>
-  <button class="opt">The partition problem</button>
-  <button class="opt">The satisfiability problem</button>
-  <button class="opt">The halting problem</button>
+<div class="quiz" data-correct="2" data-explain="<b>Cook's theorem</b>: every NP problem reduces to SAT, making SAT the <b>first</b> NP-complete problem and the seed of the whole reduction chain. (Lesson 9.) The halting problem is NP-hard but undecidable, so it is <i>not</i> in NP and not NP-complete." data-explain-zh="<b>Cook's theorem</b>：每一個 NP 問題都 reduce 到 SAT，使 SAT 成為<b>第一個</b> NP-complete 問題，也是整條 reduction chain 的源頭。（第 9 課。）halting problem 是 NP-hard 但 undecidable（不可判定），所以它<i>不</i>在 NP 裡，也不是 NP-complete。">
+  <div class="q"><span data-tr="en">Q6. (Lesson 9 recall) Which problem is the first NP-complete problem, by Cook's theorem?</span><span data-tr="zh">Q6.（第 9 課回顧）依 Cook's theorem，哪個問題是第一個 NP-complete 問題？</span></div>
+  <button class="opt"><span data-tr="en">The clique problem</span><span data-tr="zh">clique problem</span></button>
+  <button class="opt"><span data-tr="en">The partition problem</span><span data-tr="zh">partition problem</span></button>
+  <button class="opt"><span data-tr="en">The satisfiability problem</span><span data-tr="zh">satisfiability problem（SAT）</span></button>
+  <button class="opt"><span data-tr="en">The halting problem</span><span data-tr="zh">halting problem</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>9 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 (your <code>Alg08</code> slides, "The Theory of NP-Completeness," slides 35–57 for the proof recipe and the two reductions here). Cook's theorem is slide 20; the full reduction map covers slides 36–68.</p>
-<p>See the <a href="../reference/glossary.html">Glossary → Ch8</a> for one-line definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for all 13 reductions plus the SATY → CN edge set and worked colorings.</p>
+<h2><span data-tr="en">9 · Go deeper</span><span data-tr="zh">9 · 深入一點</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 (your <code>Alg08</code> slides, "The Theory of NP-Completeness," slides 35–57 for the proof recipe and the two reductions here). Cook's theorem is slide 20; the full reduction map covers slides 36–68.</span><span data-tr="zh"><strong>主要來源：</strong>R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 8 章（你的 <code>Alg08</code> slides，「The Theory of NP-Completeness」，slides 35–57 是這裡的證明流程與兩個 reduction）。Cook's theorem 在 slide 20；完整的 reduction map 涵蓋 slides 36–68。</span></p>
+<p><span data-tr="en">See the <a href="../reference/glossary.html">Glossary → Ch8</a> for one-line definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for all 13 reductions plus the SATY → CN edge set and worked colorings.</span><span data-tr="zh">一句話定義請看 <a href="../reference/glossary.html">Glossary → Ch8</a>，全部 13 個 reduction 加上 SATY → CN 的邊集合與完整著色範例請看<a href="../notes-html/A08-np-completeness.html">整章筆記</a>。</span></p>
 
-<div class="note"><strong>Next up — you've reached the last lesson.</strong> Now <em>interleave</em>: mix questions across all chapters in one sitting (a search trace, a branch-and-bound prune, a DP table, an NP-completeness proof) so the topics compete in memory — that's what the exam actually does. Then ask me for a <strong>mock exam</strong>: I'll assemble a timed, mixed-topic paper and grade your hand-traces and proofs.</div>
+<div class="note"><span data-tr="en"><strong>Next up — you've reached the last lesson.</strong> Now <em>interleave</em>: mix questions across all chapters in one sitting (a search trace, a branch-and-bound prune, a DP table, an NP-completeness proof) so the topics compete in memory — that's what the exam actually does. Then ask me for a <strong>mock exam</strong>: I'll assemble a timed, mixed-topic paper and grade your hand-traces and proofs.</span><span data-tr="zh"><strong>接下來 — 你已經到最後一課了。</strong>現在開始<em>交錯練習（interleave）</em>：一次坐下把各章的題目混在一起（一個 search trace、一個 branch-and-bound 剪枝、一張 DP table、一個 NP-completeness 證明），讓這些主題在記憶中互相競爭 — 這正是考試實際在做的。然後跟我要一份<strong>模擬考</strong>：我會組一份計時、混合主題的考卷，並批改你手寫的 trace 和證明。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to drill the SATY → CN coloring construction? Build the SAT → clique gadget? Or just fire off a mixed-topic mock exam? Just say so.</p>
-  <p>Score this lesson out of 6 to yourself. 5–6 → you're exam-ready on reductions. ≤4 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Want me to drill the SATY → CN coloring construction? Build the SAT → clique gadget? Or just fire off a mixed-topic mock exam? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師 — 什麼都可以問。</strong>想要我帶你練 SATY → CN 的著色構造？建出 SAT → clique 的 gadget？還是直接來一份混合主題的模擬考？說一聲就好。</span></p>
+  <p><span data-tr="en">Score this lesson out of 6 to yourself. 5–6 → you're exam-ready on reductions. ≤4 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分數（滿分 6）。5–6 → 你在 reduction 上已達考試水準。≤4 → 告訴我是哪一題，我們來針對它練。</span></p>
 </div>
 
 <script>
@@ -280,20 +282,22 @@ side 2: (A∖S) ∪ {b_{n+1}}  → (Tsum−C) + (C+1) = Tsum + 1  ✓</div>
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✓ 正確。':'✓ Correct.')+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var L=String.fromCharCode(65+correct);
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✗ 不對 — 正解是 '+L+'。':'✗ Not quite — '+L+' is right.')+'</span> '+explain;
         }
         updateScore();
       });
@@ -302,5 +306,6 @@ side 2: (A∖S) ∪ {b_{n+1}}  → (Tsum−C) + (C+1) = Tsum + 1  ✓</div>
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

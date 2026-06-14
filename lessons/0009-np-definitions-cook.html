@@ -62,153 +62,157 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 9 · Ch8 NP-Completeness I</div>
-<h1>P, NP, and Cook's Theorem</h1>
-<div class="mission">Exam goal: this chapter is <strong>short-answer / definition</strong> heavy. Win = state the four classes without swapping them, get the <em>direction</em> of a reduction right, and explain a nondeterministic algorithm as <strong>guess then check</strong>. Master those and the QA points are free.</div>
+<div class="kicker"><span data-tr="en">Lesson 9 · Ch8 NP-Completeness I</span><span data-tr="zh">第 9 課 · 第8章 NP-Completeness I</span></div>
+<h1><span data-tr="en">P, NP, and Cook's Theorem</span><span data-tr="zh">P、NP 與 Cook's Theorem</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: this chapter is <strong>short-answer / definition</strong> heavy. Win = state the four classes without swapping them, get the <em>direction</em> of a reduction right, and explain a nondeterministic algorithm as <strong>guess then check</strong>. Master those and the QA points are free.</span><span data-tr="zh">考試目標：這章偏重<strong>簡答／定義</strong>。過關 = 講出四個類別而不互相搞混、把 reduction 的<em>方向</em>講對、並把 nondeterministic algorithm 解釋成<strong>先猜再檢查（guess then check）</strong>。把這些掌握好，QA 的分數就是送的。</span></div>
 
-<h2>0 · What is this even about?</h2>
-<p>This chapter is a vocabulary for sorting problems into <em>easy</em> and <em>seemingly-hard</em>. Before any of the famous letters (P, NP, …) mean anything, you need five plain ideas. Read this section slowly — everything after it is just these ideas dressed up.</p>
+<h2><span data-tr="en">0 · What is this even about?</span><span data-tr="zh">0 · 這章到底在講什麼？</span></h2>
+<p><span data-tr="en">This chapter is a vocabulary for sorting problems into <em>easy</em> and <em>seemingly-hard</em>. Before any of the famous letters (P, NP, …) mean anything, you need five plain ideas. Read this section slowly — everything after it is just these ideas dressed up.</span><span data-tr="zh">這章是一套把問題分成<em>容易</em>與<em>看起來很難</em>的詞彙。在那些有名的字母（P、NP、…）有意義之前，你需要先懂五個樸素的概念。這一節慢慢讀 — 後面所有東西都只是這些概念換上盛裝而已。</span></p>
 
-<p><strong>Decision problem vs. optimization problem.</strong> A <strong>decision problem</strong> is any question whose answer is just <strong>Yes or No</strong>. An <strong>optimization problem</strong> asks for the <em>best</em> value — the smallest, cheapest, or largest something. Optimization is harder, because "best" implies you also know the answer is achievable. The whole NP theory is built only on <em>decision</em> problems, so we always rephrase an optimization problem as a Yes/No one.</p>
-<p>Concrete example — the <strong>Travelling Salesperson Problem (TSP)</strong>: a salesperson must visit every city exactly once and return to the start; each leg between two cities has a cost (distance), and a full round-trip is called a <strong>tour</strong>.</p>
+<p><span data-tr="en"><strong>Decision problem vs. optimization problem.</strong> A <strong>decision problem</strong> is any question whose answer is just <strong>Yes or No</strong>. An <strong>optimization problem</strong> asks for the <em>best</em> value — the smallest, cheapest, or largest something. Optimization is harder, because "best" implies you also know the answer is achievable. The whole NP theory is built only on <em>decision</em> problems, so we always rephrase an optimization problem as a Yes/No one.</span><span data-tr="zh"><strong>Decision problem 與 optimization problem。</strong>一個 <strong>decision problem</strong>（判定問題）是任何答案只有 <strong>Yes 或 No</strong> 的問題。一個 <strong>optimization problem</strong>（最佳化問題）則要求<em>最好</em>的值 — 最小、最便宜或最大的某個東西。最佳化比較難，因為「最好」意味著你還要知道這個答案是可達成的。整套 NP 理論只建立在 <em>decision</em> 問題上，所以我們總是把最佳化問題改寫成 Yes/No 的形式。</span></p>
+<p><span data-tr="en">Concrete example — the <strong>Travelling Salesperson Problem (TSP)</strong>: a salesperson must visit every city exactly once and return to the start; each leg between two cities has a cost (distance), and a full round-trip is called a <strong>tour</strong>.</span><span data-tr="zh">具體例子 — <strong>Travelling Salesperson Problem (TSP)</strong>：一位業務員必須恰好造訪每個城市一次再回到起點；兩城市之間的每一段路有一個 cost（距離），而一趟完整的環遊稱為一個 <strong>tour</strong>。</span></p>
 <table>
-<tr><th>Flavour</th><th>The question it asks</th></tr>
-<tr><td><strong>Optimization</strong></td><td>What is the <strong>cheapest</strong> tour? (give me the number / the route)</td></tr>
-<tr><td><strong>Decision</strong></td><td>Is there a tour of total cost <strong>≤ C</strong>? (just Yes or No)</td></tr>
+<tr><th><span data-tr="en">Flavour</span><span data-tr="zh">類型</span></th><th><span data-tr="en">The question it asks</span><span data-tr="zh">它問的問題</span></th></tr>
+<tr><td><strong>Optimization</strong></td><td><span data-tr="en">What is the <strong>cheapest</strong> tour? (give me the number / the route)</span><span data-tr="zh">最<strong>便宜</strong>的 tour 是哪一條？（給我數字／路線）</span></td></tr>
+<tr><td><strong>Decision</strong></td><td><span data-tr="en">Is there a tour of total cost <strong>≤ C</strong>? (just Yes or No)</span><span data-tr="zh">存在總 cost <strong>≤ C</strong> 的 tour 嗎？（只要 Yes 或 No）</span></td></tr>
 </table>
 
-<p><strong>Polynomial time = "efficient/tractable".</strong> When we say an algorithm runs in <strong>polynomial time</strong>, we mean its running time grows like a fixed <em>power</em> of the input size n — <code>n</code>, <code>n²</code>, <code>n³</code>, … As n doubles, the cost goes up by a constant factor. This is what we informally call <strong>efficient</strong> or <strong>tractable</strong>: it scales. By contrast, <strong>exponential time</strong> means the cost grows like <code>2ⁿ</code> — every extra element <em>doubles</em> the work, so it <strong>blows up</strong> and becomes hopeless even for modest n. "Hard" in this chapter means "seems to need exponential time."</p>
+<p><span data-tr="en"><strong>Polynomial time = "efficient/tractable".</strong> When we say an algorithm runs in <strong>polynomial time</strong>, we mean its running time grows like a fixed <em>power</em> of the input size n — <code>n</code>, <code>n²</code>, <code>n³</code>, … As n doubles, the cost goes up by a constant factor. This is what we informally call <strong>efficient</strong> or <strong>tractable</strong>: it scales. By contrast, <strong>exponential time</strong> means the cost grows like <code>2ⁿ</code> — every extra element <em>doubles</em> the work, so it <strong>blows up</strong> and becomes hopeless even for modest n. "Hard" in this chapter means "seems to need exponential time."</span><span data-tr="zh"><strong>Polynomial time（多項式時間）=「有效率／可處理」。</strong>當我們說一個 algorithm 跑在 <strong>polynomial time</strong>，意思是它的執行時間像輸入大小 n 的某個固定<em>次方</em>那樣成長 — <code>n</code>、<code>n²</code>、<code>n³</code>、…。n 變成兩倍時，成本只乘上一個常數倍。這就是我們口語說的 <strong>efficient</strong>（有效率）或 <strong>tractable</strong>（可處理）：它能擴展。相對地，<strong>exponential time</strong>（指數時間）表示成本像 <code>2ⁿ</code> 那樣成長 — 每多一個元素工作量就<em>翻倍</em>，所以它會<strong>爆炸</strong>，連 n 不大時也沒救。這章裡的「難」指的就是「看起來需要 exponential time」。</span></p>
 <div class="tree">n = input size      polynomial n²        exponential 2ⁿ
    10                    100                  1,024
    20                    400              1,048,576
    40                  1,600     1,099,511,627,776   ← blows up</div>
 
-<p><strong>P — problems a normal algorithm solves efficiently.</strong> <strong>P</strong> is the family of decision problems that an ordinary, step-by-step (<em>deterministic</em>) algorithm can solve in polynomial time. "Deterministic" just means the usual kind of algorithm: at each step exactly one thing happens. P = the genuinely easy problems.</p>
+<p><span data-tr="en"><strong>P — problems a normal algorithm solves efficiently.</strong> <strong>P</strong> is the family of decision problems that an ordinary, step-by-step (<em>deterministic</em>) algorithm can solve in polynomial time. "Deterministic" just means the usual kind of algorithm: at each step exactly one thing happens. P = the genuinely easy problems.</span><span data-tr="zh"><strong>P — 普通 algorithm 就能有效率解掉的問題。</strong><strong>P</strong> 是一族 decision 問題：一個普通、一步一步的（<em>deterministic</em>，確定型）algorithm 能在 polynomial time 內解掉。「Deterministic」就是指一般那種 algorithm：每一步恰好發生一件事。P = 真正容易的問題。</span></p>
 
-<p><strong>NP — problems you can <em>check</em> efficiently given the answer.</strong> A decision problem is in <strong>NP</strong> if, when someone hands you a <em>candidate answer</em> — called a <strong>certificate</strong> (e.g. an actual tour, or an actual truth assignment) — you can <em>verify</em> in polynomial time whether it really works. You might have no fast way to <em>find</em> the answer, but you can <em>check</em> a proposed one fast. The catchy phrase: NP = <strong>"guess, then check."</strong></p>
+<p><span data-tr="en"><strong>NP — problems you can <em>check</em> efficiently given the answer.</strong> A decision problem is in <strong>NP</strong> if, when someone hands you a <em>candidate answer</em> — called a <strong>certificate</strong> (e.g. an actual tour, or an actual truth assignment) — you can <em>verify</em> in polynomial time whether it really works. You might have no fast way to <em>find</em> the answer, but you can <em>check</em> a proposed one fast. The catchy phrase: NP = <strong>"guess, then check."</strong></span><span data-tr="zh"><strong>NP — 給你答案後你能有效率<em>檢查</em>的問題。</strong>一個 decision 問題屬於 <strong>NP</strong>，是指當有人遞給你一個<em>候選答案</em> — 稱為 <strong>certificate</strong>（例如一條實際的 tour，或一組實際的 truth assignment）— 你能在 polynomial time 內<em>驗證</em>它是否真的成立。你也許沒有快速<em>找出</em>答案的方法，但你能快速<em>檢查</em>別人提出的答案。那句好記的話：NP = <strong>「先猜，再檢查（guess, then check）」</strong>。</span></p>
 
-<p><strong>Nondeterministic algorithm = magically guess, then verify.</strong> This is the formal version of "guess then check." A <strong>nondeterministic algorithm</strong> runs in two stages: a <strong>guessing</strong> stage that <em>magically</em> picks a candidate (imagine an oracle that always guesses a working answer if one exists), and a <strong>checking</strong> stage that verifies it like a normal algorithm. If the checking stage is polynomial, the problem is in NP. (The "magic" is a thought-experiment, not a real machine — it is what the "N" in NP stands for: <em>non</em>deterministic.)</p>
+<p><span data-tr="en"><strong>Nondeterministic algorithm = magically guess, then verify.</strong> This is the formal version of "guess then check." A <strong>nondeterministic algorithm</strong> runs in two stages: a <strong>guessing</strong> stage that <em>magically</em> picks a candidate (imagine an oracle that always guesses a working answer if one exists), and a <strong>checking</strong> stage that verifies it like a normal algorithm. If the checking stage is polynomial, the problem is in NP. (The "magic" is a thought-experiment, not a real machine — it is what the "N" in NP stands for: <em>non</em>deterministic.)</span><span data-tr="zh"><strong>Nondeterministic algorithm = 神奇地猜，再驗證。</strong>這是「先猜再檢查」的正式版本。一個 <strong>nondeterministic algorithm</strong>（非確定型）分兩個階段：一個 <strong>guessing</strong>（猜測）階段<em>神奇地</em>挑出一個候選（想像一個 oracle，只要存在可行答案它總是猜中），以及一個 <strong>checking</strong>（檢查）階段，像普通 algorithm 那樣驗證它。如果檢查階段是 polynomial 的，這問題就在 NP。（那個「神奇」是一個思想實驗，不是真實機器 — 它就是 NP 裡那個「N」的由來：<em>non</em>deterministic。）</span></p>
 
-<p><strong>Reduction A → B = "B is at least as hard as A".</strong> A <strong>reduction</strong> from problem A to problem B (written <strong>A → B</strong>) means: <em>if I had a fast solver for B, I could use it as a subroutine to solve A fast too.</em> So a fast B gives a fast A — which makes <strong>B at least as hard as A</strong> (B can't be easier, or A would be easy via B). Getting this <em>direction</em> right is the single most-tested idea in the chapter, so reread it: the arrow points <em>from</em> the easier-or-equal problem <em>to</em> the at-least-as-hard one.</p>
+<p><span data-tr="en"><strong>Reduction A → B = "B is at least as hard as A".</strong> A <strong>reduction</strong> from problem A to problem B (written <strong>A → B</strong>) means: <em>if I had a fast solver for B, I could use it as a subroutine to solve A fast too.</em> So a fast B gives a fast A — which makes <strong>B at least as hard as A</strong> (B can't be easier, or A would be easy via B). Getting this <em>direction</em> right is the single most-tested idea in the chapter, so reread it: the arrow points <em>from</em> the easier-or-equal problem <em>to</em> the at-least-as-hard one.</span><span data-tr="zh"><strong>Reduction A → B =「B 至少和 A 一樣難」。</strong>從問題 A 到問題 B 的一個 <strong>reduction</strong>（寫成 <strong>A → B</strong>）意思是：<em>如果我有一個快速的 B 解法，我就能把它當成 subroutine，也快速地解掉 A。</em>所以一個快的 B 給出一個快的 A — 這使得 <strong>B 至少和 A 一樣難</strong>（B 不可能更容易，否則 A 透過 B 就會變容易）。把這個<em>方向</em>弄對是這章最常考的觀念，所以再讀一次：箭頭<em>從</em>較容易或相等的問題指<em>向</em>至少一樣難的那個。</span></p>
 
-<div class="note"><strong>The payoff (read once, it ties everything together):</strong> some decision problems are so central that <em>every</em> problem in NP reduces to them — these are <strong>NP-hard</strong>. The ones that are NP-hard <em>and</em> themselves sit in NP are <strong>NP-complete</strong>: the hardest problems that are still "checkable." <strong>Cook's theorem</strong> found the very first such problem — <strong>SAT</strong> — and everything else is proven hard by reducing SAT (or its descendants) to it. The rest of this lesson formalizes exactly these terms.</p></div>
+<div class="note"><span data-tr="en"><strong>The payoff (read once, it ties everything together):</strong> some decision problems are so central that <em>every</em> problem in NP reduces to them — these are <strong>NP-hard</strong>. The ones that are NP-hard <em>and</em> themselves sit in NP are <strong>NP-complete</strong>: the hardest problems that are still "checkable." <strong>Cook's theorem</strong> found the very first such problem — <strong>SAT</strong> — and everything else is proven hard by reducing SAT (or its descendants) to it. The rest of this lesson formalizes exactly these terms.</span><span data-tr="zh"><strong>回報（讀一次，它把一切串起來）：</strong>有些 decision 問題太核心了，以致 NP 裡<em>每一個</em>問題都能 reduce 到它們 — 這些就是 <strong>NP-hard</strong>。那些既是 NP-hard <em>又</em>自己落在 NP 裡的，就是 <strong>NP-complete</strong>：仍然「可檢查」的問題中最難的。<strong>Cook's theorem</strong> 找到了第一個這樣的問題 — <strong>SAT</strong> — 其他一切的「難」都是靠把 SAT（或它的後代）reduce 到它來證明的。這一課剩下的部分就是把這些名詞正式化。</span></p></div>
 
-<h2>1 · The four classes (do not swap them)</h2>
+<h2><span data-tr="en">1 · The four classes (do not swap them)</span><span data-tr="zh">1 · 四個類別（不要互相搞混）</span></h2>
 <table>
-<tr><th>Class</th><th>Definition</th></tr>
-<tr><td><strong>P</strong></td><td>Solvable by a <strong>deterministic</strong> polynomial-time algorithm.</td></tr>
-<tr><td><strong>NP</strong></td><td><strong>Decision</strong> problems solvable by a <strong>nondeterministic</strong> poly-time algorithm = <em>guess</em> a certificate, then <strong>check</strong> it in poly time.</td></tr>
-<tr><td><strong>NP-hard</strong></td><td>Problems to which <strong>every</strong> NP problem reduces. (Need <em>not</em> be in NP.)</td></tr>
-<tr><td><strong>NP-complete (NPC)</strong></td><td>NP-hard <strong>and</strong> in NP — the hardest problems that are still NP.</td></tr>
+<tr><th><span data-tr="en">Class</span><span data-tr="zh">類別</span></th><th><span data-tr="en">Definition</span><span data-tr="zh">定義</span></th></tr>
+<tr><td><strong>P</strong></td><td><span data-tr="en">Solvable by a <strong>deterministic</strong> polynomial-time algorithm.</span><span data-tr="zh">能被一個 <strong>deterministic</strong> 的 polynomial-time algorithm 解掉。</span></td></tr>
+<tr><td><strong>NP</strong></td><td><span data-tr="en"><strong>Decision</strong> problems solvable by a <strong>nondeterministic</strong> poly-time algorithm = <em>guess</em> a certificate, then <strong>check</strong> it in poly time.</span><span data-tr="zh">能被一個 <strong>nondeterministic</strong> poly-time algorithm 解掉的 <strong>decision</strong> 問題 = <em>猜</em>一個 certificate，再在 poly time 內<strong>檢查</strong>它。</span></td></tr>
+<tr><td><strong>NP-hard</strong></td><td><span data-tr="en">Problems to which <strong>every</strong> NP problem reduces. (Need <em>not</em> be in NP.)</span><span data-tr="zh"><strong>每一個</strong> NP 問題都能 reduce 到它的問題。（<em>不一定</em>要在 NP 裡。）</span></td></tr>
+<tr><td><strong>NP-complete (NPC)</strong></td><td><span data-tr="en">NP-hard <strong>and</strong> in NP — the hardest problems that are still NP.</span><span data-tr="zh">既是 NP-hard <strong>又</strong>在 NP 裡 — 仍屬於 NP 的問題中最難的。</span></td></tr>
 </table>
-<div class="note"><strong>The big theorem:</strong> if <em>any one</em> NPC problem is in P, then <strong>P = NP</strong> (all NP problems become poly-time). No one has found such an algorithm, so NPC problems "seem" to need exponential time in the worst case. Note: not every NP problem is hard — <strong>MST</strong> is in NP yet poly-time solvable.</div>
+<div class="note"><span data-tr="en"><strong>The big theorem:</strong> if <em>any one</em> NPC problem is in P, then <strong>P = NP</strong> (all NP problems become poly-time). No one has found such an algorithm, so NPC problems "seem" to need exponential time in the worst case. Note: not every NP problem is hard — <strong>MST</strong> is in NP yet poly-time solvable.</span><span data-tr="zh"><strong>大定理：</strong>如果<em>任何一個</em> NPC 問題在 P 裡，那麼 <strong>P = NP</strong>（所有 NP 問題都變成 poly-time）。沒有人找到這樣的 algorithm，所以 NPC 問題在最壞情況下「看起來」需要 exponential time。注意：不是每個 NP 問題都難 — <strong>MST</strong> 在 NP 裡卻能 poly-time 解掉。</span></div>
 
-<h2>2 · Reduction — and its direction</h2>
-<p>Write <strong>A&nbsp;→&nbsp;B</strong> ("A reduces to B"): A can be solved by a deterministic poly-time algorithm that calls, as a subroutine, a poly-time algorithm for <strong>B</strong>.</p>
-<div class="note"><strong>Direction is the trap.</strong> <code>A → B</code> means <strong>B is at least as hard as A</strong> — "A is <em>no harder</em> than B." If you can solve B fast, you get A for free. To prove a new problem <code>A</code> is NP-hard you show a <em>known</em> hard problem reduces <em>to</em> it (<code>known → A</code>), pinning A's hardness from below. (If A, B are both NPC then <code>A → B</code> and <code>B → A</code> — all NPC problems are equally hard.)</p></div>
+<h2><span data-tr="en">2 · Reduction — and its direction</span><span data-tr="zh">2 · Reduction — 以及它的方向</span></h2>
+<p><span data-tr="en">Write <strong>A&nbsp;→&nbsp;B</strong> ("A reduces to B"): A can be solved by a deterministic poly-time algorithm that calls, as a subroutine, a poly-time algorithm for <strong>B</strong>.</span><span data-tr="zh">寫成 <strong>A&nbsp;→&nbsp;B</strong>（「A reduce 到 B」）：A 能被一個 deterministic poly-time algorithm 解掉，而這個 algorithm 把一個 <strong>B</strong> 的 poly-time algorithm 當成 subroutine 來呼叫。</span></p>
+<div class="note"><span data-tr="en"><strong>Direction is the trap.</strong> <code>A → B</code> means <strong>B is at least as hard as A</strong> — "A is <em>no harder</em> than B." If you can solve B fast, you get A for free. To prove a new problem <code>A</code> is NP-hard you show a <em>known</em> hard problem reduces <em>to</em> it (<code>known → A</code>), pinning A's hardness from below. (If A, B are both NPC then <code>A → B</code> and <code>B → A</code> — all NPC problems are equally hard.)</span><span data-tr="zh"><strong>方向就是陷阱。</strong><code>A → B</code> 表示 <strong>B 至少和 A 一樣難</strong> —「A <em>不會比</em> B 難。」如果你能快速解 B，A 就免費到手。要證明一個新問題 <code>A</code> 是 NP-hard，你要證明一個<em>已知的</em>難問題 reduce <em>到</em>它（<code>known → A</code>），從下方釘住 A 的難度。（如果 A、B 都是 NPC，則 <code>A → B</code> 且 <code>B → A</code> — 所有 NPC 問題一樣難。）</span></p></div>
 
-<h2>3 · Decision vs. optimization — and why decision is enough</h2>
-<p>NP-completeness is defined only on <strong>decision</strong> problems (Yes/No answers); optimization is harder (§0). Recall the two flavours of <strong>TSP</strong>:</p>
+<h2><span data-tr="en">3 · Decision vs. optimization — and why decision is enough</span><span data-tr="zh">3 · Decision 與 optimization — 以及為何 decision 就夠了</span></h2>
+<p><span data-tr="en">NP-completeness is defined only on <strong>decision</strong> problems (Yes/No answers); optimization is harder (§0). Recall the two flavours of <strong>TSP</strong>:</span><span data-tr="zh">NP-completeness 只定義在 <strong>decision</strong> 問題上（Yes/No 答案）；optimization 比較難（§0）。回想 <strong>TSP</strong> 的兩種類型：</span></p>
 <table>
-<tr><th>Version</th><th>Question</th></tr>
-<tr><td>Optimization</td><td>Find the <strong>shortest</strong> tour.</td></tr>
-<tr><td>Decision</td><td>Is there a tour of total length <strong>≤ C</strong>?</td></tr>
+<tr><th><span data-tr="en">Version</span><span data-tr="zh">版本</span></th><th><span data-tr="en">Question</span><span data-tr="zh">問題</span></th></tr>
+<tr><td>Optimization</td><td><span data-tr="en">Find the <strong>shortest</strong> tour.</span><span data-tr="zh">找出<strong>最短</strong>的 tour。</span></td></tr>
+<tr><td>Decision</td><td><span data-tr="en">Is there a tour of total length <strong>≤ C</strong>?</span><span data-tr="zh">存在總長度 <strong>≤ C</strong> 的 tour 嗎？</span></td></tr>
 </table>
-<p>You can get the optimum from a decision oracle: <strong>binary-search the bound C</strong>. Range is <code>1 … K</code> where K = sum of all edge weights. Each test is one decision call, so <code>O(log K)</code> calls give the optimum — an efficient decision algorithm yields an efficient optimization algorithm.</p>
+<p><span data-tr="en">You can get the optimum from a decision oracle: <strong>binary-search the bound C</strong>. Range is <code>1 … K</code> where K = sum of all edge weights. Each test is one decision call, so <code>O(log K)</code> calls give the optimum — an efficient decision algorithm yields an efficient optimization algorithm.</span><span data-tr="zh">你可以從一個 decision oracle 得到最佳解：<strong>對界限 C 做 binary-search</strong>。範圍是 <code>1 … K</code>，其中 K = 所有 edge weight 的總和。每次測試是一次 decision 呼叫，所以 <code>O(log K)</code> 次呼叫就能得到最佳解 — 一個有效率的 decision algorithm 能產出一個有效率的 optimization algorithm。</span></p>
 
-<h2>4 · Nondeterministic algorithms — guess then check</h2>
-<p>A nondeterministic algorithm has two stages: a <strong>guessing</strong> phase (magically pick a candidate via <code>Choice</code>) and a <strong>checking</strong> phase (verify it deterministically). The problem is in <strong>NP iff the check runs in polynomial time.</strong></p>
-<p>Nondeterministic SAT — guess each variable, then evaluate the formula:</p>
+<h2><span data-tr="en">4 · Nondeterministic algorithms — guess then check</span><span data-tr="zh">4 · Nondeterministic algorithms — 先猜再檢查</span></h2>
+<p><span data-tr="en">A nondeterministic algorithm has two stages: a <strong>guessing</strong> phase (magically pick a candidate via <code>Choice</code>) and a <strong>checking</strong> phase (verify it deterministically). The problem is in <strong>NP iff the check runs in polynomial time.</strong></span><span data-tr="zh">一個 nondeterministic algorithm 有兩個階段：一個 <strong>guessing</strong> 階段（透過 <code>Choice</code> 神奇地挑出一個候選）和一個 <strong>checking</strong> 階段（deterministically 地驗證它）。<strong>當且僅當這個檢查跑在 polynomial time 內，這問題才在 NP。</strong></span></p>
+<p><span data-tr="en">Nondeterministic SAT — guess each variable, then evaluate the formula:</span><span data-tr="zh">Nondeterministic SAT — 猜每個變數，再評估這個 formula：</span></p>
 <div class="tree">for i = 1 to n do                 // GUESS
     xᵢ ← Choice(true, false)
 
 if E(x₁, x₂, …, xₙ) is true       // CHECK
    then Success
    else Failure</div>
-<p>Guessing all n variables is O(n) <code>Choice</code> calls; evaluating the CNF formula <code>E</code> is polynomial. So SAT is an NP problem. (Same shape as nondeterministic <em>searching</em>: <code>j ← Choice(1:n); if A(j)=x then Success</code>.)</p>
-<div class="note"><strong>Caution — NP-hard ≠ NP-complete.</strong> The <strong>halting problem</strong> ("will this program terminate?") is NP-hard (every NP problem reduces to it) but it is <strong>undecidable</strong>, so it is <em>not</em> in NP. NP-hard is a strictly bigger set than NP-complete.</div>
+<p><span data-tr="en">Guessing all n variables is O(n) <code>Choice</code> calls; evaluating the CNF formula <code>E</code> is polynomial. So SAT is an NP problem. (Same shape as nondeterministic <em>searching</em>: <code>j ← Choice(1:n); if A(j)=x then Success</code>.)</span><span data-tr="zh">猜全部 n 個變數是 O(n) 次 <code>Choice</code> 呼叫；評估 CNF formula <code>E</code> 是 polynomial 的。所以 SAT 是一個 NP 問題。（和 nondeterministic <em>searching</em> 同樣的形狀：<code>j ← Choice(1:n); if A(j)=x then Success</code>。）</span></p>
+<div class="note"><span data-tr="en"><strong>Caution — NP-hard ≠ NP-complete.</strong> The <strong>halting problem</strong> ("will this program terminate?") is NP-hard (every NP problem reduces to it) but it is <strong>undecidable</strong>, so it is <em>not</em> in NP. NP-hard is a strictly bigger set than NP-complete.</span><span data-tr="zh"><strong>注意 — NP-hard ≠ NP-complete。</strong><strong>Halting problem</strong>（「這個程式會不會終止？」）是 NP-hard（每個 NP 問題都能 reduce 到它）但它是 <strong>undecidable</strong>（不可判定）的，所以它<em>不</em>在 NP 裡。NP-hard 是比 NP-complete 嚴格更大的集合。</span></div>
 
-<h2>5 · Cook's Theorem</h2>
-<p>The seed of the whole theory:</p>
-<div class="note"><strong>Cook's Theorem:</strong> <code>NP = P iff SAT ∈ P</code>. Consequences: <strong>SAT is NP-complete</strong> — the <em>first</em> NPC problem — and <strong>every NP problem reduces to SAT</strong>.</div>
-<p>Why? Every NP problem has a nondeterministic poly-time algorithm, and that algorithm can be transformed in poly time into a SAT instance that is <em>satisfiable iff the original answer is "Yes."</em> So every NP problem → SAT, making SAT NP-hard; SAT is also in NP (Section 4) ⇒ NP-complete.</p>
-<details><summary>Recipe: how to prove a new problem A is NP-complete</summary>
-<p><strong>(I)</strong> Show <code>A ∈ NP</code> — give a guess-and-poly-check algorithm.<br>
+<h2><span data-tr="en">5 · Cook's Theorem</span><span data-tr="zh">5 · Cook's Theorem</span></h2>
+<p><span data-tr="en">The seed of the whole theory:</span><span data-tr="zh">整套理論的種子：</span></p>
+<div class="note"><span data-tr="en"><strong>Cook's Theorem:</strong> <code>NP = P iff SAT ∈ P</code>. Consequences: <strong>SAT is NP-complete</strong> — the <em>first</em> NPC problem — and <strong>every NP problem reduces to SAT</strong>.</span><span data-tr="zh"><strong>Cook's Theorem：</strong><code>NP = P iff SAT ∈ P</code>。推論：<strong>SAT 是 NP-complete</strong> — <em>第一個</em> NPC 問題 — 而且<strong>每個 NP 問題都能 reduce 到 SAT</strong>。</span></div>
+<p><span data-tr="en">Why? Every NP problem has a nondeterministic poly-time algorithm, and that algorithm can be transformed in poly time into a SAT instance that is <em>satisfiable iff the original answer is "Yes."</em> So every NP problem → SAT, making SAT NP-hard; SAT is also in NP (Section 4) ⇒ NP-complete.</span><span data-tr="zh">為什麼？每個 NP 問題都有一個 nondeterministic poly-time algorithm，而那個 algorithm 能在 poly time 內被轉換成一個 SAT instance，使得它<em>可滿足（satisfiable）若且唯若原問題的答案是「Yes」</em>。所以每個 NP 問題 → SAT，使 SAT 成為 NP-hard；SAT 也在 NP 裡（第 4 節）⇒ NP-complete。</span></p>
+<details><summary><span data-tr="en">Recipe: how to prove a new problem A is NP-complete</span><span data-tr="zh">食譜：如何證明一個新問題 A 是 NP-complete</span></summary>
+<p><span data-tr="en"><strong>(I)</strong> Show <code>A ∈ NP</code> — give a guess-and-poly-check algorithm.<br>
 <strong>(II)</strong> Show some known <code>B ∈ NPC</code> reduces to A, i.e. <code>B → A</code> (A is at least as hard as B ⇒ NP-hard).<br>
-(I) + (II) ⇒ A is NP-complete. That second step is Lesson 10's reduction chain, all seeded by SAT.</p></details>
+(I) + (II) ⇒ A is NP-complete. That second step is Lesson 10's reduction chain, all seeded by SAT.</span><span data-tr="zh"><strong>(I)</strong> 證明 <code>A ∈ NP</code> — 給一個 guess-and-poly-check 的 algorithm。<br>
+<strong>(II)</strong> 證明某個已知的 <code>B ∈ NPC</code> reduce 到 A，也就是 <code>B → A</code>（A 至少和 B 一樣難 ⇒ NP-hard）。<br>
+(I) + (II) ⇒ A 是 NP-complete。那第二步就是第 10 課的 reduction chain，全都從 SAT 起源。</span></p></details>
 
-<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 6 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">6 · Retrieve (no peeking)</span><span data-tr="zh">6 · 回想（不准偷看）</span> <span class="score" id="score">0 / 6 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先選再看回饋。<em>先答錯再看為什麼</em>比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="3" data-explain="A problem is in <b>NP</b> when a guessed certificate can be <b>checked in poly time</b> — so searching, sorting (as a decision problem), and SAT all qualify. The <b>halting problem</b> is undecidable: no algorithm, deterministic or not, decides it, so there is nothing to check and it is <b>not in NP</b> (it is NP-hard, which is a different thing). If you picked sorting you confused 'no fast solver known' with 'unverifiable' — sorting verifies trivially.">
-  <div class="q">Q1. Three of these problems are in NP. Which one is <em>not</em>?</div>
-  <button class="opt">Searching: is value <code>x</code> in array <code>A</code>?</button>
-  <button class="opt">SAT: is this CNF formula satisfiable?</button>
-  <button class="opt">Sorting (decision): is there a permutation with cost &lt; C?</button>
-  <button class="opt">Halting: will this program ever terminate?</button>
+<div class="quiz" data-correct="3" data-explain="A problem is in <b>NP</b> when a guessed certificate can be <b>checked in poly time</b> — so searching, sorting (as a decision problem), and SAT all qualify. The <b>halting problem</b> is undecidable: no algorithm, deterministic or not, decides it, so there is nothing to check and it is <b>not in NP</b> (it is NP-hard, which is a different thing). If you picked sorting you confused 'no fast solver known' with 'unverifiable' — sorting verifies trivially." data-explain-zh="一個問題在 <b>NP</b> 裡，是當一個猜出的 certificate 能<b>在 poly time 內被檢查</b> — 所以 searching、sorting（當成 decision 問題）和 SAT 都符合。<b>Halting problem</b> 是 undecidable 的：沒有任何 algorithm（不論是否 deterministic）能判定它，所以根本沒東西可檢查，它<b>不在 NP</b>（它是 NP-hard，那是另一回事）。如果你選 sorting，你把『沒有已知的快速解法』和『無法驗證』搞混了 — sorting 驗證起來易如反掌。">
+  <div class="q"><span data-tr="en">Q1. Three of these problems are in NP. Which one is <em>not</em>?</span><span data-tr="zh">Q1. 這些問題裡有三個在 NP 裡。哪一個<em>不是</em>？</span></div>
+  <button class="opt"><span data-tr="en">Searching: is value <code>x</code> in array <code>A</code>?</span><span data-tr="zh">Searching：值 <code>x</code> 在 array <code>A</code> 裡嗎？</span></button>
+  <button class="opt"><span data-tr="en">SAT: is this CNF formula satisfiable?</span><span data-tr="zh">SAT：這個 CNF formula 可滿足嗎？</span></button>
+  <button class="opt"><span data-tr="en">Sorting (decision): is there a permutation with cost &lt; C?</span><span data-tr="zh">Sorting（decision）：存在 cost &lt; C 的 permutation 嗎？</span></button>
+  <button class="opt"><span data-tr="en">Halting: will this program ever terminate?</span><span data-tr="zh">Halting：這個程式會終止嗎？</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="<b>In NP and every NP problem reduces to it = NP-hard AND in NP = NP-complete.</b> 'Every NP problem reduces to X' is exactly the definition of NP-hard; adding 'X is in NP' lands you in the intersection, NPC. Answering 'NP-hard' (B) is the classic half-answer — it drops the in-NP part. SAT is the textbook example: Cook proved both halves.">
-  <div class="q">Q2. Problem X is in NP, and every problem in NP reduces to X. What is X, most precisely?</div>
-  <button class="opt">NP-complete</button>
-  <button class="opt">NP-hard</button>
-  <button class="opt">in P</button>
-  <button class="opt">undecidable</button>
+<div class="quiz" data-correct="0" data-explain="<b>In NP and every NP problem reduces to it = NP-hard AND in NP = NP-complete.</b> 'Every NP problem reduces to X' is exactly the definition of NP-hard; adding 'X is in NP' lands you in the intersection, NPC. Answering 'NP-hard' (B) is the classic half-answer — it drops the in-NP part. SAT is the textbook example: Cook proved both halves." data-explain-zh="<b>在 NP 裡，且每個 NP 問題都 reduce 到它 = NP-hard 且在 NP 裡 = NP-complete。</b>『每個 NP 問題都 reduce 到 X』正是 NP-hard 的定義；再加上『X 在 NP 裡』就落到交集 NPC。答『NP-hard』（B）是典型的半套答案 — 它漏掉了在 NP 裡這部分。SAT 是課本範例：Cook 把兩半都證明了。">
+  <div class="q"><span data-tr="en">Q2. Problem X is in NP, and every problem in NP reduces to X. What is X, most precisely?</span><span data-tr="zh">Q2. 問題 X 在 NP 裡，而且 NP 裡每個問題都能 reduce 到 X。最精確地說，X 是什麼？</span></div>
+  <button class="opt"><span data-tr="en">NP-complete</span><span data-tr="zh">NP-complete</span></button>
+  <button class="opt"><span data-tr="en">NP-hard</span><span data-tr="zh">NP-hard</span></button>
+  <button class="opt"><span data-tr="en">in P</span><span data-tr="zh">在 P 裡</span></button>
+  <button class="opt"><span data-tr="en">undecidable</span><span data-tr="zh">undecidable</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="<b>A → B</b> means A is solved by calling a solver for B. So a fast (poly-time) algorithm for B gives you a fast algorithm for A — <b>A is now poly-time</b>. It says nothing about B's hardness on its own. Picking 'B is poly-time' (C) reverses the arrow: you'd need B → A for that. The arrow points from the easier-or-equal problem to the at-least-as-hard one.">
-  <div class="q">Q3. You have a poly-time algorithm for problem B, and you know <code>A → B</code> (A reduces to B). What follows?</div>
-  <button class="opt">Nothing follows about A's running time</button>
-  <button class="opt">A can now be solved in poly time too</button>
-  <button class="opt">B can now be solved in poly time too</button>
-  <button class="opt">A must be strictly harder than B</button>
+<div class="quiz" data-correct="1" data-explain="<b>A → B</b> means A is solved by calling a solver for B. So a fast (poly-time) algorithm for B gives you a fast algorithm for A — <b>A is now poly-time</b>. It says nothing about B's hardness on its own. Picking 'B is poly-time' (C) reverses the arrow: you'd need B → A for that. The arrow points from the easier-or-equal problem to the at-least-as-hard one." data-explain-zh="<b>A → B</b> 表示 A 是靠呼叫一個 B 的 solver 來解的。所以一個快速（poly-time）的 B algorithm 給你一個快速的 A algorithm — <b>A 現在是 poly-time 了</b>。它對 B 本身的難度什麼都沒說。選『B 是 poly-time』（C）是把箭頭弄反了：那要 B → A 才對。箭頭從較容易或相等的問題指向至少一樣難的那個。">
+  <div class="q"><span data-tr="en">Q3. You have a poly-time algorithm for problem B, and you know <code>A → B</code> (A reduces to B). What follows?</span><span data-tr="zh">Q3. 你有一個問題 B 的 poly-time algorithm，而且你知道 <code>A → B</code>（A reduce 到 B）。可推出什麼？</span></div>
+  <button class="opt"><span data-tr="en">Nothing follows about A's running time</span><span data-tr="zh">關於 A 的執行時間什麼都推不出來</span></button>
+  <button class="opt"><span data-tr="en">A can now be solved in poly time too</span><span data-tr="zh">A 現在也能在 poly time 內解掉</span></button>
+  <button class="opt"><span data-tr="en">B can now be solved in poly time too</span><span data-tr="zh">B 現在也能在 poly time 內解掉</span></button>
+  <button class="opt"><span data-tr="en">A must be strictly harder than B</span><span data-tr="zh">A 一定嚴格比 B 難</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="To prove a new problem A is NP-hard you reduce a <b>known</b> hard problem <em>to</em> A: <b>known NPC → A</b>, which says A is at least as hard as the known one. Picking 'A → SAT' (B) reverses the arrow — that only shows A is no harder than SAT (true of every NP problem, proves nothing). 'A → A' is vacuous. The in-NP step is separate; it does not establish hardness.">
-  <div class="q">Q4. You want to prove a new problem A is NP-hard, knowing SAT is NP-complete. Which reduction do you build?</div>
-  <button class="opt">Show A is in NP by guess-and-check</button>
-  <button class="opt">Reduce A to SAT (<code>A → SAT</code>)</button>
-  <button class="opt">Reduce SAT to A (<code>SAT → A</code>)</button>
-  <button class="opt">Reduce A to itself (<code>A → A</code>)</button>
+<div class="quiz" data-correct="2" data-explain="To prove a new problem A is NP-hard you reduce a <b>known</b> hard problem <em>to</em> A: <b>known NPC → A</b>, which says A is at least as hard as the known one. Picking 'A → SAT' (B) reverses the arrow — that only shows A is no harder than SAT (true of every NP problem, proves nothing). 'A → A' is vacuous. The in-NP step is separate; it does not establish hardness." data-explain-zh="要證明一個新問題 A 是 NP-hard，你要把一個<b>已知的</b>難問題 reduce <em>到</em> A：<b>known NPC → A</b>，這表示 A 至少和那個已知問題一樣難。選『A → SAT』（B）是把箭頭弄反 — 那只證明 A 不會比 SAT 難（每個 NP 問題都這樣，什麼都沒證明）。『A → A』是空話。在 NP 那一步是分開的；它不能建立難度。">
+  <div class="q"><span data-tr="en">Q4. You want to prove a new problem A is NP-hard, knowing SAT is NP-complete. Which reduction do you build?</span><span data-tr="zh">Q4. 你想證明一個新問題 A 是 NP-hard，已知 SAT 是 NP-complete。你要建哪一個 reduction？</span></div>
+  <button class="opt"><span data-tr="en">Show A is in NP by guess-and-check</span><span data-tr="zh">用 guess-and-check 證明 A 在 NP 裡</span></button>
+  <button class="opt"><span data-tr="en">Reduce A to SAT (<code>A → SAT</code>)</span><span data-tr="zh">把 A reduce 到 SAT（<code>A → SAT</code>）</span></button>
+  <button class="opt"><span data-tr="en">Reduce SAT to A (<code>SAT → A</code>)</span><span data-tr="zh">把 SAT reduce 到 A（<code>SAT → A</code>）</span></button>
+  <button class="opt"><span data-tr="en">Reduce A to itself (<code>A → A</code>)</span><span data-tr="zh">把 A reduce 到自己（<code>A → A</code>）</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="Cook's theorem: <b>NP = P iff SAT ∈ P</b> — it makes SAT the first NPC problem because <b>every NP problem reduces to SAT</b> (every NP → SAT). 'SAT reduces to every NP problem' (B) is the reversed arrow. 'P ≠ NP, proven' (C) is the famous trap: P vs NP is <em>open</em>, not settled. Cook gives an 'iff', not a poly-time solver for SAT.">
-  <div class="q">Q5. Which statement about Cook's theorem is correct?</div>
-  <button class="opt">It proves SAT is solvable in poly time</button>
-  <button class="opt">It shows SAT reduces to every NP problem</button>
-  <button class="opt">It proves P ≠ NP once and for all</button>
-  <button class="opt">It shows every NP problem reduces to SAT</button>
+<div class="quiz" data-correct="3" data-explain="Cook's theorem: <b>NP = P iff SAT ∈ P</b> — it makes SAT the first NPC problem because <b>every NP problem reduces to SAT</b> (every NP → SAT). 'SAT reduces to every NP problem' (B) is the reversed arrow. 'P ≠ NP, proven' (C) is the famous trap: P vs NP is <em>open</em>, not settled. Cook gives an 'iff', not a poly-time solver for SAT." data-explain-zh="Cook's theorem：<b>NP = P iff SAT ∈ P</b> — 它讓 SAT 成為第一個 NPC 問題，因為<b>每個 NP 問題都能 reduce 到 SAT</b>（every NP → SAT）。『SAT reduce 到每個 NP 問題』（B）是把箭頭弄反。『P ≠ NP，已證明』（C）是有名的陷阱：P vs NP 還是<em>未解</em>的，沒有定論。Cook 給的是一個『iff』，不是一個 SAT 的 poly-time solver。">
+  <div class="q"><span data-tr="en">Q5. Which statement about Cook's theorem is correct?</span><span data-tr="zh">Q5. 關於 Cook's theorem，哪個敘述正確？</span></div>
+  <button class="opt"><span data-tr="en">It proves SAT is solvable in poly time</span><span data-tr="zh">它證明 SAT 能在 poly time 內解掉</span></button>
+  <button class="opt"><span data-tr="en">It shows SAT reduces to every NP problem</span><span data-tr="zh">它證明 SAT reduce 到每個 NP 問題</span></button>
+  <button class="opt"><span data-tr="en">It proves P ≠ NP once and for all</span><span data-tr="zh">它一勞永逸地證明 P ≠ NP</span></button>
+  <button class="opt"><span data-tr="en">It shows every NP problem reduces to SAT</span><span data-tr="zh">它證明每個 NP 問題都 reduce 到 SAT</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="The optimum lies in <b>1…K</b> where K = sum of all edge weights = 100. With only a Yes/No oracle ('tour ≤ C?') you <b>binary-search C over that range</b>, costing <b>O(log K) ≈ log₂100 ≈ 7</b> calls — not ~100 linear calls (B), and certainly not exponential. One call at C=100 (D) only confirms a tour exists; it doesn't pin the minimum. This is exactly how an efficient decision algorithm yields an efficient optimization algorithm.">
-  <div class="q">Q6. A TSP <em>decision</em> oracle answers "is there a tour of length ≤ C?". The edge weights sum to 100. To find the shortest tour's exact length, about how many oracle calls do you need, and how?</div>
-  <button class="opt">~7 calls: binary-search C over 1…100</button>
-  <button class="opt">~100 calls: try C = 1, 2, 3, … upward</button>
-  <button class="opt">~2¹⁰⁰ calls: test every possible tour</button>
-  <button class="opt">1 call: ask with C = 100 and read it off</button>
+<div class="quiz" data-correct="0" data-explain="The optimum lies in <b>1…K</b> where K = sum of all edge weights = 100. With only a Yes/No oracle ('tour ≤ C?') you <b>binary-search C over that range</b>, costing <b>O(log K) ≈ log₂100 ≈ 7</b> calls — not ~100 linear calls (B), and certainly not exponential. One call at C=100 (D) only confirms a tour exists; it doesn't pin the minimum. This is exactly how an efficient decision algorithm yields an efficient optimization algorithm." data-explain-zh="最佳解落在 <b>1…K</b>，其中 K = 所有 edge weight 的總和 = 100。只用一個 Yes/No oracle（『tour ≤ C？』），你<b>對 C 在那個範圍做 binary-search</b>，花費 <b>O(log K) ≈ log₂100 ≈ 7</b> 次呼叫 — 不是約 100 次的線性呼叫（B），更絕對不是 exponential。在 C=100 做一次呼叫（D）只確認存在一條 tour；它沒釘出最小值。這正是一個有效率的 decision algorithm 如何產出一個有效率的 optimization algorithm。">
+  <div class="q"><span data-tr="en">Q6. A TSP <em>decision</em> oracle answers "is there a tour of length ≤ C?". The edge weights sum to 100. To find the shortest tour's exact length, about how many oracle calls do you need, and how?</span><span data-tr="zh">Q6. 一個 TSP <em>decision</em> oracle 回答「存在長度 ≤ C 的 tour 嗎？」。edge weight 總和為 100。要找出最短 tour 的精確長度，大約需要幾次 oracle 呼叫，怎麼做？</span></div>
+  <button class="opt"><span data-tr="en">~7 calls: binary-search C over 1…100</span><span data-tr="zh">約 7 次：對 C 在 1…100 做 binary-search</span></button>
+  <button class="opt"><span data-tr="en">~100 calls: try C = 1, 2, 3, … upward</span><span data-tr="zh">約 100 次：由小往上試 C = 1, 2, 3, …</span></button>
+  <button class="opt"><span data-tr="en">~2¹⁰⁰ calls: test every possible tour</span><span data-tr="zh">約 2¹⁰⁰ 次：測試每一條可能的 tour</span></button>
+  <button class="opt"><span data-tr="en">1 call: ask with C = 100 and read it off</span><span data-tr="zh">1 次：用 C = 100 問一次然後讀出答案</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>7 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 §"The Theory of NP-Completeness" (your <code>Alg08</code> slides, slides 2–20 + 34). Re-read the Cook's-theorem statement (slide 20) and the nondeterministic SAT pseudocode (slide 19).</p>
-<p>See also the <a href="../reference/glossary.html">Glossary → Ch8</a> for the one-line class definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for every reduction.</p>
+<h2><span data-tr="en">7 · Go deeper</span><span data-tr="zh">7 · 深入了解</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 8 §"The Theory of NP-Completeness" (your <code>Alg08</code> slides, slides 2–20 + 34). Re-read the Cook's-theorem statement (slide 20) and the nondeterministic SAT pseudocode (slide 19).</span><span data-tr="zh"><strong>主要來源：</strong>R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 8 章 §"The Theory of NP-Completeness"（你的 <code>Alg08</code> 投影片，slides 2–20 + 34）。重讀 Cook's theorem 的敘述（slide 20）和 nondeterministic SAT 的 pseudocode（slide 19）。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary → Ch8</a> for the one-line class definitions, and the <a href="../notes-html/A08-np-completeness.html">full chapter note</a> for every reduction.</span><span data-tr="zh">也可參考 <a href="../reference/glossary.html">Glossary → Ch8</a> 看各類別的一行定義，以及<a href="../notes-html/A08-np-completeness.html">完整章節筆記</a>看每一個 reduction。</span></p>
 
-<div class="note"><strong>Next up — Lesson 10:</strong> NP-Completeness II — the <em>reduction chain</em>. Starting from SAT we walk SAT → 3-SAT → … → Clique → Node Cover and SAT → Directed Hamiltonian Cycle → TSP, the exact "B → A" arrows that prove each new problem NP-complete.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 10:</strong> NP-Completeness II — the <em>reduction chain</em>. Starting from SAT we walk SAT → 3-SAT → … → Clique → Node Cover and SAT → Directed Hamiltonian Cycle → TSP, the exact "B → A" arrows that prove each new problem NP-complete.</span><span data-tr="zh"><strong>下一課 — 第 10 課：</strong>NP-Completeness II — <em>reduction chain</em>。從 SAT 出發，我們走 SAT → 3-SAT → … → Clique → Node Cover 以及 SAT → Directed Hamiltonian Cycle → TSP，這些正是證明每個新問題 NP-complete 的「B → A」箭頭。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on which way a reduction points? Want me to drill the halting-problem caution, or walk the SAT→SAT encoding of searching from the slides? Just say so.</p>
-  <p>Score this lesson out of 6 to yourself. 5–6 → on to Lesson 10. ≤4 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on which way a reduction points? Want me to drill the halting-problem caution, or walk the SAT→SAT encoding of searching from the slides? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師 — 什麼都可以問。</strong>對 reduction 指哪個方向還很模糊？想讓我操練 halting-problem 那個提醒，或從投影片走一遍 searching 的 SAT→SAT 編碼嗎？說一聲就好。</span></p>
+  <p><span data-tr="en">Score this lesson out of 6 to yourself. 5–6 → on to Lesson 10. ≤4 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分數（滿分 6）。5–6 → 前進第 10 課。≤4 → 告訴我哪一題，我們來操練它。</span></p>
 </div>
 
 <script>
@@ -221,20 +225,24 @@ if E(x₁, x₂, …, xₙ) is true       // CHECK
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          var ok=lang==='zh'?'✓ 正確。':'✓ Correct.';
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+ok+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var L=String.fromCharCode(65+correct);
+          var no=lang==='zh'?'✗ 不對 — 正解是 '+L+'。':'✗ Not quite — '+L+' is right.';
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+no+'</span> '+explain;
         }
         updateScore();
       });
@@ -243,5 +251,6 @@ if E(x₁, x₂, …, xₙ) is true       // CHECK
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

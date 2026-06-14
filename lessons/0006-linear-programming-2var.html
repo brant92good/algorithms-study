@@ -62,22 +62,24 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 6 · Ch7 Prune-and-Search</div>
-<h1>Two-Variable Linear Programming in O(n)</h1>
-<div class="mission">Exam goal: <strong>hand-trace</strong> the boundary envelope and explain the slope test. Linear programming sounds heavy, but in 2 variables it collapses to one picture — <em>the lowest point of a convex curve</em> — and prune-and-search finds it in linear time by throwing away a quarter of the constraints each round.</div>
+<div class="kicker"><span data-tr="en">Lesson 6 · Ch7 Prune-and-Search</span><span data-tr="zh">第 6 課 · 第 7 章 Prune-and-Search</span></div>
+<h1><span data-tr="en">Two-Variable Linear Programming in O(n)</span><span data-tr="zh">兩變數的 Linear Programming，O(n) 求解</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>hand-trace</strong> the boundary envelope and explain the slope test. Linear programming sounds heavy, but in 2 variables it collapses to one picture — <em>the lowest point of a convex curve</em> — and prune-and-search finds it in linear time by throwing away a quarter of the constraints each round.</span><span data-tr="zh">考試目標：<strong>手動描出</strong> boundary envelope 並解釋 slope test。Linear programming 聽起來很重，但在 2 個變數下它會收斂成一張圖 — <em>一條凸曲線的最低點</em> — prune-and-search 每一輪丟掉四分之一的 constraint，因此能在線性時間內找到它。</span></div>
 
-<h2>1 · What is linear programming?</h2>
-<p><strong>Linear programming (LP)</strong> means: you have some quantities you can choose (the <strong>variables</strong>, say <code>x</code> and <code>y</code>), and you want to make one number as small (or large) as possible — that number is the <strong>objective</strong>, and it's <em>linear</em>, meaning it looks like <code>ax + by</code> (just variables times constants, added up — no squares, no products). But you can't choose freely: you must obey a list of <strong>constraints</strong>, each also linear, each an inequality like <code>aᵢx + bᵢy ≤ cᵢ</code> (read "<code>≤</code>" as "at most"). The job: find the <code>(x, y)</code> that obeys every constraint and makes the objective smallest. "Programming" here is an old word for <em>planning</em>, nothing to do with code.</p>
-<p>A tiny example in words: a bakery makes <code>x</code> loaves and <code>y</code> cakes; flour and oven-time are limited (those are the <code>≤</code> constraints); we want to minimize cost <code>ax + by</code>. LP is everywhere — diets, shipping, scheduling — wherever you optimize under linear limits.</p>
+<h2><span data-tr="en">1 · What is linear programming?</span><span data-tr="zh">1 · 什麼是 linear programming？</span></h2>
+<p><span data-tr="en"><strong>Linear programming (LP)</strong> means: you have some quantities you can choose (the <strong>variables</strong>, say <code>x</code> and <code>y</code>), and you want to make one number as small (or large) as possible — that number is the <strong>objective</strong>, and it's <em>linear</em>, meaning it looks like <code>ax + by</code> (just variables times constants, added up — no squares, no products). But you can't choose freely: you must obey a list of <strong>constraints</strong>, each also linear, each an inequality like <code>aᵢx + bᵢy ≤ cᵢ</code> (read "<code>≤</code>" as "at most"). The job: find the <code>(x, y)</code> that obeys every constraint and makes the objective smallest. "Programming" here is an old word for <em>planning</em>, nothing to do with code.</span><span data-tr="zh"><strong>Linear programming (LP)</strong> 的意思是：你有一些可以自己選的量（<strong>variable</strong>，例如 <code>x</code> 和 <code>y</code>），你想讓某個數字盡量小（或盡量大）— 那個數字就是 <strong>objective</strong>，而且它是 <em>linear</em> 的，意思是它長得像 <code>ax + by</code>（只是變數乘上常數再相加 — 沒有平方、沒有乘積）。但你不能隨便選：你必須遵守一串 <strong>constraint</strong>，每一個也都是 linear，每一個都是像 <code>aᵢx + bᵢy ≤ cᵢ</code> 這樣的不等式（把「<code>≤</code>」讀成「至多」）。任務是：找出遵守每一個 constraint 又讓 objective 最小的 <code>(x, y)</code>。這裡的「Programming」是「<em>規劃</em>」的舊用法，跟寫程式無關。</span></p>
+<p><span data-tr="en">A tiny example in words: a bakery makes <code>x</code> loaves and <code>y</code> cakes; flour and oven-time are limited (those are the <code>≤</code> constraints); we want to minimize cost <code>ax + by</code>. LP is everywhere — diets, shipping, scheduling — wherever you optimize under linear limits.</span><span data-tr="zh">用一個小例子來說：一間麵包店做 <code>x</code> 條麵包和 <code>y</code> 個蛋糕；麵粉和烤箱時間有限（那些就是 <code>≤</code> constraint）；我們想最小化成本 <code>ax + by</code>。LP 無處不在 — 飲食規劃、運輸、排程 — 只要是在 linear 限制下做最佳化的場合都用得到。</span></p>
 
-<h3 style="font-size:1.05rem;font-weight:600;margin-top:1.4rem">What the constraints carve out</h3>
-<p>Picture the plane of all possible <code>(x, y)</code>. One inequality <code>aᵢx + bᵢy ≤ cᵢ</code> draws a straight line and keeps only the side that satisfies it — a <strong>half-plane</strong> (half the plane, on one side of a line). Stack up <code>n</code> such half-planes and only the points obeying <em>all</em> of them survive. That surviving overlap is the <strong>feasible region</strong>: every point in it is a legal choice (<strong>feasible</strong> = obeys all constraints; <strong>optimal</strong> = the best feasible one). It's a convex polygon-ish area — possibly unbounded. The optimum sits somewhere on its edge.</p>
+<h3 style="font-size:1.05rem;font-weight:600;margin-top:1.4rem"><span data-tr="en">What the constraints carve out</span><span data-tr="zh">這些 constraint 切出了什麼</span></h3>
+<p><span data-tr="en">Picture the plane of all possible <code>(x, y)</code>. One inequality <code>aᵢx + bᵢy ≤ cᵢ</code> draws a straight line and keeps only the side that satisfies it — a <strong>half-plane</strong> (half the plane, on one side of a line). Stack up <code>n</code> such half-planes and only the points obeying <em>all</em> of them survive. That surviving overlap is the <strong>feasible region</strong>: every point in it is a legal choice (<strong>feasible</strong> = obeys all constraints; <strong>optimal</strong> = the best feasible one). It's a convex polygon-ish area — possibly unbounded. The optimum sits somewhere on its edge.</span><span data-tr="zh">想像所有可能的 <code>(x, y)</code> 構成的平面。一個不等式 <code>aᵢx + bᵢy ≤ cᵢ</code> 畫出一條直線，只保留滿足它的那一側 — 一個 <strong>half-plane</strong>（半平面，直線一側的那半邊）。把 <code>n</code> 個這樣的 half-plane 疊起來，只有遵守 <em>全部</em> 的點才能存活。存活下來的重疊區域就是 <strong>feasible region</strong>：裡面每個點都是合法的選擇（<strong>feasible</strong> = 遵守所有 constraint；<strong>optimal</strong> = feasible 中最好的那個）。它是一塊類似凸多邊形的區域 — 也可能是無界的。最佳解就落在它邊界上的某處。</span></p>
 <div class="tree">y
 ↑     each line is one constraint;
 │ \   keep only the side it allows
@@ -86,24 +88,24 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
 │    \│░░░░░░░░░░    the half-planes
 │─────┴──────────→ x</div>
 
-<h2>2 · The problem is one picture</h2>
-<p>General two-variable LP minimizes <code>ax + by</code> subject to <code>n</code> half-plane constraints <code>aᵢx + bᵢy ≤ cᵢ</code>. By a change of variables it reduces to the easy-to-see <strong>simplified form</strong>:</p>
+<h2><span data-tr="en">2 · The problem is one picture</span><span data-tr="zh">2 · 整個問題就是一張圖</span></h2>
+<p><span data-tr="en">General two-variable LP minimizes <code>ax + by</code> subject to <code>n</code> half-plane constraints <code>aᵢx + bᵢy ≤ cᵢ</code>. By a change of variables it reduces to the easy-to-see <strong>simplified form</strong>:</span><span data-tr="zh">一般的兩變數 LP 是在 <code>n</code> 個 half-plane constraint <code>aᵢx + bᵢy ≤ cᵢ</code> 之下最小化 <code>ax + by</code>。透過變數變換，它可以化簡成容易看懂的 <strong>simplified form（簡化形式）</strong>：</span></p>
 <div class="tree">Minimize    y
 subject to  y ≥ aᵢx + bᵢ ,   i = 1 … n</div>
-<p>Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> that line. So the feasible region is everything above the <em>highest</em> line at each <code>x</code>. We want the <strong>lowest</strong> feasible <code>y</code> — the bottom of that region.</p>
+<p><span data-tr="en">Each constraint <code>y ≥ aᵢx + bᵢ</code> says the feasible point must lie <strong>on or above</strong> that line. So the feasible region is everything above the <em>highest</em> line at each <code>x</code>. We want the <strong>lowest</strong> feasible <code>y</code> — the bottom of that region.</span><span data-tr="zh">每個 constraint <code>y ≥ aᵢx + bᵢ</code> 都表示 feasible 的點必須落在那條線 <strong>之上或線上</strong>。所以 feasible region 就是在每個 <code>x</code> 處、<em>最高</em> 那條線以上的全部區域。我們要的是 <strong>最低</strong> 的 feasible <code>y</code> — 也就是那塊區域的底部。</span></p>
 
-<h2>3 · The boundary function F(x)</h2>
-<p>In the simplified form, each constraint <code>y ≥ aᵢx + bᵢ</code> forces our point to sit <em>on or above</em> that line. To be feasible at a given <code>x</code>, the point must be above <strong>every</strong> line at once — so it must be above the <em>highest</em> one there. Define the <strong>boundary function</strong> <code>F(x)</code> as exactly that: at each <code>x</code>, the height of whichever line is on top.</p>
+<h2><span data-tr="en">3 · The boundary function F(x)</span><span data-tr="zh">3 · boundary function F(x)</span></h2>
+<p><span data-tr="en">In the simplified form, each constraint <code>y ≥ aᵢx + bᵢ</code> forces our point to sit <em>on or above</em> that line. To be feasible at a given <code>x</code>, the point must be above <strong>every</strong> line at once — so it must be above the <em>highest</em> one there. Define the <strong>boundary function</strong> <code>F(x)</code> as exactly that: at each <code>x</code>, the height of whichever line is on top.</span><span data-tr="zh">在 simplified form 中，每個 constraint <code>y ≥ aᵢx + bᵢ</code> 都迫使我們的點落在那條線 <em>之上或線上</em>。要在某個 <code>x</code> 處 feasible，這個點必須同時在 <strong>每一條</strong> 線之上 — 所以它必須在那裡 <em>最高</em> 的那條線之上。<strong>boundary function</strong> <code>F(x)</code> 的定義正是如此：在每個 <code>x</code> 處，取最上方那條線的高度。</span></p>
 <div class="tree">F(x) = max { aᵢx + bᵢ : i = 1 … n }</div>
-<p>Tracing the top line across all <code>x</code> draws the <strong>upper envelope</strong> — the jagged ceiling formed by always taking the highest line. It is the lower edge of the feasible region: the lowest you're allowed to be at each <code>x</code>. Minimizing <code>y</code> means finding the lowest point <em>on this ceiling</em>.</p>
-<p>Here is the key fact. Because <code>F(x)</code> is the pointwise <em>maximum</em> of straight lines, it is <strong>convex</strong> — it bends only upward, like the inside of a bowl. (Why: each line is straight; taking the top one at every <code>x</code> can only ever kink <em>upward</em> where a steeper line overtakes, never downward.) So <code>F(x)</code> is a single valley: it falls, hits one bottom, then rises — a <code>V</code> or bowl shape, never a <code>W</code> with two dips. The optimum is that bottom:</p>
+<p><span data-tr="en">Tracing the top line across all <code>x</code> draws the <strong>upper envelope</strong> — the jagged ceiling formed by always taking the highest line. It is the lower edge of the feasible region: the lowest you're allowed to be at each <code>x</code>. Minimizing <code>y</code> means finding the lowest point <em>on this ceiling</em>.</span><span data-tr="zh">把最上方那條線沿著所有 <code>x</code> 描過去，就畫出 <strong>upper envelope（上包絡線）</strong> — 那條由「永遠取最高線」形成的鋸齒狀天花板。它是 feasible region 的下緣：在每個 <code>x</code> 處你被允許達到的最低位置。最小化 <code>y</code> 就是在 <em>這片天花板上</em> 找最低點。</span></p>
+<p><span data-tr="en">Here is the key fact. Because <code>F(x)</code> is the pointwise <em>maximum</em> of straight lines, it is <strong>convex</strong> — it bends only upward, like the inside of a bowl. (Why: each line is straight; taking the top one at every <code>x</code> can only ever kink <em>upward</em> where a steeper line overtakes, never downward.) So <code>F(x)</code> is a single valley: it falls, hits one bottom, then rises — a <code>V</code> or bowl shape, never a <code>W</code> with two dips. The optimum is that bottom:</span><span data-tr="zh">這裡是關鍵事實。因為 <code>F(x)</code> 是一堆直線的逐點 <em>最大值</em>，它是 <strong>convex（凸）</strong> 的 — 它只會往上彎，像碗的內側。（為什麼：每條線都是直的；在每個 <code>x</code> 取最上面那條，只會在較陡的線超過時 <em>往上</em> 出現轉折，絕不會往下。）所以 <code>F(x)</code> 是單一的山谷：先下降、碰到唯一的谷底、再上升 — 一個 <code>V</code> 或碗的形狀，絕不會是有兩個凹谷的 <code>W</code>。最佳解就是那個谷底：</span></p>
 <div class="tree">F(x₀) = min over all x of F(x)        (Fig. 7-2)</div>
 <img src="../render/A06full/slide-14.png" alt="Fig. 7-2: the n constraint lines, with F(x) the upper envelope (highest line at each x) bounding the shaded feasible region; the convex valley bottoms out at the optimum (x₀, y₀)." style="background:#fff;padding:.5rem;width:100%;border:1px solid var(--rule);border-radius:6px;margin:1rem 0">
-<p style="font-size:.85rem;color:var(--mut);margin-top:-.4rem"><strong>Fig. 7-2.</strong> The lines are the constraints; <code>F(x)</code> is the highest one at each <code>x</code> (the jagged ceiling). The shaded feasible region sits above it; the convex valley bottoms out at the optimum <code>(x₀, y₀)</code> — the lowest point of the upper envelope.</p>
-<p>and <code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the answer. Convexity is the whole engine: a valley has <em>one</em> bottom, so a single left/right test at any probe point tells you which way the bottom lies — exactly what makes the fast pruning below possible.</p>
-<div class="note"><strong>Key exam line:</strong> <code>F(x)</code> = the <b>upper envelope</b> of the constraint lines (highest line at each x), and it is <b>convex</b>. The optimum is <em>not</em> the highest line — it's the lowest point of the highest-line-at-each-x curve.</div>
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.4rem"><span data-tr="en"><strong>Fig. 7-2.</strong> The lines are the constraints; <code>F(x)</code> is the highest one at each <code>x</code> (the jagged ceiling). The shaded feasible region sits above it; the convex valley bottoms out at the optimum <code>(x₀, y₀)</code> — the lowest point of the upper envelope.</span><span data-tr="zh"><strong>Fig. 7-2.</strong> 那些線就是 constraint；<code>F(x)</code> 是每個 <code>x</code> 處最高的那條（鋸齒狀天花板）。陰影的 feasible region 落在它上方；這個 convex 山谷在最佳解 <code>(x₀, y₀)</code> 處觸底 — 也就是 upper envelope 的最低點。</span></p>
+<p><span data-tr="en">and <code>(x₀, y₀)</code> with <code>y₀ = F(x₀)</code> is the answer. Convexity is the whole engine: a valley has <em>one</em> bottom, so a single left/right test at any probe point tells you which way the bottom lies — exactly what makes the fast pruning below possible.</span><span data-tr="zh">於是 <code>(x₀, y₀)</code>（其中 <code>y₀ = F(x₀)</code>）就是答案。convexity 是整個方法的引擎：山谷只有 <em>一個</em> 谷底，所以在任何探測點做一次「往左/往右」測試，就能判斷谷底在哪個方向 — 這正是下面那個快速 pruning 能成立的原因。</span></p>
+<div class="note"><span data-tr="en"><strong>Key exam line:</strong> <code>F(x)</code> = the <b>upper envelope</b> of the constraint lines (highest line at each x), and it is <b>convex</b>. The optimum is <em>not</em> the highest line — it's the lowest point of the highest-line-at-each-x curve.</span><span data-tr="zh"><strong>考試關鍵句：</strong> <code>F(x)</code> = constraint 線的 <b>upper envelope</b>（每個 x 處最高的線），而且它是 <b>convex</b> 的。最佳解 <em>不是</em> 最高那條線 — 而是「每個 x 取最高線」這條曲線的最低點。</span></div>
 
-<p>Tiny example you can see — two lines, <code>y ≥ x</code> and <code>y ≥ −x</code>. The envelope is the higher of the two at each <code>x</code>: the falling line on the left, the rising line on the right, meeting in a <code>V</code> at the origin. Lowest point = <code>(0, 0)</code>.</p>
+<p><span data-tr="en">Tiny example you can see — two lines, <code>y ≥ x</code> and <code>y ≥ −x</code>. The envelope is the higher of the two at each <code>x</code>: the falling line on the left, the rising line on the right, meeting in a <code>V</code> at the origin. Lowest point = <code>(0, 0)</code>.</span><span data-tr="zh">一個看得見的小例子 — 兩條線，<code>y ≥ x</code> 和 <code>y ≥ −x</code>。envelope 是每個 <code>x</code> 處兩者中較高的那條：左半邊是下降線，右半邊是上升線，在原點交會成一個 <code>V</code>。最低點 = <code>(0, 0)</code>。</span></p>
 <div class="tree">  y
   ↑  \           /     F(x) = max(−x, x)
    \  \         /      left half:  y = −x  (falling)
@@ -114,91 +116,91 @@ subject to  y ≥ aᵢx + bᵢ ,   i = 1 … n</div>
   ──────────●──────────→ x
           (0,0)  ← lowest point of the envelope</div>
 
-<h2>4 · The slope test, then prune</h2>
-<p>Pick a probe abscissa <code>xₘ</code> and evaluate <code>yₘ = F(xₘ)</code> — find the line(s) active (on top) there. Read off the slope <code>g</code> of the active constraint:</p>
+<h2><span data-tr="en">4 · The slope test, then prune</span><span data-tr="zh">4 · slope test，然後 prune</span></h2>
+<p><span data-tr="en">Pick a probe abscissa <code>xₘ</code> and evaluate <code>yₘ = F(xₘ)</code> — find the line(s) active (on top) there. Read off the slope <code>g</code> of the active constraint:</span><span data-tr="zh">選一個探測橫座標 <code>xₘ</code>，算出 <code>yₘ = F(xₘ)</code> — 找出在那裡 active（在最上方）的線。讀出該 active constraint 的 slope <code>g</code>：</span></p>
 <table>
-<tr><th>Active slope at xₘ</th><th>Envelope is…</th><th>So the bottom x₀ is…</th></tr>
-<tr><td><code>g &gt; 0</code> (rising)</td><td>still descending to the left</td><td><strong>left</strong>: x₀ &lt; xₘ</td></tr>
-<tr><td><code>g &lt; 0</code> (falling)</td><td>still descending to the right</td><td><strong>right</strong>: x₀ &gt; xₘ</td></tr>
-<tr><td>both signs present</td><td>at its bottom right here</td><td><strong>xₘ itself</strong> is x₀ ✓</td></tr>
+<tr><th><span data-tr="en">Active slope at xₘ</span><span data-tr="zh">xₘ 處的 active slope</span></th><th><span data-tr="en">Envelope is…</span><span data-tr="zh">envelope 的狀態…</span></th><th><span data-tr="en">So the bottom x₀ is…</span><span data-tr="zh">所以谷底 x₀ 在…</span></th></tr>
+<tr><td><code>g &gt; 0</code> <span data-tr="en">(rising)</span><span data-tr="zh">（上升）</span></td><td><span data-tr="en">still descending to the left</span><span data-tr="zh">往左仍在下降</span></td><td><strong><span data-tr="en">left</span><span data-tr="zh">左邊</span></strong>: x₀ &lt; xₘ</td></tr>
+<tr><td><code>g &lt; 0</code> <span data-tr="en">(falling)</span><span data-tr="zh">（下降）</span></td><td><span data-tr="en">still descending to the right</span><span data-tr="zh">往右仍在下降</span></td><td><strong><span data-tr="en">right</span><span data-tr="zh">右邊</span></strong>: x₀ &gt; xₘ</td></tr>
+<tr><td><span data-tr="en">both signs present</span><span data-tr="zh">正負號都出現</span></td><td><span data-tr="en">at its bottom right here</span><span data-tr="zh">谷底就在這裡</span></td><td><strong><span data-tr="en">xₘ itself</span><span data-tr="zh">xₘ 本身</span></strong> <span data-tr="en">is x₀</span><span data-tr="zh">就是 x₀</span> ✓</td></tr>
 </table>
-<p>When several lines meet at <code>xₘ</code>, use <code>g_max</code>/<code>g_min</code> = the max/min slope among the active lines: both positive ⇒ x₀ left; both negative ⇒ x₀ right; opposite signs (<code>g_min &lt; 0 &lt; g_max</code>) ⇒ <code>xₘ</code> is the optimum (Fig. 7-6).</p>
-<p><strong>How a pair gets pruned.</strong> Group the <code>n</code> constraints into <code>n/2</code> pairs; intersect each pair, and let <code>xₘ</code> be the <em>median</em> of the <code>n/2</code> intersection x-values. Suppose the test says <code>x₀ &lt; xₘ</code>. Take any pair whose two lines cross at some <code>x &gt; xₘ</code>. To the left of that crossing one line of the pair is strictly below the other — and since we only care about <code>x ≤ xₘ &lt; </code> crossing, that <strong>lower line can never be on the upper envelope near x₀</strong>, so it is redundant and we delete it. Half the pairs (those crossing on the far side of <code>xₘ</code>) qualify, so <strong>n/4 constraints die every iteration</strong>.</p>
-<div class="note"><strong>Why O(n):</strong> each iteration does <code>O(n)</code> work (pairing, one median, one F-evaluation) and discards a constant fraction (≈1/4), so <code>T(n) = T(3n/4) + O(n) = O(n)</code> — the same prune-and-search payoff that makes median-of-medians selection (Lesson 5) linear.</div>
+<p><span data-tr="en">When several lines meet at <code>xₘ</code>, use <code>g_max</code>/<code>g_min</code> = the max/min slope among the active lines: both positive ⇒ x₀ left; both negative ⇒ x₀ right; opposite signs (<code>g_min &lt; 0 &lt; g_max</code>) ⇒ <code>xₘ</code> is the optimum (Fig. 7-6).</span><span data-tr="zh">當有好幾條線在 <code>xₘ</code> 交會時，用 <code>g_max</code>/<code>g_min</code> = active 線中的最大/最小 slope：兩者皆正 ⇒ x₀ 在左；兩者皆負 ⇒ x₀ 在右；正負相反（<code>g_min &lt; 0 &lt; g_max</code>）⇒ <code>xₘ</code> 就是最佳解 (Fig. 7-6)。</span></p>
+<p><span data-tr="en"><strong>How a pair gets pruned.</strong> Group the <code>n</code> constraints into <code>n/2</code> pairs; intersect each pair, and let <code>xₘ</code> be the <em>median</em> of the <code>n/2</code> intersection x-values. Suppose the test says <code>x₀ &lt; xₘ</code>. Take any pair whose two lines cross at some <code>x &gt; xₘ</code>. To the left of that crossing one line of the pair is strictly below the other — and since we only care about <code>x ≤ xₘ &lt; </code> crossing, that <strong>lower line can never be on the upper envelope near x₀</strong>, so it is redundant and we delete it. Half the pairs (those crossing on the far side of <code>xₘ</code>) qualify, so <strong>n/4 constraints die every iteration</strong>.</span><span data-tr="zh"><strong>一對 constraint 如何被 prune 掉。</strong> 把 <code>n</code> 個 constraint 分成 <code>n/2</code> 對；對每一對取交點，令 <code>xₘ</code> 為這 <code>n/2</code> 個交點 x 值的 <em>median</em>。假設測試說 <code>x₀ &lt; xₘ</code>。取任何一對、其兩條線在某個 <code>x &gt; xₘ</code> 處相交。在那個交點左側，這一對中有一條嚴格低於另一條 — 而既然我們只關心 <code>x ≤ xₘ &lt; </code> 交點，那條 <strong>較低的線在 x₀ 附近絕不可能出現在 upper envelope 上</strong>，所以它是多餘的，可以刪掉。有一半的對（那些在 <code>xₘ</code> 遠側相交的）符合條件，所以 <strong>每一輪都有 n/4 個 constraint 被淘汰</strong>。</span></p>
+<div class="note"><span data-tr="en"><strong>Why O(n):</strong> each iteration does <code>O(n)</code> work (pairing, one median, one F-evaluation) and discards a constant fraction (≈1/4), so <code>T(n) = T(3n/4) + O(n) = O(n)</code> — the same prune-and-search payoff that makes median-of-medians selection (Lesson 5) linear.</span><span data-tr="zh"><strong>為何是 O(n)：</strong> 每一輪做 <code>O(n)</code> 的工作（配對、一次 median、一次 F 求值），並丟掉一個固定比例（約 1/4），所以 <code>T(n) = T(3n/4) + O(n) = O(n)</code> — 這正是讓 median-of-medians selection（第 5 課）變成線性的同一個 prune-and-search 效益。</span></div>
 
-<h2>5 · Trace it yourself</h2>
-<p>Three constraints in simplified form. Find the upper envelope's lowest point.</p>
+<h2><span data-tr="en">5 · Trace it yourself</span><span data-tr="zh">5 · 自己描一遍</span></h2>
+<p><span data-tr="en">Three constraints in simplified form. Find the upper envelope's lowest point.</span><span data-tr="zh">simplified form 下的三個 constraint。找出 upper envelope 的最低點。</span></p>
 <div class="tree">L₁:  y ≥  x + 1      (slope +1)
 L₂:  y ≥ −x + 5      (slope −1)
 L₃:  y ≥  2          (slope  0, a floor)</div>
-<p>Work out <code>F(x) = max(L₁,L₂,L₃)</code>, find where it bottoms out, then reveal.</p>
+<p><span data-tr="en">Work out <code>F(x) = max(L₁,L₂,L₃)</code>, find where it bottoms out, then reveal.</span><span data-tr="zh">算出 <code>F(x) = max(L₁,L₂,L₃)</code>，找出它在哪裡觸底，再展開答案。</span></p>
 
-<details><summary>Where do the lines cross, and what is F(x)?</summary>
-<p><code>L₁ = L₂</code>: <code>x+1 = −x+5 ⇒ x = 2, y = 3</code>. At <code>x=2</code> both L₁ and L₂ give 3, and the floor L₃ gives 2 — so the floor is below them and inactive. For <code>x &lt; 2</code> the falling line <code>L₂</code> is on top; for <code>x &gt; 2</code> the rising line <code>L₁</code> is on top. So the envelope is a clean V with its vertex at <code>(2, 3)</code>.</p></details>
+<details><summary><span data-tr="en">Where do the lines cross, and what is F(x)?</span><span data-tr="zh">這些線在哪裡相交，F(x) 又是什麼？</span></summary>
+<p><span data-tr="en"><code>L₁ = L₂</code>: <code>x+1 = −x+5 ⇒ x = 2, y = 3</code>. At <code>x=2</code> both L₁ and L₂ give 3, and the floor L₃ gives 2 — so the floor is below them and inactive. For <code>x &lt; 2</code> the falling line <code>L₂</code> is on top; for <code>x &gt; 2</code> the rising line <code>L₁</code> is on top. So the envelope is a clean V with its vertex at <code>(2, 3)</code>.</span><span data-tr="zh"><code>L₁ = L₂</code>：<code>x+1 = −x+5 ⇒ x = 2, y = 3</code>。在 <code>x=2</code> 處 L₁ 和 L₂ 都給出 3，而 floor L₃ 給出 2 — 所以 floor 在它們下方、是 inactive 的。對 <code>x &lt; 2</code>，下降線 <code>L₂</code> 在最上方；對 <code>x &gt; 2</code>，上升線 <code>L₁</code> 在最上方。所以 envelope 是一個漂亮的 V，頂點在 <code>(2, 3)</code>。</span></p></details>
 
-<details><summary>Apply the slope test at the vertex x₀ = 2</summary>
-<p>At <code>xₘ = 2</code> the active lines are L₂ (slope <code>−1</code>) and L₁ (slope <code>+1</code>). <code>g_min = −1 &lt; 0</code> and <code>g_max = +1 &gt; 0</code> — opposite signs — so by the rule this point <em>is</em> the optimum. Answer: <code>x₀ = 2, y₀ = F(2) = 3</code>. (The floor L₃ = 2 never touches the envelope here, so it's a redundant constraint — exactly the kind prune-and-search would discard.)</p></details>
+<details><summary><span data-tr="en">Apply the slope test at the vertex x₀ = 2</span><span data-tr="zh">在頂點 x₀ = 2 套用 slope test</span></summary>
+<p><span data-tr="en">At <code>xₘ = 2</code> the active lines are L₂ (slope <code>−1</code>) and L₁ (slope <code>+1</code>). <code>g_min = −1 &lt; 0</code> and <code>g_max = +1 &gt; 0</code> — opposite signs — so by the rule this point <em>is</em> the optimum. Answer: <code>x₀ = 2, y₀ = F(2) = 3</code>. (The floor L₃ = 2 never touches the envelope here, so it's a redundant constraint — exactly the kind prune-and-search would discard.)</span><span data-tr="zh">在 <code>xₘ = 2</code> 處，active 的線是 L₂（slope <code>−1</code>）和 L₁（slope <code>+1</code>）。<code>g_min = −1 &lt; 0</code> 且 <code>g_max = +1 &gt; 0</code> — 正負相反 — 所以依照規則，這個點 <em>就是</em> 最佳解。答案：<code>x₀ = 2, y₀ = F(2) = 3</code>。（floor L₃ = 2 在這裡從未碰到 envelope，所以它是多餘的 constraint — 正是 prune-and-search 會丟掉的那種。）</span></p></details>
 
-<details><summary>Sanity-check with a probe to the left, say xₘ = 0</summary>
-<p><code>F(0) = max(0+1, 5, 2) = 5</code>, achieved by <code>L₂</code> alone, slope <code>−1 &lt; 0</code> ⇒ envelope still descending to the right ⇒ <code>x₀ &gt; 0</code>. Correct: the true bottom is at <code>x₀ = 2</code>, to the right. The single slope sign pointed the right way.</p></details>
+<details><summary><span data-tr="en">Sanity-check with a probe to the left, say xₘ = 0</span><span data-tr="zh">用左邊的探測點驗證一下，例如 xₘ = 0</span></summary>
+<p><span data-tr="en"><code>F(0) = max(0+1, 5, 2) = 5</code>, achieved by <code>L₂</code> alone, slope <code>−1 &lt; 0</code> ⇒ envelope still descending to the right ⇒ <code>x₀ &gt; 0</code>. Correct: the true bottom is at <code>x₀ = 2</code>, to the right. The single slope sign pointed the right way.</span><span data-tr="zh"><code>F(0) = max(0+1, 5, 2) = 5</code>，由 <code>L₂</code> 單獨達成，slope <code>−1 &lt; 0</code> ⇒ envelope 往右仍在下降 ⇒ <code>x₀ &gt; 0</code>。正確：真正的谷底在 <code>x₀ = 2</code>，在右邊。單一的 slope 正負號指對了方向。</span></p></details>
 
-<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">6 · Retrieve (no peeking)</span><span data-tr="zh">6 · 主動回想（不要偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先選答案再看回饋。<em>先答錯再看為什麼</em>，比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="3" data-explain="F(x) is the <b>max</b> (upper envelope), so F(3) = max(3+2, −3+8, 4) = max(5, 5, 4) = <b>5</b>. If you picked 4 you took the <b>min</b> (lower envelope) of the three values instead of the max; 8 means you read the constant term of −x+8 without substituting x=3; 2 is the constant term of the first line, same slip.">
-  <div class="q">Q1. Constraints y ≥ x+2, y ≥ −x+8, y ≥ 4. The boundary F(x) is the upper envelope max of the three lines. What is F(3)?</div>
-  <button class="opt">2</button>
-  <button class="opt">4</button>
-  <button class="opt">8</button>
-  <button class="opt">5</button>
+<div class="quiz" data-correct="3" data-explain="F(x) is the <b>max</b> (upper envelope), so F(3) = max(3+2, −3+8, 4) = max(5, 5, 4) = <b>5</b>. If you picked 4 you took the <b>min</b> (lower envelope) of the three values instead of the max; 8 means you read the constant term of −x+8 without substituting x=3; 2 is the constant term of the first line, same slip." data-explain-zh="F(x) 是 <b>max</b>（upper envelope），所以 F(3) = max(3+2, −3+8, 4) = max(5, 5, 4) = <b>5</b>。如果你選 4，你取的是三個值的 <b>min</b>（lower envelope）而不是 max；選 8 表示你直接讀 −x+8 的常數項而沒代入 x=3；選 2 是第一條線的常數項，同樣的失誤。">
+  <div class="q"><span data-tr="en">Q1. Constraints y ≥ x+2, y ≥ −x+8, y ≥ 4. The boundary F(x) is the upper envelope max of the three lines. What is F(3)?</span><span data-tr="zh">Q1. Constraint y ≥ x+2、y ≥ −x+8、y ≥ 4。boundary F(x) 是三條線的 upper envelope（取 max）。F(3) 是多少？</span></div>
+  <button class="opt"><span data-tr="en">2</span><span data-tr="zh">2</span></button>
+  <button class="opt"><span data-tr="en">4</span><span data-tr="zh">4</span></button>
+  <button class="opt"><span data-tr="en">8</span><span data-tr="zh">8</span></button>
+  <button class="opt"><span data-tr="en">5</span><span data-tr="zh">5</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="F is the upper envelope (a convex valley); the optimum is its <b>lowest</b> point. L₁ and L₂ cross at x+1 = −x+5 ⇒ x=2, y=3, and the floor L₃=2 sits below there (inactive), so x₀=2, y₀=3. If you picked (5,2) you took the floor's value (the lowest line) instead of the lowest point of the highest-line curve; (0,5) is the highest envelope value, not the lowest.">
-  <div class="q">Q2. Constraints y ≥ x+1, y ≥ −x+5, y ≥ 2. The optimum is the lowest point of the upper envelope. What is (x₀, y₀)?</div>
-  <button class="opt">(5, 2)</button>
-  <button class="opt">(0, 5)</button>
-  <button class="opt">(2, 3)</button>
-  <button class="opt">(2, 2)</button>
+<div class="quiz" data-correct="2" data-explain="F is the upper envelope (a convex valley); the optimum is its <b>lowest</b> point. L₁ and L₂ cross at x+1 = −x+5 ⇒ x=2, y=3, and the floor L₃=2 sits below there (inactive), so x₀=2, y₀=3. If you picked (5,2) you took the floor's value (the lowest line) instead of the lowest point of the highest-line curve; (0,5) is the highest envelope value, not the lowest." data-explain-zh="F 是 upper envelope（一個 convex 山谷）；最佳解是它的 <b>最低</b> 點。L₁ 和 L₂ 相交於 x+1 = −x+5 ⇒ x=2, y=3，而 floor L₃=2 在那裡位於下方（inactive），所以 x₀=2, y₀=3。如果你選 (5,2)，你取的是 floor 的值（最低那條線）而不是「最高線曲線」的最低點；(0,5) 是 envelope 的最高值，不是最低值。">
+  <div class="q"><span data-tr="en">Q2. Constraints y ≥ x+1, y ≥ −x+5, y ≥ 2. The optimum is the lowest point of the upper envelope. What is (x₀, y₀)?</span><span data-tr="zh">Q2. Constraint y ≥ x+1、y ≥ −x+5、y ≥ 2。最佳解是 upper envelope 的最低點。(x₀, y₀) 是多少？</span></div>
+  <button class="opt"><span data-tr="en">(5, 2)</span><span data-tr="zh">(5, 2)</span></button>
+  <button class="opt"><span data-tr="en">(0, 5)</span><span data-tr="zh">(0, 5)</span></button>
+  <button class="opt"><span data-tr="en">(2, 3)</span><span data-tr="zh">(2, 3)</span></button>
+  <button class="opt"><span data-tr="en">(2, 2)</span><span data-tr="zh">(2, 2)</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="At a probe where the active line has slope <b>g &lt; 0</b> the envelope is still falling to the right, so the bottom x₀ lies to the <b>right</b> (x₀ &gt; xₘ). If you picked 'left' you flipped the rule — that's the g &gt; 0 case. Both-signs-present (g_min&lt;0&lt;g_max) would mean xₘ itself is the optimum, not that it's undecidable.">
-  <div class="q">Q3. You probe at xₘ = 1 and find F is achieved by a single active line of slope g = −2. Where is the optimum x₀?</div>
-  <button class="opt">to the right: x₀ &gt; 1</button>
-  <button class="opt">to the left: x₀ &lt; 1</button>
-  <button class="opt">exactly at xₘ = 1</button>
-  <button class="opt">undecidable from one slope</button>
+<div class="quiz" data-correct="0" data-explain="At a probe where the active line has slope <b>g &lt; 0</b> the envelope is still falling to the right, so the bottom x₀ lies to the <b>right</b> (x₀ &gt; xₘ). If you picked 'left' you flipped the rule — that's the g &gt; 0 case. Both-signs-present (g_min&lt;0&lt;g_max) would mean xₘ itself is the optimum, not that it's undecidable." data-explain-zh="在 active 線 slope 為 <b>g &lt; 0</b> 的探測點，envelope 往右仍在下降，所以谷底 x₀ 在 <b>右邊</b>（x₀ &gt; xₘ）。如果你選「左邊」就是把規則弄反了 — 那是 g &gt; 0 的情況。正負號都出現（g_min&lt;0&lt;g_max）意味著 xₘ 本身就是最佳解，而不是無法判斷。">
+  <div class="q"><span data-tr="en">Q3. You probe at xₘ = 1 and find F is achieved by a single active line of slope g = −2. Where is the optimum x₀?</span><span data-tr="zh">Q3. 你在 xₘ = 1 探測，發現 F 由一條 slope g = −2 的 active 線單獨達成。最佳解 x₀ 在哪裡？</span></div>
+  <button class="opt"><span data-tr="en">to the right: x₀ &gt; 1</span><span data-tr="zh">在右邊：x₀ &gt; 1</span></button>
+  <button class="opt"><span data-tr="en">to the left: x₀ &lt; 1</span><span data-tr="zh">在左邊：x₀ &lt; 1</span></button>
+  <button class="opt"><span data-tr="en">exactly at xₘ = 1</span><span data-tr="zh">就在 xₘ = 1</span></button>
+  <button class="opt"><span data-tr="en">undecidable from one slope</span><span data-tr="zh">單一 slope 無法判斷</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="Since x₀ &lt; xₘ we only care about x ≤ xₘ = 4, which is left of the crossing at x=6. There L₂ (slope −1) sits <b>below</b> L₁ (slope +1) — check x=4: L₁=4+1=5, L₂=−4+9=5; just left, L₂ is smaller — so L₂ can never reach the upper envelope near x₀ and is deleted. If you picked L₁ you pruned the wrong side (the line that stays on top); if you said neither, you forgot the median test guarantees this pair crosses on the deletable side.">
-  <div class="q">Q4. The slope test gave x₀ &lt; xₘ = 4. A pair L₁: y ≥ x+1 (slope +1) and L₂: y ≥ −x+9 (slope −1) crosses at x = 6 (right of xₘ). Which line of the pair is redundant and pruned?</div>
-  <button class="opt">L₁ (slope +1)</button>
-  <button class="opt">L₂ (slope −1)</button>
-  <button class="opt">neither — both stay</button>
-  <button class="opt">both are pruned</button>
+<div class="quiz" data-correct="1" data-explain="Since x₀ &lt; xₘ we only care about x ≤ xₘ = 4, which is left of the crossing at x=6. There L₂ (slope −1) sits <b>below</b> L₁ (slope +1) — check x=4: L₁=4+1=5, L₂=−4+9=5; just left, L₂ is smaller — so L₂ can never reach the upper envelope near x₀ and is deleted. If you picked L₁ you pruned the wrong side (the line that stays on top); if you said neither, you forgot the median test guarantees this pair crosses on the deletable side." data-explain-zh="既然 x₀ &lt; xₘ，我們只關心 x ≤ xₘ = 4，它在交點 x=6 的左側。在那裡 L₂（slope −1）位於 L₁（slope +1）<b>下方</b> — 驗算 x=4：L₁=4+1=5、L₂=−4+9=5；再往左一點 L₂ 就比較小 — 所以 L₂ 在 x₀ 附近絕不可能到達 upper envelope，因此被刪除。如果你選 L₁，你 prune 錯了邊（那條會留在最上方的線）；如果你說都不刪，你忘了 median test 保證這一對會在「可刪那一側」相交。">
+  <div class="q"><span data-tr="en">Q4. The slope test gave x₀ &lt; xₘ = 4. A pair L₁: y ≥ x+1 (slope +1) and L₂: y ≥ −x+9 (slope −1) crosses at x = 6 (right of xₘ). Which line of the pair is redundant and pruned?</span><span data-tr="zh">Q4. slope test 給出 x₀ &lt; xₘ = 4。一對 L₁: y ≥ x+1（slope +1）和 L₂: y ≥ −x+9（slope −1）相交於 x = 6（在 xₘ 右側）。這一對中哪條線是多餘且被 prune 掉的？</span></div>
+  <button class="opt"><span data-tr="en">L₁ (slope +1)</span><span data-tr="zh">L₁（slope +1）</span></button>
+  <button class="opt"><span data-tr="en">L₂ (slope −1)</span><span data-tr="zh">L₂（slope −1）</span></button>
+  <button class="opt"><span data-tr="en">neither — both stay</span><span data-tr="zh">都不刪 — 兩條都留</span></button>
+  <button class="opt"><span data-tr="en">both are pruned</span><span data-tr="zh">兩條都被 prune</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="Median-of-medians sorts groups of <b>5</b> and takes the median of group-medians; this guarantees ≥1/4 of S is ≤ p and ≥1/4 is ≥ p, so ≤ <b>3n/4</b> survive — the same constant-fraction prune that this LP method reuses to drop n/4 constraints a round. (Lesson 5.)">
-  <div class="q">Q5. (Lesson 5) Median-of-medians selection divides the n elements into groups of size…</div>
-  <button class="opt">2</button>
-  <button class="opt">3</button>
-  <button class="opt">5</button>
-  <button class="opt">7</button>
+<div class="quiz" data-correct="2" data-explain="Median-of-medians sorts groups of <b>5</b> and takes the median of group-medians; this guarantees ≥1/4 of S is ≤ p and ≥1/4 is ≥ p, so ≤ <b>3n/4</b> survive — the same constant-fraction prune that this LP method reuses to drop n/4 constraints a round. (Lesson 5.)" data-explain-zh="Median-of-medians 把元素以 <b>5</b> 個為一組排序，再取各組 median 的 median；這保證 S 中至少 1/4 ≤ p 且至少 1/4 ≥ p，所以最多 <b>3n/4</b> 存活 — 正是這個 LP 方法重複利用、每輪丟掉 n/4 個 constraint 的同一種固定比例 prune。（第 5 課。）">
+  <div class="q"><span data-tr="en">Q5. (Lesson 5) Median-of-medians selection divides the n elements into groups of size…</span><span data-tr="zh">Q5.（第 5 課）Median-of-medians selection 把這 n 個元素分成每組大小為…</span></div>
+  <button class="opt"><span data-tr="en">2</span><span data-tr="zh">2</span></button>
+  <button class="opt"><span data-tr="en">3</span><span data-tr="zh">3</span></button>
+  <button class="opt"><span data-tr="en">5</span><span data-tr="zh">5</span></button>
+  <button class="opt"><span data-tr="en">7</span><span data-tr="zh">7</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>7 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.x on Prune-and-Search (your <code>Alg06</code> slides, "Prune-and-Search"). Study Fig. 7-2 (the F(x) envelope plot, slide 14) and Fig. 7-6 (the three slope-test subcases, slide 17), then re-trace the V above on paper. The <strong>1-center problem</strong> (smallest enclosing circle) is another prune-and-search O(n) result in the same chapter — same median-probe-then-discard rhythm.</p>
-<p>See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A06-prune-and-search.html">chapter note (A06)</a> for the general-LP reduction and the F₁/F₂ feasibility cases.</p>
+<h2><span data-tr="en">7 · Go deeper</span><span data-tr="zh">7 · 深入一點</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.x on Prune-and-Search (your <code>Alg06</code> slides, "Prune-and-Search"). Study Fig. 7-2 (the F(x) envelope plot, slide 14) and Fig. 7-6 (the three slope-test subcases, slide 17), then re-trace the V above on paper. The <strong>1-center problem</strong> (smallest enclosing circle) is another prune-and-search O(n) result in the same chapter — same median-probe-then-discard rhythm.</span><span data-tr="zh"><strong>主要參考：</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 7 章 §7.x 談 Prune-and-Search（你的 <code>Alg06</code> 投影片，「Prune-and-Search」）。研讀 Fig. 7-2（F(x) envelope 圖，slide 14）和 Fig. 7-6（slope test 的三種子情況，slide 17），然後在紙上重描一遍上面那個 V。<strong>1-center problem</strong>（smallest enclosing circle，最小包覆圓）是同一章另一個 prune-and-search 的 O(n) 結果 — 同樣是「取 median 探測再丟棄」的節奏。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A06-prune-and-search.html">chapter note (A06)</a> for the general-LP reduction and the F₁/F₂ feasibility cases.</span><span data-tr="zh">也可參考 <a href="../reference/glossary.html">Glossary → Ch7</a> 以及完整的 <a href="../notes-html/A06-prune-and-search.html">章節筆記 (A06)</a>，裡面有一般 LP 的化簡與 F₁/F₂ 的 feasibility 情況。</span></p>
 
-<div class="note"><strong>Next up — Lesson 7:</strong> Dynamic Programming — multistage graphs. We trade pruning for <em>remembering</em>: build the shortest path stage by stage, both <strong>forward</strong> and <strong>backward</strong>, and read the cost off a filled table instead of re-searching.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 7:</strong> Dynamic Programming — multistage graphs. We trade pruning for <em>remembering</em>: build the shortest path stage by stage, both <strong>forward</strong> and <strong>backward</strong>, and read the cost off a filled table instead of re-searching.</span><span data-tr="zh"><strong>下一課 — 第 7 課：</strong> Dynamic Programming — multistage graph（多階段圖）。我們把 pruning 換成 <em>記住</em>：一個 stage 接一個 stage 建出最短路徑，同時做 <strong>forward</strong> 和 <strong>backward</strong>，然後從填好的表讀出成本，而不必重新搜尋。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want a worked general-LP reduction (the x′=x, y′=ax+by substitution)? Want the n/4 pruning argument drawn out line by line? Want a harder envelope with 5 lines to trace? Just say so.</p>
-  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 7. ≤3 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Want a worked general-LP reduction (the x′=x, y′=ax+by substitution)? Want the n/4 pruning argument drawn out line by line? Want a harder envelope with 5 lines to trace? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師 — 什麼都可以問。</strong> 想要一個做完整的一般 LP 化簡（x′=x, y′=ax+by 代換）嗎？想要把 n/4 pruning 論證一行一行畫出來嗎？想要一個有 5 條線、更難的 envelope 來描嗎？開口就行。</span></p>
+  <p><span data-tr="en">Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 7. ≤3 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分（滿分 5）。4–5 → 我們進到第 7 課。≤3 → 告訴我是哪一題，我們來加強它。</span></p>
 </div>
 
 <script>
@@ -211,20 +213,23 @@ L₃:  y ≥  2          (slope  0, a floor)</div>
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✓ 正確。':'✓ Correct.')+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var letter=String.fromCharCode(65+correct);
+          var verdict=lang==='zh'?('✗ 不對 — 正解是 '+letter+'。'):('✗ Not quite — '+letter+' is right.');
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+verdict+'</span> '+explain;
         }
         updateScore();
       });
@@ -233,5 +238,6 @@ L₃:  y ≥  2          (slope  0, a floor)</div>
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

@@ -16,11 +16,13 @@
   .arrow{font-size:1.3rem;color:var(--mut)}
   .chosen .pz{outline:2px solid #4caf50;outline-offset:2px}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head><body>
 <div class="topbar"><div class="inner">
   <a class="home" href="../index.html">📘 Study Hub</a>
   <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
   <span class="sp"></span>
+  <button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言">中</button>
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
@@ -143,4 +145,5 @@ ZOO.stepper({
   }
 });
 </script>
+<script src="../assets/i18n.js"></script>
 </body></html>

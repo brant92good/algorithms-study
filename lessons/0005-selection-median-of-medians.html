@@ -62,67 +62,72 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 5 · Prune-and-Search</div>
-<h1>Linear-Time Selection</h1>
-<div class="mission">Exam goal: <strong>hand-trace</strong> the 3-way partition to find a k-th smallest element, and recite why groups of 5 give <code>O(n)</code>. Sorting finds the median in <code>O(n log n)</code> — this lesson's single tangible win is finding it in <strong>O(n)</strong>, by never sorting the whole set, only pruning a guaranteed fraction each round.</div>
+<div class="kicker"><span data-tr="en">Lesson 5 · Prune-and-Search</span><span data-tr="zh">第 5 課 · Prune-and-Search</span></div>
+<h1><span data-tr="en">Linear-Time Selection</span><span data-tr="zh">線性時間 selection</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>hand-trace</strong> the 3-way partition to find a k-th smallest element, and recite why groups of 5 give <code>O(n)</code>. Sorting finds the median in <code>O(n log n)</code> — this lesson's single tangible win is finding it in <strong>O(n)</strong>, by never sorting the whole set, only pruning a guaranteed fraction each round.</span><span data-tr="zh">考試目標：能<strong>手動推演</strong> 3-way partition 來找出第 k 小的元素，並能說出為什麼以 5 個一組能得到 <code>O(n)</code>。排序找 median 要 <code>O(n log n)</code>——本課唯一具體的收穫，就是改用 <strong>O(n)</strong> 找到它：永遠不把整個集合排序，每一輪只 prune 掉保證比例的元素。</span></div>
 
-<h2>1 · What are we even solving?</h2>
-<p>The <strong>selection problem</strong>: you're given a set of <code>n</code> numbers (in no particular order) and a rank <code>k</code>, and you must return the <strong>k-th smallest</strong> element — the value that <em>would</em> sit in position <code>k</code> if you sorted the set, but found <em>without</em> fully sorting. The <strong>median</strong> is the middle one: the special case <code>k ≈ n/2</code> (precisely the <code>⌈n/2⌉</code>-th smallest).</p>
+<h2><span data-tr="en">1 · What are we even solving?</span><span data-tr="zh">1 · 我們到底在解什麼？</span></h2>
+<p><span data-tr="en">The <strong>selection problem</strong>: you're given a set of <code>n</code> numbers (in no particular order) and a rank <code>k</code>, and you must return the <strong>k-th smallest</strong> element — the value that <em>would</em> sit in position <code>k</code> if you sorted the set, but found <em>without</em> fully sorting. The <strong>median</strong> is the middle one: the special case <code>k ≈ n/2</code> (precisely the <code>⌈n/2⌉</code>-th smallest).</span><span data-tr="zh"><strong>Selection problem</strong>：給你一組 <code>n</code> 個數字（沒有特定順序）和一個 rank <code>k</code>，你要回傳<strong>第 k 小</strong>的元素——也就是若把整個集合排序後<em>會</em>落在第 <code>k</code> 個位置的那個值，但要<em>不</em>完整排序就找出它。<strong>Median</strong> 是正中間那個：特例 <code>k ≈ n/2</code>（精確說是第 <code>⌈n/2⌉</code> 小）。</span></p>
 <div class="tree">S = {7, 2, 9, 4, 5}   (n = 5)
 sorted →  2  4  5  7  9      ← we never actually do this
           1  2  3  4  5  ← rank k
 k = 1 → 2 (smallest)   k = 3 → 5 (the median)   k = 5 → 9 (largest)</div>
-<p>The obvious recipe is: <strong>sort</strong> the whole set, then read off position <code>k</code>. Sorting costs <code>O(n log n)</code>. But we only want <em>one</em> element, not the whole order — so fully sorting is wasteful. The single win of this lesson is finding the answer in <strong>O(n)</strong> (linear — work proportional to <code>n</code>, no <code>log n</code> factor), by never sorting the whole set.</p>
+<p><span data-tr="en">The obvious recipe is: <strong>sort</strong> the whole set, then read off position <code>k</code>. Sorting costs <code>O(n log n)</code>. But we only want <em>one</em> element, not the whole order — so fully sorting is wasteful. The single win of this lesson is finding the answer in <strong>O(n)</strong> (linear — work proportional to <code>n</code>, no <code>log n</code> factor), by never sorting the whole set.</span><span data-tr="zh">最直覺的作法是：把整個集合<strong>排序</strong>，然後讀出第 <code>k</code> 個位置。排序要 <code>O(n log n)</code>。但我們只想要<em>一個</em>元素，不是整個排序結果——所以完整排序是浪費。本課唯一的收穫，是改用 <strong>O(n)</strong>（linear——工作量正比於 <code>n</code>，沒有 <code>log n</code> 因子）找到答案，靠的是永遠不把整個集合排序。</span></p>
 
-<div class="note"><strong>The idea behind that win — prune-and-search.</strong> Think of how <strong>binary search</strong> finds a value in a sorted array: each step throws away <em>half</em> the array (the half that can't contain the target) and repeats on the rest. <strong>Prune-and-search</strong> generalizes this to unsorted data: each round, <em>prove</em> that some constant fraction of the elements <strong>cannot</strong> be the answer, throw them away ("prune"), and repeat on what survives. Because each round discards a fixed slice, the survivors shrink geometrically and the total work stays small.</p></div>
+<div class="note"><span data-tr="en"><strong>The idea behind that win — prune-and-search.</strong> Think of how <strong>binary search</strong> finds a value in a sorted array: each step throws away <em>half</em> the array (the half that can't contain the target) and repeats on the rest. <strong>Prune-and-search</strong> generalizes this to unsorted data: each round, <em>prove</em> that some constant fraction of the elements <strong>cannot</strong> be the answer, throw them away ("prune"), and repeat on what survives. Because each round discards a fixed slice, the survivors shrink geometrically and the total work stays small.</span><span data-tr="zh"><strong>這項收穫背後的想法——prune-and-search。</strong> 想想 <strong>binary search</strong> 如何在已排序陣列中找一個值：每一步丟掉<em>一半</em>陣列（不可能含目標的那一半），對剩下的重複。<strong>Prune-and-search</strong> 把這套推廣到未排序的資料：每一輪都<em>證明</em>某個固定比例的元素<strong>不可能</strong>是答案，把它們丟掉（"prune"），再對存活的重複。因為每一輪都丟掉固定的一段，存活者以幾何級數縮減，總工作量維持很小。</span></p></div>
 
-<p>To prune, we need to split the set. We pick one element as the <strong>pivot</strong> <code>p</code> (a reference value we compare everything against) and do a <strong>partition</strong> — one linear sweep that drops every element into one of three buckets: those <em>smaller</em> than <code>p</code>, those <em>equal</em> to <code>p</code>, and those <em>larger</em> than <code>p</code>. Knowing how many fall below <code>p</code> tells us immediately which bucket the k-th smallest lives in, so we can discard the other two. Sections 2–3 make this precise; sections 4–5 show how to choose <code>p</code> so the pruning is guaranteed.</p>
+<p><span data-tr="en">To prune, we need to split the set. We pick one element as the <strong>pivot</strong> <code>p</code> (a reference value we compare everything against) and do a <strong>partition</strong> — one linear sweep that drops every element into one of three buckets: those <em>smaller</em> than <code>p</code>, those <em>equal</em> to <code>p</code>, and those <em>larger</em> than <code>p</code>. Knowing how many fall below <code>p</code> tells us immediately which bucket the k-th smallest lives in, so we can discard the other two. Sections 2–3 make this precise; sections 4–5 show how to choose <code>p</code> so the pruning is guaranteed.</span><span data-tr="zh">要 prune，就得把集合切開。我們挑一個元素當 <strong>pivot</strong> <code>p</code>（拿來和所有元素比較的參考值），做一次 <strong>partition</strong>——一趟線性掃描，把每個元素丟進三個桶之一：<em>小於</em> <code>p</code>、<em>等於</em> <code>p</code>、<em>大於</em> <code>p</code>。知道有多少落在 <code>p</code> 之下，就立刻知道第 k 小的元素在哪一個桶，於是可以丟掉另外兩個。第 2–3 節把這講精確；第 4–5 節說明怎麼選 <code>p</code> 才能保證 prune 的效果。</span></p>
 
-<h2>2 · The prune-and-search method</h2>
-<p>Binary search runs in many iterations; each one throws away a fixed fraction <code>f</code> of the data and recurses on the rest. <strong>Prune-and-search</strong> generalizes that: prune a fraction <code>f</code>, recurse on the remaining <code>(1−f)·n</code> elements, until the survivor is small enough to solve directly. If each iteration's work is <code>O(nᵏ)</code>, then:</p>
+<h2><span data-tr="en">2 · The prune-and-search method</span><span data-tr="zh">2 · Prune-and-search 方法</span></h2>
+<p><span data-tr="en">Binary search runs in many iterations; each one throws away a fixed fraction <code>f</code> of the data and recurses on the rest. <strong>Prune-and-search</strong> generalizes that: prune a fraction <code>f</code>, recurse on the remaining <code>(1−f)·n</code> elements, until the survivor is small enough to solve directly. If each iteration's work is <code>O(nᵏ)</code>, then:</span><span data-tr="zh">Binary search 跑很多次迭代；每次丟掉固定比例 <code>f</code> 的資料，對剩下的遞迴。<strong>Prune-and-search</strong> 把這推廣：prune 掉比例 <code>f</code>，對剩下的 <code>(1−f)·n</code> 個元素遞迴，直到存活者小到能直接解。若每次迭代的工作量是 <code>O(nᵏ)</code>，則：</span></p>
 <div class="tree">T(n) = T((1 − f)·n) + O(nᵏ)   ⇒   T(n) = O(nᵏ)</div>
-<div class="note"><strong>Why the first iteration dominates:</strong> unrolling gives <code>c·nᵏ·(1 + (1−f)ᵏ + (1−f)²ᵏ + …)</code>. Since <code>1−f &lt; 1</code>, that bracket is a convergent <strong>geometric series</strong> — a constant. So the total cost is just a constant times the first iteration's <code>nᵏ</code>. The whole process is the same order as one pass.</div>
+<div class="note"><span data-tr="en"><strong>Why the first iteration dominates:</strong> unrolling gives <code>c·nᵏ·(1 + (1−f)ᵏ + (1−f)²ᵏ + …)</code>. Since <code>1−f &lt; 1</code>, that bracket is a convergent <strong>geometric series</strong> — a constant. So the total cost is just a constant times the first iteration's <code>nᵏ</code>. The whole process is the same order as one pass.</span><span data-tr="zh"><strong>為什麼第一次迭代主導：</strong> 展開後得到 <code>c·nᵏ·(1 + (1−f)ᵏ + (1−f)²ᵏ + …)</code>。因為 <code>1−f &lt; 1</code>，括號裡是收斂的 <strong>geometric series</strong>——一個常數。所以總成本就是某個常數乘上第一次迭代的 <code>nᵏ</code>。整個過程和單趟掃描是同一個 order。</span></div>
 
-<h2>3 · The 3-way partition</h2>
-<p>Pick a pivot <code>p</code> and split <code>S</code> into three buckets (the partition), then recurse into only one. <code>|S₁|</code> means "the number of elements in <code>S₁</code>".</p>
+<h2><span data-tr="en">3 · The 3-way partition</span><span data-tr="zh">3 · 3-way partition</span></h2>
+<p><span data-tr="en">Pick a pivot <code>p</code> and split <code>S</code> into three buckets (the partition), then recurse into only one. <code>|S₁|</code> means "the number of elements in <code>S₁</code>".</span><span data-tr="zh">挑一個 pivot <code>p</code>，把 <code>S</code> 切成三個桶（partition），然後只對其中一個遞迴。<code>|S₁|</code> 代表「<code>S₁</code> 中的元素個數」。</span></p>
 <table>
-<tr><th>Bucket</th><th>Holds</th></tr>
-<tr><td><code>S₁</code></td><td>everything <strong>&lt; p</strong></td></tr>
-<tr><td><code>S₂</code></td><td>everything <strong>= p</strong></td></tr>
-<tr><td><code>S₃</code></td><td>everything <strong>&gt; p</strong></td></tr>
+<tr><th><span data-tr="en">Bucket</span><span data-tr="zh">桶</span></th><th><span data-tr="en">Holds</span><span data-tr="zh">裝什麼</span></th></tr>
+<tr><td><code>S₁</code></td><td><span data-tr="en">everything <strong>&lt; p</strong></span><span data-tr="zh">所有 <strong>&lt; p</strong> 的元素</span></td></tr>
+<tr><td><code>S₂</code></td><td><span data-tr="en">everything <strong>= p</strong></span><span data-tr="zh">所有 <strong>= p</strong> 的元素</span></td></tr>
+<tr><td><code>S₃</code></td><td><span data-tr="en">everything <strong>&gt; p</strong></span><span data-tr="zh">所有 <strong>&gt; p</strong> 的元素</span></td></tr>
 </table>
-<p>To find the k-th smallest, compare <code>k</code> against the bucket sizes:</p>
+<p><span data-tr="en">To find the k-th smallest, compare <code>k</code> against the bucket sizes:</span><span data-tr="zh">要找第 k 小，把 <code>k</code> 和各桶大小比較：</span></p>
 <div class="tree">if |S₁| ≥ k          → answer is in S₁; recurse on S₁ with same k
 else if |S₁|+|S₂| ≥ k → answer is p itself; DONE
 else                 → answer is the (k − |S₁| − |S₂|)-th smallest of S₃; recurse on S₃</div>
 
-<h2>4 · Trace it yourself</h2>
-<p>Let <code>S = {7, 2, 9, 4, 5, 1, 8, 3}</code> (n = 8). Find the <strong>4th smallest</strong> (k = 4). Suppose this round's pivot is <code>p = 5</code>. Work the partition and the branch on paper, then reveal.</p>
+<h2><span data-tr="en">4 · Trace it yourself</span><span data-tr="zh">4 · 自己推一遍</span></h2>
+<p><span data-tr="en">Let <code>S = {7, 2, 9, 4, 5, 1, 8, 3}</code> (n = 8). Find the <strong>4th smallest</strong> (k = 4). Suppose this round's pivot is <code>p = 5</code>. Work the partition and the branch on paper, then reveal.</span><span data-tr="zh">設 <code>S = {7, 2, 9, 4, 5, 1, 8, 3}</code>（n = 8）。找<strong>第 4 小</strong>（k = 4）。假設這一輪的 pivot 是 <code>p = 5</code>。在紙上做 partition 和分支判斷，再揭曉。</span></p>
 
-<details><summary>Step 1 — build the three buckets around p = 5</summary>
-<p><code>S₁ = {2, 4, 1, 3}</code> (the four elements &lt; 5) &nbsp;|&nbsp; <code>S₂ = {5}</code> &nbsp;|&nbsp; <code>S₃ = {7, 9, 8}</code>.<br>
-So <code>|S₁| = 4</code>, <code>|S₂| = 1</code>, <code>|S₃| = 3</code>.</p></details>
+<details><summary><span data-tr="en">Step 1 — build the three buckets around p = 5</span><span data-tr="zh">步驟 1 — 以 p = 5 建出三個桶</span></summary>
+<p><span data-tr="en"><code>S₁ = {2, 4, 1, 3}</code> (the four elements &lt; 5) &nbsp;|&nbsp; <code>S₂ = {5}</code> &nbsp;|&nbsp; <code>S₃ = {7, 9, 8}</code>.<br>
+So <code>|S₁| = 4</code>, <code>|S₂| = 1</code>, <code>|S₃| = 3</code>.</span><span data-tr="zh"><code>S₁ = {2, 4, 1, 3}</code>（四個 &lt; 5 的元素）&nbsp;|&nbsp; <code>S₂ = {5}</code> &nbsp;|&nbsp; <code>S₃ = {7, 9, 8}</code>。<br>
+所以 <code>|S₁| = 4</code>、<code>|S₂| = 1</code>、<code>|S₃| = 3</code>。</span></p></details>
 
-<details><summary>Step 2 — which bucket do we recurse into?</summary>
-<p>Test <code>|S₁| ≥ k</code> → <code>4 ≥ 4</code> ✓. The 4th smallest lies in <code>S₁</code>. <strong>Prune <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁ = {2, 4, 1, 3}</code> with the <em>same</em> k = 4.<br>
-(Sorted, <code>S₁</code> is <code>1,2,3,4</code> — its 4th smallest is <code>4</code>, which is indeed the 4th smallest of the original set. ✓)</p></details>
+<details><summary><span data-tr="en">Step 2 — which bucket do we recurse into?</span><span data-tr="zh">步驟 2 — 我們要對哪個桶遞迴？</span></summary>
+<p><span data-tr="en">Test <code>|S₁| ≥ k</code> → <code>4 ≥ 4</code> ✓. The 4th smallest lies in <code>S₁</code>. <strong>Prune <code>S₂</code> and <code>S₃</code></strong> and recurse on <code>S₁ = {2, 4, 1, 3}</code> with the <em>same</em> k = 4.<br>
+(Sorted, <code>S₁</code> is <code>1,2,3,4</code> — its 4th smallest is <code>4</code>, which is indeed the 4th smallest of the original set. ✓)</span><span data-tr="zh">測 <code>|S₁| ≥ k</code> → <code>4 ≥ 4</code> ✓。第 4 小落在 <code>S₁</code>。<strong>Prune 掉 <code>S₂</code> 和 <code>S₃</code></strong>，用<em>同樣</em>的 k = 4 對 <code>S₁ = {2, 4, 1, 3}</code> 遞迴。<br>
+（排序後 <code>S₁</code> 是 <code>1,2,3,4</code>——它的第 4 小是 <code>4</code>，確實就是原集合的第 4 小。✓）</span></p></details>
 
-<details><summary>What if instead k = 5?</summary>
-<p><code>|S₁| ≥ 5</code>? <code>4 ≥ 5</code> ✗. Then <code>|S₁|+|S₂| ≥ 5</code>? <code>5 ≥ 5</code> ✓ → the answer is <strong>p = 5</strong> itself. Done, no recursion.<br>
-And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 − 4 − 1) = 1</code>st smallest of <code>{7,9,8}</code>, which is <code>7</code>. ✓</p></details>
+<details><summary><span data-tr="en">What if instead k = 5?</span><span data-tr="zh">那如果改成 k = 5 呢？</span></summary>
+<p><span data-tr="en"><code>|S₁| ≥ 5</code>? <code>4 ≥ 5</code> ✗. Then <code>|S₁|+|S₂| ≥ 5</code>? <code>5 ≥ 5</code> ✓ → the answer is <strong>p = 5</strong> itself. Done, no recursion.<br>
+And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 − 4 − 1) = 1</code>st smallest of <code>{7,9,8}</code>, which is <code>7</code>. ✓</span><span data-tr="zh"><code>|S₁| ≥ 5</code>？<code>4 ≥ 5</code> ✗。那 <code>|S₁|+|S₂| ≥ 5</code>？<code>5 ≥ 5</code> ✓ → 答案就是 <strong>p = 5</strong> 本身。完成，不必遞迴。<br>
+那 k = 6 呢？兩個測試都失敗，所以對 <code>S₃</code> 遞迴，找 <code>{7,9,8}</code> 的第 <code>(6 − 4 − 1) = 1</code> 小，也就是 <code>7</code>。✓</span></p></details>
 
-<h2>5 · Median of medians — the pivot trick</h2>
-<p>A bad pivot prunes almost nothing (worst case <code>O(n²)</code>). We need a pivot guaranteed "central enough" <em>regardless of input</em>:</p>
+<h2><span data-tr="en">5 · Median of medians — the pivot trick</span><span data-tr="zh">5 · Median of medians — 選 pivot 的訣竅</span></h2>
+<p><span data-tr="en">A bad pivot prunes almost nothing (worst case <code>O(n²)</code>). We need a pivot guaranteed "central enough" <em>regardless of input</em>:</span><span data-tr="zh">糟糕的 pivot 幾乎 prune 不掉東西（最壞情況 <code>O(n²)</code>）。我們需要一個<em>不論輸入為何</em>都保證「夠居中」的 pivot：</span></p>
 <div class="tree">1. Split S into ⌈n/5⌉ groups of 5.
 2. Sort each group of 5; its median is the 3rd element.
 3. p = the median of those ⌈n/5⌉ group-medians.</div>
-<p>The grid below is slide 7. Each <strong>column</strong> is one sorted group of 5 (smallest on top). The middle row <code>M</code> is the group-medians; <code>P</code> is their median.</p>
+<p><span data-tr="en">The grid below is slide 7. Each <strong>column</strong> is one sorted group of 5 (smallest on top). The middle row <code>M</code> is the group-medians; <code>P</code> is their median.</span><span data-tr="zh">下面的格子是第 7 張投影片。每一<strong>欄</strong>是一組排好序的 5 個元素（最小的在上）。中間那列 <code>M</code> 是各組的 median；<code>P</code> 是它們的 median。</span></p>
 <div class="tree">  sorted ↓     each column = one sorted 5-element group
             ┌───────────────────────────┐
         ·   │ ·     ·     ·     ·  │  ·    ·     ·
@@ -133,15 +138,15 @@ And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 �
                             └────────────────────┘
    upper-left block: ≥ ¼ of S is ≤ P
    lower-right block: ≥ ¼ of S is ≥ P</div>
-<div class="note"><strong>The guarantee:</strong> about half the groups have median <code>≤ P</code>; in each such group the median plus the two above it (3 of 5) are <code>≤ P</code>. That forces <strong>at least n/4 elements ≤ P</strong>, and symmetrically <strong>at least n/4 ≥ P</strong>. So <strong>at least n/4 are pruned</strong> every iteration and <strong>at most 3n/4 survive</strong>.</div>
+<div class="note"><span data-tr="en"><strong>The guarantee:</strong> about half the groups have median <code>≤ P</code>; in each such group the median plus the two above it (3 of 5) are <code>≤ P</code>. That forces <strong>at least n/4 elements ≤ P</strong>, and symmetrically <strong>at least n/4 ≥ P</strong>. So <strong>at least n/4 are pruned</strong> every iteration and <strong>at most 3n/4 survive</strong>.</span><span data-tr="zh"><strong>這個保證：</strong> 大約一半的組其 median <code>≤ P</code>；在每一個這樣的組裡，median 加上它上面那兩個（5 個中的 3 個）都 <code>≤ P</code>。這就逼出<strong>至少 n/4 個元素 ≤ P</strong>，對稱地也<strong>至少 n/4 個 ≥ P</strong>。所以每一輪<strong>至少 prune 掉 n/4</strong>，<strong>最多 3n/4 存活</strong>。</span></div>
 
-<h2>6 · Why it's O(n)</h2>
-<p>The 5-step algorithm: (1) group by 5, (2) sort each group, (3) recursively find the median of the <code>n/5</code> medians = the pivot <code>p</code>, (4) partition into <code>S₁,S₂,S₃</code> around <code>p</code>, (5) the 3-way recurse on at most <code>3n/4</code> survivors. Steps 1, 2, 4 are each <code>O(n)</code>; step 3 costs <code>T(n/5)</code>; step 5 costs <code>T(3n/4)</code>. Hence:</p>
+<h2><span data-tr="en">6 · Why it's O(n)</span><span data-tr="zh">6 · 為什麼是 O(n)</span></h2>
+<p><span data-tr="en">The 5-step algorithm: (1) group by 5, (2) sort each group, (3) recursively find the median of the <code>n/5</code> medians = the pivot <code>p</code>, (4) partition into <code>S₁,S₂,S₃</code> around <code>p</code>, (5) the 3-way recurse on at most <code>3n/4</code> survivors. Steps 1, 2, 4 are each <code>O(n)</code>; step 3 costs <code>T(n/5)</code>; step 5 costs <code>T(3n/4)</code>. Hence:</span><span data-tr="zh">這個 5 步驟演算法：(1) 每 5 個分一組，(2) 把每組排序，(3) 遞迴找出那 <code>n/5</code> 個 median 的 median = pivot <code>p</code>，(4) 以 <code>p</code> partition 成 <code>S₁,S₂,S₃</code>，(5) 對最多 <code>3n/4</code> 個存活者做 3-way 遞迴。步驟 1、2、4 各是 <code>O(n)</code>；步驟 3 花 <code>T(n/5)</code>；步驟 5 花 <code>T(3n/4)</code>。因此：</span></p>
 <div class="tree">T(n) = T(3n/4) + T(n/5) + O(n)</div>
-<p>The two fractions sum to <code>3/4 + 1/5 = 19/20 &lt; 1</code> — that slack under 1 is exactly why this stays linear.</p>
+<p><span data-tr="en">The two fractions sum to <code>3/4 + 1/5 = 19/20 &lt; 1</code> — that slack under 1 is exactly why this stays linear.</span><span data-tr="zh">這兩個分數加起來是 <code>3/4 + 1/5 = 19/20 &lt; 1</code>——這個在 1 以下的餘裕，正是它能維持 linear 的原因。</span></p>
 
-<details><summary>The substitution proof (algebra)</summary>
-<p>Assume <code>T</code> is bounded by a polynomial. Comparing coefficients of the two recursive terms against <code>T(19n/20)</code>: the linear parts match (<code>3/4 + 1/5 = 19/20</code>) and the quadratic part of the sum is <em>smaller</em> (<code>9/16 + 1/25 = 241/400 &lt; 361/400</code>). So <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code>, collapsing the recurrence to a single term:</p>
+<details><summary><span data-tr="en">The substitution proof (algebra)</span><span data-tr="zh">代換證明（代數）</span></summary>
+<p><span data-tr="en">Assume <code>T</code> is bounded by a polynomial. Comparing coefficients of the two recursive terms against <code>T(19n/20)</code>: the linear parts match (<code>3/4 + 1/5 = 19/20</code>) and the quadratic part of the sum is <em>smaller</em> (<code>9/16 + 1/25 = 241/400 &lt; 361/400</code>). So <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code>, collapsing the recurrence to a single term:</span><span data-tr="zh">假設 <code>T</code> 被某個多項式所 bound。把兩個遞迴項的係數和 <code>T(19n/20)</code> 比較：linear 部分相等（<code>3/4 + 1/5 = 19/20</code>），而總和的 quadratic 部分<em>較小</em>（<code>9/16 + 1/25 = 241/400 &lt; 361/400</code>）。所以 <code>T(3n/4) + T(n/5) ≤ a₀ + T(19n/20)</code>，把遞迴式收縮成單一項：</span></p>
 <div class="tree">T(n) ≤ cn + T(19n/20)
 
      ≤ cn·(1 + 19/20 + (19/20)² + …)
@@ -150,65 +155,65 @@ And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 �
      = 20cn
 
 ∴  T(n) ≤ 20cn + b = O(n)</div>
-<p>The geometric series with ratio <code>19/20</code> sums to <code>20</code>. The constant <code>20</code> is fixed, while the sort's <code>log n</code> grows without bound — that's the asymptotic win.</p></details>
+<p><span data-tr="en">The geometric series with ratio <code>19/20</code> sums to <code>20</code>. The constant <code>20</code> is fixed, while the sort's <code>log n</code> grows without bound — that's the asymptotic win.</span><span data-tr="zh">公比 <code>19/20</code> 的 geometric series 加總為 <code>20</code>。常數 <code>20</code> 是固定的，而排序的 <code>log n</code> 會無上限地成長——這就是漸進上的勝利。</span></p></details>
 
-<h2 class="qa-head">7 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">7 · Retrieve (no peeking)</span><span data-tr="zh">7 · 回想（不要偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先作答再看回饋。<em>答錯後再看為什麼</em>，比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="0" data-explain="Test in order: |S₁| ≥ k? <b>6 ≥ 4</b> ✓ — so the 4th smallest is already among the elements below p; discard S₂,S₃ and recurse on S₁ with the <b>same</b> k = 4. Picking S₃ recurses into the wrong third (those are all &gt; p, far too big). 'p is the answer' would need |S₁| &lt; k ≤ |S₁|+|S₂|, which fails here since |S₁| = 6 already exceeds k.">
-  <div class="q">Q1. After partitioning around pivot p you get |S₁| = 6, |S₂| = 2, |S₃| = 5 (n = 13), and you want the k = 4th smallest. You recurse into…</div>
-  <button class="opt">S₁ with k = 4 (same k)</button>
-  <button class="opt">S₃ with k = 4</button>
-  <button class="opt">S₃ with k = 4 − 6 − 2</button>
-  <button class="opt">nothing — p is the 4th smallest</button>
+<div class="quiz" data-correct="0" data-explain="Test in order: |S₁| ≥ k? <b>6 ≥ 4</b> ✓ — so the 4th smallest is already among the elements below p; discard S₂,S₃ and recurse on S₁ with the <b>same</b> k = 4. Picking S₃ recurses into the wrong third (those are all &gt; p, far too big). 'p is the answer' would need |S₁| &lt; k ≤ |S₁|+|S₂|, which fails here since |S₁| = 6 already exceeds k." data-explain-zh="依序測試：|S₁| ≥ k？<b>6 ≥ 4</b> ✓——所以第 4 小已經在 p 之下的元素裡；丟掉 S₂,S₃，用<b>同樣</b>的 k = 4 對 S₁ 遞迴。選 S₃ 會遞迴進錯的那三分之一（那些都 &gt; p，太大了）。「p 就是答案」需要 |S₁| &lt; k ≤ |S₁|+|S₂|，這裡不成立，因為 |S₁| = 6 已經超過 k。">
+  <div class="q"><span data-tr="en">Q1. After partitioning around pivot p you get |S₁| = 6, |S₂| = 2, |S₃| = 5 (n = 13), and you want the k = 4th smallest. You recurse into…</span><span data-tr="zh">Q1. 以 pivot p 做 partition 後得到 |S₁| = 6、|S₂| = 2、|S₃| = 5（n = 13），你要找第 k = 4 小。你會遞迴進入…</span></div>
+  <button class="opt"><span data-tr="en">S₁ with k = 4 (same k)</span><span data-tr="zh">S₁，k = 4（k 不變）</span></button>
+  <button class="opt"><span data-tr="en">S₃ with k = 4</span><span data-tr="zh">S₃，k = 4</span></button>
+  <button class="opt"><span data-tr="en">S₃ with k = 4 − 6 − 2</span><span data-tr="zh">S₃，k = 4 − 6 − 2</span></button>
+  <button class="opt"><span data-tr="en">nothing — p is the 4th smallest</span><span data-tr="zh">不必遞迴——p 就是第 4 小</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="Both |S₁| ≥ k (3 ≥ 7? no) and |S₁|+|S₂| ≥ k (3+2=5 ≥ 7? no) fail, so the answer is in S₃ at adjusted rank <b>k′ = k − |S₁| − |S₂| = 7 − 3 − 2 = 2</b>. Forgetting to subtract |S₁|+|S₂| (keeping k = 7) is the classic error — S₃ only has 4 elements, so rank 7 is meaningless. Subtracting only |S₁| (k = 4) double-counts nothing but skips the equal-to-p block S₂.">
-  <div class="q">Q2. Partitioning gives |S₁| = 3, |S₂| = 2, |S₃| = 4 (n = 9) and you want the k = 7th smallest. You recurse into…</div>
-  <button class="opt">S₃ with k = 7 (unchanged)</button>
-  <button class="opt">S₃ with k = 7 − 3 = 4</button>
-  <button class="opt">S₁ with k = 7</button>
-  <button class="opt">S₃ with k = 7 − 3 − 2 = 2</button>
+<div class="quiz" data-correct="3" data-explain="Both |S₁| ≥ k (3 ≥ 7? no) and |S₁|+|S₂| ≥ k (3+2=5 ≥ 7? no) fail, so the answer is in S₃ at adjusted rank <b>k′ = k − |S₁| − |S₂| = 7 − 3 − 2 = 2</b>. Forgetting to subtract |S₁|+|S₂| (keeping k = 7) is the classic error — S₃ only has 4 elements, so rank 7 is meaningless. Subtracting only |S₁| (k = 4) double-counts nothing but skips the equal-to-p block S₂." data-explain-zh="|S₁| ≥ k（3 ≥ 7？否）和 |S₁|+|S₂| ≥ k（3+2=5 ≥ 7？否）都失敗，所以答案在 S₃，調整後的 rank 是 <b>k′ = k − |S₁| − |S₂| = 7 − 3 − 2 = 2</b>。忘了減 |S₁|+|S₂|（仍用 k = 7）是經典錯誤——S₃ 只有 4 個元素，rank 7 沒有意義。只減 |S₁|（k = 4）雖不重複計，卻漏掉等於 p 的那塊 S₂。">
+  <div class="q"><span data-tr="en">Q2. Partitioning gives |S₁| = 3, |S₂| = 2, |S₃| = 4 (n = 9) and you want the k = 7th smallest. You recurse into…</span><span data-tr="zh">Q2. Partition 得到 |S₁| = 3、|S₂| = 2、|S₃| = 4（n = 9），你要找第 k = 7 小。你會遞迴進入…</span></div>
+  <button class="opt"><span data-tr="en">S₃ with k = 7 (unchanged)</span><span data-tr="zh">S₃，k = 7（不變）</span></button>
+  <button class="opt"><span data-tr="en">S₃ with k = 7 − 3 = 4</span><span data-tr="zh">S₃，k = 7 − 3 = 4</span></button>
+  <button class="opt"><span data-tr="en">S₁ with k = 7</span><span data-tr="zh">S₁，k = 7</span></button>
+  <button class="opt"><span data-tr="en">S₃ with k = 7 − 3 − 2 = 2</span><span data-tr="zh">S₃，k = 7 − 3 − 2 = 2</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="The boundary is <b>|S₁| ≥ k</b>, not |S₁| &gt; k. Here |S₁| = 5 and k = 5, so 5 ≥ 5 ✓ — the answer lies in S₁ (recurse, same k). If you used strict &gt; (5 &gt; 5 is false) you would wrongly fall through and conclude p is the answer. That off-by-one is exactly the inconsistency between the deck's two slides; the ≥ form is the correct one.">
-  <div class="q">Q3. |S₁| = 5, |S₂| = 1, |S₃| = 4 and k = 5. Using the correct boundary test, where is the 5th smallest?</div>
-  <button class="opt">p is the answer (since |S₁| &lt; k)</button>
-  <button class="opt">in S₁ — recurse on S₁ with k = 5</button>
-  <button class="opt">in S₃ with k = 5 − 5 − 1 = −1</button>
-  <button class="opt">in S₃ with k = 5</button>
+<div class="quiz" data-correct="1" data-explain="The boundary is <b>|S₁| ≥ k</b>, not |S₁| &gt; k. Here |S₁| = 5 and k = 5, so 5 ≥ 5 ✓ — the answer lies in S₁ (recurse, same k). If you used strict &gt; (5 &gt; 5 is false) you would wrongly fall through and conclude p is the answer. That off-by-one is exactly the inconsistency between the deck's two slides; the ≥ form is the correct one." data-explain-zh="邊界條件是 <b>|S₁| ≥ k</b>，不是 |S₁| &gt; k。這裡 |S₁| = 5 且 k = 5，所以 5 ≥ 5 ✓——答案在 S₁（用同樣的 k 遞迴）。若用嚴格的 &gt;（5 &gt; 5 為假），你會錯誤地往下走、誤判 p 是答案。這個 off-by-one 正是投影片兩張之間的不一致；≥ 這個寫法才對。">
+  <div class="q"><span data-tr="en">Q3. |S₁| = 5, |S₂| = 1, |S₃| = 4 and k = 5. Using the correct boundary test, where is the 5th smallest?</span><span data-tr="zh">Q3. |S₁| = 5、|S₂| = 1、|S₃| = 4 且 k = 5。用正確的邊界測試，第 5 小在哪裡？</span></div>
+  <button class="opt"><span data-tr="en">p is the answer (since |S₁| &lt; k)</span><span data-tr="zh">p 就是答案（因為 |S₁| &lt; k）</span></button>
+  <button class="opt"><span data-tr="en">in S₁ — recurse on S₁ with k = 5</span><span data-tr="zh">在 S₁——用 k = 5 對 S₁ 遞迴</span></button>
+  <button class="opt"><span data-tr="en">in S₃ with k = 5 − 5 − 1 = −1</span><span data-tr="zh">在 S₃，k = 5 − 5 − 1 = −1</span></button>
+  <button class="opt"><span data-tr="en">in S₃ with k = 5</span><span data-tr="zh">在 S₃，k = 5</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="The median of medians guarantees ≥ n/4 elements are ≤ p AND ≥ n/4 are ≥ p, so <b>at least n/4 are pruned</b> and at most 3n/4 survive each round. 'n/2 pruned' overstates the guarantee; n/5 confuses the group-of-5 split with the prune fraction; 'only when already sorted' describes a bad arbitrary pivot, which is exactly what median-of-medians avoids.">
-  <div class="q">Q4. What does the median-of-medians pivot guarantee about each iteration?</div>
-  <button class="opt">at least n/2 elements are pruned</button>
-  <button class="opt">at least n/5 elements are pruned</button>
-  <button class="opt">at least n/4 elements are pruned (≤ 3n/4 survive)</button>
-  <button class="opt">n/4 pruned only if the input is already sorted</button>
+<div class="quiz" data-correct="2" data-explain="The median of medians guarantees ≥ n/4 elements are ≤ p AND ≥ n/4 are ≥ p, so <b>at least n/4 are pruned</b> and at most 3n/4 survive each round. 'n/2 pruned' overstates the guarantee; n/5 confuses the group-of-5 split with the prune fraction; 'only when already sorted' describes a bad arbitrary pivot, which is exactly what median-of-medians avoids." data-explain-zh="median of medians 保證 ≥ n/4 個元素 ≤ p 且 ≥ n/4 個 ≥ p，所以每一輪<b>至少 prune 掉 n/4</b>，最多 3n/4 存活。「prune n/2」誇大了這個保證；n/5 把每 5 個一組的切分和 prune 比例搞混了；「只有已排序才成立」描述的是隨意挑的爛 pivot，而 median-of-medians 正是要避開它。">
+  <div class="q"><span data-tr="en">Q4. What does the median-of-medians pivot guarantee about each iteration?</span><span data-tr="zh">Q4. median-of-medians pivot 對每一次迭代保證了什麼？</span></div>
+  <button class="opt"><span data-tr="en">at least n/2 elements are pruned</span><span data-tr="zh">至少 prune 掉 n/2 個元素</span></button>
+  <button class="opt"><span data-tr="en">at least n/5 elements are pruned</span><span data-tr="zh">至少 prune 掉 n/5 個元素</span></button>
+  <button class="opt"><span data-tr="en">at least n/4 elements are pruned (≤ 3n/4 survive)</span><span data-tr="zh">至少 prune 掉 n/4 個元素（≤ 3n/4 存活）</span></button>
+  <button class="opt"><span data-tr="en">n/4 pruned only if the input is already sorted</span><span data-tr="zh">只有輸入已排序時才 prune 掉 n/4</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="It solves to <b>O(n)</b> because 3/4 + 1/5 = 19/20 &lt; 1: the two subproblems together are strictly smaller than the input, so unrolling gives a geometric series 1/(1−19/20) = 20, i.e. T(n) ≤ 20cn. The tempting wrong answer is O(n log n) — students assume the per-group sorting makes it log-linear, but sorting groups of <i>constant</i> size 5 is O(n) total, not O(n log n). O(n²) would arise only with a bad pivot that fails the 1/4 guarantee.">
-  <div class="q">Q5. T(n) = T(3n/4) + T(n/5) + O(n) solves to which bound, and why?</div>
-  <button class="opt">O(n²), because there are two recursive calls</button>
-  <button class="opt">O(log n), like binary search, since we prune each round</button>
-  <button class="opt">O(n log n), because each round sorts the groups</button>
-  <button class="opt">O(n), because 3/4 + 1/5 = 19/20 &lt; 1</button>
+<div class="quiz" data-correct="3" data-explain="It solves to <b>O(n)</b> because 3/4 + 1/5 = 19/20 &lt; 1: the two subproblems together are strictly smaller than the input, so unrolling gives a geometric series 1/(1−19/20) = 20, i.e. T(n) ≤ 20cn. The tempting wrong answer is O(n log n) — students assume the per-group sorting makes it log-linear, but sorting groups of <i>constant</i> size 5 is O(n) total, not O(n log n). O(n²) would arise only with a bad pivot that fails the 1/4 guarantee." data-explain-zh="它解出 <b>O(n)</b>，因為 3/4 + 1/5 = 19/20 &lt; 1：兩個子問題加起來嚴格小於輸入，所以展開後得到 geometric series 1/(1−19/20) = 20，即 T(n) ≤ 20cn。誘人的錯誤答案是 O(n log n)——學生以為每組的排序會讓它變成 log-linear，但排序<i>常數</i>大小 5 的組，整體是 O(n)，不是 O(n log n)。O(n²) 只有在爛 pivot、無法達到 1/4 保證時才會出現。">
+  <div class="q"><span data-tr="en">Q5. T(n) = T(3n/4) + T(n/5) + O(n) solves to which bound, and why?</span><span data-tr="zh">Q5. T(n) = T(3n/4) + T(n/5) + O(n) 解出哪個 bound，為什麼？</span></div>
+  <button class="opt"><span data-tr="en">O(n²), because there are two recursive calls</span><span data-tr="zh">O(n²)，因為有兩個遞迴呼叫</span></button>
+  <button class="opt"><span data-tr="en">O(log n), like binary search, since we prune each round</span><span data-tr="zh">O(log n)，像 binary search，因為每輪都 prune</span></button>
+  <button class="opt"><span data-tr="en">O(n log n), because each round sorts the groups</span><span data-tr="zh">O(n log n)，因為每輪都排序各組</span></button>
+  <button class="opt"><span data-tr="en">O(n), because 3/4 + 1/5 = 19/20 &lt; 1</span><span data-tr="zh">O(n)，因為 3/4 + 1/5 = 19/20 &lt; 1</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>8 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, the <strong>Prune-and-Search</strong> chapter (your <code>A06</code> slide deck, "The General Method" + "The Selection Problem"). Re-draw the slide-7 median-of-medians grid and re-trace the n/4 guarantee from it.</p>
-<p>See also the <a href="../reference/glossary.html">Glossary</a> and the <a href="../notes-html/A06-prune-and-search.html">full chapter note</a> (general method, selection, median-of-medians, the O(n) proof).</p>
+<h2><span data-tr="en">8 · Go deeper</span><span data-tr="zh">8 · 深入一點</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, the <strong>Prune-and-Search</strong> chapter (your <code>A06</code> slide deck, "The General Method" + "The Selection Problem"). Re-draw the slide-7 median-of-medians grid and re-trace the n/4 guarantee from it.</span><span data-tr="zh"><strong>主要來源：</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai——<em>Introduction to the Design and Analysis of Algorithms</em>，<strong>Prune-and-Search</strong> 那一章（你的 <code>A06</code> 投影片，"The General Method" + "The Selection Problem"）。重畫第 7 張投影片的 median-of-medians 格子，並從中重新推一遍 n/4 保證。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary</a> and the <a href="../notes-html/A06-prune-and-search.html">full chapter note</a> (general method, selection, median-of-medians, the O(n) proof).</span><span data-tr="zh">也可參考<a href="../reference/glossary.html">詞彙表</a>和<a href="../notes-html/A06-prune-and-search.html">完整章節筆記</a>（general method、selection、median-of-medians、O(n) 證明）。</span></p>
 
-<div class="note"><strong>Next up — Lesson 6:</strong> Prune-and-Search applied to <strong>two-variable linear programming</strong>. Same skeleton — pair up the constraints, take the median intersection as the test abscissa <code>xₘ</code>, decide which side the optimum is on, and prune a quarter of the constraints each round for another <code>O(n)</code>.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 6:</strong> Prune-and-Search applied to <strong>two-variable linear programming</strong>. Same skeleton — pair up the constraints, take the median intersection as the test abscissa <code>xₘ</code>, decide which side the optimum is on, and prune a quarter of the constraints each round for another <code>O(n)</code>.</span><span data-tr="zh"><strong>下一課——第 6 課：</strong> Prune-and-Search 用在<strong>雙變數 linear programming</strong>。同樣的骨架——把 constraints 兩兩配對，取交點的 median 當測試橫座標 <code>xₘ</code>，判斷最佳解在哪一側，每輪 prune 掉四分之一的 constraints，再得到一個 <code>O(n)</code>。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on why exactly 3 of 5 land below the median? Want a fresh set and k to trace cold? Want me to walk the substitution proof line by line? Just say so.</p>
-  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 6. ≤3 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Fuzzy on why exactly 3 of 5 land below the median? Want a fresh set and k to trace cold? Want me to walk the substitution proof line by line? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師——什麼都可以問。</strong> 不太懂為什麼剛好 5 個中有 3 個落在 median 之下？想要一組全新的集合和 k 來冷推一遍？想要我把代換證明一行一行走過？說一聲就好。</span></p>
+  <p><span data-tr="en">Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 6. ≤3 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分（滿分 5）。4–5 → 我們進到第 6 課。≤3 → 告訴我是哪一題，我們來操練它。</span></p>
 </div>
 
 <script>
@@ -221,7 +226,6 @@ And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 �
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
@@ -229,12 +233,15 @@ And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 �
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
         opts.forEach(function(x){x.disabled=true;});
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✓ 正確。':'✓ Correct.')+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var L=String.fromCharCode(65+correct);
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✗ 不對 — 正解是 '+L+'。':'✗ Not quite — '+L+' is right.')+'</span> '+explain;
         }
         updateScore();
       });
@@ -243,5 +250,6 @@ And k = 6? Both tests fail, so recurse into <code>S₃</code> for the <code>(6 �
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

@@ -4,85 +4,88 @@
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="../assets/zoo.css">
 <script src="../assets/site.js"></script>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head><body>
 <div class="topbar"><div class="inner">
   <a class="home" href="../index.html">📘 Study Hub</a>
   <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
   <span class="sp"></span>
+  <button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言">中</button>
   <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 </div></div>
 <div class="wrap">
 
   <div class="hero">
-    <div class="kicker">Learn by problem · grouped by the algorithm that solves it</div>
+    <div class="kicker"><span data-tr="en">Learn by problem · grouped by the algorithm that solves it</span><span data-tr="zh">以問題為單位學習 · 依解它的演算法分組</span></div>
     <h1>🧬 Algorithm Zoo</h1>
-    <p class="lede">Every <strong>problem</strong> the course slides work, each its own interactive page — stated from zero, then solved step by step. They're grouped by the <strong>algorithm</strong> that solves them; each group links a short <em>method</em> page explaining the technique. Order follows the slides (Alg05 → Alg06 → Alg07). Pair this breadth with the deeper <a href="../index.html#lessons">finals lessons</a>.</p>
+    <p class="lede"><span data-tr="en">Every <strong>problem</strong> the course slides work, each its own interactive page — stated from zero, then solved step by step. They're grouped by the <strong>algorithm</strong> that solves them; each group links a short <em>method</em> page explaining the technique. Order follows the slides (Alg05 → Alg06 → Alg07). Pair this breadth with the deeper <a href="../index.html#lessons">finals lessons</a>.</span><span data-tr="zh">課程投影片處理過的每一道<strong>問題</strong>，每題都是獨立的互動頁面 — 從零開始陳述，再一步步求解。它們依解題的<strong>演算法</strong>分組；每組都連到一頁簡短的 <em>method</em> 說明該技巧。順序跟著投影片走（Alg05 → Alg06 → Alg07）。用這份廣度搭配更深入的<a href="../index.html#lessons">期末 lessons</a>。</span></p>
     <div class="progwrap"><div class="bar"></div></div>
     <div class="countdown" id="prog-count">0 / 0 learned</div>
   </div>
 
   <div class="bucket">
-    <h2>🔎 Solution-Tree Search <span class="tagline">— explore a tree of candidate solutions</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Methods: <a href="algo-dfs.html">Depth-First Search</a> (stack, dive deep) · <a href="algo-bfs.html">Breadth-First Search</a> (queue, level by level)</p>
+    <h2>🔎 <span data-tr="en">Solution-Tree Search</span><span data-tr="zh">Solution-Tree Search</span> <span class="tagline"><span data-tr="en">— explore a tree of candidate solutions</span><span data-tr="zh">— 在候選解的樹中搜尋</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Methods: <a href="algo-dfs.html">Depth-First Search</a> (stack, dive deep) · <a href="algo-bfs.html">Breadth-First Search</a> (queue, level by level)</span><span data-tr="zh">方法：<a href="algo-dfs.html">Depth-First Search</a>（stack，往深處鑽）· <a href="algo-bfs.html">Breadth-First Search</a>（queue，一層一層）</span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-sat" href="prob-sat.html"><span class="tick">✓</span><div class="t">Satisfiability (SAT)</div><div class="d">Is there a true/false assignment that makes a Boolean formula true?</div></a>
-      <a class="algo" data-id="prob-hamiltonian" href="prob-hamiltonian.html"><span class="tick">✓</span><div class="t">Hamiltonian Circuit</div><div class="d">A cycle visiting every vertex exactly once and returning to start?</div></a>
-      <a class="algo" data-id="prob-subset-sum" href="prob-subset-sum.html"><span class="tick">✓</span><div class="t">Sum of Subsets</div><div class="d">A subset summing to exactly the target?</div></a>
+      <a class="algo" data-id="prob-sat" href="prob-sat.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Satisfiability (SAT)</span><span data-tr="zh">Satisfiability (SAT)</span></div><div class="d"><span data-tr="en">Is there a true/false assignment that makes a Boolean formula true?</span><span data-tr="zh">有沒有一組 true/false 指派能讓某個 Boolean formula 為真？</span></div></a>
+      <a class="algo" data-id="prob-hamiltonian" href="prob-hamiltonian.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Hamiltonian Circuit</span><span data-tr="zh">Hamiltonian Circuit</span></div><div class="d"><span data-tr="en">A cycle visiting every vertex exactly once and returning to start?</span><span data-tr="zh">有沒有一條走訪每個 vertex 恰好一次、再回到起點的 cycle？</span></div></a>
+      <a class="algo" data-id="prob-subset-sum" href="prob-subset-sum.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Sum of Subsets</span><span data-tr="zh">Sum of Subsets</span></div><div class="d"><span data-tr="en">A subset summing to exactly the target?</span><span data-tr="zh">有沒有一個子集合的總和恰好等於 target？</span></div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>⛰️ Heuristic Search <span class="tagline">— follow an evaluation function f(n)</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Methods: <a href="algo-hill-climbing.html">Hill Climbing</a> (greedy, local — can stall) · <a href="algo-best-first.html">Best-First Search</a> (global open list — recovers)</p>
+    <h2>⛰️ <span data-tr="en">Heuristic Search</span><span data-tr="zh">Heuristic Search</span> <span class="tagline"><span data-tr="en">— follow an evaluation function f(n)</span><span data-tr="zh">— 依照一個 evaluation function f(n) 前進</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Methods: <a href="algo-hill-climbing.html">Hill Climbing</a> (greedy, local — can stall) · <a href="algo-best-first.html">Best-First Search</a> (global open list — recovers)</span><span data-tr="zh">方法：<a href="algo-hill-climbing.html">Hill Climbing</a>（greedy、局部 — 可能卡住）· <a href="algo-best-first.html">Best-First Search</a>（全域 open list — 能脫困）</span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-8-puzzle" href="prob-8-puzzle.html"><span class="tick">✓</span><div class="t">The 8-Puzzle</div><div class="d">Slide tiles to the goal, scored by f = d + w — solved both ways, hill-climbing vs best-first.</div></a>
+      <a class="algo" data-id="prob-8-puzzle" href="prob-8-puzzle.html"><span class="tick">✓</span><div class="t"><span data-tr="en">The 8-Puzzle</span><span data-tr="zh">8-Puzzle</span></div><div class="d"><span data-tr="en">Slide tiles to the goal, scored by f = d + w — solved both ways, hill-climbing vs best-first.</span><span data-tr="zh">把方塊滑到目標盤面，用 f = d + w 評分 — 兩種做法都解，hill-climbing vs best-first。</span></div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>✂️ Branch-and-Bound <span class="tagline">— best-first + a bound that prunes losing branches → optimization</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
+    <h2>✂️ Branch-and-Bound <span class="tagline"><span data-tr="en">— best-first + a bound that prunes losing branches → optimization</span><span data-tr="zh">— best-first 加上一個界限，剪掉不可能更好的分支 → 最佳化</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Method: <a href="algo-branch-and-bound.html">Branch-and-Bound</a></span><span data-tr="zh">方法：<a href="algo-branch-and-bound.html">Branch-and-Bound</a></span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-personnel-assignment" href="prob-personnel-assignment.html"><span class="tick">✓</span><div class="t">Personnel Assignment</div><div class="d">Assign people to precedence-ordered jobs at minimum total cost.</div></a>
-      <a class="algo" data-id="prob-tsp-bnb" href="prob-tsp-bnb.html"><span class="tick">✓</span><div class="t">Travelling Salesperson</div><div class="d">Cheapest tour visiting every city once (reduced-matrix bound → cost 126).</div></a>
-      <a class="algo" data-id="prob-knapsack-bnb" href="prob-knapsack-bnb.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Max-profit packing within capacity — bounded &amp; pruned.</div></a>
+      <a class="algo" data-id="prob-personnel-assignment" href="prob-personnel-assignment.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Personnel Assignment</span><span data-tr="zh">Personnel Assignment</span></div><div class="d"><span data-tr="en">Assign people to precedence-ordered jobs at minimum total cost.</span><span data-tr="zh">把人指派到有先後順序的工作，使總成本最小。</span></div></a>
+      <a class="algo" data-id="prob-tsp-bnb" href="prob-tsp-bnb.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Travelling Salesperson</span><span data-tr="zh">Travelling Salesperson</span></div><div class="d"><span data-tr="en">Cheapest tour visiting every city once (reduced-matrix bound → cost 126).</span><span data-tr="zh">走訪每座城市一次的最便宜路線（reduced-matrix 界限 → cost 126）。</span></div></a>
+      <a class="algo" data-id="prob-knapsack-bnb" href="prob-knapsack-bnb.html"><span class="tick">✓</span><div class="t"><span data-tr="en">0/1 Knapsack</span><span data-tr="zh">0/1 Knapsack</span></div><div class="d"><span data-tr="en">Max-profit packing within capacity — bounded &amp; pruned.</span><span data-tr="zh">在容量限制下裝出最大利潤 — 加上界限並剪枝。</span></div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>⭐ A* Search <span class="tagline">— f(n) = g(n) + h(n) with an admissible heuristic</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-astar.html">A* Algorithm</a></p>
+    <h2>⭐ A* Search <span class="tagline"><span data-tr="en">— f(n) = g(n) + h(n) with an admissible heuristic</span><span data-tr="zh">— f(n) = g(n) + h(n)，搭配一個 admissible heuristic</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Method: <a href="algo-astar.html">A* Algorithm</a></span><span data-tr="zh">方法：<a href="algo-astar.html">A* Algorithm</a></span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-astar-graph" href="prob-astar-graph.html"><span class="tick">✓</span><div class="t">Shortest Path with A*</div><div class="d">Least-cost path to a goal; admissible h ≤ h* ⇒ first goal popped is optimal.</div></a>
-      <a class="algo" data-id="prob-channel-routing" href="prob-channel-routing.html"><span class="tick">✓</span><div class="t">Channel Routing</div><div class="d">Wire all nets across a channel using the fewest tracks (NP-complete).</div></a>
+      <a class="algo" data-id="prob-astar-graph" href="prob-astar-graph.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Shortest Path with A*</span><span data-tr="zh">用 A* 求 Shortest Path</span></div><div class="d"><span data-tr="en">Least-cost path to a goal; admissible h ≤ h* ⇒ first goal popped is optimal.</span><span data-tr="zh">到目標的最低成本路徑；admissible h ≤ h* ⇒ 第一個被彈出的 goal 即為最佳解。</span></div></a>
+      <a class="algo" data-id="prob-channel-routing" href="prob-channel-routing.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Channel Routing</span><span data-tr="zh">Channel Routing</span></div><div class="d"><span data-tr="en">Wire all nets across a channel using the fewest tracks (NP-complete).</span><span data-tr="zh">用最少的 track 把所有 net 接過 channel（NP-complete）。</span></div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>🪓 Prune-and-Search <span class="tagline">— discard a constant fraction each round → O(n)</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
+    <h2>🪓 Prune-and-Search <span class="tagline"><span data-tr="en">— discard a constant fraction each round → O(n)</span><span data-tr="zh">— 每輪丟掉固定比例 → O(n)</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Method: <a href="algo-prune-and-search.html">Prune-and-Search</a></span><span data-tr="zh">方法：<a href="algo-prune-and-search.html">Prune-and-Search</a></span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-selection" href="prob-selection.html"><span class="tick">✓</span><div class="t">Selection (k-th Smallest)</div><div class="d">The k-th smallest element in linear time (median of medians).</div></a>
-      <a class="algo" data-id="prob-linear-programming" href="prob-linear-programming.html"><span class="tick">✓</span><div class="t">2-Variable Linear Programming</div><div class="d">Minimize a linear objective under linear constraints — the F(x) envelope.</div></a>
-      <a class="algo" data-id="prob-one-center" href="prob-one-center.html"><span class="tick">✓</span><div class="t">1-Center</div><div class="d">The smallest circle enclosing all the points.</div></a>
+      <a class="algo" data-id="prob-selection" href="prob-selection.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Selection (k-th Smallest)</span><span data-tr="zh">Selection（第 k 小）</span></div><div class="d"><span data-tr="en">The k-th smallest element in linear time (median of medians).</span><span data-tr="zh">在線性時間內找出第 k 小的元素（median of medians）。</span></div></a>
+      <a class="algo" data-id="prob-linear-programming" href="prob-linear-programming.html"><span class="tick">✓</span><div class="t"><span data-tr="en">2-Variable Linear Programming</span><span data-tr="zh">二變數 Linear Programming</span></div><div class="d"><span data-tr="en">Minimize a linear objective under linear constraints — the F(x) envelope.</span><span data-tr="zh">在 linear constraints 下最小化一個 linear objective — F(x) envelope。</span></div></a>
+      <a class="algo" data-id="prob-one-center" href="prob-one-center.html"><span class="tick">✓</span><div class="t"><span data-tr="en">1-Center</span><span data-tr="zh">1-Center</span></div><div class="d"><span data-tr="en">The smallest circle enclosing all the points.</span><span data-tr="zh">能包住所有點的最小圓。</span></div></a>
     </div>
   </div>
 
   <div class="bucket">
-    <h2>🧩 Dynamic Programming <span class="tagline">— solve overlapping subproblems once, reuse them</span></h2>
-    <p style="margin-top:-.5rem;font-size:.9rem">Method: <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
+    <h2>🧩 Dynamic Programming <span class="tagline"><span data-tr="en">— solve overlapping subproblems once, reuse them</span><span data-tr="zh">— 重疊的子問題只解一次，再重複利用</span></span></h2>
+    <p style="margin-top:-.5rem;font-size:.9rem"><span data-tr="en">Method: <a href="algo-dynamic-programming.html">Dynamic Programming</a></span><span data-tr="zh">方法：<a href="algo-dynamic-programming.html">Dynamic Programming</a></span></p>
     <div class="zgrid">
-      <a class="algo" data-id="prob-multistage-graph" href="prob-multistage-graph.html"><span class="tick">✓</span><div class="t">Multistage Graph</div><div class="d">Min-cost path through a staged graph (forward &amp; backward).</div></a>
-      <a class="algo" data-id="prob-knapsack-dp" href="prob-knapsack-dp.html"><span class="tick">✓</span><div class="t">0/1 Knapsack</div><div class="d">Max-profit packing via a value table — gᵢ(y)=max{skip,take}.</div></a>
-      <a class="algo" data-id="prob-resource-allocation" href="prob-resource-allocation.html"><span class="tick">✓</span><div class="t">Resource Allocation</div><div class="d">Split units across projects to maximize total profit.</div></a>
-      <a class="algo" data-id="prob-tsp-dp" href="prob-tsp-dp.html"><span class="tick">✓</span><div class="t">Travelling Salesperson (DP)</div><div class="d">Cheapest tour via Held–Karp g(i,S); O(n²·2ⁿ).</div></a>
-      <a class="algo" data-id="prob-lcs" href="prob-lcs.html"><span class="tick">✓</span><div class="t">Longest Common Subsequence</div><div class="d">Longest subsequence shared by two strings.</div></a>
-      <a class="algo" data-id="prob-obst" href="prob-obst.html"><span class="tick">✓</span><div class="t">Optimal Binary Search Tree</div><div class="d">The BST with the lowest expected search cost.</div></a>
+      <a class="algo" data-id="prob-multistage-graph" href="prob-multistage-graph.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Multistage Graph</span><span data-tr="zh">Multistage Graph</span></div><div class="d"><span data-tr="en">Min-cost path through a staged graph (forward &amp; backward).</span><span data-tr="zh">穿過分階段圖的最小成本路徑（forward 與 backward）。</span></div></a>
+      <a class="algo" data-id="prob-knapsack-dp" href="prob-knapsack-dp.html"><span class="tick">✓</span><div class="t"><span data-tr="en">0/1 Knapsack</span><span data-tr="zh">0/1 Knapsack</span></div><div class="d"><span data-tr="en">Max-profit packing via a value table — gᵢ(y)=max{skip,take}.</span><span data-tr="zh">用 value table 裝出最大利潤 — gᵢ(y)=max{skip,take}。</span></div></a>
+      <a class="algo" data-id="prob-resource-allocation" href="prob-resource-allocation.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Resource Allocation</span><span data-tr="zh">Resource Allocation</span></div><div class="d"><span data-tr="en">Split units across projects to maximize total profit.</span><span data-tr="zh">把資源單位分配到各專案，使總利潤最大。</span></div></a>
+      <a class="algo" data-id="prob-tsp-dp" href="prob-tsp-dp.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Travelling Salesperson (DP)</span><span data-tr="zh">Travelling Salesperson (DP)</span></div><div class="d"><span data-tr="en">Cheapest tour via Held–Karp g(i,S); O(n²·2ⁿ).</span><span data-tr="zh">用 Held–Karp g(i,S) 求最便宜路線；O(n²·2ⁿ)。</span></div></a>
+      <a class="algo" data-id="prob-lcs" href="prob-lcs.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Longest Common Subsequence</span><span data-tr="zh">Longest Common Subsequence</span></div><div class="d"><span data-tr="en">Longest subsequence shared by two strings.</span><span data-tr="zh">兩個字串共有的最長 subsequence。</span></div></a>
+      <a class="algo" data-id="prob-obst" href="prob-obst.html"><span class="tick">✓</span><div class="t"><span data-tr="en">Optimal Binary Search Tree</span><span data-tr="zh">Optimal Binary Search Tree</span></div><div class="d"><span data-tr="en">The BST with the lowest expected search cost.</span><span data-tr="zh">期望搜尋成本最低的 BST。</span></div></a>
     </div>
   </div>
 
-  <div class="note" style="margin-top:2rem"><strong>How this maps to the slides:</strong> 18 problems across the three decks (Alg05 Searching Strategies, Alg06 Prune-and-Search, Alg07 Dynamic Programming), each grouped under the algorithm that solves it. 0/1 Knapsack appears twice on purpose — once under Branch-and-Bound (Ch6) and once under Dynamic Programming (Ch7), the two approaches the course teaches. <strong>NP-Completeness (Ch8)</strong> is hardness theory, not a step-through algorithm — see <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device.</div>
+  <div class="note" style="margin-top:2rem"><span data-tr="en"><strong>How this maps to the slides:</strong> 18 problems across the three decks (Alg05 Searching Strategies, Alg06 Prune-and-Search, Alg07 Dynamic Programming), each grouped under the algorithm that solves it. 0/1 Knapsack appears twice on purpose — once under Branch-and-Bound (Ch6) and once under Dynamic Programming (Ch7), the two approaches the course teaches. <strong>NP-Completeness (Ch8)</strong> is hardness theory, not a step-through algorithm — see <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> and <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>. Your "learned" ticks save on this device.</span><span data-tr="zh"><strong>這如何對應到投影片：</strong>橫跨三份投影片的 18 道問題（Alg05 Searching Strategies、Alg06 Prune-and-Search、Alg07 Dynamic Programming），各自歸到解它的演算法底下。0/1 Knapsack 故意出現兩次 — 一次在 Branch-and-Bound（Ch6）、一次在 Dynamic Programming（Ch7），這是課程教的兩種做法。<strong>NP-Completeness（Ch8）</strong>是難度理論，不是可逐步操作的演算法 — 見 <a href="../lessons/0009-np-definitions-cook.html">Lesson 9</a> 與 <a href="../lessons/0010-np-reduction-chain.html">Lesson 10</a>。你標的「learned」勾選會存在這台裝置上。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>
+<script src="../assets/i18n.js"></script>
 </body></html>

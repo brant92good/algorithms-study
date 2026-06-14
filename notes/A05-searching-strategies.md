@@ -54,6 +54,9 @@ Notice clauses (1) `¬x₁` and (2) `x₁` directly contradict each other, so th
 
 > ✅ The full 2³ truth table is on slide 2 (columns x₁,x₂,x₃): FFF, FFT, FTF, FTT, TFF, TFT, TTF, TTT — the eight assignments enumerated by the "Tree Representation of Eight Assignments."
 
+<img class="figure" src="../render/A05full/slide-02.png" alt="Tree Representation of Eight Assignments (SAT, n=3)">
+<figcaption>SAT — 2³ truth table and the "Tree Representation of Eight Assignments" (n=3).</figcaption>
+
 ### Why search helps
 *A Partial Tree to Determine the Satisfiability Problem*: **We may not need to examine all 2ⁿ assignments.** As soon as a partial assignment violates a clause, that entire subtree is abandoned (pruned). This early termination motivates tree-search strategies and, later, bounding.
 
@@ -65,7 +68,14 @@ Notice clauses (1) `¬x₁` and (2) `x₁` directly contradict each other, so th
 A **Hamiltonian circuit** is a cycle that visits *every vertex of a graph exactly once* and returns to the start. The problem: does a given graph contain one?
 
 - *A Graph Containing a Hamiltonian Circuit* (Fig. 6-6) shows the example graph. ✅ Verified against slide 4 — see Appendix A for the edge list (vertices 1–7; edges 1-2, 1-6, 1-3, 2-3, 6-5, 7-5, 7-4, 3-4, 4-5).
+
+<img class="figure" src="../render/A05full/slide-04.png" alt="Fig 6-6 A Graph Containing a Hamiltonian Circuit">
+<figcaption>Fig. 6-6 — A Graph Containing a Hamiltonian Circuit (vertices 1–7).</figcaption>
+
 - **Fig. 6-8** — *The Tree Representation of Whether There Exists a Hamiltonian Circuit of the Graph in Fig. 6-6*: build a tree where each level chooses the next vertex to visit. A path from root to a leaf at depth `n` that reuses no vertex and closes back to the start is a Hamiltonian circuit.
+
+<img class="figure" src="../render/A05full/slide-05.png" alt="Fig 6-8 Tree Representation of Whether a Hamiltonian Circuit Exists">
+<figcaption>Fig. 6-8 — Search tree for the Hamiltonian circuit (rooted at vertex 1; dead ends marked X).</figcaption>
 
 > ✅ Verified against slide 5 (Fig. 6-8) and slide 4 (Fig. 6-6): the full search tree is transcribed (root at vertex 1; two paths close back to 1 to give a Hamiltonian circuit, all other branches end in `X`). The underlying Fig. 6-6 graph is now also read directly from slide 4 (see Appendix A). The search idea (extend partial paths, backtrack on dead ends) is standard.
 
@@ -87,6 +97,9 @@ Find S′ ⊆ S with  sum(S′) = 9 ?
 
 ### Depth-First Search (DFS)
 - **Fig. 6-11** — *A Sum of Subset Problem Solved by Depth-First Search.*
+
+<img class="figure" src="../render/A05full/slide-06.png" alt="Fig 6-11 A Sum of Subset Problem Solved by Depth-First Search">
+<figcaption>Fig. 6-11 — Sum-of-subsets DFS tree; goal node "9" = {7, 2}.</figcaption>
 - Build a binary tree: at level `i`, decide whether element `i` is **in** or **out** of `S′`.
 - **A stack can be used to guide the depth-first search.** DFS dives down one branch as deep as possible, then backtracks (pop the stack) when a branch is exhausted or the partial sum already exceeds the target.
 
@@ -126,6 +139,9 @@ Lower `f(n)` is better. At each step expand the child minimizing `f`.
 
 - **Fig. 6-15** — *An 8-Puzzle Problem Solved by a Hill Climbing Method.*
 
+<img class="figure" src="../render/A05full/slide-08.png" alt="Fig 6-15 An 8-Puzzle Problem Solved by a Hill Climbing Method">
+<figcaption>Fig. 6-15 — Hill-climbing 8-puzzle; path initial→1→5→7→8 (Goal).</figcaption>
+
 > ✅ Verified against slide 8 (Fig. 6-15): the board states and per-node parenthesized evaluation values are transcribed (see Appendix A). Hill-climbing path: `initial(3) → 1(4) → 5(4) → 7(4) → 8 (Goal)`, always descending to the locally best child. The function `f(n) = d(n) + w(n)` and the "expand locally best child" rule are explicit on slide 7.
 
 ---
@@ -136,6 +152,9 @@ Lower `f(n)` is better. At each step expand the child minimizing `f`.
 **Combines depth-first search and breadth-first search.** Rather than committing to a local best (hill climbing) or a rigid level order (BFS), best-first **selects the node with the best estimated cost among *all* open nodes** anywhere in the tree. Because it can jump to the globally most promising node, **this method has a global view.**
 
 - **Fig. 6-16** — *An 8-Puzzle Problem Solved by a Best-First Search Scheme* (same evaluation function `f(n) = d(n) + w(n)` as hill climbing, but chosen globally).
+
+<img class="figure" src="../render/A05full/slide-10.png" alt="Fig 6-16 An 8-Puzzle Problem Solved by a Best-First Search Scheme">
+<figcaption>Fig. 6-16 — Best-first 8-puzzle; goal at node 10 via root→2→7→9→10.</figcaption>
 
 ### Best-First Search Scheme (explicit Step 1–Step 4)
 
@@ -165,6 +184,9 @@ For a minimization problem you maintain a **lower bound** per node and an **uppe
 ### Example
 - **Fig. 6-17** — *A Multi-Stage Graph Searching Problem*, **solved by branch-and-bound** (find the cheapest path through a layered graph).
 
+<img class="figure" src="../render/A05full/slide-12.png" alt="Fig 6-17 A Multi-Stage Graph Searching Problem">
+<figcaption>Fig. 6-17 — The multi-stage graph (V₀ … V₃) solved by branch-and-bound.</figcaption>
+
 > ✅ Verified against slide 12 (Fig. 6-17): **Correction** — Fig. 6-17 is the multi-stage graph with vertices `V₀, V₁,₁ V₁,₂ V₁,₃, V₂,₁ V₂,₂ V₂,₃, V₃` (NOT the `S,V₁..V₅,T` graph — that one is **Fig. 6-36**, the A\* example on slide 36). Fig. 6-17 edge weights (slide 12, disambiguated by the B&B tree on slide 13): `V₀→V₁,₁=1, V₀→V₁,₂=3, V₀→V₁,₃=2`; `V₁,₁→V₂,₁=5, V₁,₁→V₂,₃=3`; `V₁,₂→V₂,₁=4, V₁,₂→V₂,₂=3`; `V₁,₃→V₂,₂=2, V₁,₃→V₂,₃=7`; `V₂,₁→V₃=4, V₂,₂→V₃=1, V₂,₃→V₃=1`. The best-first B&B search tree for this graph is on slide 13 (Appendix A). See Appendix A "Fig. 6-17 correction."
 
 ---
@@ -188,6 +210,9 @@ subject to each person getting exactly one job, each job exactly one person, and
 
 ### Partial order of jobs — Fig. 6-21
 **Fig. 6-21** — *A Partial Ordering of Jobs*. ✅ Verified against slide 15 — the diagram is **two simple vertical arrows only** (no diagonal):
+
+<img class="figure" src="../render/A05full/slide-15.png" alt="Fig 6-21 A Partial Ordering of Jobs">
+<figcaption>Fig. 6-21 — Partial ordering of jobs (J1→J3, J2→J4) plus the topological sorts.</figcaption>
 
 ```
    J1        J2
@@ -219,6 +244,9 @@ P1 → J1,  P2 → J2,  P3 → J3,  P4 → J4
 ### Cost matrix — Table 6-1
 **Table 6-1** — *A Cost Matrix for a Personnel Assignment Problem* (rows = persons, columns = jobs):
 
+<img class="figure" src="../render/A05full/slide-16.png" alt="Table 6-1 A Cost Matrix for a Personnel Assignment Problem">
+<figcaption>Table 6-1 — Personnel cost matrix.</figcaption>
+
 | Person \ Job | 1  | 2  | 3  | 4  |
 |--------------|----|----|----|----|
 | **P1**       | 29 | 19 | 17 | 12 |
@@ -232,6 +260,9 @@ P1 → J1,  P2 → J2,  P3 → J3,  P4 → J4
 **Reduction rule:** *subtract a constant from each row and each column so that each row and each column contains at least one zero.* The total subtracted is a **lower bound** on the optimal assignment cost.
 
 **Table 6-2** — *A Reduced Cost Matrix*:
+
+<img class="figure" src="../render/A05full/slide-17.png" alt="Table 6-2 A Reduced Cost Matrix">
+<figcaption>Table 6-2 — Reduced personnel cost matrix (row tags −12,−26,−3,−10; col-2 −3).</figcaption>
 
 | Person \ Job | 1  | 2  | 3  | 4  | row reduction |
 |--------------|----|----|----|----|---------------|
@@ -253,6 +284,15 @@ P1 → J1,  P2 → J2,  P3 → J3,  P4 → J4
 
 > ✅ Verified against slides 19–21 — the numeric trees are now transcribed (see Appendix A entries "Personnel — Solution Tree (slide 19)", "Personnel — Best-First Search Tree (slide 20)", "Personnel — Bounding of Subsolutions (slide 21)"). Slide 20 is annotated **"Only one node is pruned away."** The bounding tree on slide 21 follows the spine `0(54) → 2(58) → 1(64) → {3(68)→4(73), 4(70)→3(70)}`, i.e. the optimal feasible assignment costs **70**.
 
+<img class="figure" src="../render/A05full/slide-19.png" alt="Personnel assignment solution tree">
+<figcaption>Personnel — Solution tree (slide 19).</figcaption>
+
+<img class="figure" src="../render/A05full/slide-20.png" alt="Personnel assignment best-first search tree with bounds">
+<figcaption>Personnel — Best-first search tree (slide 20); "Only one node is pruned away."</figcaption>
+
+<img class="figure" src="../render/A05full/slide-21.png" alt="Personnel assignment bounding of subsolutions tree">
+<figcaption>Personnel — Bounding of subsolutions (slide 21); optimal cost 70.</figcaption>
+
 ---
 
 ## 9. The Travelling Salesperson Problem (TSP) via Branch-and-Bound
@@ -262,6 +302,9 @@ Find a minimum-cost tour visiting every city exactly once and returning to the s
 
 ### Cost matrix — Table 6-3
 **Table 6-3** — *A Cost Matrix for a Traveling Salesperson Problem* (7 cities; `∞` on the diagonal = no self-loop). Entry `(i, j)` = cost of arc `i → j`:
+
+<img class="figure" src="../render/A05full/slide-22.png" alt="Table 6-3 A Cost Matrix for a Traveling Salesperson Problem">
+<figcaption>Table 6-3 — TSP cost matrix (7 cities).</figcaption>
 
 | i \ j | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
 |-------|----|----|----|----|----|----|----|
@@ -277,6 +320,9 @@ Find a minimum-cost tour visiting every city exactly once and returning to the s
 Subtract the row minimum from each row (so each row has a zero):
 
 **Table 6-4** — *A Reduced Cost Matrix*:
+
+<img class="figure" src="../render/A05full/slide-23.png" alt="Table 6-4 A Reduced Cost Matrix (row reductions)">
+<figcaption>Table 6-4 — TSP row-reduced matrix; sum of row reductions = 84.</figcaption>
 
 | i \ j | 1  | 2  | 3  | 4  | 5  | 6  | 7  | row reduction |
 |-------|----|----|----|----|----|----|----|---------------|
@@ -297,6 +343,9 @@ Now subtract column minimums from columns that still lack a zero:
 
 **Table 6-5** — *Another Reduced Cost Matrix*:
 
+<img class="figure" src="../render/A05full/slide-24.png" alt="Table 6-5 Another Reduced Cost Matrix (column reductions)">
+<figcaption>Table 6-5 — TSP column-reduced matrix; total reduced = 96 (lower bound).</figcaption>
+
 | i \ j | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
 |-------|----|----|----|----|----|----|----|
 | **1** | ∞  | 0  | 83 | 9  | 30 | 6  | 50 |
@@ -315,6 +364,10 @@ Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).
 > ✅ Verified against slide 24 (Table 6-5): all cells match; the column reductions `(−7)(−1)(−4)` sit under columns 3, 4, 7. Slide circles the cells `17` (row 2, col 5) and `1` (row 3, col 2). Slide 25 states "Total cost reduced: 84+7+1+4 = 96 (lower bound)."
 
 ### Decision tree — Fig. 6-25 and branching choice
+
+<img class="figure" src="../render/A05full/slide-25.png" alt="Fig 6-25 The Highest Level of a Decision Tree">
+<figcaption>Fig. 6-25 — Top level of the TSP decision tree (split on arc 4-6; LB 96 / 128).</figcaption>
+
 - **Fig. 6-25** — *The Highest Level of a Decision Tree.* ✅ Verified against slide 25. The root box "All solutions" has **Lower bound = 96**. It splits into:
   - **"All solutions with arc 4-6"** — Lower bound = **96** (including the zero-cost arc 4→6 adds nothing).
   - **"All solutions without arc 4-6"** — Lower bound = **96 + 32 = 128** (excluding arc 4→6 forces the next-cheapest entry, penalty 32).
@@ -325,6 +378,9 @@ Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).
 
 ### Including arc 4-6 — Tables 6-6 and 6-7
 - **Table 6-6** — *A Reduced Cost Matrix if Arc 4-6 is Included.* Including arc 4→6 means we delete **row 4** and **column 6**, and set entry `(6,4) = ∞` (to forbid the premature subtour 4→6→4). ✅ Verified against slide 26 (columns 1,2,3,4,5,7; the `(6,4)=∞` cell is circled on the slide):
+
+<img class="figure" src="../render/A05full/slide-26.png" alt="Table 6-6 A Reduced Cost Matrix if Arc 4-6 is Included">
+<figcaption>Table 6-6 — Reduced matrix with arc 4-6 included; (6,4)=∞ circled.</figcaption>
 
 | i \ j | 1  | 2  | 3  | 4  | 5  | 7  |
 |-------|----|----|----|----|----|----|
@@ -338,6 +394,9 @@ Column reductions: column 3 (−7), column 4 (−1), column 7 (−4).
 (Note: in Table 6-6 row 5 is still `3,21,56,7,∞,28` — not yet reduced. Reducing row 5 by its minimum 3 gives Table 6-7.)
 
 **Table 6-7** — *A Reduced Cost Matrix for that in Table 6-6* (rows/cols 4 and 6 removed; row 5 further reduced by −3). ✅ Verified cell-by-cell against slide 27:
+
+<img class="figure" src="../render/A05full/slide-27.png" alt="Table 6-7 A Reduced Cost Matrix for that in Table 6-6">
+<figcaption>Table 6-7 — Row 5 further reduced by −3; new lower bound 99.</figcaption>
 
 | i \ j | 1  | 2  | 3  | 4  | 5  | 7  | reduction |
 |-------|----|----|----|----|----|----|-----------|
@@ -356,6 +415,9 @@ Row 5 here carries an extra reduction **(−3)**.
 
 - **Fig. 6-26** — *A Branch-and-Bound Solution of a Traveling Salesperson Problem.* Continue branching on arcs, propagating lower bounds, pruning subtrees whose bound ≥ best tour found, until the optimal tour is isolated.
 
+<img class="figure" src="../render/A05full/slide-28.png" alt="Fig 6-26 A Branch-and-Bound Solution of a Traveling Salesperson Problem">
+<figcaption>Fig. 6-26 — Full TSP B&B tree; optimal tour 1-4-6-7-3-5-2-1, cost 126.</figcaption>
+
 > ✅ Verified against slide 28 (Fig. 6-26): the full B&B tree is transcribed. Spine bounds: All=96, With/Without 4-6 = 99/128, With/Without 3-5 = 99/117, With/Without 2-1 = 112/125, With/Without 1-4 = 126/153, With/Without 6-7 = 126/141, With/Without 5-2 = 126/(no soln), With/Without 7-3 = Solution/(no soln). **Optimal tour `1-4-6-7-3-5-2-1`, Cost = 126.** Slide 28 also draws the tour itself (arrows 1→4→6→7→3→5→2→1 over the 7 city dots).
 
 ---
@@ -369,6 +431,9 @@ Row 5 here carries an extra reduction **(−3)**.
 
 ### Branching — Fig. 6-27
 - **Fig. 6-27** — *The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem.* At level `i` branch on `Xᵢ = 1` (include item `i`) vs `Xᵢ = 0` (exclude it).
+
+<img class="figure" src="../render/A05full/slide-30.png" alt="Fig 6-27 The Branching Mechanism in the Branch-and-Bound Strategy to Solve 0/1 Knapsack Problem">
+<figcaption>Fig. 6-27 — Knapsack branching: each level splits Xᵢ=1 / Xᵢ=0.</figcaption>
 
 ### Example data — `n = 6, M = 34`
 Items are sorted by profit density so that `Pᵢ/Wᵢ ≥ Pᵢ₊₁/Wᵢ₊₁`:
@@ -418,6 +483,9 @@ This `−17` lies inside `[−18, −16]`, consistent with the bounds.
 
 - **Fig. 6-28** — *0/1 Knapsack Problem Solved by Branch-and-Bound Strategy* shows the full tree with per-node upper/lower bounds and pruning.
 
+<img class="figure" src="../render/A05full/slide-34.png" alt="Fig 6-28 0/1 Knapsack Problem Solved by Branch-and-Bound Strategy">
+<figcaption>Fig. 6-28 — Knapsack B&B tree (nodes 0–30); optimum −17 at node 14 branch.</figcaption>
+
 > ✅ Verified against slide 34 (Fig. 6-28): all per-node U.B./L.B. values for nodes 0–30 are transcribed. Root node 0 = (U.B. −16, L.B. −18); node 14 is annotated "(a good upper bound is found here)" with U.B.=−17; the optimal −17 is reached on the X1=0 (node 14) sub-branch (nodes 15/16/17/18/20 circled in red on the slide). Slides 32–33 confirm the fractional-relaxation lower bound: `X3 = 5/8`, `−(P1+P2+⅝P3) = −18.5` → rounded `−18`, so `−18 ≤ optimal ≤ −16`, and optimal `X1=1,X4=1,X5=1` (rest 0) → `−(P1+P4+P5) = −17`. The weight sums (29, 34, 32) are computed here from the data.
 
 ---
@@ -447,6 +515,10 @@ i.e. `f(n)` is a *lower bound* on the best total cost of any solution through `n
 **Stop iff the selected (expanded) node is also a goal node.** (Reaching a goal node in the list is not enough — it must be the node with the smallest `f`, i.e. the one selected for expansion.)
 
 ### Worked example — Fig. 6-36 (slides 36–42)
+
+<img class="figure" src="../render/A05full/slide-36.png" alt="Fig 6-36 A Graph to Illustrate A* Algorithm">
+<figcaption>Fig. 6-36 — Layered graph S→V₁..V₅→T for the A* worked example.</figcaption>
+
 - **Fig. 6-36** — *A Graph to Illustrate A\* Algorithm* (slide 36). The search graph (NOT a tree — it is the layered graph `S→V₁..V₅→T`; see Appendix A for the literal Fig. 6-36 graph). The **A\* search tree** is built on it across slides 37–42, with the underlying graph relabeled `R, A, B, C, D, E, F, G, H, I, J, K, L`. The slides walk the expansion order with full `g/h/f` bookkeeping:
 
 | Step (slide) | Action | New `g/h/f` values shown |
@@ -470,6 +542,9 @@ After step 6, the smallest-`f` open node is **I (f = 7)**, and **I is the goal n
 In VLSI layout, a **channel** is a rectangular region with terminals (pins) on its top and bottom edges. Each **net** connects a set of terminals. Wires run in horizontal **tracks** (and vertical segments). Goal: **find a routing that minimizes the number of tracks.** **This problem is NP-complete.**
 
 - **Fig. 6-40** — *A Channel Specification* (slide 43). ✅ Verified. 13 columns; terminal numbers (a net number, `0` = no terminal):
+
+<img class="figure" src="../render/A05full/slide-43.png" alt="Fig 6-40 A Channel Specification">
+<figcaption>Fig. 6-40 — Channel specification (13 columns; top/bottom terminals + net spans).</figcaption>
   - **Top row** (cols 1→13): `4, 8, 0, 7, 0, 3, 6, 0, 0, 2, 1, 5, 0`
   - **Bottom row** (cols 1→13): `0, 0, 7, 0, 5, 4, 0, 8, 3, 0, 2, 6, 1`
   - The slide also sketches each net's horizontal span (nets 7, 3, 1, 8, 2, 5, 4, 6).
@@ -479,6 +554,9 @@ In VLSI layout, a **channel** is a rectangular region with terminals (pins) on i
 ### Horizontal Constraint Graph (HCG)
 - Nodes = nets. Captures which nets' horizontal spans **overlap** (if two nets overlap horizontally they cannot share a track).
 - Example ordering rule from the slide (slide 47): **"net 8 must be to the left of net 1 and net 2 if they are in the same track."**
+<img class="figure" src="../render/A05full/slide-47.png" alt="Fig 6-41 Horizontal Constraint Graph (HCG)">
+<figcaption>Fig. 6-41 — Horizontal Constraint Graph (HCG); tail must be left of head.</figcaption>
+
 - **Fig. 6-41 (HCG), slide 47** — ✅ Verified directed edges (tail = must-be-left-of head): `7→5, 7→6, 7→3, 7→1, 7→2`, `8→1, 8→2`, `4→6, 4→1, 4→2`, `3→1, 3→2`. (This is the directed graph the earlier note recorded as the uncaptioned `png_014` "personnel/VCG ordering graph" — it is in fact the **channel-routing HCG**.)
 - **Maximal cliques in the HCG: `{1,8}`, `{1,3,7}`, `{5,7}`. Each maximal clique can be assigned to a track.** ✅ Verified verbatim on slide 48. (A clique = a set of nets that mutually conflict; the cliques bound how many nets pile up at one horizontal position = the *local density*.)
 
@@ -486,10 +564,13 @@ In VLSI layout, a **channel** is a rectangular region with terminals (pins) on i
 - Captures top/bottom precedence: if a net has a terminal on top at a column where another net has a terminal on the bottom, the top net must be routed in a track **above** the bottom net. These vertical constraints further restrict track assignment.
 - **VCG (slide 48)** — ✅ Verified edges: `1→2`, `3→4`, `5→6` (three disjoint edges; nets 7 and 8 are isolated VCG nodes). The slide annotates **"e.g. net 3 must be wired before net 4."**
 
+<img class="figure" src="../render/A05full/slide-48.png" alt="Vertical Constraint Graph (VCG), max cliques, and Fig 6-46 first level">
+<figcaption>VCG (1→2, 3→4, 5→6) + HCG max cliques {1,8},{1,3,7},{5,7} + Fig. 6-46 first level (root → {8,1}, {7,3,1}, {7,5}). All on slide 48.</figcaption>
+
 > ✅ Verified against slide 48: the VCG is exactly the three edges 1→2, 3→4, 5→6.
 
 ### Solving with A\*
-- **Fig. 6-46** — *The First Level of a Tree to Solve a Channel Routing Problem* (slide 48). ✅ Verified: the root branches into three children = the three maximal cliques: **`{8,1}`, `{7,3,1}`, `{7,5}`** (one per candidate first track).
+- **Fig. 6-46** — *The First Level of a Tree to Solve a Channel Routing Problem* (slide 48). ✅ Verified: the root branches into three children = the three maximal cliques: **`{8,1}`, `{7,3,1}`, `{7,5}`** (one per candidate first track). (Pictured on slide 48, shown above with the VCG.)
 - Cost function (slide 49):
 ```
 f(n) = g(n) + h(n)
@@ -498,6 +579,9 @@ f(n) = g(n) + h(n)
 ```
 Since `h(n)` = maximal local density never overestimates the remaining tracks needed, A\* finds the minimum-track routing.
 - **Fig. 6-48** — *A Partial Solution Tree for the Channel Routing Problem by Using A\* Algorithm* (slide 49). ✅ Verified — full tree transcribed in Appendix A. (This is the same tree the earlier note recorded as the uncaptioned `png_015` "best-first g+h tree"; it is in fact **Fig. 6-48**, with node states being net-cliques.)
+
+<img class="figure" src="../render/A05full/slide-49.png" alt="Fig 6-48 A Partial Solution Tree for the Channel Routing Problem by Using A* Algorithm">
+<figcaption>Fig. 6-48 — A* partial solution tree for channel routing; goal at node I.</figcaption>
 
 > ✅ Verified against slides 43–49: Fig. 6-40 channel spec, the HCG (slide 47) and VCG (slide 48) edge lists, the three maximal cliques `{1,8},{1,3,7},{5,7}`, the Fig. 6-46 first level, and the Fig. 6-48 A\* tree with `f=g+h` (g = tree level, h = max local density) are all read directly.
 
@@ -661,6 +745,9 @@ root (3):  2 8 3 / 1 _ 4 / 7 6 5
 
 **The search tree (slide 13):** nodes `a`–`l`. The number inside/next to a node is its cost estimate; the small number on an edge is the incremental cost; `x >k` under a leaf means "pruned, bound > k". Node `a` is the root (cost 1 shown above it). Branch labels are the V-vertices reached.
 
+<img class="figure" src="../render/A05full/slide-13.png" alt="Fig 6-17 multi-stage graph solved by branch-and-bound (search tree)">
+<figcaption>Fig. 6-17 — Best-first B&B search tree for the multi-stage graph (slide 13).</figcaption>
+
 ```
 a (1)
 ├─[1]→ b  V₁,₁  (2)
@@ -748,6 +835,9 @@ The branch labels in the figure are `X1` (level 1, nodes 1/2), `X2` (nodes 3/4),
 ### Fig. 6-36 — A\* Search Tree (progressive-expansion snapshots, slides 37–42)
 - **Sources:** slides 37–42 (`render/A05full/slide-37..42.png`) — the A\* search **tree** built on the Fig. 6-36 graph (slide 36). ✅ Verified.
 - A search tree rooted at `R`. Each edge has a letter id and a weight `g`-increment; each node has a heuristic `h` value shown beneath it. `×` marks a node not (yet) expanded / a leaf in that snapshot. (The exact `g/h/f` table is given just below.)
+
+<img class="figure" src="../render/A05full/slide-42.png" alt="Fig 6-36 A* search tree (final snapshot, slide 42)">
+<figcaption>Fig. 6-36 — A* search tree (final snapshot, slide 42); "I is a goal node!".</figcaption>
 
 **Edges (from slides 37–42):**
 

@@ -62,69 +62,73 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 4 · Ch6 Searching Strategies</div>
-<h1>Backtracking on Solution Trees</h1>
-<div class="mission">Exam goal: <strong>hand-trace</strong> the three classic Ch6 feasibility problems — SAT, sum-of-subsets, Hamiltonian circuit — as a walk over a solution tree. Lesson 1 gave you the abstract knob; here you turn it on real instances. The tangible win: draw the tree, prune dead subtrees, and read off the answer.</div>
+<div class="kicker"><span data-tr="en">Lesson 4 · Ch6 Searching Strategies</span><span data-tr="zh">第 4 課 · 第 6 章 Searching Strategies</span></div>
+<h1><span data-tr="en">Backtracking on Solution Trees</span><span data-tr="zh">在解答樹上做 Backtracking</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>hand-trace</strong> the three classic Ch6 feasibility problems — SAT, sum-of-subsets, Hamiltonian circuit — as a walk over a solution tree. Lesson 1 gave you the abstract knob; here you turn it on real instances. The tangible win: draw the tree, prune dead subtrees, and read off the answer.</span><span data-tr="zh">考試目標：<strong>手動追蹤</strong>第 6 章的三個經典 feasibility 問題 — SAT、sum-of-subsets、Hamiltonian circuit — 把它們看成在一棵解答樹上的走訪。第 1 課給了你抽象的旋鈕；這裡我們把它套用到實際的 instance 上。實際收穫：畫出樹、剪掉死掉的子樹，然後讀出答案。</span></div>
 
-<h2>0 · What are these problems?</h2>
-<p>Before any tree-drawing, here are the four ideas this lesson rests on — assume you have never met them.</p>
+<h2><span data-tr="en">0 · What are these problems?</span><span data-tr="zh">0 · 這些問題是什麼？</span></h2>
+<p><span data-tr="en">Before any tree-drawing, here are the four ideas this lesson rests on — assume you have never met them.</span><span data-tr="zh">在畫任何樹之前，先看這一課依賴的四個概念 — 假設你從沒接觸過它們。</span></p>
 
-<p><strong>Backtracking.</strong> A way to search for a solution by <em>building a candidate one piece at a time</em>. Picture the choices as a tree: the root has chosen nothing, and each step down adds one more decision. You walk down a branch, and <strong>the moment a partial choice can no longer lead to a valid solution you abandon that branch</strong> — retreat back up and try the next option. That retreat is the "backtrack." It saves you from finishing candidates you already know are doomed.</p>
+<p><span data-tr="en"><strong>Backtracking.</strong> A way to search for a solution by <em>building a candidate one piece at a time</em>. Picture the choices as a tree: the root has chosen nothing, and each step down adds one more decision. You walk down a branch, and <strong>the moment a partial choice can no longer lead to a valid solution you abandon that branch</strong> — retreat back up and try the next option. That retreat is the "backtrack." It saves you from finishing candidates you already know are doomed.</span><span data-tr="zh"><strong>Backtracking。</strong>一種搜尋解答的方法，做法是<em>一次一塊地建構候選解</em>。把這些選擇想成一棵樹：root 什麼都還沒選，每往下一步就多做一個決定。你沿著一條分支往下走，<strong>一旦某個部分選擇再也不可能導向合法解，就放棄那條分支</strong> — 退回上一層，試下一個選項。這個退回就是「backtrack（回溯）」。它讓你不必把早就注定失敗的候選解走完。</span></p>
 
-<p><strong>The Satisfiability problem (SAT).</strong> You are given a <strong>Boolean formula</strong> — a logic expression whose variables are each either <code>true</code> or <code>false</code> — and asked: is there a way to set the variables that makes the whole formula true? Some vocabulary, defined once and used throughout:</p>
+<p><span data-tr="en"><strong>The Satisfiability problem (SAT).</strong> You are given a <strong>Boolean formula</strong> — a logic expression whose variables are each either <code>true</code> or <code>false</code> — and asked: is there a way to set the variables that makes the whole formula true? Some vocabulary, defined once and used throughout:</span><span data-tr="zh"><strong>Satisfiability 問題（SAT）。</strong>給你一個 <strong>Boolean formula</strong> — 一個邏輯運算式，其中每個變數不是 <code>true</code> 就是 <code>false</code> — 並問：有沒有辦法設定這些變數，使整個 formula 為真？以下是一些詞彙，定義一次後全程使用：</span></p>
 <table>
-<tr><th>Term</th><th>Plain meaning</th><th>Example</th></tr>
-<tr><td><strong>literal</strong></td><td>a variable, or its negation (NOT)</td><td><code>x₁</code> or <code>¬x₁</code></td></tr>
-<tr><td><strong>clause</strong></td><td>an OR of literals — true if <em>any one</em> literal in it is true</td><td><code>x₂ ∨ x₅</code></td></tr>
-<tr><td><strong>CNF</strong></td><td>(conjunctive normal form) an AND of clauses — true only if <em>every</em> clause is true</td><td><code>(x₂ ∨ x₅) ∧ x₃</code></td></tr>
-<tr><td><strong>satisfiable</strong></td><td>some assignment of true/false makes the whole formula true</td><td>see below</td></tr>
+<tr><th><span data-tr="en">Term</span><span data-tr="zh">術語</span></th><th><span data-tr="en">Plain meaning</span><span data-tr="zh">白話意思</span></th><th><span data-tr="en">Example</span><span data-tr="zh">範例</span></th></tr>
+<tr><td><strong>literal</strong></td><td><span data-tr="en">a variable, or its negation (NOT)</span><span data-tr="zh">一個變數，或它的否定（NOT）</span></td><td><code>x₁</code> or <code>¬x₁</code></td></tr>
+<tr><td><strong>clause</strong></td><td><span data-tr="en">an OR of literals — true if <em>any one</em> literal in it is true</span><span data-tr="zh">若干 literal 的 OR — 只要其中<em>任一個</em> literal 為真就成立</span></td><td><code>x₂ ∨ x₅</code></td></tr>
+<tr><td><strong>CNF</strong></td><td><span data-tr="en">(conjunctive normal form) an AND of clauses — true only if <em>every</em> clause is true</span><span data-tr="zh">（conjunctive normal form）若干 clause 的 AND — 只有<em>每個</em> clause 都為真才成立</span></td><td><code>(x₂ ∨ x₅) ∧ x₃</code></td></tr>
+<tr><td><strong>satisfiable</strong></td><td><span data-tr="en">some assignment of true/false makes the whole formula true</span><span data-tr="zh">存在某種 true/false 的指派使整個 formula 為真</span></td><td><span data-tr="en">see below</span><span data-tr="zh">見下方</span></td></tr>
 </table>
-<p>Tiny example: the CNF formula <code>(x₁ ∨ x₂) ∧ (¬x₁)</code> is <strong>satisfiable</strong> — set <code>x₁ = false, x₂ = true</code> and both clauses hold. By contrast <code>(x₁) ∧ (¬x₁)</code> is <strong>unsatisfiable</strong>: no value of <code>x₁</code> can make both clauses true at once.</p>
+<p><span data-tr="en">Tiny example: the CNF formula <code>(x₁ ∨ x₂) ∧ (¬x₁)</code> is <strong>satisfiable</strong> — set <code>x₁ = false, x₂ = true</code> and both clauses hold. By contrast <code>(x₁) ∧ (¬x₁)</code> is <strong>unsatisfiable</strong>: no value of <code>x₁</code> can make both clauses true at once.</span><span data-tr="zh">小例子：CNF formula <code>(x₁ ∨ x₂) ∧ (¬x₁)</code> 是 <strong>satisfiable</strong> — 設 <code>x₁ = false, x₂ = true</code>，兩個 clause 都成立。相對地 <code>(x₁) ∧ (¬x₁)</code> 是 <strong>unsatisfiable</strong>：沒有任何 <code>x₁</code> 的值能讓兩個 clause 同時為真。</span></p>
 
-<p><strong>The sum-of-subsets problem.</strong> Given a set of numbers and a <em>target</em>, is there a subset whose elements add up to <em>exactly</em> the target? Tiny example: from <code>{3, 5, 8}</code> with target <code>11</code>, the subset <code>{3, 8}</code> works (<code>3 + 8 = 11</code>); with target <code>4</code>, no subset hits it.</p>
+<p><span data-tr="en"><strong>The sum-of-subsets problem.</strong> Given a set of numbers and a <em>target</em>, is there a subset whose elements add up to <em>exactly</em> the target? Tiny example: from <code>{3, 5, 8}</code> with target <code>11</code>, the subset <code>{3, 8}</code> works (<code>3 + 8 = 11</code>); with target <code>4</code>, no subset hits it.</span><span data-tr="zh"><strong>sum-of-subsets 問題。</strong>給一組數字和一個 <em>target</em>，是否存在某個 subset，其元素加總<em>剛好</em>等於 target？小例子：從 <code>{3, 5, 8}</code> 且 target <code>11</code>，subset <code>{3, 8}</code> 可行（<code>3 + 8 = 11</code>）；若 target 為 <code>4</code>，則沒有任何 subset 命中。</span></p>
 
-<p><strong>The Hamiltonian circuit problem.</strong> A <strong>Hamiltonian circuit</strong> is a cycle in a graph that visits <em>every vertex exactly once</em> and returns to where it started. The question: does a given graph contain one? Do not confuse it with an <strong>Euler circuit</strong>, which is a cycle that uses <em>every edge exactly once</em> (vertices may be revisited). The classic trap is swapping the two:</p>
-<div class="note"><strong>Hamiltonian = every <u>vertex</u> once. Euler = every <u>edge</u> once.</strong> In a square <code>a-b-c-d-a</code>, going round the rim <code>a→b→c→d→a</code> is <em>both</em> — but add a diagonal <code>a-c</code> and the rim is still Hamiltonian (all 4 corners once) yet no longer Euler (the diagonal edge is never used).</p></div>
+<p><span data-tr="en"><strong>The Hamiltonian circuit problem.</strong> A <strong>Hamiltonian circuit</strong> is a cycle in a graph that visits <em>every vertex exactly once</em> and returns to where it started. The question: does a given graph contain one? Do not confuse it with an <strong>Euler circuit</strong>, which is a cycle that uses <em>every edge exactly once</em> (vertices may be revisited). The classic trap is swapping the two:</span><span data-tr="zh"><strong>Hamiltonian circuit 問題。</strong><strong>Hamiltonian circuit</strong> 是圖中的一個環，<em>恰好走過每個 vertex 一次</em>並回到起點。問題是：給定的圖裡有沒有這樣的環？不要把它和 <strong>Euler circuit</strong> 搞混，後者是<em>恰好用過每條 edge 一次</em>的環（vertex 可以重複造訪）。經典陷阱就是把這兩個對調：</span></p>
+<div class="note"><span data-tr="en"><strong>Hamiltonian = every <u>vertex</u> once. Euler = every <u>edge</u> once.</strong> In a square <code>a-b-c-d-a</code>, going round the rim <code>a→b→c→d→a</code> is <em>both</em> — but add a diagonal <code>a-c</code> and the rim is still Hamiltonian (all 4 corners once) yet no longer Euler (the diagonal edge is never used).</span><span data-tr="zh"><strong>Hamiltonian = 每個 <u>vertex</u> 一次。Euler = 每條 <u>edge</u> 一次。</strong>在一個正方形 <code>a-b-c-d-a</code> 中，沿著外圈走 <code>a→b→c→d→a</code> <em>兩者皆是</em> — 但加上一條對角線 <code>a-c</code>，外圈仍然是 Hamiltonian（4 個角各一次），卻不再是 Euler（那條對角 edge 從沒被用到）。</span></p></div>
 
-<div class="note"><strong>Why one technique fits all three:</strong> each asks "does <em>a</em> valid candidate exist?" (a <em>feasibility</em> question, not "find the cheapest"). Each candidate is built choice by choice, so each is a walk down a tree — exactly what backtracking searches, abandoning doomed branches early.</div>
+<div class="note"><span data-tr="en"><strong>Why one technique fits all three:</strong> each asks "does <em>a</em> valid candidate exist?" (a <em>feasibility</em> question, not "find the cheapest"). Each candidate is built choice by choice, so each is a walk down a tree — exactly what backtracking searches, abandoning doomed branches early.</span><span data-tr="zh"><strong>為什麼同一種技巧適用於這三者：</strong>每個問題都在問「是否存在<em>一個</em>合法的候選解？」（一個 <em>feasibility</em> 問題，而不是「找最便宜的」）。每個候選解都是一個選擇接一個選擇建出來的，所以每個都是在一棵樹上往下走 — 正是 backtracking 搜尋的對象，並提早放棄注定失敗的分支。</span></div>
 
-<h2>1 · The same tree, three disguises</h2>
-<p>Every problem below becomes a <strong>solution tree</strong>: the root decides nothing, each level fixes one more choice, each leaf is a full candidate. We walk it <strong>depth-first</strong> (deepest open node first → a <code>stack</code>, from Lesson 1) and <strong>backtrack</strong> — pop and retreat — the instant a partial choice can no longer succeed. That early abandon is <em>pruning</em>: skip a whole subtree without examining its leaves.</p>
+<h2><span data-tr="en">1 · The same tree, three disguises</span><span data-tr="zh">1 · 同一棵樹，三種偽裝</span></h2>
+<p><span data-tr="en">Every problem below becomes a <strong>solution tree</strong>: the root decides nothing, each level fixes one more choice, each leaf is a full candidate. We walk it <strong>depth-first</strong> (deepest open node first → a <code>stack</code>, from Lesson 1) and <strong>backtrack</strong> — pop and retreat — the instant a partial choice can no longer succeed. That early abandon is <em>pruning</em>: skip a whole subtree without examining its leaves.</span><span data-tr="zh">下面每個問題都變成一棵<strong>解答樹</strong>：root 不做決定，每往下一層固定多一個選擇，每個 leaf 是一個完整候選解。我們以 <strong>depth-first</strong> 的方式走訪它（最深的未展開節點優先 → 一個 <code>stack</code>，來自第 1 課），並在某個部分選擇不再可能成功的瞬間 <strong>backtrack</strong> — pop 並退回。這種提早放棄就是 <em>pruning（剪枝）</em>：略過整棵子樹，不去檢查它的 leaf。</span></p>
 <table>
-<tr><th>Problem</th><th>Each level decides…</th><th>Prune when…</th></tr>
-<tr><td><strong>SAT</strong></td><td><code>xᵢ = T</code> or <code>xᵢ = F</code></td><td>a clause is already falsified</td></tr>
-<tr><td><strong>Sum-of-subsets</strong></td><td>element <code>i</code> in or out</td><td>partial sum exceeds target</td></tr>
-<tr><td><strong>Hamiltonian</strong></td><td>which vertex to visit next</td><td>vertex reused / no edge / dead end</td></tr>
+<tr><th><span data-tr="en">Problem</span><span data-tr="zh">問題</span></th><th><span data-tr="en">Each level decides…</span><span data-tr="zh">每一層決定…</span></th><th><span data-tr="en">Prune when…</span><span data-tr="zh">何時剪枝…</span></th></tr>
+<tr><td><strong>SAT</strong></td><td><code>xᵢ = T</code> or <code>xᵢ = F</code></td><td><span data-tr="en">a clause is already falsified</span><span data-tr="zh">某個 clause 已被否證</span></td></tr>
+<tr><td><strong>Sum-of-subsets</strong></td><td><span data-tr="en">element <code>i</code> in or out</span><span data-tr="zh">元素 <code>i</code> 選入或不選</span></td><td><span data-tr="en">partial sum exceeds target</span><span data-tr="zh">部分總和超過 target</span></td></tr>
+<tr><td><strong>Hamiltonian</strong></td><td><span data-tr="en">which vertex to visit next</span><span data-tr="zh">下一個造訪哪個 vertex</span></td><td><span data-tr="en">vertex reused / no edge / dead end</span><span data-tr="zh">vertex 重複 / 沒有 edge / 死路</span></td></tr>
 </table>
-<div class="note"><strong>Key exam idea:</strong> these are <em>feasibility</em> problems — we want <em>a</em> solution (or "none exists"), so DFS stops at the first goal leaf. Pruning is what makes the <code>2ⁿ</code>-leaf tree tractable: <strong>you may never need to examine all 2ⁿ assignments.</strong></p></div>
+<div class="note"><span data-tr="en"><strong>Key exam idea:</strong> these are <em>feasibility</em> problems — we want <em>a</em> solution (or "none exists"), so DFS stops at the first goal leaf. Pruning is what makes the <code>2ⁿ</code>-leaf tree tractable: <strong>you may never need to examine all 2ⁿ assignments.</strong></span><span data-tr="zh"><strong>關鍵考點：</strong>這些是 <em>feasibility</em> 問題 — 我們要的是<em>一個</em>解（或「不存在」），所以 DFS 在第一個 goal leaf 就停下。Pruning 正是讓這棵 <code>2ⁿ</code> 個 leaf 的樹變得可行的關鍵：<strong>你可能根本不需要檢查全部 2ⁿ 種指派。</strong></span></div>
 
-<h2>2 · SAT: a depth-n binary tree</h2>
-<p>Given a Boolean formula in <code>n</code> variables, there are <code>2ⁿ</code> truth assignments — a complete <strong>binary tree of depth n</strong>, branching <code>xᵢ = T</code> / <code>xᵢ = F</code> at level <code>i</code>. For <code>n = 3</code>, that is <code>2³ = 8</code> leaves.</p>
+<h2><span data-tr="en">2 · SAT: a depth-n binary tree</span><span data-tr="zh">2 · SAT：一棵 depth-n 的 binary tree</span></h2>
+<p><span data-tr="en">Given a Boolean formula in <code>n</code> variables, there are <code>2ⁿ</code> truth assignments — a complete <strong>binary tree of depth n</strong>, branching <code>xᵢ = T</code> / <code>xᵢ = F</code> at level <code>i</code>. For <code>n = 3</code>, that is <code>2³ = 8</code> leaves.</span><span data-tr="zh">給定一個有 <code>n</code> 個變數的 Boolean formula，共有 <code>2ⁿ</code> 種真值指派 — 一棵完整的 <strong>depth n 的 binary tree</strong>，在第 <code>i</code> 層以 <code>xᵢ = T</code> / <code>xᵢ = F</code> 分支。當 <code>n = 3</code> 時就是 <code>2³ = 8</code> 個 leaf。</span></p>
 <div class="tree">                    (root)
           X1=T /              \ X1=F
           ( )                  ( )
       X2=T/  \X2=F         X2=T/  \X2=F
      ( )      ( )         ( )      ( )
    X3=T/\X3=F …          …        …      &larr; 8 leaves at depth 3</div>
-<p>The slide instance (clauses that must <em>all</em> hold; <code>¬</code> = NOT, <code>∨</code> = OR):</p>
+<p><span data-tr="en">The slide instance (clauses that must <em>all</em> hold; <code>¬</code> = NOT, <code>∨</code> = OR):</span><span data-tr="zh">投影片上的 instance（這些 clause 必須<em>全部</em>成立；<code>¬</code> = NOT，<code>∨</code> = OR）：</span></p>
 <div class="tree">(1) ¬x₁        (4)  x₃
 (2)  x₁        (5) ¬x₂
 (3)  x₂ ∨ x₅</div>
-<p>Walk the tree and prune the moment any clause is violated. At the very first level we already hit a wall:</p>
+<p><span data-tr="en">Walk the tree and prune the moment any clause is violated. At the very first level we already hit a wall:</span><span data-tr="zh">走訪這棵樹，並在任何 clause 被違反的瞬間剪枝。在最開始的第一層我們就已經撞牆：</span></p>
 
-<details><summary>Trace the root's two branches</summary>
-<p>Branch <code>x₁ = T</code> → clause (1) <code>¬x₁</code> is <strong>falsified</strong> → prune that whole subtree.<br>
+<details><summary><span data-tr="en">Trace the root's two branches</span><span data-tr="zh">追蹤 root 的兩條分支</span></summary>
+<p><span data-tr="en">Branch <code>x₁ = T</code> → clause (1) <code>¬x₁</code> is <strong>falsified</strong> → prune that whole subtree.<br>
 Branch <code>x₁ = F</code> → clause (2) <code>x₁</code> is <strong>falsified</strong> → prune that subtree too.<br>
-Both children of the root die immediately because clauses (1) and (2) directly contradict. So this instance is <strong>unsatisfiable</strong> — proven by pruning at depth 1, without ever building the other <code>2³ − 2</code> nodes. That is the whole point: <em>a partial assignment can already reveal a contradiction.</em></p></details>
+Both children of the root die immediately because clauses (1) and (2) directly contradict. So this instance is <strong>unsatisfiable</strong> — proven by pruning at depth 1, without ever building the other <code>2³ − 2</code> nodes. That is the whole point: <em>a partial assignment can already reveal a contradiction.</em></span><span data-tr="zh"><code>x₁ = T</code> 分支 → clause (1) <code>¬x₁</code> 被<strong>否證</strong> → 剪掉整棵子樹。<br>
+<code>x₁ = F</code> 分支 → clause (2) <code>x₁</code> 被<strong>否證</strong> → 那棵子樹也剪掉。<br>
+root 的兩個子節點都立刻死亡，因為 clause (1) 和 (2) 直接矛盾。所以這個 instance 是 <strong>unsatisfiable</strong> — 在 depth 1 就靠剪枝證明，根本不必建出其餘的 <code>2³ − 2</code> 個節點。這正是重點：<em>一個部分指派就已經能揭露矛盾。</em></span></p></details>
 
-<h2>3 · Sum-of-subsets by DFS</h2>
-<p><code>S = {7, 5, 1, 2, 10}</code>, target <code>= 9</code>. Binary tree: at level <code>i</code> decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong>. A <strong>stack</strong> guides the DFS (push children, pop to backtrack). <strong>Prune when the running sum exceeds 9.</strong> Node labels below are the running sum; <code>x</code> = pruned (over target).</p>
+<h2><span data-tr="en">3 · Sum-of-subsets by DFS</span><span data-tr="zh">3 · 用 DFS 解 Sum-of-subsets</span></h2>
+<p><span data-tr="en"><code>S = {7, 5, 1, 2, 10}</code>, target <code>= 9</code>. Binary tree: at level <code>i</code> decide whether element <code>i</code> is <strong>in</strong> or <strong>out</strong>. A <strong>stack</strong> guides the DFS (push children, pop to backtrack). <strong>Prune when the running sum exceeds 9.</strong> Node labels below are the running sum; <code>x</code> = pruned (over target).</span><span data-tr="zh"><code>S = {7, 5, 1, 2, 10}</code>，target <code>= 9</code>。Binary tree：在第 <code>i</code> 層決定元素 <code>i</code> 要<strong>選入</strong>還是<strong>不選</strong>。一個 <strong>stack</strong> 引導 DFS（push 子節點，pop 來 backtrack）。<strong>當累積總和超過 9 時剪枝。</strong>下方節點標籤是累積總和；<code>x</code> = 已剪枝（超過 target）。</span></p>
 <div class="tree">                0
          X1=7 /
             7
@@ -132,13 +136,14 @@ Both children of the root die immediately because clauses (1) and (2) directly c
     12(x)    8        9  ← Goal (7+2=9)
           X3=2/ X3=10\
            10(x)    18(x)</div>
-<p>Decide the answer subset yourself before opening it.</p>
-<details><summary>DFS trace and the answer</summary>
-<p>Push root <code>0</code>. Take <code>x₁ = 7</code> → sum <code>7</code>. From <code>7</code>, try <code>x₂ = 5</code> → <code>12 &gt; 9</code> → <strong>prune, pop</strong>. Try <code>x₂ = 1</code> → <code>8</code>; from <code>8</code>, <code>x₃ = 2 → 10 (x)</code> and <code>x₃ = 10 → 18 (x)</code>, both over → backtrack. Try <code>x₂ = 2</code> → <code>7 + 2 = 9</code> = target → <strong>goal node</strong>.<br>
-Answer subset: <code>{7, 2}</code>. The stack's LIFO order is exactly what makes the search dive down the <code>7</code> branch fully, then retreat.</p></details>
+<p><span data-tr="en">Decide the answer subset yourself before opening it.</span><span data-tr="zh">先自己想出答案 subset，再打開來看。</span></p>
+<details><summary><span data-tr="en">DFS trace and the answer</span><span data-tr="zh">DFS 追蹤與答案</span></summary>
+<p><span data-tr="en">Push root <code>0</code>. Take <code>x₁ = 7</code> → sum <code>7</code>. From <code>7</code>, try <code>x₂ = 5</code> → <code>12 &gt; 9</code> → <strong>prune, pop</strong>. Try <code>x₂ = 1</code> → <code>8</code>; from <code>8</code>, <code>x₃ = 2 → 10 (x)</code> and <code>x₃ = 10 → 18 (x)</code>, both over → backtrack. Try <code>x₂ = 2</code> → <code>7 + 2 = 9</code> = target → <strong>goal node</strong>.<br>
+Answer subset: <code>{7, 2}</code>. The stack's LIFO order is exactly what makes the search dive down the <code>7</code> branch fully, then retreat.</span><span data-tr="zh">Push root <code>0</code>。取 <code>x₁ = 7</code> → 總和 <code>7</code>。從 <code>7</code> 試 <code>x₂ = 5</code> → <code>12 &gt; 9</code> → <strong>剪枝、pop</strong>。試 <code>x₂ = 1</code> → <code>8</code>；從 <code>8</code>，<code>x₃ = 2 → 10 (x)</code> 與 <code>x₃ = 10 → 18 (x)</code>，兩者都超過 → backtrack。試 <code>x₂ = 2</code> → <code>7 + 2 = 9</code> = target → <strong>goal node</strong>。<br>
+答案 subset：<code>{7, 2}</code>。stack 的 LIFO 順序正是讓搜尋先把 <code>7</code> 那條分支完整往下鑽、再退回的原因。</span></p></details>
 
-<h2>4 · Hamiltonian circuit</h2>
-<p>A <strong>Hamiltonian circuit</strong> visits <em>every</em> vertex exactly once and returns to the start. Tree: each level chooses the next vertex to visit; a root-to-leaf path of length <code>n</code> that reuses no vertex and <strong>closes back to the start</strong> is a Hamiltonian circuit (Fig. 6-8). The example graph (Fig. 6-6, vertices 1–7) — adjacency you can walk by hand:</p>
+<h2><span data-tr="en">4 · Hamiltonian circuit</span><span data-tr="zh">4 · Hamiltonian circuit</span></h2>
+<p><span data-tr="en">A <strong>Hamiltonian circuit</strong> visits <em>every</em> vertex exactly once and returns to the start. Tree: each level chooses the next vertex to visit; a root-to-leaf path of length <code>n</code> that reuses no vertex and <strong>closes back to the start</strong> is a Hamiltonian circuit (Fig. 6-8). The example graph (Fig. 6-6, vertices 1–7) — adjacency you can walk by hand:</span><span data-tr="zh"><strong>Hamiltonian circuit</strong> 恰好造訪<em>每個</em> vertex 一次並回到起點。樹：每一層選擇下一個要造訪的 vertex；一條長度為 <code>n</code> 的 root-to-leaf 路徑，若不重複使用任何 vertex 並<strong>收回到起點</strong>，就是一個 Hamiltonian circuit（Fig. 6-8）。範例圖（Fig. 6-6，vertex 1–7）— 可以手動走訪的 adjacency：</span></p>
 <div class="tree">edges: 1-2  1-6  1-3  2-3
        6-5  7-5  7-4  3-4  4-5
 
@@ -149,69 +154,69 @@ vertex 4 → 7, 3, 5
 vertex 5 → 6, 7, 4
 vertex 6 → 1, 5
 vertex 7 → 5, 4</div>
-<p>Root the search at vertex <code>1</code>; extend partial paths, mark dead ends <code>X</code>, backtrack on failure (children left→right). This is <strong>Fig. 6-8</strong>, the full search tree — node labels are the vertices visited, and every doomed branch is marked <code>X</code>:</p>
+<p><span data-tr="en">Root the search at vertex <code>1</code>; extend partial paths, mark dead ends <code>X</code>, backtrack on failure (children left→right). This is <strong>Fig. 6-8</strong>, the full search tree — node labels are the vertices visited, and every doomed branch is marked <code>X</code>:</span><span data-tr="zh">把搜尋的 root 設在 vertex <code>1</code>；延伸部分路徑，把死路標 <code>X</code>，失敗就 backtrack（子節點由左到右）。這就是 <strong>Fig. 6-8</strong>，完整的搜尋樹 — 節點標籤是已造訪的 vertex，每條注定失敗的分支都標 <code>X</code>：</span></p>
 <img src="../render/A05/png_002.png" alt="Fig. 6-8 — search tree for a Hamiltonian circuit of the Fig. 6-6 graph, rooted at vertex 1; dead-end branches marked X" style="background:#fff;padding:.5rem;width:100%;border:1px solid var(--rule);border-radius:6px">
-<p style="font-size:.85rem;color:var(--mut);margin-top:-.3rem">Fig. 6-8 — Search tree for a Hamiltonian circuit of the Fig. 6-6 graph. Each path from the root (vertex 1) down chooses the next vertex; branches that reuse a vertex or hit a missing edge dead-end at <code>X</code>; the two branches that reach a leaf <code>1</code> close the cycle.</p>
-<details><summary>Which leaves are Hamiltonian circuits?</summary>
-<p>Two root-to-leaf paths visit all 7 vertices once and close back to <code>1</code> (the two leaf nodes labeled <code>1</code> in Fig. 6-8): <code>1-2-3-4-5-7-…</code> down the left subtree closing at <code>6-1</code>, and <code>1-6-5-7-4-3-2-1</code> down the middle subtree. They are the same cycle traversed in opposite directions. Every other branch ends in <code>X</code> — a reused vertex, a missing edge, or a dead end with vertices still unvisited. Because this is feasibility, finding <em>one</em> closing path answers "yes, a Hamiltonian circuit exists." No edge weights appear: Hamiltonicity is feasibility, not optimization.</p></details>
+<p style="font-size:.85rem;color:var(--mut);margin-top:-.3rem"><span data-tr="en">Fig. 6-8 — Search tree for a Hamiltonian circuit of the Fig. 6-6 graph. Each path from the root (vertex 1) down chooses the next vertex; branches that reuse a vertex or hit a missing edge dead-end at <code>X</code>; the two branches that reach a leaf <code>1</code> close the cycle.</span><span data-tr="zh">Fig. 6-8 — Fig. 6-6 圖的 Hamiltonian circuit 搜尋樹。從 root（vertex 1）往下的每條路徑都選擇下一個 vertex；重複使用某個 vertex 或撞上不存在的 edge 的分支會在 <code>X</code> 走到死路；兩條抵達 leaf <code>1</code> 的分支收成環。</span></p>
+<details><summary><span data-tr="en">Which leaves are Hamiltonian circuits?</span><span data-tr="zh">哪些 leaf 是 Hamiltonian circuit？</span></summary>
+<p><span data-tr="en">Two root-to-leaf paths visit all 7 vertices once and close back to <code>1</code> (the two leaf nodes labeled <code>1</code> in Fig. 6-8): <code>1-2-3-4-5-7-…</code> down the left subtree closing at <code>6-1</code>, and <code>1-6-5-7-4-3-2-1</code> down the middle subtree. They are the same cycle traversed in opposite directions. Every other branch ends in <code>X</code> — a reused vertex, a missing edge, or a dead end with vertices still unvisited. Because this is feasibility, finding <em>one</em> closing path answers "yes, a Hamiltonian circuit exists." No edge weights appear: Hamiltonicity is feasibility, not optimization.</span><span data-tr="zh">有兩條 root-to-leaf 路徑造訪全部 7 個 vertex 各一次並收回到 <code>1</code>（Fig. 6-8 中那兩個標籤為 <code>1</code> 的 leaf 節點）：沿左子樹的 <code>1-2-3-4-5-7-…</code> 在 <code>6-1</code> 收尾，以及沿中間子樹的 <code>1-6-5-7-4-3-2-1</code>。它們是同一個環，只是以相反方向走訪。其餘每條分支都以 <code>X</code> 結束 — 重複的 vertex、不存在的 edge，或還有 vertex 未造訪的死路。因為這是 feasibility，找到<em>一條</em>收尾路徑就回答了「是，存在一個 Hamiltonian circuit」。沒有出現任何 edge weight：Hamiltonicity 是 feasibility，不是 optimization。</span></p></details>
 
-<h2 class="qa-head">5 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">5 · Retrieve (no peeking)</span><span data-tr="zh">5 · 提取練習（不准偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">在看回饋前先作答。<em>答錯再看為什麼</em>比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="2" data-explain="DFS on <code>S = {7,5,1,2,10}</code>, target 9, dives the 7-branch first. From running sum 7 it tries x₂=5 → <b>12 &gt; 9</b>, so it backtracks here. Next x₂=1 → 8, whose children 10 and 18 also exceed 9, then x₂=2 → <b>7+2 = 9</b> = goal. If you picked the 8-node you forgot DFS goes left-to-right and hits 12 first; if you picked the 9-node that's the <i>goal</i>, not a backtrack.">
-  <div class="q">Q1. Sum-of-subsets on S = {7,5,1,2,10}, target 9. DFS takes element 7 first (sum 7), then tries the elements in order. At which running sum does it FIRST backtrack?</div>
-  <button class="opt">at 8 (after adding 1)</button>
-  <button class="opt">at 9 (after adding 2)</button>
-  <button class="opt">at 12 (after adding 5)</button>
-  <button class="opt">at 10 (after adding 1 then 2)</button>
+<div class="quiz" data-correct="2" data-explain="DFS on <code>S = {7,5,1,2,10}</code>, target 9, dives the 7-branch first. From running sum 7 it tries x₂=5 → <b>12 &gt; 9</b>, so it backtracks here. Next x₂=1 → 8, whose children 10 and 18 also exceed 9, then x₂=2 → <b>7+2 = 9</b> = goal. If you picked the 8-node you forgot DFS goes left-to-right and hits 12 first; if you picked the 9-node that's the <i>goal</i>, not a backtrack." data-explain-zh="DFS 在 <code>S = {7,5,1,2,10}</code>、target 9 上，先鑽 7 的分支。從累積總和 7 試 x₂=5 → <b>12 &gt; 9</b>，所以在這裡 backtrack。接著 x₂=1 → 8，其子節點 10 與 18 也都超過 9，再來 x₂=2 → <b>7+2 = 9</b> = goal。若你選了 8 那個節點，是忘了 DFS 由左到右、先撞到 12；若你選了 9 那個節點，那是 <i>goal</i>，不是 backtrack。">
+  <div class="q"><span data-tr="en">Q1. Sum-of-subsets on S = {7,5,1,2,10}, target 9. DFS takes element 7 first (sum 7), then tries the elements in order. At which running sum does it FIRST backtrack?</span><span data-tr="zh">Q1. 在 S = {7,5,1,2,10}、target 9 上做 sum-of-subsets。DFS 先取元素 7（總和 7），然後依序試其餘元素。它在哪個累積總和「第一次」backtrack？</span></div>
+  <button class="opt"><span data-tr="en">at 8 (after adding 1)</span><span data-tr="zh">在 8（加入 1 之後）</span></button>
+  <button class="opt"><span data-tr="en">at 9 (after adding 2)</span><span data-tr="zh">在 9（加入 2 之後）</span></button>
+  <button class="opt"><span data-tr="en">at 12 (after adding 5)</span><span data-tr="zh">在 12（加入 5 之後）</span></button>
+  <button class="opt"><span data-tr="en">at 10 (after adding 1 then 2)</span><span data-tr="zh">在 10（先加 1 再加 2 之後）</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="You prune the instant a <b>partial</b> assignment <b>falsifies any single clause</b> — no extension can revive that clause, so the whole subtree is dead. Waiting until a full leaf (a complete assignment) throws away the entire benefit of search: you'd build all 2ⁿ leaves. The depth-n / leaf-only options are exactly that mistake.">
-  <div class="q">Q2. In SAT search, when is a subtree pruned (abandoned)?</div>
-  <button class="opt">only once the path reaches a full leaf at depth n</button>
-  <button class="opt">as soon as the partial assignment falsifies any one clause</button>
-  <button class="opt">only when both of a node's children are leaves</button>
-  <button class="opt">when the number of true variables exceeds n/2</button>
+<div class="quiz" data-correct="1" data-explain="You prune the instant a <b>partial</b> assignment <b>falsifies any single clause</b> — no extension can revive that clause, so the whole subtree is dead. Waiting until a full leaf (a complete assignment) throws away the entire benefit of search: you'd build all 2ⁿ leaves. The depth-n / leaf-only options are exactly that mistake." data-explain-zh="只要一個<b>部分</b>指派<b>否證了任何一個 clause</b>，你就在那一瞬間剪枝 — 沒有任何延伸能救回那個 clause，所以整棵子樹都死了。等到完整的 leaf（完整指派）才剪，等於丟掉搜尋的全部好處：你會把全部 2ⁿ 個 leaf 都建出來。depth-n / 只在 leaf 的選項正是這個錯誤。">
+  <div class="q"><span data-tr="en">Q2. In SAT search, when is a subtree pruned (abandoned)?</span><span data-tr="zh">Q2. 在 SAT 搜尋中，何時會剪掉（放棄）一棵子樹？</span></div>
+  <button class="opt"><span data-tr="en">only once the path reaches a full leaf at depth n</span><span data-tr="zh">只有當路徑抵達 depth n 的完整 leaf 時</span></button>
+  <button class="opt"><span data-tr="en">as soon as the partial assignment falsifies any one clause</span><span data-tr="zh">一旦部分指派否證了任何一個 clause</span></button>
+  <button class="opt"><span data-tr="en">only when both of a node's children are leaves</span><span data-tr="zh">只有當某節點的兩個子節點都是 leaf 時</span></button>
+  <button class="opt"><span data-tr="en">when the number of true variables exceeds n/2</span><span data-tr="zh">當為真的變數數量超過 n/2 時</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="Clause (1) <code>¬x₁</code> needs x₁=F; clause (2) <code>x₁</code> needs x₁=T. They contradict, so <b>at depth 1</b> either choice of x₁ already falsifies a clause — the whole tree is pruned and the formula is unsatisfiable. If you said depth 3 you waited for a full assignment; depth 2 forgets that clause (2) is just <code>x₁</code> alone, deciding the issue at level 1.">
-  <div class="q">Q3. Clauses: (1) ¬x₁, (2) x₁, (3) x₂∨x₅, (4) x₃, (5) ¬x₂. Branching x₁ first, then x₂, then x₃, at what depth is EVERY subtree first pruned?</div>
-  <button class="opt">depth 3 — only at the full leaves</button>
-  <button class="opt">depth 2 — after fixing x₁ and x₂</button>
-  <button class="opt">never — the formula is satisfiable</button>
-  <button class="opt">depth 1 — right after fixing x₁</button>
+<div class="quiz" data-correct="3" data-explain="Clause (1) <code>¬x₁</code> needs x₁=F; clause (2) <code>x₁</code> needs x₁=T. They contradict, so <b>at depth 1</b> either choice of x₁ already falsifies a clause — the whole tree is pruned and the formula is unsatisfiable. If you said depth 3 you waited for a full assignment; depth 2 forgets that clause (2) is just <code>x₁</code> alone, deciding the issue at level 1." data-explain-zh="clause (1) <code>¬x₁</code> 需要 x₁=F；clause (2) <code>x₁</code> 需要 x₁=T。它們互相矛盾，所以<b>在 depth 1</b>，x₁ 的任一選擇都已經否證某個 clause — 整棵樹被剪掉，formula 是 unsatisfiable。若你說 depth 3，是在等完整指派；depth 2 則忘了 clause (2) 只是 <code>x₁</code> 單獨一個，在第 1 層就決定了結果。">
+  <div class="q"><span data-tr="en">Q3. Clauses: (1) ¬x₁, (2) x₁, (3) x₂∨x₅, (4) x₃, (5) ¬x₂. Branching x₁ first, then x₂, then x₃, at what depth is EVERY subtree first pruned?</span><span data-tr="zh">Q3. clause：(1) ¬x₁、(2) x₁、(3) x₂∨x₅、(4) x₃、(5) ¬x₂。先對 x₁ 分支，再 x₂，再 x₃，在哪個 depth 「每棵」子樹首次被剪掉？</span></div>
+  <button class="opt"><span data-tr="en">depth 3 — only at the full leaves</span><span data-tr="zh">depth 3 — 只在完整的 leaf</span></button>
+  <button class="opt"><span data-tr="en">depth 2 — after fixing x₁ and x₂</span><span data-tr="zh">depth 2 — 在固定 x₁ 和 x₂ 之後</span></button>
+  <button class="opt"><span data-tr="en">never — the formula is satisfiable</span><span data-tr="zh">永遠不會 — 這個 formula 是 satisfiable</span></button>
+  <button class="opt"><span data-tr="en">depth 1 — right after fixing x₁</span><span data-tr="zh">depth 1 — 在固定 x₁ 之後就立刻</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="A <b>Hamiltonian</b> circuit visits every <b>vertex</b> exactly once and returns to the start. Option B is the <b>Euler</b> circuit — every <b>edge</b> exactly once; swapping vertex/edge is the classic trap. Minimum edge weight is TSP/optimization, but Hamiltonicity is pure feasibility (no weights).">
-  <div class="q">Q4. A root-to-leaf path in the Hamiltonian search tree counts as a solution when it…</div>
-  <button class="opt">visits every vertex exactly once and closes back to the start</button>
-  <button class="opt">traverses every edge of the graph exactly once and returns</button>
-  <button class="opt">forms the closed walk of minimum total edge weight</button>
-  <button class="opt">visits every vertex, allowing repeats, until it returns home</button>
+<div class="quiz" data-correct="0" data-explain="A <b>Hamiltonian</b> circuit visits every <b>vertex</b> exactly once and returns to the start. Option B is the <b>Euler</b> circuit — every <b>edge</b> exactly once; swapping vertex/edge is the classic trap. Minimum edge weight is TSP/optimization, but Hamiltonicity is pure feasibility (no weights)." data-explain-zh="<b>Hamiltonian</b> circuit 恰好造訪每個 <b>vertex</b> 一次並回到起點。選項 B 是 <b>Euler</b> circuit — 恰好每條 <b>edge</b> 一次；把 vertex/edge 對調就是經典陷阱。最小 edge weight 是 TSP/optimization，但 Hamiltonicity 是純粹的 feasibility（沒有 weight）。">
+  <div class="q"><span data-tr="en">Q4. A root-to-leaf path in the Hamiltonian search tree counts as a solution when it…</span><span data-tr="zh">Q4. Hamiltonian 搜尋樹中的一條 root-to-leaf 路徑，在什麼情況下算是一個解？</span></div>
+  <button class="opt"><span data-tr="en">visits every vertex exactly once and closes back to the start</span><span data-tr="zh">恰好造訪每個 vertex 一次並收回到起點</span></button>
+  <button class="opt"><span data-tr="en">traverses every edge of the graph exactly once and returns</span><span data-tr="zh">恰好走過圖中每條 edge 一次並返回</span></button>
+  <button class="opt"><span data-tr="en">forms the closed walk of minimum total edge weight</span><span data-tr="zh">形成總 edge weight 最小的封閉走訪</span></button>
+  <button class="opt"><span data-tr="en">visits every vertex, allowing repeats, until it returns home</span><span data-tr="zh">造訪每個 vertex（允許重複）直到回到起點</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="Each variable adds one level (x_i = T or F), so n decisions give a binary tree of <b>depth n</b> with <b>2ⁿ leaves</b>. The trap is reading the leaf count as the depth: 2ⁿ is how many leaves there are, n is how deep you go to reach one.">
-  <div class="q">Q5. A SAT formula has n variables. How deep is its solution tree, and how many leaves does it have?</div>
-  <button class="opt">depth 2ⁿ, with n leaves</button>
-  <button class="opt">depth n, with 2ⁿ leaves</button>
-  <button class="opt">depth n, with n² leaves</button>
-  <button class="opt">depth log₂ n, with n leaves</button>
+<div class="quiz" data-correct="1" data-explain="Each variable adds one level (x_i = T or F), so n decisions give a binary tree of <b>depth n</b> with <b>2ⁿ leaves</b>. The trap is reading the leaf count as the depth: 2ⁿ is how many leaves there are, n is how deep you go to reach one." data-explain-zh="每個變數加一層（x_i = T 或 F），所以 n 個決定造出一棵 <b>depth n</b>、有 <b>2ⁿ 個 leaf</b> 的 binary tree。陷阱是把 leaf 數量誤讀成 depth：2ⁿ 是 leaf 有幾個，n 是走多深才能抵達一個 leaf。">
+  <div class="q"><span data-tr="en">Q5. A SAT formula has n variables. How deep is its solution tree, and how many leaves does it have?</span><span data-tr="zh">Q5. 一個 SAT formula 有 n 個變數。它的解答樹有多深？有幾個 leaf？</span></div>
+  <button class="opt"><span data-tr="en">depth 2ⁿ, with n leaves</span><span data-tr="zh">depth 2ⁿ，有 n 個 leaf</span></button>
+  <button class="opt"><span data-tr="en">depth n, with 2ⁿ leaves</span><span data-tr="zh">depth n，有 2ⁿ 個 leaf</span></button>
+  <button class="opt"><span data-tr="en">depth n, with n² leaves</span><span data-tr="zh">depth n，有 n² 個 leaf</span></button>
+  <button class="opt"><span data-tr="en">depth log₂ n, with n leaves</span><span data-tr="zh">depth log₂ n，有 n 個 leaf</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>6 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §§ on the satisfiability, Hamiltonian circuit, and sum-of-subsets problems and depth-first search (your <code>Alg05</code> slides, "The Searching Strategies"). Re-draw the SAT 2ⁿ tree, Fig. 6-8 (Hamiltonian), and Fig. 6-11 (sum-of-subsets DFS) from scratch and prune them by hand.</p>
-<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> and the <a href="../notes-html/A05-searching-strategies.html">full chapter note</a> for the verified figures and edge lists.</p>
+<h2><span data-tr="en">6 · Go deeper</span><span data-tr="zh">6 · 深入延伸</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §§ on the satisfiability, Hamiltonian circuit, and sum-of-subsets problems and depth-first search (your <code>Alg05</code> slides, "The Searching Strategies"). Re-draw the SAT 2ⁿ tree, Fig. 6-8 (Hamiltonian), and Fig. 6-11 (sum-of-subsets DFS) from scratch and prune them by hand.</span><span data-tr="zh"><strong>主要來源：</strong>R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 6 章關於 satisfiability、Hamiltonian circuit、sum-of-subsets 問題與 depth-first search 的小節（你的 <code>Alg05</code> 投影片，「The Searching Strategies」）。把 SAT 的 2ⁿ 樹、Fig. 6-8（Hamiltonian）、Fig. 6-11（sum-of-subsets DFS）從頭重畫一遍，並親手剪枝。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary → Ch6</a> and the <a href="../notes-html/A05-searching-strategies.html">full chapter note</a> for the verified figures and edge lists.</span><span data-tr="zh">也可參考 <a href="../reference/glossary.html">Glossary → Ch6</a> 以及<a href="../notes-html/A05-searching-strategies.html">完整章節筆記</a>，裡面有經過核對的圖與 edge 清單。</span></p>
 
-<div class="note"><strong>Next up — Lesson 5:</strong> Prune-and-Search — linear-time selection by <em>median of medians</em>. We leave feasibility trees behind and shrink the input itself: pick a pivot so good that a constant fraction of elements is thrown away each round, giving worst-case <code>O(n)</code> selection.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 5:</strong> Prune-and-Search — linear-time selection by <em>median of medians</em>. We leave feasibility trees behind and shrink the input itself: pick a pivot so good that a constant fraction of elements is thrown away each round, giving worst-case <code>O(n)</code> selection.</span><span data-tr="zh"><strong>下一課 — 第 5 課：</strong>Prune-and-Search — 用 <em>median of medians</em> 做 linear-time selection。我們離開 feasibility 樹，轉而縮小 input 本身：挑一個夠好的 pivot，使每一輪都丟掉固定比例的元素，達成最壞情況 <code>O(n)</code> 的 selection。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want the full Fig. 6-8 tree with every X explained? A bigger sum-of-subsets instance to trace? The BFS (queue) version of the same tree? Just say so.</p>
-  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 5. ≤3 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Want the full Fig. 6-8 tree with every X explained? A bigger sum-of-subsets instance to trace? The BFS (queue) version of the same tree? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師 — 什麼都可以問。</strong>想看完整的 Fig. 6-8 樹、把每個 X 都解釋清楚嗎？想要更大的 sum-of-subsets instance 來追蹤嗎？或是同一棵樹的 BFS（queue）版本？儘管說。</span></p>
+  <p><span data-tr="en">Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 5. ≤3 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分數（滿分 5）。4–5 → 我們進到第 5 課。≤3 → 告訴我是哪一題，我們來特訓。</span></p>
 </div>
 
 <script>
@@ -224,20 +229,22 @@ vertex 7 → 5, 4</div>
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✓ 正確。':'✓ Correct.')+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var L=String.fromCharCode(65+correct);
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✗ 不對 — 正解是 '+L+'。':'✗ Not quite — '+L+' is right.')+'</span> '+explain;
         }
         updateScore();
       });
@@ -246,5 +253,6 @@ vertex 7 → 5, 4</div>
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

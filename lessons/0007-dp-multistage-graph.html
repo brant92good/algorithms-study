@@ -62,48 +62,50 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 7 · Ch7 Dynamic Programming</div>
-<h1>Multistage Graphs: Forward & Backward</h1>
-<div class="mission">Exam goal: <strong>hand-trace</strong> a shortest path through a staged graph both ways and write every <code>min{…}</code> line. The single win: see <em>why</em> the recurrence beats greedy, and be able to reproduce <code>d(S,T)=9</code> from the same figure forward and backward without notes.</div>
+<div class="kicker"><span data-tr="en">Lesson 7 · Ch7 Dynamic Programming</span><span data-tr="zh">第 7 課 · 第 7 章 Dynamic Programming</span></div>
+<h1><span data-tr="en">Multistage Graphs: Forward & Backward</span><span data-tr="zh">Multistage Graph：正向與反向</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>hand-trace</strong> a shortest path through a staged graph both ways and write every <code>min{…}</code> line. The single win: see <em>why</em> the recurrence beats greedy, and be able to reproduce <code>d(S,T)=9</code> from the same figure forward and backward without notes.</span><span data-tr="zh">考試目標：對一張分階段的圖<strong>手動推導</strong>最短路徑，兩個方向都要做，並寫出每一條 <code>min{…}</code> 算式。唯一的重點：看懂遞迴式<em>為什麼</em>勝過 greedy，並能在不看筆記的情況下，從同一張圖正向與反向都重現 <code>d(S,T)=9</code>。</span></div>
 
-<h2>0 · What is this all about?</h2>
-<p><strong>Dynamic programming (DP)</strong> is a way to solve a problem by viewing it as a <em>sequence of decisions</em>. The trick: break the problem into smaller <strong>subproblems</strong>, solve each one <em>once</em>, store the answer, and reuse it instead of recomputing it. The <strong>greedy</strong> method (the rival) just grabs the locally cheapest choice at each step and never looks back. DP is smarter: it does <em>not</em> commit to a choice that looks cheap right now — it weighs how that choice pays off later. That is why DP can find the true best answer where greedy gets fooled.</p>
+<h2><span data-tr="en">0 · What is this all about?</span><span data-tr="zh">0 · 這一課在講什麼？</span></h2>
+<p><span data-tr="en"><strong>Dynamic programming (DP)</strong> is a way to solve a problem by viewing it as a <em>sequence of decisions</em>. The trick: break the problem into smaller <strong>subproblems</strong>, solve each one <em>once</em>, store the answer, and reuse it instead of recomputing it. The <strong>greedy</strong> method (the rival) just grabs the locally cheapest choice at each step and never looks back. DP is smarter: it does <em>not</em> commit to a choice that looks cheap right now — it weighs how that choice pays off later. That is why DP can find the true best answer where greedy gets fooled.</span><span data-tr="zh"><strong>Dynamic programming（DP）</strong>是一種把問題看成一連串<em>決策（sequence of decisions）</em>來求解的方法。訣竅在於：把問題拆成較小的 <strong>subproblem</strong>，每個只解<em>一次</em>，把答案存起來，之後重複利用而不是重算。對手 <strong>greedy</strong> 方法則是每一步都只抓當下最便宜的選擇，從不回頭。DP 更聰明：它<em>不會</em>急著承諾一個看起來當下便宜的選擇，而是衡量這個選擇之後會帶來多少代價。這就是為什麼在 greedy 被騙的地方，DP 仍能找到真正的最佳解。</span></p>
 
-<p>Everything here lives on a <strong>graph</strong>. A few words, in plain terms:</p>
+<p><span data-tr="en">Everything here lives on a <strong>graph</strong>. A few words, in plain terms:</span><span data-tr="zh">這裡的一切都建立在一張 <strong>graph</strong> 上。先用白話說幾個名詞：</span></p>
 <ul>
-  <li>A <strong>graph</strong> is just dots connected by lines.</li>
-  <li>Each dot is a <strong>vertex</strong> (also called a node).</li>
-  <li>Each line is an <strong>edge</strong> connecting two vertices.</li>
-  <li>A <strong>directed edge</strong> is a one-way arrow: <code>u→v</code> lets you go from <code>u</code> to <code>v</code> but not back.</li>
-  <li>Each edge has a number, its <strong>weight</strong> or cost. A <strong>path</strong> is a chain of edges; its <strong>path cost</strong> is the sum of the weights along it.</li>
+  <li><span data-tr="en">A <strong>graph</strong> is just dots connected by lines.</span><span data-tr="zh">一張 <strong>graph</strong> 就是一些用線連起來的點。</span></li>
+  <li><span data-tr="en">Each dot is a <strong>vertex</strong> (also called a node).</span><span data-tr="zh">每個點是一個 <strong>vertex</strong>（也叫 node）。</span></li>
+  <li><span data-tr="en">Each line is an <strong>edge</strong> connecting two vertices.</span><span data-tr="zh">每條線是一條 <strong>edge</strong>，連接兩個 vertex。</span></li>
+  <li><span data-tr="en">A <strong>directed edge</strong> is a one-way arrow: <code>u→v</code> lets you go from <code>u</code> to <code>v</code> but not back.</span><span data-tr="zh">一條 <strong>directed edge</strong> 是單向箭頭：<code>u→v</code> 讓你能從 <code>u</code> 走到 <code>v</code>，但不能反過來。</span></li>
+  <li><span data-tr="en">Each edge has a number, its <strong>weight</strong> or cost. A <strong>path</strong> is a chain of edges; its <strong>path cost</strong> is the sum of the weights along it.</span><span data-tr="zh">每條 edge 都有一個數字，叫 <strong>weight</strong>（權重）或成本。一條 <strong>path</strong> 是一串相連的 edge；它的 <strong>path cost</strong> 就是沿途所有 weight 的總和。</span></li>
 </ul>
 
-<p>A <strong>multistage graph</strong> is a special directed graph. Its vertices are grouped into ordered <strong>stages</strong> (stage 1, stage 2, …), and every edge only goes <em>from one stage to the very next one</em> — never sideways, never skipping ahead. There is exactly one <strong>start</strong> vertex (in the first stage) and one <strong>end</strong> vertex (in the last stage). The goal: find the <strong>cheapest path</strong> from start to end.</p>
+<p><span data-tr="en">A <strong>multistage graph</strong> is a special directed graph. Its vertices are grouped into ordered <strong>stages</strong> (stage 1, stage 2, …), and every edge only goes <em>from one stage to the very next one</em> — never sideways, never skipping ahead. There is exactly one <strong>start</strong> vertex (in the first stage) and one <strong>end</strong> vertex (in the last stage). The goal: find the <strong>cheapest path</strong> from start to end.</span><span data-tr="zh">一張 <strong>multistage graph</strong> 是一種特殊的有向圖。它的 vertex 被分組成有順序的 <strong>stage</strong>（stage 1、stage 2、…），而且每條 edge 只會<em>從一個 stage 走到緊接著的下一個 stage</em>——不會橫向走、也不會跳過。剛好有一個 <strong>start</strong> vertex（在第一個 stage）和一個 <strong>end</strong> vertex（在最後一個 stage）。目標：找出從 start 到 end 的<strong>最便宜路徑</strong>。</span></p>
 
 <div class="tree">  stage 1   stage 2     stage 3    stage 4
               ┌── A ──┐    ┌── D ──┐
    S ─────────┼── B ──┼────┼── E ──┼──── T
               └── C ──┘    └── F ──┘
    (start)                          (end)</div>
-<p>Our running example has 4 stages: <code>S</code> alone in stage 1; <code>A, B, C</code> in stage 2; <code>D, E, F</code> in stage 3; <code>T</code> alone in stage 4. We want the cheapest way to get from <code>S</code> to <code>T</code>. The exact edge weights appear in §2; the rest of the lesson is about computing that cheapest path the DP way (and seeing why greedy can't).</p>
+<p><span data-tr="en">Our running example has 4 stages: <code>S</code> alone in stage 1; <code>A, B, C</code> in stage 2; <code>D, E, F</code> in stage 3; <code>T</code> alone in stage 4. We want the cheapest way to get from <code>S</code> to <code>T</code>. The exact edge weights appear in §2; the rest of the lesson is about computing that cheapest path the DP way (and seeing why greedy can't).</span><span data-tr="zh">我們的範例有 4 個 stage：stage 1 只有 <code>S</code>；stage 2 是 <code>A, B, C</code>；stage 3 是 <code>D, E, F</code>；stage 4 只有 <code>T</code>。我們要找從 <code>S</code> 到 <code>T</code> 最便宜的走法。確切的 edge weight 在 §2；本課其餘部分就是用 DP 的方式算出那條最便宜的路徑（並看清楚為什麼 greedy 辦不到）。</span></p>
 
-<div class="note"><strong>Intuition to hold onto:</strong> picking <em>each</em> step by "what's cheapest right now" can trap you. DP instead asks "from this vertex, what's the cheapest way to <em>finish</em>?" — solving small finish-from-here subproblems once and reusing them. That reuse is the whole point.</div>
+<div class="note"><span data-tr="en"><strong>Intuition to hold onto:</strong> picking <em>each</em> step by "what's cheapest right now" can trap you. DP instead asks "from this vertex, what's the cheapest way to <em>finish</em>?" — solving small finish-from-here subproblems once and reusing them. That reuse is the whole point.</span><span data-tr="zh"><strong>要記住的直覺：</strong>每一步都只挑「現在最便宜」可能讓你掉進陷阱。DP 改問的是「從這個 vertex 出發，最便宜的<em>走完全程</em>方式是什麼？」——把這些「從這裡走到終點」的小 subproblem 解一次並重複利用。那個重複利用正是重點所在。</span></div>
 
-<h2>1 · Why greedy fails here</h2>
-<p>Greedy "take the cheapest outgoing edge each stage" looks smart and is <strong>wrong</strong>. From <code>S</code> it grabs <code>S→A</code> (cost 1), then <code>A→D</code> (4), then <code>D→T</code> (18):</p>
+<h2><span data-tr="en">1 · Why greedy fails here</span><span data-tr="zh">1 · 為什麼 greedy 在這裡會失敗</span></h2>
+<p><span data-tr="en">Greedy "take the cheapest outgoing edge each stage" looks smart and is <strong>wrong</strong>. From <code>S</code> it grabs <code>S→A</code> (cost 1), then <code>A→D</code> (4), then <code>D→T</code> (18):</span><span data-tr="zh">Greedy 的「每個 stage 都選最便宜的出邊」看起來很聰明，其實是<strong>錯的</strong>。從 <code>S</code> 出發它會抓 <code>S→A</code>（成本 1），接著 <code>A→D</code>（4），再來 <code>D→T</code>（18）：</span></p>
 <div class="tree">greedy:   S →A→D→T   =  1 + 4 + 18  =  23
 optimum:  S →C→F→T   =  5 + 2 +  2  =   9</div>
-<p>The true optimum starts with the <em>most expensive-looking</em> first edge, <code>S→C</code> = 5 — because <code>C</code> opens onto <code>C→F</code>=2 and <code>F→T</code>=2, dirt cheap downstream. A locally bad choice that pays off later: that is exactly the situation greedy cannot see and dynamic programming can.</p>
+<p><span data-tr="en">The true optimum starts with the <em>most expensive-looking</em> first edge, <code>S→C</code> = 5 — because <code>C</code> opens onto <code>C→F</code>=2 and <code>F→T</code>=2, dirt cheap downstream. A locally bad choice that pays off later: that is exactly the situation greedy cannot see and dynamic programming can.</span><span data-tr="zh">真正的最佳解卻是從<em>看起來最貴</em>的第一條 edge 開始，<code>S→C</code> = 5——因為 <code>C</code> 接出 <code>C→F</code>=2 和 <code>F→T</code>=2，後段超級便宜。一個局部很差、卻在後面回本的選擇：這正是 greedy 看不到、而 dynamic programming 看得到的情況。</span></p>
 
-<h2>2 · Multistage graph — the formal definition</h2>
-<p>Now the precise version of the idea from §0. A <strong>multistage graph</strong> <code>G=(V,E)</code> is a <em>directed</em> graph whose vertices split into <code>k≥2</code> disjoint <strong>stages</strong> <code>V₁,…,V_k</code>, where every edge <code>⟨u,v⟩</code> jumps from one stage to the next (<code>u∈Vᵢ, v∈V_{i+1}</code>), and the first and last stages are single vertices: <code>|V₁|=|V_k|=1</code>. The lone <strong>source</strong> (start) is <code>s</code>, the lone <strong>sink</strong> (end) is <code>t</code>. The <strong>problem</strong>: find the minimum-cost <code>s→t</code> path.</p>
-<p>Our running figure has 4 stages, with the verified edge weights below.</p>
+<h2><span data-tr="en">2 · Multistage graph — the formal definition</span><span data-tr="zh">2 · Multistage graph——正式定義</span></h2>
+<p><span data-tr="en">Now the precise version of the idea from §0. A <strong>multistage graph</strong> <code>G=(V,E)</code> is a <em>directed</em> graph whose vertices split into <code>k≥2</code> disjoint <strong>stages</strong> <code>V₁,…,V_k</code>, where every edge <code>⟨u,v⟩</code> jumps from one stage to the next (<code>u∈Vᵢ, v∈V_{i+1}</code>), and the first and last stages are single vertices: <code>|V₁|=|V_k|=1</code>. The lone <strong>source</strong> (start) is <code>s</code>, the lone <strong>sink</strong> (end) is <code>t</code>. The <strong>problem</strong>: find the minimum-cost <code>s→t</code> path.</span><span data-tr="zh">現在來看 §0 那個想法的精確版本。一張 <strong>multistage graph</strong> <code>G=(V,E)</code> 是一張<em>有向</em>圖，它的 vertex 被切成 <code>k≥2</code> 個不相交的 <strong>stage</strong> <code>V₁,…,V_k</code>，每條 edge <code>⟨u,v⟩</code> 都從一個 stage 跳到下一個（<code>u∈Vᵢ, v∈V_{i+1}</code>），而且第一個和最後一個 stage 各只有一個 vertex：<code>|V₁|=|V_k|=1</code>。唯一的 <strong>source</strong>（起點）是 <code>s</code>，唯一的 <strong>sink</strong>（終點）是 <code>t</code>。<strong>問題</strong>就是：找出成本最小的 <code>s→t</code> path。</span></p>
+<p><span data-tr="en">Our running figure has 4 stages, with the verified edge weights below.</span><span data-tr="zh">我們的範例圖有 4 個 stage，已核對過的 edge weight 如下。</span></p>
 <div class="tree">  V₁      V₂        V₃        V₄
             ┌──4──→ D ──18──┐
    ┌──1──→ A ─11─→ E        │
@@ -123,9 +125,9 @@ stages:  V₁={S}  V₂={A,B,C}  V₃={D,E,F}  V₄={T}</div>
 <tr><td></td><td></td><td>C→F</td><td>2</td><td></td><td></td></tr>
 </table>
 
-<h2>3 · Backward reasoning — trace it yourself</h2>
-<p>Let <code>d(X,T)</code> = cost of the shortest path <strong>from X to the sink T</strong>. Start at the stage just before <code>T</code> (the base cases <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>) and work <em>backward</em> toward <code>S</code>. Compute <code>d(C,T), d(A,T), d(B,T)</code>, then <code>d(S,T)</code> on paper before opening the answer.</p>
-<details><summary>Backward computation (every min line)</summary>
+<h2><span data-tr="en">3 · Backward reasoning — trace it yourself</span><span data-tr="zh">3 · 反向（backward）推理——自己推一遍</span></h2>
+<p><span data-tr="en">Let <code>d(X,T)</code> = cost of the shortest path <strong>from X to the sink T</strong>. Start at the stage just before <code>T</code> (the base cases <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>) and work <em>backward</em> toward <code>S</code>. Compute <code>d(C,T), d(A,T), d(B,T)</code>, then <code>d(S,T)</code> on paper before opening the answer.</span><span data-tr="zh">令 <code>d(X,T)</code> = <strong>從 X 到 sink T</strong> 的最短路徑成本。從 <code>T</code> 前一個 stage 開始（base case 是 <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>），一路<em>反向</em>推回 <code>S</code>。先在紙上算出 <code>d(C,T), d(A,T), d(B,T)</code>，再算 <code>d(S,T)</code>，然後才打開答案。</span></p>
+<details><summary><span data-tr="en">Backward computation (every min line)</span><span data-tr="zh">反向計算（每一條 min 算式）</span></summary>
 <div class="tree">d(C,T) = min{ 2 + d(F,T) }
        = 2 + 2  =  4
 
@@ -140,10 +142,10 @@ d(B,T) = min{ 9 + d(D,T), 5 + d(E,T), 16 + d(F,T) }
 d(S,T) = min{ 1 + d(A,T), 2 + d(B,T), 5 + d(C,T) }
        = min{ 1 + 22, 2 + 18, 5 + 4 }
        = min{ 23, 20, 9 }  =  9</div>
-<p><strong>Answer: <code>d(S,T)=9</code></strong>, achieved by <code>S→C→F→T</code>. Each vertex's optimum is written in terms of vertices <em>closer to the sink</em>, then resolved from the sink back — that is <strong>backward reasoning</strong>.</p></details>
+<p><span data-tr="en"><strong>Answer: <code>d(S,T)=9</code></strong>, achieved by <code>S→C→F→T</code>. Each vertex's optimum is written in terms of vertices <em>closer to the sink</em>, then resolved from the sink back — that is <strong>backward reasoning</strong>.</span><span data-tr="zh"><strong>答案：<code>d(S,T)=9</code></strong>，由 <code>S→C→F→T</code> 達成。每個 vertex 的最佳值都用<em>更靠近 sink</em> 的 vertex 來表示，再從 sink 往回求解——這就是 <strong>backward reasoning</strong>（反向推理）。</span></p></details>
 
-<h2>4 · Forward reasoning — same graph, other direction</h2>
-<p>Now let <code>d(S,X)</code> = cost of the shortest path <strong>from S to X</strong>. Start at the stage just after <code>S</code> and work <em>forward</em>. Base cases are the direct S-edges; then stage 3, then <code>T</code>.</p>
+<h2><span data-tr="en">4 · Forward reasoning — same graph, other direction</span><span data-tr="zh">4 · 正向（forward）推理——同一張圖，另一個方向</span></h2>
+<p><span data-tr="en">Now let <code>d(S,X)</code> = cost of the shortest path <strong>from S to X</strong>. Start at the stage just after <code>S</code> and work <em>forward</em>. Base cases are the direct S-edges; then stage 3, then <code>T</code>.</span><span data-tr="zh">這次令 <code>d(S,X)</code> = <strong>從 S 到 X</strong> 的最短路徑成本。從 <code>S</code> 後一個 stage 開始，一路<em>正向</em>往前推。base case 是 S 的直接出邊；接著 stage 3，最後 <code>T</code>。</span></p>
 <div class="tree">d(S,A) = 1
 d(S,B) = 2
 d(S,C) = 5
@@ -160,71 +162,71 @@ d(S,F) = min{ d(S,B)+16, d(S,C)+2 }
 d(S,T) = min{ d(S,D)+18, d(S,E)+13, d(S,F)+2 }
        = min{ 5+18, 7+13, 7+2 }
        = min{ 23, 20, 9 } = 9</div>
-<p>Same optimum <code>d(S,T)=9</code>, reached by expressing each vertex's cost via vertices <em>closer to the source</em>. Two directions, one answer — the recurrence is consistent either way.</p>
-<div class="note"><strong>Key exam insight:</strong> forward and backward are <em>both correct</em> and give the same value. They differ only in <em>what the subproblem is</em>: backward stores "cost from X to sink," forward stores "cost from source to X." Pick whichever the question's figure makes easier to fill — and always write the <code>min{…}</code> lines, that is where the marks are.</p>
+<p><span data-tr="en">Same optimum <code>d(S,T)=9</code>, reached by expressing each vertex's cost via vertices <em>closer to the source</em>. Two directions, one answer — the recurrence is consistent either way.</span><span data-tr="zh">一樣的最佳解 <code>d(S,T)=9</code>，這次是用<em>更靠近 source</em> 的 vertex 來表示每個 vertex 的成本而得到。兩個方向、同一個答案——遞迴式不論哪個方向都一致。</span></p>
+<div class="note"><span data-tr="en"><strong>Key exam insight:</strong> forward and backward are <em>both correct</em> and give the same value. They differ only in <em>what the subproblem is</em>: backward stores "cost from X to sink," forward stores "cost from source to X." Pick whichever the question's figure makes easier to fill — and always write the <code>min{…}</code> lines, that is where the marks are.</span><span data-tr="zh"><strong>考試關鍵洞見：</strong>forward 和 backward <em>兩者都正確</em>，得到的值相同。它們只差在<em>subproblem 是什麼</em>：backward 存的是「從 X 到 sink 的成本」，forward 存的是「從 source 到 X 的成本」。題目的圖哪個比較好填就用哪個——而且一定要寫出 <code>min{…}</code> 算式，分數就在那裡。</span></p>
 
-<h2>5 · Principle of optimality</h2>
-<p><strong>Statement.</strong> If a problem is solved by a sequence of decisions <code>D₁,…,Dₙ</code> and that sequence is <em>optimal</em>, then for any <code>k</code> the <strong>last <code>k</code> decisions must themselves be optimal</strong> (an optimal solution is built from optimal sub-solutions).</p>
-<p><strong>Shortest-path corollary.</strong> If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>. (If it weren't, swap in a cheaper suffix and the whole path gets cheaper — contradicting that it was shortest.)</p>
-<div class="note">This corollary is what <em>licenses</em> the recurrence <code>d(X,T)=min_v{w(X,v)+d(v,T)}</code>: because every optimal suffix is itself optimal, we may reuse the already-computed <code>d(v,T)</code> instead of re-searching. <strong>Consequence:</strong> any problem expressible as a multistage graph can be solved by dynamic programming.</p>
+<h2><span data-tr="en">5 · Principle of optimality</span><span data-tr="zh">5 · Principle of optimality（最佳化原則）</span></h2>
+<p><span data-tr="en"><strong>Statement.</strong> If a problem is solved by a sequence of decisions <code>D₁,…,Dₙ</code> and that sequence is <em>optimal</em>, then for any <code>k</code> the <strong>last <code>k</code> decisions must themselves be optimal</strong> (an optimal solution is built from optimal sub-solutions).</span><span data-tr="zh"><strong>敘述。</strong>如果一個問題是由一連串決策 <code>D₁,…,Dₙ</code> 解出，而這串決策是<em>最佳</em>的，那麼對任意 <code>k</code>，<strong>最後 <code>k</code> 個決策本身也必須是最佳的</strong>（最佳解是由最佳子解組成的）。</span></p>
+<p><span data-tr="en"><strong>Shortest-path corollary.</strong> If <code>i, i₁, i₂, …, j</code> is a shortest path from <code>i</code> to <code>j</code>, then the suffix <code>i₁, i₂, …, j</code> must be a shortest path from <code>i₁</code> to <code>j</code>. (If it weren't, swap in a cheaper suffix and the whole path gets cheaper — contradicting that it was shortest.)</span><span data-tr="zh"><strong>最短路徑推論。</strong>如果 <code>i, i₁, i₂, …, j</code> 是從 <code>i</code> 到 <code>j</code> 的最短路徑，那麼它的後段 <code>i₁, i₂, …, j</code> 也必須是從 <code>i₁</code> 到 <code>j</code> 的最短路徑。（若不是，換上一段更便宜的後段，整條路徑就更便宜——和它原本是最短的矛盾。）</span></p>
+<div class="note"><span data-tr="en">This corollary is what <em>licenses</em> the recurrence <code>d(X,T)=min_v{w(X,v)+d(v,T)}</code>: because every optimal suffix is itself optimal, we may reuse the already-computed <code>d(v,T)</code> instead of re-searching. <strong>Consequence:</strong> any problem expressible as a multistage graph can be solved by dynamic programming.</span><span data-tr="zh">正是這個推論<em>允許</em>了遞迴式 <code>d(X,T)=min_v{w(X,v)+d(v,T)}</code>：因為每段最佳後段本身也是最佳的，我們可以重複利用已經算好的 <code>d(v,T)</code>，不必重新搜尋。<strong>結論：</strong>任何能表示成 multistage graph 的問題，都能用 dynamic programming 解。</span></p>
 
-<h2 class="qa-head">6 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">6 · Retrieve (no peeking)</span><span data-tr="zh">6 · 主動回想（不要偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先作答再看回饋。<em>答錯後再看為什麼</em>，比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="3" data-explain="Greedy commits to the cheapest outgoing edge each stage: S→A (1), then A→D (4), then D→T (18) = <b>23</b>. The true optimum is S→C→F→T = 5+2+2 = <b>9</b>. Greedy fails because the locally cheapest first edge (S→A=1) leads into expensive downstream edges, while the dearer-looking S→C=5 opens onto C→F=2 and F→T=2. If you picked 8 you summed the wrong greedy chain (1+2+5); if you picked 9 you reported the DP optimum, not what greedy gets.">
-  <div class="q">Q1. Run the greedy "cheapest outgoing edge each stage" rule from <code>S</code>, given <code>S→A=1, A→D=4, D→T=18</code> (and the dearer first edges <code>S→B=2, S→C=5</code>). What total does greedy report?</div>
-  <button class="opt">9 — greedy lands on the true optimum</button>
-  <button class="opt">8 — greedy sums 1 + 2 + 5</button>
-  <button class="opt">18 — greedy keeps only the final sink edge</button>
-  <button class="opt">23 — greedy takes S→A→D→T = 1 + 4 + 18</button>
+<div class="quiz" data-correct="3" data-explain="Greedy commits to the cheapest outgoing edge each stage: S→A (1), then A→D (4), then D→T (18) = <b>23</b>. The true optimum is S→C→F→T = 5+2+2 = <b>9</b>. Greedy fails because the locally cheapest first edge (S→A=1) leads into expensive downstream edges, while the dearer-looking S→C=5 opens onto C→F=2 and F→T=2. If you picked 8 you summed the wrong greedy chain (1+2+5); if you picked 9 you reported the DP optimum, not what greedy gets." data-explain-zh="Greedy 每個 stage 都鎖定最便宜的出邊：S→A (1)，接著 A→D (4)，再 D→T (18) = <b>23</b>。真正的最佳解是 S→C→F→T = 5+2+2 = <b>9</b>。Greedy 之所以失敗，是因為局部最便宜的第一條邊 (S→A=1) 接到後面很貴的邊，而看起來較貴的 S→C=5 卻接出 C→F=2 與 F→T=2。若你選 8，是把錯的 greedy 鏈相加 (1+2+5)；若你選 9，是回報了 DP 的最佳解，而不是 greedy 得到的結果。">
+  <div class="q"><span data-tr="en">Q1. Run the greedy "cheapest outgoing edge each stage" rule from <code>S</code>, given <code>S→A=1, A→D=4, D→T=18</code> (and the dearer first edges <code>S→B=2, S→C=5</code>). What total does greedy report?</span><span data-tr="zh">Q1. 從 <code>S</code> 出發執行 greedy 的「每個 stage 選最便宜出邊」規則，已知 <code>S→A=1, A→D=4, D→T=18</code>（以及較貴的第一條邊 <code>S→B=2, S→C=5</code>）。Greedy 回報的總和是多少？</span></div>
+  <button class="opt"><span data-tr="en">9 — greedy lands on the true optimum</span><span data-tr="zh">9 — greedy 剛好落在真正的最佳解</span></button>
+  <button class="opt"><span data-tr="en">8 — greedy sums 1 + 2 + 5</span><span data-tr="zh">8 — greedy 把 1 + 2 + 5 加起來</span></button>
+  <button class="opt"><span data-tr="en">18 — greedy keeps only the final sink edge</span><span data-tr="zh">18 — greedy 只留下最後通往 sink 的邊</span></button>
+  <button class="opt"><span data-tr="en">23 — greedy takes S→A→D→T = 1 + 4 + 18</span><span data-tr="zh">23 — greedy 走 S→A→D→T = 1 + 4 + 18</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="Backward base cases are d(D,T)=18, d(E,T)=13, d(F,T)=2. Then d(A,T) = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{ 22, 24 } = <b>22</b>, via A→D→T. If you picked 24 you chose the larger A→E branch; if you picked 15 you took 4+11 (the two A-edge weights) instead of adding each to its successor's d(·,T).">
-  <div class="q">Q2. With <code>A→D=4, A→E=11</code> and successor costs <code>d(D,T)=18, d(E,T)=13</code>, compute <code>d(A,T)</code>.</div>
-  <button class="opt">15 — add the two outgoing A-edge weights</button>
-  <button class="opt">24 — the 11 + d(E,T) branch</button>
-  <button class="opt">22 — min of 22 and 24</button>
-  <button class="opt">18 — copy d(D,T) straight through</button>
+<div class="quiz" data-correct="2" data-explain="Backward base cases are d(D,T)=18, d(E,T)=13, d(F,T)=2. Then d(A,T) = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{ 22, 24 } = <b>22</b>, via A→D→T. If you picked 24 you chose the larger A→E branch; if you picked 15 you took 4+11 (the two A-edge weights) instead of adding each to its successor's d(·,T)." data-explain-zh="反向的 base case 是 d(D,T)=18, d(E,T)=13, d(F,T)=2。接著 d(A,T) = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{ 22, 24 } = <b>22</b>，走 A→D→T。若你選 24，是選了較大的 A→E 分支；若你選 15，是把 4+11（A 的兩條邊 weight）相加，而沒有各自加上後繼的 d(·,T)。">
+  <div class="q"><span data-tr="en">Q2. With <code>A→D=4, A→E=11</code> and successor costs <code>d(D,T)=18, d(E,T)=13</code>, compute <code>d(A,T)</code>.</span><span data-tr="zh">Q2. 已知 <code>A→D=4, A→E=11</code> 以及後繼成本 <code>d(D,T)=18, d(E,T)=13</code>，計算 <code>d(A,T)</code>。</span></div>
+  <button class="opt"><span data-tr="en">15 — add the two outgoing A-edge weights</span><span data-tr="zh">15 — 把 A 的兩條出邊 weight 相加</span></button>
+  <button class="opt"><span data-tr="en">24 — the 11 + d(E,T) branch</span><span data-tr="zh">24 — 11 + d(E,T) 那條分支</span></button>
+  <button class="opt"><span data-tr="en">22 — min of 22 and 24</span><span data-tr="zh">22 — 22 與 24 取 min</span></button>
+  <button class="opt"><span data-tr="en">18 — copy d(D,T) straight through</span><span data-tr="zh">18 — 直接把 d(D,T) 抄過來</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="d(B,T) = min{ 9+d(D,T), 5+d(E,T), 16+d(F,T) } = min{ 9+18, 5+13, 16+2 } = min{ 27, 18, 18 } = <b>18</b> (a tie, realized by B→E→T and B→F→T). If you picked 27 you followed the B→D branch (the largest); if you picked 7 you took min of the raw edge weights 9, 5, 16 without adding the successor costs.">
-  <div class="q">Q3. With B's edges <code>B→D=9, B→E=5, B→F=16</code> and successor costs <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>, compute <code>d(B,T)</code>.</div>
-  <button class="opt">18 — min of 27, 18, 18</button>
-  <button class="opt">27 — follow the B→D branch</button>
-  <button class="opt">7 — min of the raw edge weights 9, 5, 16</button>
-  <button class="opt">13 — copy d(E,T) directly</button>
+<div class="quiz" data-correct="0" data-explain="d(B,T) = min{ 9+d(D,T), 5+d(E,T), 16+d(F,T) } = min{ 9+18, 5+13, 16+2 } = min{ 27, 18, 18 } = <b>18</b> (a tie, realized by B→E→T and B→F→T). If you picked 27 you followed the B→D branch (the largest); if you picked 7 you took min of the raw edge weights 9, 5, 16 without adding the successor costs." data-explain-zh="d(B,T) = min{ 9+d(D,T), 5+d(E,T), 16+d(F,T) } = min{ 9+18, 5+13, 16+2 } = min{ 27, 18, 18 } = <b>18</b>（平手，由 B→E→T 與 B→F→T 達成）。若你選 27，是跟著最大的 B→D 分支走；若你選 7，是只對原始邊 weight 9、5、16 取 min，沒有加上後繼成本。">
+  <div class="q"><span data-tr="en">Q3. With B's edges <code>B→D=9, B→E=5, B→F=16</code> and successor costs <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>, compute <code>d(B,T)</code>.</span><span data-tr="zh">Q3. 已知 B 的邊 <code>B→D=9, B→E=5, B→F=16</code> 以及後繼成本 <code>d(D,T)=18, d(E,T)=13, d(F,T)=2</code>，計算 <code>d(B,T)</code>。</span></div>
+  <button class="opt"><span data-tr="en">18 — min of 27, 18, 18</span><span data-tr="zh">18 — 27、18、18 取 min</span></button>
+  <button class="opt"><span data-tr="en">27 — follow the B→D branch</span><span data-tr="zh">27 — 跟著 B→D 分支走</span></button>
+  <button class="opt"><span data-tr="en">7 — min of the raw edge weights 9, 5, 16</span><span data-tr="zh">7 — 只對原始邊 weight 9、5、16 取 min</span></button>
+  <button class="opt"><span data-tr="en">13 — copy d(E,T) directly</span><span data-tr="zh">13 — 直接把 d(E,T) 抄過來</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="The principle of optimality: in an optimal sequence of decisions, the last k decisions are themselves optimal — equivalently, <b>every suffix of a shortest path is itself a shortest path</b>. That is exactly what licenses reusing the already-computed d(v,T) in d(X,T)=min_v{w(X,v)+d(v,T)}. Option 'the cheapest first edge starts the optimum' is the greedy fallacy (S→A=1 is cheapest yet wrong here); 'a problem with optimal subproblems is greedy-solvable' confuses DP's licence with greedy correctness.">
-  <div class="q">Q4. Which statement correctly expresses the principle of optimality (the property that licenses the DP recurrence)?</div>
-  <button class="opt">The cheapest first edge always starts the optimal path</button>
-  <button class="opt">Every suffix of a shortest path is itself a shortest path</button>
-  <button class="opt">Any problem with optimal subproblems can be solved greedily</button>
-  <button class="opt">The optimum is the average of all stage-by-stage minima</button>
+<div class="quiz" data-correct="1" data-explain="The principle of optimality: in an optimal sequence of decisions, the last k decisions are themselves optimal — equivalently, <b>every suffix of a shortest path is itself a shortest path</b>. That is exactly what licenses reusing the already-computed d(v,T) in d(X,T)=min_v{w(X,v)+d(v,T)}. Option 'the cheapest first edge starts the optimum' is the greedy fallacy (S→A=1 is cheapest yet wrong here); 'a problem with optimal subproblems is greedy-solvable' confuses DP's licence with greedy correctness." data-explain-zh="Principle of optimality：在一串最佳決策中，最後 k 個決策本身也是最佳的——等價地說，<b>最短路徑的每一段後段本身也是最短路徑</b>。這正是允許我們在 d(X,T)=min_v{w(X,v)+d(v,T)} 中重複利用已算好 d(v,T) 的依據。選項「最便宜的第一條邊開啟最佳解」是 greedy 謬誤（S→A=1 最便宜，但在這裡是錯的）；「有最佳子問題的問題就能用 greedy 解」則把 DP 的依據和 greedy 的正確性混為一談。">
+  <div class="q"><span data-tr="en">Q4. Which statement correctly expresses the principle of optimality (the property that licenses the DP recurrence)?</span><span data-tr="zh">Q4. 哪個敘述正確表達了 principle of optimality（允許 DP 遞迴式成立的性質）？</span></div>
+  <button class="opt"><span data-tr="en">The cheapest first edge always starts the optimal path</span><span data-tr="zh">最便宜的第一條邊一定是最佳路徑的開頭</span></button>
+  <button class="opt"><span data-tr="en">Every suffix of a shortest path is itself a shortest path</span><span data-tr="zh">最短路徑的每一段後段本身也是最短路徑</span></button>
+  <button class="opt"><span data-tr="en">Any problem with optimal subproblems can be solved greedily</span><span data-tr="zh">任何有最佳子問題的問題都能用 greedy 解</span></button>
+  <button class="opt"><span data-tr="en">The optimum is the average of all stage-by-stage minima</span><span data-tr="zh">最佳解是各 stage 最小值的平均</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="<b>Backward</b> reasoning defines the subproblem as d(X,T) = cost from X to the sink T and resolves from the sink back toward S. Forward reasoning defines d(S,X) = cost from the source S to X and resolves from S outward. Both yield d(S,T)=9. If you picked 'd(S,X): from source to X' you reversed the two definitions; the f(n)/w(u,v) options are unrelated (heuristic estimate and a single edge weight).">
-  <div class="q">Q5. In <em>backward</em> reasoning, what does the subproblem value <code>d(X,T)</code> mean?</div>
-  <button class="opt">w(u,v): the weight of the single edge into X</button>
-  <button class="opt">f(n): an estimated total cost through node X</button>
-  <button class="opt">d(S,X): cost of the shortest path from the source S to X</button>
-  <button class="opt">cost of the shortest path from X to the sink T</button>
+<div class="quiz" data-correct="3" data-explain="<b>Backward</b> reasoning defines the subproblem as d(X,T) = cost from X to the sink T and resolves from the sink back toward S. Forward reasoning defines d(S,X) = cost from the source S to X and resolves from S outward. Both yield d(S,T)=9. If you picked 'd(S,X): from source to X' you reversed the two definitions; the f(n)/w(u,v) options are unrelated (heuristic estimate and a single edge weight)." data-explain-zh="<b>Backward</b> 推理把 subproblem 定義成 d(X,T) = 從 X 到 sink T 的成本，並從 sink 往回推向 S。Forward 推理則把 d(S,X) = 從 source S 到 X 的成本，從 S 往外推。兩者都得到 d(S,T)=9。若你選『d(S,X)：從 source 到 X』，是把兩個定義弄反了；f(n)/w(u,v) 兩個選項都無關（一個是 heuristic 估值，一個是單一邊的 weight）。">
+  <div class="q"><span data-tr="en">Q5. In <em>backward</em> reasoning, what does the subproblem value <code>d(X,T)</code> mean?</span><span data-tr="zh">Q5. 在<em>反向（backward）</em>推理中，subproblem 值 <code>d(X,T)</code> 代表什麼？</span></div>
+  <button class="opt"><span data-tr="en">w(u,v): the weight of the single edge into X</span><span data-tr="zh">w(u,v)：進入 X 的那條單一邊的 weight</span></button>
+  <button class="opt"><span data-tr="en">f(n): an estimated total cost through node X</span><span data-tr="zh">f(n)：經過 node X 的估計總成本</span></button>
+  <button class="opt"><span data-tr="en">d(S,X): cost of the shortest path from the source S to X</span><span data-tr="zh">d(S,X)：從 source S 到 X 的最短路徑成本</span></button>
+  <button class="opt"><span data-tr="en">cost of the shortest path from X to the sink T</span><span data-tr="zh">從 X 到 sink T 的最短路徑成本</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>7 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.1–7.2 (your <code>Alg07</code> slides, "Dynamic Programming"). Re-trace the slide-5 multistage figure both directions, and check your <code>min{…}</code> lines against slides 6–9.</p>
-<p>See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A07-dynamic-programming.html">chapter note</a> for the recurrence statements.</p>
+<h2><span data-tr="en">7 · Go deeper</span><span data-tr="zh">7 · 延伸閱讀</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 7 §7.1–7.2 (your <code>Alg07</code> slides, "Dynamic Programming"). Re-trace the slide-5 multistage figure both directions, and check your <code>min{…}</code> lines against slides 6–9.</span><span data-tr="zh"><strong>主要來源：</strong>R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 7 章 §7.1–7.2（你的 <code>Alg07</code> 投影片，「Dynamic Programming」）。把第 5 張投影片的 multistage 圖兩個方向都重推一遍，並把你的 <code>min{…}</code> 算式對照第 6–9 張投影片。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary → Ch7</a> and the full <a href="../notes-html/A07-dynamic-programming.html">chapter note</a> for the recurrence statements.</span><span data-tr="zh">關於遞迴式的敘述，也可參考 <a href="../reference/glossary.html">Glossary → Ch7</a> 以及完整的<a href="../notes-html/A07-dynamic-programming.html">章節筆記</a>。</span></p>
 
-<div class="note"><strong>Next up — Lesson 8:</strong> DP applied to <strong>0/1 knapsack</strong> (the <code>gᵢ(y)=max{g_{i+1}(y), g_{i+1}(y−wᵢ)+pᵢ}</code> recurrence, plus knapsack drawn as a multistage graph) and the <strong>longest common subsequence</strong> table — the classic fill-the-matrix-and-trace-back exam item.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 8:</strong> DP applied to <strong>0/1 knapsack</strong> (the <code>gᵢ(y)=max{g_{i+1}(y), g_{i+1}(y−wᵢ)+pᵢ}</code> recurrence, plus knapsack drawn as a multistage graph) and the <strong>longest common subsequence</strong> table — the classic fill-the-matrix-and-trace-back exam item.</span><span data-tr="zh"><strong>下一課——Lesson 8：</strong>DP 應用在 <strong>0/1 knapsack</strong>（<code>gᵢ(y)=max{g_{i+1}(y), g_{i+1}(y−wᵢ)+pᵢ}</code> 遞迴式，以及把 knapsack 畫成 multistage graph）和 <strong>longest common subsequence</strong> 表格——經典的「填表加 trace back」考題。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Want me to scramble the edge weights and quiz you live? Confused why forward and backward agree? Want the knapsack-as-multistage-graph preview now? Just say so.</p>
-  <p>Score this lesson out of 5 to yourself. 4–5 → on to Lesson 8. ≤3 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Want me to scramble the edge weights and quiz you live? Confused why forward and backward agree? Want the knapsack-as-multistage-graph preview now? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師——什麼都可以問。</strong>想讓我把 edge weight 打亂、現場考你嗎？搞不懂為什麼 forward 和 backward 會一致？想先看 knapsack 畫成 multistage graph 的預告？開口就好。</span></p>
+  <p><span data-tr="en">Score this lesson out of 5 to yourself. 4–5 → on to Lesson 8. ≤3 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分數（滿分 5）。4–5 → 前進 Lesson 8。≤3 → 告訴我是哪一題，我們來加強。</span></p>
 </div>
 
 <script>
@@ -237,20 +239,24 @@ d(S,T) = min{ d(S,D)+18, d(S,E)+13, d(S,F)+2 }
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          var okLabel=(lang==='zh')?'✓ 正確。':'✓ Correct.';
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+okLabel+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          var letter=String.fromCharCode(65+correct);
+          var noLabel=(lang==='zh')?('✗ 不對 — 正解是 '+letter+'。'):('✗ Not quite — '+letter+' is right.');
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+noLabel+'</span> '+explain;
         }
         updateScore();
       });
@@ -259,5 +265,6 @@ d(S,T) = min{ d(S,D)+18, d(S,E)+13, d(S,F)+2 }
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

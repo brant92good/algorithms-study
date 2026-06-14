@@ -62,50 +62,52 @@
   :root[data-theme="dark"] .opt.wrong::before{background:var(--bad);color:#16150f;}
   @media print{body{margin:0;max-width:none}.opt{cursor:default}.themebtn{display:none}}
 </style>
+<script>(function(){var l;try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("lang")||((navigator.language||"").toLowerCase().indexOf("zh")===0?"zh":"en");}catch(e){l="en";}document.documentElement.setAttribute("data-lang",l);})();</script><style>html[data-lang="en"] [data-tr="zh"]{display:none}html[data-lang="zh"] [data-tr="en"]{display:none}</style><!--i18n-->
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search).get('theme');var s=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',q||s||d);})();
 function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);localStorage.setItem('theme',t);}</script>
-<button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+<button id="langbtn" class="themebtn" onclick="toggleLang()" title="Language / 語言" style="right:3.4rem">中</button>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
 
-<div class="kicker">Lesson 1 · Ch6 Searching Strategies</div>
-<h1>The Four Search Strategies</h1>
-<div class="mission">Exam goal: <strong>hand-trace</strong> a search and name the strategy. All four below are the same loop with one knob turned — <em>which open node do I expand next?</em> Master that knob and you can trace any of them, and tell them apart in a short-answer question.</div>
+<div class="kicker"><span data-tr="en">Lesson 1 · Ch6 Searching Strategies</span><span data-tr="zh">第 1 課 · 第 6 章 Searching Strategies</span></div>
+<h1><span data-tr="en">The Four Search Strategies</span><span data-tr="zh">四種搜尋策略</span></h1>
+<div class="mission"><span data-tr="en">Exam goal: <strong>hand-trace</strong> a search and name the strategy. All four below are the same loop with one knob turned — <em>which open node do I expand next?</em> Master that knob and you can trace any of them, and tell them apart in a short-answer question.</span><span data-tr="zh">考試目標：<strong>手動追蹤</strong>一次搜尋並說出它是哪種策略。下面四種其實是同一個迴圈，只轉動了一個旋鈕——<em>我下一步要展開哪個 open node？</em>掌握這個旋鈕，你就能追蹤任何一種，並在簡答題裡分辨它們。</span></div>
 
-<h2>0 · What are we even searching?</h2>
-<p>Start with nothing assumed. A <strong>hard problem</strong> is one where you can't just compute the answer in one shot — you have to <em>try possibilities</em>. The standard trick is to turn the problem into a tree of partial decisions and search it.</p>
-<p>That tree is called a <strong>solution tree</strong> (or <strong>state-space tree</strong>): each node is one <em>state</em> of the problem — a snapshot of "here's what I've decided so far." The <strong>root</strong> is "nothing decided yet." Going down one level means making one more decision, which produces a new state. A <strong>leaf</strong> at the bottom is a fully-decided candidate. A <strong>goal node</strong> is a state that solves the problem; solving = finding a goal node. We turn hard problems into trees because once it's a tree, the only question left is the easy-sounding <em>"which node do I look at next?"</em> — and that single choice is the whole game.</p>
+<h2><span data-tr="en">0 · What are we even searching?</span><span data-tr="zh">0 · 我們到底在搜尋什麼？</span></h2>
+<p><span data-tr="en">Start with nothing assumed. A <strong>hard problem</strong> is one where you can't just compute the answer in one shot — you have to <em>try possibilities</em>. The standard trick is to turn the problem into a tree of partial decisions and search it.</span><span data-tr="zh">先不預設任何東西。所謂<strong>難題（hard problem）</strong>，就是無法一步算出答案、必須<em>嘗試各種可能</em>的問題。標準做法是把問題轉成一棵由部分決策構成的樹，再去搜尋它。</span></p>
+<p><span data-tr="en">That tree is called a <strong>solution tree</strong> (or <strong>state-space tree</strong>): each node is one <em>state</em> of the problem — a snapshot of "here's what I've decided so far." The <strong>root</strong> is "nothing decided yet." Going down one level means making one more decision, which produces a new state. A <strong>leaf</strong> at the bottom is a fully-decided candidate. A <strong>goal node</strong> is a state that solves the problem; solving = finding a goal node. We turn hard problems into trees because once it's a tree, the only question left is the easy-sounding <em>"which node do I look at next?"</em> — and that single choice is the whole game.</span><span data-tr="zh">這棵樹叫做<strong>solution tree（解答樹）</strong>（或 <strong>state-space tree，狀態空間樹</strong>）：每個 node 都是問題的一個 <em>state（狀態）</em>——也就是「目前為止我做了哪些決定」的快照。<strong>root（根）</strong>是「還沒做任何決定」。往下走一層代表多做一個決定，產生一個新 state。底部的 <strong>leaf（葉）</strong>是一個完全決定好的候選解。<strong>goal node（目標節點）</strong>則是能解出問題的 state；解題 = 找到一個 goal node。我們把難題轉成樹，是因為一旦變成樹，剩下的就只有那個聽起來很簡單的問題：<em>「我下一步該看哪個 node？」</em>——而這個選擇就是整場遊戲的全部。</span></p>
 
-<p>Two pieces of vocabulary you'll see everywhere:</p>
+<p><span data-tr="en">Two pieces of vocabulary you'll see everywhere:</span><span data-tr="zh">兩個你會到處看到的詞彙：</span></p>
 <ul>
-<li><strong>Expanding a node</strong> = take a node, generate all its children (the states reachable by making one more decision), and put those children into your to-do list. "Expand A" means "produce A's children."</li>
-<li>The <strong>open list</strong> = the to-do list of nodes that have been <em>discovered but not yet expanded</em>. The search loop keeps pulling one node off this list, checking if it's the goal, and if not, expanding it (which adds its children back to the open list).</li>
+<li><span data-tr="en"><strong>Expanding a node</strong> = take a node, generate all its children (the states reachable by making one more decision), and put those children into your to-do list. "Expand A" means "produce A's children."</span><span data-tr="zh"><strong>Expanding a node（展開一個節點）</strong> = 拿一個 node，產生它所有的 children（再多做一個決定可到達的 states），並把這些 children 放進你的待辦清單。「Expand A」就是「產生 A 的 children」。</span></li>
+<li><span data-tr="en">The <strong>open list</strong> = the to-do list of nodes that have been <em>discovered but not yet expanded</em>. The search loop keeps pulling one node off this list, checking if it's the goal, and if not, expanding it (which adds its children back to the open list).</span><span data-tr="zh"><strong>open list</strong> = 那份待辦清單，裡面是<em>已被發現但尚未展開</em>的 nodes。搜尋迴圈不斷從這份清單取出一個 node，檢查它是不是 goal，若不是就展開它（這會把它的 children 加回 open list）。</span></li>
 </ul>
 
-<div class="note"><strong>The evaluation function <code>f(n)</code>.</strong> Some strategies need to judge how promising a node looks. <code>f(n)</code> is a number we attach to each node <code>n</code> that <em>estimates</em> how good it is — here, lower means more promising (think "estimated distance still to go"). It's only an estimate, computed cheaply from the state; the strategy uses it to decide which open node to pick.</div>
+<div class="note"><span data-tr="en"><strong>The evaluation function <code>f(n)</code>.</strong> Some strategies need to judge how promising a node looks. <code>f(n)</code> is a number we attach to each node <code>n</code> that <em>estimates</em> how good it is — here, lower means more promising (think "estimated distance still to go"). It's only an estimate, computed cheaply from the state; the strategy uses it to decide which open node to pick.</span><span data-tr="zh"><strong>評估函數 <code>f(n)</code>。</strong>有些策略需要判斷一個 node 看起來多有希望。<code>f(n)</code> 是我們替每個 node <code>n</code> 標上的數字，用來<em>估計</em>它有多好——這裡是越低越有希望（可想成「估計還要走多遠」）。它只是個估計值，從 state 便宜地算出來；策略就用它來決定要挑哪個 open node。</span></div>
 
-<h3 style="font-weight:600;font-size:1.05rem;margin-top:1.6rem">A concrete problem: the 8-puzzle</h3>
-<p>The classic example is the <strong>8-puzzle</strong>: a <code>3×3</code> board holding 8 numbered tiles (1–8) and one <strong>blank</strong> square. A move <em>slides</em> a tile that's next to the blank into the blank's spot (equivalently, the blank swaps with an adjacent tile). You start from some scrambled board and want to reach a fixed <strong>goal</strong> arrangement.</p>
+<h3 style="font-weight:600;font-size:1.05rem;margin-top:1.6rem"><span data-tr="en">A concrete problem: the 8-puzzle</span><span data-tr="zh">一個具體問題：8-puzzle</span></h3>
+<p><span data-tr="en">The classic example is the <strong>8-puzzle</strong>: a <code>3×3</code> board holding 8 numbered tiles (1–8) and one <strong>blank</strong> square. A move <em>slides</em> a tile that's next to the blank into the blank's spot (equivalently, the blank swaps with an adjacent tile). You start from some scrambled board and want to reach a fixed <strong>goal</strong> arrangement.</span><span data-tr="zh">經典例子是 <strong>8-puzzle</strong>：一個 <code>3×3</code> 棋盤，上面有 8 個編號方塊（1–8）和一個<strong>blank（空格）</strong>。一步移動是把 blank 旁邊的方塊<em>滑</em>進 blank 的位置（等同於 blank 與相鄰方塊互換）。你從某個被打亂的盤面出發，想抵達固定的 <strong>goal</strong> 排列。</span></p>
 <div class="tree">  start            goal
  2 8 3           1 2 3
  1 _ 4    →      8 _ 4
  7 6 5           7 6 5
 (_ = blank; slide a neighbour of the blank into it)</div>
-<p>Each board is a <em>state</em>; expanding a board produces the boards you can reach in one slide. For the 8-puzzle the evaluation function is</p>
+<p><span data-tr="en">Each board is a <em>state</em>; expanding a board produces the boards you can reach in one slide. For the 8-puzzle the evaluation function is</span><span data-tr="zh">每個盤面都是一個 <em>state</em>；展開一個盤面會產生你滑一步可到達的所有盤面。對 8-puzzle 來說，評估函數是</span></p>
 <div class="tree">f(n) = d(n) + w(n)
    d(n) = depth of n   = number of slides made to reach this board
    w(n) = number of tiles sitting in the wrong place vs the goal</div>
-<p>So <code>f</code> rewards being close to the goal (few misplaced tiles) without having wandered too far (shallow depth). Lower <code>f</code> = more promising. This is the exact <code>f(n)</code> you'll see hill-climbing and best-first use below.</p>
+<p><span data-tr="en">So <code>f</code> rewards being close to the goal (few misplaced tiles) without having wandered too far (shallow depth). Lower <code>f</code> = more promising. This is the exact <code>f(n)</code> you'll see hill-climbing and best-first use below.</span><span data-tr="zh">所以 <code>f</code> 獎勵「接近 goal（放錯的方塊少）」又「沒走太遠（深度淺）」。<code>f</code> 越低 = 越有希望。這正是下面 hill-climbing 和 best-first 會用到的那個 <code>f(n)</code>。</span></p>
 
-<h2>1 · Everything is a tree walk</h2>
-<p>Now the unifying picture. Whatever the problem — SAT, the 8-puzzle, a tour — it becomes that same <strong>solution tree</strong>: the root is "nothing decided," each level fixes one more decision, each leaf is a full candidate, and solving means reaching a goal node. <span class="mono">Every strategy keeps the open list of discovered-but-not-yet-expanded nodes and repeats:</span></p>
+<h2><span data-tr="en">1 · Everything is a tree walk</span><span data-tr="zh">1 · 一切都是走訪一棵樹</span></h2>
+<p><span data-tr="en">Now the unifying picture. Whatever the problem — SAT, the 8-puzzle, a tour — it becomes that same <strong>solution tree</strong>: the root is "nothing decided," each level fixes one more decision, each leaf is a full candidate, and solving means reaching a goal node. <span class="mono">Every strategy keeps the open list of discovered-but-not-yet-expanded nodes and repeats:</span></span><span data-tr="zh">現在看統一的圖像。無論是什麼問題——SAT、8-puzzle、一趟 tour——都會變成同一棵 <strong>solution tree</strong>：root 是「什麼都還沒決定」，每一層固定多一個決定，每個 leaf 是一個完整候選解，解題就是抵達一個 goal node。<span class="mono">每種策略都維護一份「已發現但尚未展開」的 open list，並重複以下步驟：</span></span></p>
 <div class="tree">repeat:
    pick one open node n        &larr;  THE KNOB
    if n is a goal &rarr; stop
    else expand n: add its children to the open list</div>
-<p>The four strategies differ <em>only</em> in "pick one open node."</p>
+<p><span data-tr="en">The four strategies differ <em>only</em> in "pick one open node."</span><span data-tr="zh">這四種策略<em>只</em>差在「pick one open node（挑一個 open node）」這一步。</span></p>
 
-<h2>2 · The knob</h2>
+<h2><span data-tr="en">2 · The knob</span><span data-tr="zh">2 · 那個旋鈕</span></h2>
 <table>
 <tr><th>Strategy</th><th>Picks…</th><th>Structure</th><th>View</th></tr>
 <tr><td><strong>DFS</strong></td><td>deepest open node</td><td><code>stack</code></td><td>local</td></tr>
@@ -113,91 +115,91 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
 <tr><td><strong>Hill climbing</strong></td><td>best <em>child</em> of current (greedy DFS)</td><td><code>stack</code></td><td>local</td></tr>
 <tr><td><strong>Best-first</strong></td><td>best node among <em>all</em> open</td><td><code>sorted list</code></td><td><strong>global</strong></td></tr>
 </table>
-<div class="note"><strong>Key contrast for the exam:</strong> hill climbing only ever looks at the children of where it is now — so it can march into a dead end and get stuck. Best-first keeps <em>every</em> open node on the table and always jumps to the globally most promising one, so it recovers. Both use the estimate <code>f(n)</code>; only their <em>scope</em> differs.</div>
+<div class="note"><span data-tr="en"><strong>Key contrast for the exam:</strong> hill climbing only ever looks at the children of where it is now — so it can march into a dead end and get stuck. Best-first keeps <em>every</em> open node on the table and always jumps to the globally most promising one, so it recovers. Both use the estimate <code>f(n)</code>; only their <em>scope</em> differs.</span><span data-tr="zh"><strong>考試關鍵對比：</strong>hill climbing 永遠只看「目前所在位置的 children」——所以它可能一路走進死巷而卡住。Best-first 把<em>每一個</em> open node 都留在檯面上，永遠跳到全域最有希望的那個，因此能脫困。兩者都用估計值 <code>f(n)</code>；差別只在它們的<em>視野範圍（scope）</em>。</span></div>
 
-<h2>3 · Trace it yourself</h2>
-<p>Tree below. Numbers in <code>(…)</code> are <code>f(n)</code> — <strong>lower = more promising</strong>. Children are listed left-to-right. <strong>Goal = G.</strong></p>
+<h2><span data-tr="en">3 · Trace it yourself</span><span data-tr="zh">3 · 自己追蹤一次</span></h2>
+<p><span data-tr="en">Tree below. Numbers in <code>(…)</code> are <code>f(n)</code> — <strong>lower = more promising</strong>. Children are listed left-to-right. <strong>Goal = G.</strong></span><span data-tr="zh">樹如下。<code>(…)</code> 裡的數字是 <code>f(n)</code>——<strong>越低 = 越有希望</strong>。Children 由左到右列出。<strong>Goal = G。</strong></span></p>
 <div class="tree">              A
         ┌─────┼─────┐
       B(5)   C(2)   D(4)
       ┌─┐            ┌─┐
     E(6)F(3)       G(1)H(7)   &larr; G is the goal</div>
 
-<p>Work each out on paper, then open the answer. Give the <strong>order nodes are expanded</strong>.</p>
+<p><span data-tr="en">Work each out on paper, then open the answer. Give the <strong>order nodes are expanded</strong>.</span><span data-tr="zh">每一種都先在紙上算出來，再打開答案。寫出 <strong>nodes 被展開的順序</strong>。</span></p>
 
-<details><summary>DFS (deepest first, left-to-right)</summary>
+<details><summary><span data-tr="en">DFS (deepest first, left-to-right)</span><span data-tr="zh">DFS（最深優先，由左到右）</span></summary>
 <p><code>A → B → E → F → C → D → G ✓</code><br>
-Dives down the leftmost branch fully (B,E,F) before ever touching C or D. Ignores the f-values entirely.</p></details>
+<span data-tr="en">Dives down the leftmost branch fully (B,E,F) before ever touching C or D. Ignores the f-values entirely.</span><span data-tr="zh">先把最左邊的分支整條鑽到底（B,E,F），才碰 C 或 D。完全忽略 f 值。</span></p></details>
 
-<details><summary>BFS (shallowest first)</summary>
+<details><summary><span data-tr="en">BFS (shallowest first)</span><span data-tr="zh">BFS（最淺優先）</span></summary>
 <p><code>A → B → C → D → E → F → G ✓</code><br>
-Clears a whole level before the next. Also ignores f-values. Finds G after finishing level 1.</p></details>
+<span data-tr="en">Clears a whole level before the next. Also ignores f-values. Finds G after finishing level 1.</span><span data-tr="zh">先清完整層才到下一層。一樣忽略 f 值。在做完第 1 層後找到 G。</span></p></details>
 
-<details><summary>Hill climbing (greedy, children only)</summary>
+<details><summary><span data-tr="en">Hill climbing (greedy, children only)</span><span data-tr="zh">Hill climbing（貪婪，只看 children）</span></summary>
 <p><code>A → C … stuck.</code><br>
-From A the best child is C(2). Expand C — it's a leaf and not the goal. Hill climbing has no other open nodes in view, so it dead-ends (must backtrack/restart). The greedy step toward C(2) was a <em>local</em> trap.</p></details>
+<span data-tr="en">From A the best child is C(2). Expand C — it's a leaf and not the goal. Hill climbing has no other open nodes in view, so it dead-ends (must backtrack/restart). The greedy step toward C(2) was a <em>local</em> trap.</span><span data-tr="zh">從 A 出發，最好的 child 是 C(2)。展開 C——它是個 leaf 而且不是 goal。Hill climbing 視野裡沒有其他 open nodes，於是走進死巷（必須 backtrack／重啟）。朝 C(2) 走的那個貪婪步驟是個<em>局部（local）</em>陷阱。</span></p></details>
 
-<details><summary>Best-first (global best open node)</summary>
+<details><summary><span data-tr="en">Best-first (global best open node)</span><span data-tr="zh">Best-first（全域最佳的 open node）</span></summary>
 <p><code>A → C → D → G ✓</code><br>
-Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}; take D4 → adds G1,H7 → open {B5,G1,H7}; take G1 = goal. It explored C just like hill climbing, but kept B and D on the list and recovered. <strong>Fewest expansions here.</strong></p></details>
+<span data-tr="en">Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}; take D4 → adds G1,H7 → open {B5,G1,H7}; take G1 = goal. It explored C just like hill climbing, but kept B and D on the list and recovered. <strong>Fewest expansions here.</strong></span><span data-tr="zh">展開 A → open {B5, C2, D4}；取 C2。C 是 leaf，不是 goal → open {B5, D4}；取 D4 → 加入 G1,H7 → open {B5,G1,H7}；取 G1 = goal。它跟 hill climbing 一樣探索了 C，但把 B 和 D 留在清單上而成功脫困。<strong>這裡展開次數最少。</strong></span></p></details>
 
-<h2 class="qa-head">4 · Retrieve (no peeking) <span class="score" id="score">0 / 5 answered</span></h2>
-<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</p>
+<h2 class="qa-head"><span data-tr="en">4 · Retrieve (no peeking)</span><span data-tr="zh">4 · 提取練習（不准偷看）</span> <span class="score" id="score">0 / 5 answered</span></h2>
+<p style="color:var(--mut);font-size:.92rem;margin-top:-.2rem"><span data-tr="en">Pick before you read the feedback. Getting it <em>wrong then seeing why</em> builds memory better than re-reading.</span><span data-tr="zh">先選答案再看回饋。<em>先答錯、再看為什麼</em>，比重讀更能建立記憶。</span></p>
 
-<div class="quiz" data-correct="2" data-explain="Best-first sorts the <b>whole</b> open list, so right after expanding A the open nodes are {B(5),C(2),D(4)} and the smallest f is C(2) — it jumps straight to C even though C sits to the right. DFS would take B (deepest/leftmost pushed, ignoring f); hill-climbing also picks C(2) here, but only because C is a <i>child of A</i> — it never compares across the whole list the way best-first does.">
-  <div class="q">Q1. Tree: root <code>A</code> has children <code>B(5) C(2) D(4)</code> (left→right); the <code>(…)</code> are f, lower = better. After expanding A, <strong>best-first</strong> expands which node next?</div>
-  <button class="opt">B — it is the leftmost child</button>
-  <button class="opt">D — its subtree hides the goal</button>
-  <button class="opt">C — it has the smallest f</button>
-  <button class="opt">A — re-expand the root first</button>
+<div class="quiz" data-correct="2" data-explain="Best-first sorts the <b>whole</b> open list, so right after expanding A the open nodes are {B(5),C(2),D(4)} and the smallest f is C(2) — it jumps straight to C even though C sits to the right. DFS would take B (deepest/leftmost pushed, ignoring f); hill-climbing also picks C(2) here, but only because C is a <i>child of A</i> — it never compares across the whole list the way best-first does." data-explain-zh="Best-first 會排序<b>整個</b> open list，所以展開 A 之後，open nodes 是 {B(5),C(2),D(4)}，最小的 f 是 C(2)——即使 C 排在右邊，它也直接跳到 C。DFS 會取 B（最深／最左被推入，忽略 f）；hill-climbing 在這裡也選 C(2)，但只是因為 C 是 <i>A 的 child</i>——它從不像 best-first 那樣跨整份清單做比較。">
+  <div class="q"><span data-tr="en">Q1. Tree: root <code>A</code> has children <code>B(5) C(2) D(4)</code> (left→right); the <code>(…)</code> are f, lower = better. After expanding A, <strong>best-first</strong> expands which node next?</span><span data-tr="zh">Q1. 樹：root <code>A</code> 有 children <code>B(5) C(2) D(4)</code>（由左到右）；<code>(…)</code> 是 f，越低越好。展開 A 之後，<strong>best-first</strong> 接下來展開哪個 node？</span></div>
+  <button class="opt"><span data-tr="en">B — it is the leftmost child</span><span data-tr="zh">B——它是最左邊的 child</span></button>
+  <button class="opt"><span data-tr="en">D — its subtree hides the goal</span><span data-tr="zh">D——goal 藏在它的子樹裡</span></button>
+  <button class="opt"><span data-tr="en">C — it has the smallest f</span><span data-tr="zh">C——它的 f 最小</span></button>
+  <button class="opt"><span data-tr="en">A — re-expand the root first</span><span data-tr="zh">A——先重新展開 root</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="DFS uses a <b>stack</b> (LIFO): it expands the deepest open node, diving down one branch before backtracking. The trap is C — a <b>queue</b> (FIFO) is what gives BFS, the level-by-level order. A heap/sorted list would order nodes by f, which is best-first, not DFS.">
-  <div class="q">Q2. DFS dives down one branch as deep as possible, then backtracks. Which open-list structure produces exactly that LIFO order?</div>
-  <button class="opt">A queue (first-in, first-out)</button>
-  <button class="opt">A stack (last-in, first-out)</button>
-  <button class="opt">A heap ordered by f(n)</button>
-  <button class="opt">A sorted list, smallest f first</button>
+<div class="quiz" data-correct="1" data-explain="DFS uses a <b>stack</b> (LIFO): it expands the deepest open node, diving down one branch before backtracking. The trap is C — a <b>queue</b> (FIFO) is what gives BFS, the level-by-level order. A heap/sorted list would order nodes by f, which is best-first, not DFS." data-explain-zh="DFS 用 <b>stack</b>（LIFO）：它展開最深的 open node，沿一條分支鑽到底才 backtrack。陷阱是 C——<b>queue</b>（FIFO）給的是 BFS 那種一層一層的順序。Heap／sorted list 會依 f 排序 nodes，那是 best-first，不是 DFS。">
+  <div class="q"><span data-tr="en">Q2. DFS dives down one branch as deep as possible, then backtracks. Which open-list structure produces exactly that LIFO order?</span><span data-tr="zh">Q2. DFS 沿一條分支盡量往深鑽，再 backtrack。哪種 open-list 結構正好產生這種 LIFO 順序？</span></div>
+  <button class="opt"><span data-tr="en">A queue (first-in, first-out)</span><span data-tr="zh">queue（先進先出）</span></button>
+  <button class="opt"><span data-tr="en">A stack (last-in, first-out)</span><span data-tr="zh">stack（後進先出）</span></button>
+  <button class="opt"><span data-tr="en">A heap ordered by f(n)</span><span data-tr="zh">依 f(n) 排序的 heap</span></button>
+  <button class="opt"><span data-tr="en">A sorted list, smallest f first</span><span data-tr="zh">最小 f 在前的 sorted list</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="3" data-explain="Hill-climbing only sees the <b>children of its current node</b>. From A its best child is C(2), so it commits to C; C is a leaf and not the goal, and hill-climbing has no other open nodes on a list to fall back to, so it stalls. Best-first picks C too, but keeps B and D open and recovers — the difference is a <i>local</i> vs <i>global</i> view, not the f-value used.">
-  <div class="q">Q3. Tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; <code>C</code> is a leaf; the goal <code>G</code> lives under <code>D</code>. Why does <strong>hill-climbing</strong> stall here?</div>
-  <button class="opt">It expands every level fully and runs out of memory</button>
-  <button class="opt">It needs a sorted queue it does not have</button>
-  <button class="opt">It chose B(5) and B has no goal beneath it</button>
-  <button class="opt">It commits to best child C(2), a dead leaf, with nothing else open</button>
+<div class="quiz" data-correct="3" data-explain="Hill-climbing only sees the <b>children of its current node</b>. From A its best child is C(2), so it commits to C; C is a leaf and not the goal, and hill-climbing has no other open nodes on a list to fall back to, so it stalls. Best-first picks C too, but keeps B and D open and recovers — the difference is a <i>local</i> vs <i>global</i> view, not the f-value used." data-explain-zh="Hill-climbing 只看得到<b>目前 node 的 children</b>。從 A 出發，最好的 child 是 C(2)，於是它鎖定 C；C 是 leaf 又不是 goal，而 hill-climbing 沒有其他 open nodes 可退回，於是停住。Best-first 一樣選 C，但保留 B 和 D 在 open 而能脫困——差別在於<i>局部（local）</i>對<i>全域（global）</i>的視野，而不是用的 f 值。">
+  <div class="q"><span data-tr="en">Q3. Tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; <code>C</code> is a leaf; the goal <code>G</code> lives under <code>D</code>. Why does <strong>hill-climbing</strong> stall here?</span><span data-tr="zh">Q3. 樹：<code>A</code> → <code>B(5) C(2) D(4)</code>；<code>C</code> 是 leaf；goal <code>G</code> 在 <code>D</code> 底下。為什麼 <strong>hill-climbing</strong> 在這裡卡住？</span></div>
+  <button class="opt"><span data-tr="en">It expands every level fully and runs out of memory</span><span data-tr="zh">它把每一層完全展開而耗盡記憶體</span></button>
+  <button class="opt"><span data-tr="en">It needs a sorted queue it does not have</span><span data-tr="zh">它需要一個它沒有的 sorted queue</span></button>
+  <button class="opt"><span data-tr="en">It chose B(5) and B has no goal beneath it</span><span data-tr="zh">它選了 B(5)，而 B 底下沒有 goal</span></button>
+  <button class="opt"><span data-tr="en">It commits to best child C(2), a dead leaf, with nothing else open</span><span data-tr="zh">它鎖定最好的 child C(2)（一個死 leaf），又沒有其他 open node</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="DFS goes deepest-first, left-to-right, ignoring f: A, then down the leftmost branch B,E,F fully, then C, then D, then G. If you answered <b>A→B→C→D→E→F→G</b> you traced <i>BFS</i> (level order); if you picked the f-sorted order you traced best-first. DFS never looks at the f-values.">
-  <div class="q">Q4. Same tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; under B are <code>E(6) F(3)</code>; under D are <code>G(1) H(7)</code>, goal G; C is a leaf. Give the <strong>DFS</strong> expansion order (deepest-first, left→right).</div>
-  <button class="opt">A B E F C D G</button>
-  <button class="opt">A B C D E F G</button>
-  <button class="opt">A C D G</button>
-  <button class="opt">A C B D F E G</button>
+<div class="quiz" data-correct="0" data-explain="DFS goes deepest-first, left-to-right, ignoring f: A, then down the leftmost branch B,E,F fully, then C, then D, then G. If you answered <b>A→B→C→D→E→F→G</b> you traced <i>BFS</i> (level order); if you picked the f-sorted order you traced best-first. DFS never looks at the f-values." data-explain-zh="DFS 是最深優先、由左到右、忽略 f：A，接著把最左分支 B,E,F 整條走完，再 C，再 D，再 G。如果你答 <b>A→B→C→D→E→F→G</b>，那是 <i>BFS</i>（層序）；如果你選依 f 排序的順序，那是 best-first。DFS 從不看 f 值。">
+  <div class="q"><span data-tr="en">Q4. Same tree: <code>A</code> → <code>B(5) C(2) D(4)</code>; under B are <code>E(6) F(3)</code>; under D are <code>G(1) H(7)</code>, goal G; C is a leaf. Give the <strong>DFS</strong> expansion order (deepest-first, left→right).</span><span data-tr="zh">Q4. 同一棵樹：<code>A</code> → <code>B(5) C(2) D(4)</code>；B 底下是 <code>E(6) F(3)</code>；D 底下是 <code>G(1) H(7)</code>，goal 是 G；C 是 leaf。寫出 <strong>DFS</strong> 的展開順序（最深優先，由左到右）。</span></div>
+  <button class="opt"><span data-tr="en">A B E F C D G</span><span data-tr="zh">A B E F C D G</span></button>
+  <button class="opt"><span data-tr="en">A B C D E F G</span><span data-tr="zh">A B C D E F G</span></button>
+  <button class="opt"><span data-tr="en">A C D G</span><span data-tr="zh">A C D G</span></button>
+  <button class="opt"><span data-tr="en">A C B D F E G</span><span data-tr="zh">A C B D F E G</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="All four here <b>stop at the first goal they reach</b>, which need not be the cheapest — so none guarantees optimality. <b>Branch-and-bound</b> (next lesson) adds a bound that prunes any branch that cannot beat the best solution so far, proving a goal optimal. The trap is D: best-first is still feasibility-only — it has a global view but no bound, so it is <i>not</i> the optimization answer.">
-  <div class="q">Q5. DFS, BFS, hill-climbing and best-first all halt at the <em>first</em> goal they find. Which strategy adds the machinery needed to guarantee an <em>optimal</em> solution?</div>
-  <button class="opt">Breadth-first search, since it finds shallow goals</button>
-  <button class="opt">Hill-climbing, since it greedily takes the best step</button>
-  <button class="opt">Branch-and-bound, since it prunes by a bound</button>
-  <button class="opt">Best-first, since it has a global view</button>
+<div class="quiz" data-correct="2" data-explain="All four here <b>stop at the first goal they reach</b>, which need not be the cheapest — so none guarantees optimality. <b>Branch-and-bound</b> (next lesson) adds a bound that prunes any branch that cannot beat the best solution so far, proving a goal optimal. The trap is D: best-first is still feasibility-only — it has a global view but no bound, so it is <i>not</i> the optimization answer." data-explain-zh="這四種都<b>在抵達第一個 goal 時就停</b>，而那不一定是成本最低的——所以沒有一個保證 optimal。<b>Branch-and-bound</b>（下一課）加上一個 bound，剪掉任何不可能勝過目前最佳解的 branch，藉此證明某個 goal 是 optimal。陷阱是 D：best-first 仍然只管 feasibility——它有全域視野，卻沒有 bound，所以<i>不是</i>最佳化的答案。">
+  <div class="q"><span data-tr="en">Q5. DFS, BFS, hill-climbing and best-first all halt at the <em>first</em> goal they find. Which strategy adds the machinery needed to guarantee an <em>optimal</em> solution?</span><span data-tr="zh">Q5. DFS、BFS、hill-climbing 和 best-first 都在找到<em>第一個</em> goal 時就停。哪種策略加上了保證得到<em>optimal（最佳）</em>解所需的機制？</span></div>
+  <button class="opt"><span data-tr="en">Breadth-first search, since it finds shallow goals</span><span data-tr="zh">Breadth-first search，因為它會找到淺的 goal</span></button>
+  <button class="opt"><span data-tr="en">Hill-climbing, since it greedily takes the best step</span><span data-tr="zh">Hill-climbing，因為它貪婪地走最好的一步</span></button>
+  <button class="opt"><span data-tr="en">Branch-and-bound, since it prunes by a bound</span><span data-tr="zh">Branch-and-bound，因為它用 bound 來剪枝</span></button>
+  <button class="opt"><span data-tr="en">Best-first, since it has a global view</span><span data-tr="zh">Best-first，因為它有全域視野</span></button>
   <div class="fb"></div>
 </div>
 
-<h2>5 · Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §6.1–6.3 (your <code>Alg05</code> slides, "The Searching Strategies"). Read the 8-puzzle best-first figure (Fig 6-16) and re-trace it with <code>f(n)=d(n)+w(n)</code>.</p>
-<p>See also the <a href="../reference/glossary.html">Glossary → Ch6</a> for the one-line definitions.</p>
+<h2><span data-tr="en">5 · Go deeper</span><span data-tr="zh">5 · 深入一點</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch 6 §6.1–6.3 (your <code>Alg05</code> slides, "The Searching Strategies"). Read the 8-puzzle best-first figure (Fig 6-16) and re-trace it with <code>f(n)=d(n)+w(n)</code>.</span><span data-tr="zh"><strong>主要參考來源：</strong>R.C.T. Lee, S.S. Tseng, R.C. Chang, Y.T. Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>，第 6 章 §6.1–6.3（你的 <code>Alg05</code> 投影片，「The Searching Strategies」）。看 8-puzzle 的 best-first 圖（Fig 6-16），用 <code>f(n)=d(n)+w(n)</code> 重新追蹤一次。</span></p>
+<p><span data-tr="en">See also the <a href="../reference/glossary.html">Glossary → Ch6</a> for the one-line definitions.</span><span data-tr="zh">也可參考 <a href="../reference/glossary.html">Glossary → Ch6</a> 裡的一行定義。</span></p>
 
-<div class="note"><strong>Next up — Lesson 2:</strong> branch-and-bound, where the knob becomes "expand best open node, but <em>prune</em> any branch whose bound can't beat the best solution so far." That's the jump from feasibility to optimization, and the reduced-cost-matrix TSP trace is a classic exam item.</div>
+<div class="note"><span data-tr="en"><strong>Next up — Lesson 2:</strong> branch-and-bound, where the knob becomes "expand best open node, but <em>prune</em> any branch whose bound can't beat the best solution so far." That's the jump from feasibility to optimization, and the reduced-cost-matrix TSP trace is a classic exam item.</span><span data-tr="zh"><strong>下一課——第 2 課：</strong>branch-and-bound，這時旋鈕變成「展開最佳的 open node，但<em>剪掉（prune）</em>任何 bound 無法勝過目前最佳解的 branch」。這就是從 feasibility 跳到 optimization，而 reduced-cost-matrix 的 TSP 追蹤是經典的考題。</span></div>
 
 <div class="foot">
-  <p>📣 <strong>I'm your teacher — ask me anything.</strong> Stuck on why hill climbing backtracks? Want a harder tree to trace? Want me to build the 8-puzzle version? Just say so.</p>
-  <p>Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 2. ≤3 → tell me which question and we drill it.</p>
+  <p><span data-tr="en">📣 <strong>I'm your teacher — ask me anything.</strong> Stuck on why hill climbing backtracks? Want a harder tree to trace? Want me to build the 8-puzzle version? Just say so.</span><span data-tr="zh">📣 <strong>我是你的老師——什麼都可以問。</strong>卡在為什麼 hill climbing 要 backtrack？想要更難的樹來追蹤？想要我做出 8-puzzle 版本？開口就行。</span></p>
+  <p><span data-tr="en">Score this lesson out of 5 to yourself. 4–5 → we move to Lesson 2. ≤3 → tell me which question and we drill it.</span><span data-tr="zh">給自己這一課打個分（滿分 5）。4–5 → 我們進入第 2 課。≤3 → 告訴我是哪一題，我們來加強它。</span></p>
 </div>
 
 <script>
@@ -210,20 +212,21 @@ Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}
   }
   quizzes.forEach(function(q){
     var correct = +q.dataset.correct;
-    var explain = q.dataset.explain || '';
     var opts = q.querySelectorAll('.opt');
     var fb = q.querySelector('.fb');
     opts.forEach(function(o,i){
       o.addEventListener('click',function(){
         if(q.dataset.done) return;
         q.dataset.done = '1'; answered++;
+        var lang=document.documentElement.getAttribute('data-lang')||'en';
+        var explain=(lang==='zh'&&q.dataset.explainZh)?q.dataset.explainZh:(q.dataset.explain||'');
         opts.forEach(function(x){x.disabled=true;});
         if(i===correct){
           o.classList.add('correct'); right++;
-          fb.className='fb ok'; fb.innerHTML='<span class="v">✓ Correct.</span> '+explain;
+          fb.className='fb ok'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✓ 正確。':'✓ Correct.')+'</span> '+explain;
         } else {
           o.classList.add('wrong'); opts[correct].classList.add('correct');
-          fb.className='fb no'; fb.innerHTML='<span class="v">✗ Not quite — '+String.fromCharCode(65+correct)+' is right.</span> '+explain;
+          fb.className='fb no'; fb.innerHTML='<span class="v">'+(lang==='zh'?'✗ 不對 — 正解是 '+String.fromCharCode(65+correct)+'。':'✗ Not quite — '+String.fromCharCode(65+correct)+' is right.')+'</span> '+explain;
         }
         updateScore();
       });
@@ -232,5 +235,6 @@ Expand A → open {B5, C2, D4}; take C2. C is a leaf, not goal → open {B5, D4}
   updateScore();
 })();
 </script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

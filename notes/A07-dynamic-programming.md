@@ -51,6 +51,9 @@ Each set `Vᵢ` defines a **stage** of the graph.
 
 The slides use a 4-stage graph with vertices `S` (stage 1); `A, B, C` (stage 2); `D, E, F` (stage 3); `T` (stage 4). The edge weights below are **consistent with every numeric result in the deck** (e.g. `d(S,T)=9`, `d(A,T)=22`, `d(B,T)=18`, `d(C,T)=4`).
 
+<img class="figure" src="../render/A07full/slide-05.png" alt="The running 4-stage multistage graph with all numeric edge weights: S→A=1, S→B=2, S→C=5, A→D=4, A→E=11, B→D=9, B→E=5, B→F=16, C→F=2, D→T=18, E→T=13, F→T=2">
+<figcaption>Slide 5 — the full multistage graph. Greedy <code>S A D T = 1+4+18 = 23</code>; true shortest path <code>S C F T = 5+2+2 = 9</code>.</figcaption>
+
 > ✅ Verified against slide 5 (the full multistage-graph figure). Every edge weight below was read directly off the rendered slide and matches exactly. The companion abstract figures on slide 6 (`S→{A,B,C}→T`) and slide 7 (`A→{D,E}→T`) confirm `S→A=1, S→B=2, S→C=5` and `A→D=4, A→E=11`.
 
 | Edge | Cost | Edge | Cost |
@@ -71,6 +74,12 @@ Stages: `V₁={S}`, `V₂={A,B,C}`, `V₃={D,E,F}`, `V₄={T}`.
 ## 3. Backward Reasoning
 
 Define `d(X, T)` = cost of the shortest path **from vertex X to the sink T**. Work **from the sink backward** toward the source. (Base cases at the stage just before `T`: `d(D,T)=18`, `d(E,T)=13`, `d(F,T)=2`.)
+
+<img class="figure" src="../render/A07full/slide-06.png" alt="Abstract backward figure: S→A=1, S→B=2, S→C=5 with dashed edges d(A,T), d(B,T), d(C,T) into T; equation d(S,T)=min{1+d(A,T), 2+d(B,T), 5+d(C,T)}">
+<figcaption>Slide 6 — backward reasoning across the first stage: d(S,T) = min{1+d(A,T), 2+d(B,T), 5+d(C,T)}.</figcaption>
+
+<img class="figure" src="../render/A07full/slide-07.png" alt="Abstract backward figure for vertex A: A→D=4, A→E=11 with dashed edges d(D,T), d(E,T); d(A,T)=min{4+18, 11+13}=22">
+<figcaption>Slide 7 — one subproblem expanded: d(A,T) = min{4+d(D,T), 11+d(E,T)} = min{4+18, 11+13} = 22.</figcaption>
 
 ```
 d(C, T) = min{ 2 + d(F, T) }
@@ -267,7 +276,13 @@ The remaining slides apply the same machinery to several classic problems.
 | 3 | 4 | 4 | 4 |
 | 4 | 2 | 4 | 5 |
 
+<img class="figure" src="../render/A07full/slide-19.png" alt="Resource allocation profit table p(i,j): rows are projects 1-4, columns are 1-3 resources; values row1 2,8,9; row2 5,6,7; row3 4,4,4; row4 2,4,5">
+<figcaption>Slide 19 — the resource-allocation profit table p(i, j).</figcaption>
+
 **Multistage-graph model.** A node `(i, j)` means *`i` resources allocated to projects `1, 2, …, j`* (i.e. the first `j` projects collectively use `i` resources).
+
+<img class="figure" src="../render/A07full/slide-20.png" alt="The resource allocation problem as a 5-stage graph: S; stage 2 A=(0,1),B=(1,1),C=(2,1),D=(3,1); stage 3 E=(0,2),F=(1,2),G=(2,2),H=(3,2); stage 4 I=(0,3),J=(1,3),K=(2,3),L=(3,3); T. S-edges S→A=0, S→B=2, S→C=8, S→D=9">
+<figcaption>Slide 20 — the resource-allocation problem described as a multistage graph.</figcaption>
 Example: node `H = (3, 2)` ⇒ 3 resources allocated across projects 1 and 2.
 
 The problem becomes **find the longest (max-profit) path from S to T**.
@@ -304,11 +319,17 @@ Given a **directed** graph with a **cost matrix**, find the shortest tour that s
 | **3** | 4 | 3 | ∞ | 4 |
 | **4** | 6 | 8 | 7 | ∞ |
 
+<img class="figure" src="../render/A07full/slide-22.png" alt="TSP example: directed 4-vertex graph and its cost matrix. Matrix rows from, cols to: 1:[∞,2,10,5] 2:[2,∞,9,∞] 3:[4,3,∞,4] 4:[6,8,7,∞]">
+<figcaption>Slide 22 — the TSP directed graph and cost matrix.</figcaption>
+
 ```
 Shortest tour: 1, 4, 3, 2, 1   →   5 + 7 + 3 + 2 = 17
 ```
 
-**Tour multistage graph (slide 23, "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph").** Root `(1)` branches by first vertex chosen, edge costs `c(1,k)`: `(1,2)` cost 2, `(1,3)` cost 10, `(1,4)` cost 5. Each then expands to the third vertex, then the fourth, then returns to `1`. The bottom branch realizes the optimum: `(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1`, total 17.
+**Tour multistage graph (slide 23, "Fig. A Multi-Stage Graph Describing All Possible Tours of a Directed Graph").**
+
+<img class="figure" src="../render/A07full/slide-23.png" alt="Multistage graph of all possible TSP tours rooted at (1), branching by first/second/third vertex chosen and returning to 1; optimal branch (1)→(1,4)→(1,4,3)→(1,4,3,2)→1 = 5+7+3+2 = 17">
+<figcaption>Slide 23 — a multistage graph describing all possible tours; optimum 1, 4, 3, 2, 1 = 17.</figcaption> Root `(1)` branches by first vertex chosen, edge costs `c(1,k)`: `(1,2)` cost 2, `(1,3)` cost 10, `(1,4)` cost 5. Each then expands to the third vertex, then the fourth, then returns to `1`. The bottom branch realizes the optimum: `(1) →5 (1,4) →7 (1,4,3) →3 (1,4,3,2) →2 1`, total 17.
 
 **Multistage-graph view.** All possible tours form a multistage graph (one stage per "next vertex chosen"). Partial tours that end at the same vertex with the same remaining set can be **merged**:
 
@@ -375,6 +396,9 @@ L_{i,j} =   │
 | **a** | 0 | 1 | 2 | 2 | 2 | 3 | 3 | 3 | 3 |
 | **d** | 0 | 1 | 2 | 2 | 2 | 3 | 4 | 4 | 4 |
 
+<img class="figure" src="../render/A07full/slide-29.png" alt="LCS dynamic-programming table for A=bacad (rows) and B=accbadcb (columns); the circled trace-back cells 1→2→3→4 yield LCS = a c a d, length 4 in the bottom-right cell">
+<figcaption>Slide 29 — the LCS L-table with the circled trace-back 1 → 2 → 3 → 4 giving <code>a c a d</code>.</figcaption>
+
 The slide circles the trace-back cells `1 → 2 → 3 → 4` (the `a`, `c`, `a`, `d` matches), giving LCS = `a c a d` (length 4 = bottom-right cell).
 
 ---
@@ -402,6 +426,9 @@ subject to  Σ Wᵢ·xᵢ ≤ M
 | 3 |  5 | 30 |
 
 **The staged graph (slide 31).** Nodes are labeled by the partial decision vector. `S` branches on `x₁`: `S →(x₁=1, weight 40) "1"` and `S →(x₁=0, weight 0) "0"`. Each node then branches on `x₂` (edge weight `P₂=20` if `x₂=1`, else 0), then on `x₃` (edge weight `P₃=30` if `x₃=1`, else 0), then a weight-0 edge to `T`. (Infeasible high-capacity branches are pruned — e.g. taking object 1 at weight 10 leaves no room.)
+
+<img class="figure" src="../render/A07full/slide-31.png" alt="0/1 knapsack as a multistage graph: S branches x1=1 (weight 40) / x1=0 (weight 0), then x2 (weight 20 if 1), then x3 (weight 30 if 1), then weight-0 edges to T; nodes labeled by partial decision strings 1,0,10,01,00,100,011,010,001,000">
+<figcaption>Slide 31 — the 0/1 knapsack problem in multistage representation. Longest path = max profit; optimum x₁=0, x₂=1, x₃=1 → 20+30 = 50.</figcaption>
 
 The **longest path** (max profit) from S to T in this multistage graph is the optimal solution. Deck answer (slides 31–32):
 
@@ -432,6 +459,9 @@ The optimal answer is `fₙ(M)`.
 
 Examples of identifier sets used in the deck: `{3, 7, 9, 12}` (slide 33, four candidate BSTs) and `{4, 5, 8, 10, 11, 12, 14}` (slide 35, the worked tree with external nodes). ✅ Verified against slides 33–35.
 
+<img class="figure" src="../render/A07full/slide-33.png" alt="Four candidate binary search trees (a)-(d) for identifiers 3,7,9,12: (a) right-going chain 3→7→9→12; (b) root 7 with children 3 and 12, 12's left child 9; (c) root 7 with children 3 and 9, 9's right child 12; (d) chain 12→9→3→7">
+<figcaption>Slide 33 — four candidate BSTs for {3, 7, 9, 12}.</figcaption>
+
 ### Expected cost of a binary search tree
 
 With the root at level 1, the expected cost is:
@@ -445,6 +475,9 @@ where `Eᵢ` are the external (failure) nodes. (See Fig. "A Binary Tree with Add
 > ✅ Verified against slide 35. The slide prints `Σ_{i=1}^{n} Pᵢ·level(aᵢ) + Σ_{i=0}^{n} Qᵢ·(level(Eᵢ)−1)`, with "The level of the root : 1". The lower index on the `P` sum is `i=1`, on the `Q` sum is `i=0` (external nodes `E₀ … Eₙ`). Slide 34 also confirms the probability normalization `Σ_{i=1}^{n} Pᵢ + Σ_{i=0}^{n} Qᵢ = 1`.
 
 **The example tree (slide 35).** For identifiers `4,5,8,10,11,12,14`, the drawn BST has root `10`; left child `5` (with children `4` and `8`), right child `14` (left child `11`, which has right child `12`; `14`'s right is external `E₇`). External (failure) nodes `E₀…E₆` hang off the leaves, `E₅,E₆` off node `12`. Slide 33 also shows four candidate BSTs (a)–(d) for the smaller set `3,7,9,12`.
+
+<img class="figure" src="../render/A07full/slide-35.png" alt="OBST example tree for identifiers 4,5,8,10,11,12,14 with external nodes: root 10; left child 5 with children 4 and 8; right child 14 with left child 11 (right child 12) and external E7; external failure nodes E0..E6 at the leaves, E5,E6 under node 12">
+<figcaption>Slide 35 — a binary search tree with added external nodes; expected cost Σ Pᵢ·level(aᵢ) + Σ Qᵢ·(level(Eᵢ)−1), root at level 1.</figcaption>
 
 ### Recurrence
 
@@ -469,6 +502,9 @@ C(i, j) = min_{i ≤ k ≤ j} { Pk
 
 where `W(i, j) = Q_{i-1} + Σ_{l=i}^{j}(P_l + Q_l)` is the total weight of the subtree (the `Q_{i-1} + …` term). The `+ W(i,j)` accounts for every node in the subtree dropping one level deeper when the subtree gains a root.
 
+<img class="figure" src="../render/A07full/slide-37.png" alt="OBST general recurrence C(i,j) with the split-at-root triangle diagram: root a_k, left subtree C(i,k−1) over a_1..a_{k-1} with weights P_1..P_{k-1}, Q_0..Q_{k-1}; right subtree C(k+1,n) over a_{k+1}..a_n with weights P_{k+1}..P_n, Q_k..Q_n; collapses to C(i,k−1)+C(k+1,j)+W(i,j)">
+<figcaption>Slide 37 — the general C(i, j) recurrence and the split-at-root subtree triangle.</figcaption>
+
 > ✅ Verified against slides 36–37. Slide 36 prints the root-`aₖ` form
 > `C(1,n) = min_{1≤k≤n} { Pₖ + [Q₀ + Σ_{i=1}^{k-1}(Pᵢ+Qᵢ) + C(1,k−1)] + [Qₖ + Σ_{i=k+1}^{?}(Pᵢ+Qᵢ) + C(k+1,n)] }`.
 > Slide 37 prints the general form `C(i,j) = min_{1≤k≤n} { Pₖ + [Q_{i-1} + Σ_{l=i}^{k-1}(P_l+Q_l) + C(i,k−1)] + [Qₖ + Σ_{l=k+1}^{j}(P_l+Q_l) + C(k+1,j)] }` and collapses it to `= min { C(i,k−1) + C(k+1,j) + Σ_{l=i}^{j}(P_l+Q_l) + Q_{i-1} }` — i.e. `C(i,k−1)+C(k+1,j)+W(i,j)`. Both slides include the triangle diagram (root `aₖ`, left subtree `C(1,k−1)`/`a₁…a_{k-1}` with weights `P₁…P_{k-1}, Q₀…Q_{k-1}`, right subtree `C(k+1,n)`/`a_{k+1}…aₙ` with `P_{k+1}…Pₙ, Qₖ…Qₙ`).
@@ -487,6 +523,9 @@ Reasoning (slide 38, verbatim):
 - Summing over all `m`: `O( Σ_{1≤m<n} m·(n − m) ) = O(n³)`.
 
 (See Fig. "Computation Relationships of Subtrees", slide 38.) ✅ Verified against slide 38: it shows the `n=4` dependency DAG — `C(1,2),C(2,3),C(3,4)` feed `C(1,3),C(2,4)`, which feed `C(1,4)` — and the closed sum `O(Σ_{1≤m<n} m(n−m)) = O(n³)`.
+
+<img class="figure" src="../render/A07full/slide-38.png" alt="OBST computation-relationships DAG for n=4: C(1,2),C(2,3),C(3,4) feed C(1,3),C(2,4), which feed C(1,4); complexity O(Σ_{1≤m<n} m(n−m)) = O(n³)">
+<figcaption>Slide 38 — computation relationships of subtrees (n=4); O(n³) overall.</figcaption>
 
 ---
 
