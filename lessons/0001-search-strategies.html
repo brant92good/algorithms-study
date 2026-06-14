@@ -106,8 +106,10 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
    if n is a goal &rarr; stop
    else expand n: add its children to the open list</div>
 <p><span data-tr="en">The four strategies differ <em>only</em> in "pick one open node."</span><span data-tr="zh">重點是：這四種策略<em>唯一</em>的差別，就只在「pick one open node（挑一個 open node）」這一步而已。</span></p>
+<p style="color:var(--mut);font-size:.92rem"><span data-tr="en">One wording note: the loop <em>goal-tests</em> every node the moment it is picked, and only nodes that fail the test get expanded (children generated). So when a trace below says a goal like G is "expanded" or "stop/done," it is really being <strong>goal-tested and found</strong> — the final goal node never gets its children generated.</span><span data-tr="zh">補一個用語上的細節：迴圈是在<em>挑出</em>每個 node 的當下就先做 goal-test，只有沒通過測試的 node 才會被展開（生 children）。所以下面的 trace 寫某個 goal（例如 G）被「展開」或「stop/done」時，它其實是被<strong>goal-test 到、然後找到了</strong>——最後那個 goal node 並不會真的去生 children。</span></p>
 
 <h2><span data-tr="en">2 · The knob</span><span data-tr="zh">2 · 那個旋鈕</span></h2>
+<p style="color:var(--mut);font-size:.92rem"><span data-tr="en">In the <strong>View</strong> column below, <em>local</em> means the strategy only looks at a small nearby part of the open list (e.g. just the current node's children), while <em>global</em> means it compares across <em>all</em> open nodes at once. The note under the table unpacks why that difference matters.</span><span data-tr="zh">下面那欄 <strong>View</strong> 講的是「視野」：<em>local</em> 是說這個策略只看 open list 附近一小塊（例如只看目前 node 的 children），<em>global</em> 則是把<em>所有</em> open nodes 一起拿來比。為什麼這個差別很關鍵，表格底下那則 note 會說清楚。</span></p>
 <table>
 <tr><th>Strategy</th><th>Picks…</th><th>Structure</th><th>View</th></tr>
 <tr><td><strong>DFS</strong></td><td>deepest open node</td><td><code>stack</code></td><td>local</td></tr>
@@ -131,7 +133,7 @@ function toggleTheme(){var r=document.documentElement,t=r.getAttribute('data-the
 
 <details><summary><span data-tr="en">DFS (deepest first, left-to-right)</span><span data-tr="zh">DFS（最深優先，由左到右）</span></summary>
 <p><code>A → B → E → F → C → D → G ✓</code><br>
-<span data-tr="en">Dives down the leftmost branch fully (B,E,F) before ever touching C or D. Ignores the f-values entirely.</span><span data-tr="zh">它會先沿著最左邊那條分支一路鑽到底（B、E、F），鑽完才回頭碰 C 跟 D。f 值它根本不看。</span></p></details>
+<span data-tr="en">Dives down the leftmost branch fully (B,E,F) before ever touching C or D. Ignores the f-values entirely. <em>Why left-to-right from a stack?</em> A stack pops the last thing pushed, so to make the leftmost child come out first you push the children in <strong>reverse order</strong> (rightmost first): push D, then C, then B — now B is on top and pops next.</span><span data-tr="zh">它會先沿著最左邊那條分支一路鑽到底（B、E、F），鑽完才回頭碰 C 跟 D。f 值它根本不看。<em>那為什麼用 stack 還會是由左到右？</em>因為 stack 是後進先出，最晚推進去的最先被拿出來，所以你要把 children <strong>反過來推</strong>（最右邊的先推）：先推 D、再推 C、最後推 B——這樣 B 在最上面，下一個就會先彈出 B。</span></p></details>
 
 <details><summary><span data-tr="en">BFS (shallowest first)</span><span data-tr="zh">BFS（最淺優先）</span></summary>
 <p><code>A → B → C → D → E → F → G ✓</code><br>

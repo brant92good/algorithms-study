@@ -59,8 +59,10 @@
 
 <div class="way">
   <h3><span data-tr="en">① Hill Climbing — greedy, local view</span><span data-tr="zh">① Hill Climbing——貪婪、只看眼前</span></h3>
-  <p class="tagline"><span data-tr="en">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. It only commits to a child whose <code>f</code> is <strong>strictly lower</strong> than the current node's — a tie (equal <code>f</code>) or worse counts as <em>no improvement</em>, so it halts. Fast — until every child looks no better and it has nothing saved to fall back on.</span><span data-tr="zh">展開目前的盤面，<em>只</em>看它自己的子節點，跳到 <code>f</code> 最小的那一個，其他通通忘掉。注意它只會跳到 <code>f</code> 比目前節點<strong>嚴格更小</strong>的子節點——如果只是打平（<code>f</code> 一樣）或更糟，都算<em>沒有進步</em>，它就停下來。很快——但只要每個子節點都沒比較好，而它又沒留任何後路，就完了。</span></p>
+  <p class="tagline"><span data-tr="en">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. The rule is simple: <strong>at every step, generate the children and move to the one with the smallest <code>f</code></strong> (ties broken by a fixed child order). It keeps no open list and never backtracks. Note that <code>f</code> naturally tends to <em>rise</em> as you descend — each move adds 1 to <code>d</code> — so hill climbing picks the <em>least-bad</em> child (the smallest <code>f</code>), not necessarily one lower than the parent. It gets <strong>stuck</strong> when that greedy choice walks it into a <strong>local optimum</strong> / dead-end region the local <code>f</code>-landscape can't escape — and with nothing saved, there is no way back. Fast — but a local optimum is a dead end.</span><span data-tr="zh">展開目前的盤面，<em>只</em>看它自己的子節點，跳到 <code>f</code> 最小的那一個，其他通通忘掉。規則很單純：<strong>每一步都把子節點生出來，走到 <code>f</code> 最小的那一個</strong>（打平時就照固定的子節點順序決定）。它不留 open list，也不回頭。注意 <code>f</code> 在往下走的時候本來就會<em>越來越大</em>——每走一步 <code>d</code> 就 +1——所以 hill climbing 挑的是<em>最不爛</em>的子節點（<code>f</code> 最小的那個），不一定要比父節點還小。它什麼時候會<strong>卡住</strong>？當這個貪婪的選擇把它帶進一個局部的 <code>f</code> 地形逃不出來的 <strong>local optimum</strong>（局部最佳）／死路時——而它又什麼都沒留，根本退不回去。很快——但踩到 local optimum 就是死路一條。</span></p>
+  <p class="tagline" style="font-size:.85rem;color:var(--mut)"><span data-tr="en"><strong>Why the lucky run below works even though <code>f</code> goes 3 → 4 → 4 → 4 → 4:</strong> the rule never required <code>f</code> to drop — it only requires picking the lowest-<code>f</code> child each step. Here that greedy choice also happened to keep making real progress (misplaced count <code>w</code> dropped 3 → 3 → 2 → 1 → 0), and the lowest-<code>f</code> path led straight to the goal, so the search was never trapped. The rising <code>f</code> is just <code>d</code> growing by 1 per move — perfectly normal. The <em>stuck</em> case below uses the <strong>same</strong> rule (pick the lowest-<code>f</code> child), but there the greedy path leads into a local optimum / dead-end region, and with no open list there is no way back.</span><span data-tr="zh"><strong>為什麼下面那個幸運跑法的 <code>f</code> 是 3 → 4 → 4 → 4 → 4，卻還是成功？</strong>因為規則從來沒要求 <code>f</code> 一定要變小——它只要求每一步都挑 <code>f</code> 最小的子節點。這裡這個貪婪的選擇剛好也一路有在進步（擺錯的數量 <code>w</code> 一路掉 3 → 3 → 2 → 1 → 0），而 <code>f</code> 最小的那條路又直接通到目標，所以它從頭到尾都沒被困住。<code>f</code> 會往上爬只是因為每走一步 <code>d</code> 就 +1——完全正常。下面那個<em>卡住</em>的例子用的是<strong>同一個</strong>規則（挑 <code>f</code> 最小的子節點），只是那邊貪婪的路徑會走進一個 local optimum／死路，而它又沒有 open list，根本退不回去。</span></p>
   <div id="viz-hc"></div>
+  <p class="note" style="font-size:.82rem"><span data-tr="en"><strong>Reading the lucky run:</strong> each "chosen child" frame shows only the <em>winning</em> board, not its rejected siblings, so you are trusting the caption that it really was the lowest-<code>f</code> child (this run follows the textbook's Fig. 6-15 path). The one frame that <em>does</em> list every sibling's <code>f</code> is the <strong>stuck</strong> frame (neighbour f-values <code>5 · 7 · 7</code>) — that is the case the lesson hinges on, so it shows its work.</span><span data-tr="zh"><strong>怎麼看這個幸運跑法：</strong>每個「chosen child」的畫面只給你<em>勝出</em>的那塊盤面，沒把被淘汰的兄弟節點畫出來，所以這裡你是相信字幕說它真的是 <code>f</code> 最小的子節點（這條路徑照的是課本 Fig. 6-15 的走法）。唯一<em>有</em>把每個兄弟節點 <code>f</code> 都列出來的，是<strong>卡住</strong>那一格（鄰居 f 值 <code>5 · 7 · 7</code>）——因為整個觀念就靠這一格，所以它把過程攤開給你看。</span></p>
 </div>
 
 <div class="way">
@@ -88,7 +90,7 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="Both score nodes with the SAME f = d + w. Hill climbing keeps only the current node's children and commits to the local best, so when every child looks no better it stalls — a local optimum with nothing saved to back up to. Best-first keeps ALL open nodes in one list and can jump back to a cheaper node on another branch, so it recovers. Memory of every open node — not a cleverer score — is the difference." data-explain-zh="兩種用的是<strong>同一個</strong> f = d + w。Hill climbing 只留目前節點的子節點，挑局部最好的就一頭栽下去；所以一旦每個子節點看起來都沒比較好，它就卡住了——這就是 local optimum（局部最佳），而且它沒留任何後路可以退回去。Best-first 則是把<strong>所有</strong> open 節點都放在同一個 list 裡，可以跳回別條分支上更便宜的節點，所以卡住還能繞回來。關鍵是它記得每一個 open 節點，而不是評分比較聰明。">
+<div class="quiz" data-correct="1" data-explain="Both score nodes with the SAME f = d + w. Hill climbing keeps only the current node's children and always commits to the lowest-f one, so when that greedy choice leads into a local optimum it stalls — with nothing saved to back up to. Best-first keeps ALL open nodes in one list and can jump back to a cheaper node on another branch, so it recovers. Memory of every open node — not a cleverer score — is the difference." data-explain-zh="兩種用的是<strong>同一個</strong> f = d + w。Hill climbing 只留目前節點的子節點，永遠挑 f 最小的那個一頭栽下去；所以一旦這個貪婪的選擇把它帶進 local optimum（局部最佳），它就卡住了——而且它沒留任何後路可以退回去。Best-first 則是把<strong>所有</strong> open 節點都放在同一個 list 裡，可以跳回別條分支上更便宜的節點，所以卡住還能繞回來。關鍵是它記得每一個 open 節點，而不是評分比較聰明。">
   <div class="q"><span data-tr="en">Hill climbing and best-first search both score 8-puzzle boards with f = d + w. So what lets best-first reach the goal in a spot where hill climbing gets stuck?</span><span data-tr="zh">Hill climbing 跟 best-first search 都用 f = d + w 幫 8-puzzle 盤面打分數。那在 hill climbing 會卡住的地方，是什麼讓 best-first 還能走到目標？</span></div>
   <button class="opt"><span data-tr="en">it uses a smarter evaluation function that never traps the search</span><span data-tr="zh">它用了更聰明的 evaluation function，永遠不會讓搜尋陷進去</span></button>
   <button class="opt"><span data-tr="en">it remembers all open nodes and can jump back to a better one on another branch</span><span data-tr="zh">它記得所有 open 節點，可以跳回別條分支上更好的那個</span></button>
@@ -129,13 +131,13 @@ const hcFrames = [
   { board:[1,2,3, 0,8,4, 7,6,5], d:3, pick:true,
     cap:`Slide the blank <b>down</b>. d=3, w=1 (only the 8) → <b>f = 3 + 1 = 4</b>. One tile from done — take the best child.` },
   { board:[1,2,3, 8,0,4, 7,6,5], d:4, goal:true,
-    cap:`Slide the 8 <b>right</b>. d=4, w=0 → <b>f = 4 + 0 = 4</b>. 🎉 <b>Goal reached.</b> This run was lucky: each greedy step happened to keep improving.` },
+    cap:`Slide the 8 <b>right</b>. d=4, w=0 → <b>f = 4 + 0 = 4</b>. 🎉 <b>Goal reached.</b> This run was lucky: the lowest-f child each step happened to be a real step toward the goal (w fell to 0), even as f drifted up with d.` },
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true,
     cap:`<b>The lesson.</b> Suppose an early step had instead landed here (d=1, w=4 → <b>f = 5</b>). Now look at every neighbour's f…` },
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, stuck:true, showNbr:true,
-    cap:`The three legal slides give f = 5, 7, 7. Hill climbing only moves to a STRICTLY-lower-f child, so the f=5 tie does NOT count as an improvement (it does not "rescue" the search) and 7 is worse — no neighbour is below the current 5. This is a <b>local optimum</b>.` },
+    cap:`The three legal slides give f = 5, 7, 7. Hill climbing still does the same thing — pick the lowest-f child — so it takes the f=5 one. But that is the <em>least-bad</em> move, not progress: the two alternatives are worse and the chosen path just leads deeper into a <b>local optimum</b> / dead end it can't escape. With no open list, there is nothing to back up to.` },
   { board:[2,8,3, 1,6,4, 7,0,5], d:1, dead:true,
-    cap:`<b>STUCK.</b> Greedy + local view = no improving child, and hill climbing kept <b>no other open nodes</b> to back up to. It cannot reach the goal, even though a better path existed earlier. That global view is exactly what Best-First Search adds below.` },
+    cap:`<b>STUCK.</b> Greedy + local view = the lowest-f child only led deeper into a local optimum, and hill climbing kept <b>no other open nodes</b> to back up to. It cannot reach the goal, even though a better path existed earlier. That global view is exactly what Best-First Search adds below.` },
 ];
 
 ZOO.stepper({
@@ -174,11 +176,11 @@ ZOO.stepper({
     let nbr = '';
     if (f.showNbr) {
       nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--mut,#777)">
-        neighbour f-values: <b>5</b> · <b>7</b> · <b>7</b>  → the 5 only TIES (not strictly lower), so none beats the current 5</div>`;
+        neighbour f-values: <b>5</b> · <b>7</b> · <b>7</b>  → pick the lowest (the 5); it's the least-bad child, but this greedy path only sinks into a local optimum</div>`;
     }
     if (f.dead) {
       nbr = `<div style="text-align:center;margin-top:.55rem;font-size:.9rem;color:var(--bad,#d9534f);font-weight:600">
-        ✗ no child with smaller f &nbsp;·&nbsp; ✗ no saved open nodes &nbsp;·&nbsp; ✗ no backtrack list</div>`;
+        ✗ greedy path trapped in a local optimum &nbsp;·&nbsp; ✗ no saved open nodes &nbsp;·&nbsp; ✗ no backtrack list</div>`;
     }
 
     stage.innerHTML =
