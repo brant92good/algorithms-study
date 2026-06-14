@@ -16,21 +16,21 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>Longest Common Subsequence</h1>
-<div class="mission">Given two strings, find the longest sequence of letters that hides inside <strong>both</strong> — in order, but not necessarily side by side.</div>
+<h1><span data-tr="en">Longest Common Subsequence</span><span data-tr="zh">Longest Common Subsequence</span></h1>
+<div class="mission"><span data-tr="en">Given two strings, find the longest sequence of letters that hides inside <strong>both</strong> — in order, but not necessarily side by side.</span><span data-tr="zh">給你兩個字串，找出同時藏在<strong>兩邊</strong>的最長字母序列——順序要對，但不用連在一起。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §11 (Longest Common Subsequence), slides 28–29.</p>
 <p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a></p>
 
-<h2>The problem</h2>
-<p>Start with the one word you must understand first: <strong>subsequence</strong>. A subsequence of a string is what is left after you <em>delete zero or more letters</em> while keeping the survivors <em>in their original order</em>. You may skip letters, but you may never reorder them. From <code>bacad</code> you can pull out <code>bcd</code>, <code>aca</code>, or <code>acad</code> — but not <code>dab</code>, because that reshuffles the order.</p>
-<p>Do not confuse this with a <strong>substring</strong>. A substring must be <em>contiguous</em> — a solid uninterrupted run, like <code>aca</code> taken from positions 2–4 of <code>bacad</code>. A subsequence is <em>skip-but-keep-order</em>, so it is strictly more permissive: every substring is a subsequence, but not the reverse. <code>acad</code> is a subsequence of <code>bacad</code> (drop the <code>b</code>), yet it is <em>not</em> a substring of it (its letters aren't consecutive).</p>
-<p>A <strong>common subsequence</strong> of two strings <code>A</code> and <code>B</code> is a string that is a subsequence of <em>both</em> at once. The <strong>Longest Common Subsequence (LCS)</strong> problem asks:</p>
-<div class="note"><strong>Given:</strong> two strings <code>A = a₁a₂…a_m</code> and <code>B = b₁b₂…b_n</code>.<br><strong>Find:</strong> the longest string that is a subsequence of <code>A</code> <em>and</em> a subsequence of <code>B</code> (return both the string and its length).</div>
-<p><strong>A tiny concrete instance.</strong> Take <code>A = bacad</code> and <code>B = accbadcb</code>. Both contain the letters <code>a, c, a, d</code> in that order (skip the rest of each string), and you cannot do better — so the answer is <code>acad</code>, length <strong>4</strong>. That is the exact instance we solve below.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">Start with the one word you must understand first: <strong>subsequence</strong>. A subsequence of a string is what is left after you <em>delete zero or more letters</em> while keeping the survivors <em>in their original order</em>. You may skip letters, but you may never reorder them. From <code>bacad</code> you can pull out <code>bcd</code>, <code>aca</code>, or <code>acad</code> — but not <code>dab</code>, because that reshuffles the order.</span><span data-tr="zh">先搞懂一個關鍵字：<strong>subsequence（子序列）</strong>。簡單講，就是把一個字串<em>刪掉幾個字母</em>（刪幾個都行，包括不刪），剩下的字母<em>維持原本的順序</em>排好。你可以跳過字母，但絕對不能調換順序。從 <code>bacad</code> 裡你可以挑出 <code>bcd</code>、<code>aca</code> 或 <code>acad</code>，但不能是 <code>dab</code>，因為那把順序打亂了。</span></p>
+<p><span data-tr="en">Do not confuse this with a <strong>substring</strong>. A substring must be <em>contiguous</em> — a solid uninterrupted run, like <code>aca</code> taken from positions 2–4 of <code>bacad</code>. A subsequence is <em>skip-but-keep-order</em>, so it is strictly more permissive: every substring is a subsequence, but not the reverse. <code>acad</code> is a subsequence of <code>bacad</code> (drop the <code>b</code>), yet it is <em>not</em> a substring of it (its letters aren't consecutive).</span><span data-tr="zh">別跟 <strong>substring（子字串）</strong>搞混。substring 一定要<em>連在一起</em>，是一段不間斷的字，像 <code>bacad</code> 第 2–4 位的 <code>aca</code>。subsequence 則是<em>可以跳、但要保持順序</em>，所以條件比較寬鬆：每個 substring 都是 subsequence，反過來不一定。<code>acad</code> 是 <code>bacad</code> 的 subsequence（把 <code>b</code> 拿掉），但<em>不是</em>它的 substring（這幾個字母沒有連在一起）。</span></p>
+<p><span data-tr="en">A <strong>common subsequence</strong> of two strings <code>A</code> and <code>B</code> is a string that is a subsequence of <em>both</em> at once. The <strong>Longest Common Subsequence (LCS)</strong> problem asks:</span><span data-tr="zh">兩個字串 <code>A</code> 和 <code>B</code> 的 <strong>common subsequence（共同子序列）</strong>，就是同時是<em>兩邊</em> subsequence 的字串。<strong>Longest Common Subsequence (LCS)</strong> 這題要問的是：</span></p>
+<div class="note"><span data-tr="en"><strong>Given:</strong> two strings <code>A = a₁a₂…a_m</code> and <code>B = b₁b₂…b_n</code>.<br><strong>Find:</strong> the longest string that is a subsequence of <code>A</code> <em>and</em> a subsequence of <code>B</code> (return both the string and its length).</span><span data-tr="zh"><strong>給定：</strong>兩個字串 <code>A = a₁a₂…a_m</code> 和 <code>B = b₁b₂…b_n</code>。<br><strong>求：</strong>同時是 <code>A</code> <em>和</em> <code>B</code> 的 subsequence、而且最長的那個字串（要回傳字串本身和它的長度）。</span></div>
+<p><span data-tr="en"><strong>A tiny concrete instance.</strong> Take <code>A = bacad</code> and <code>B = accbadcb</code>. Both contain the letters <code>a, c, a, d</code> in that order (skip the rest of each string), and you cannot do better — so the answer is <code>acad</code>, length <strong>4</strong>. That is the exact instance we solve below.</span><span data-tr="zh"><strong>來個小例子。</strong>取 <code>A = bacad</code>、<code>B = accbadcb</code>。兩邊都依序含有 <code>a, c, a, d</code> 這幾個字母（其他跳過就好），而且沒辦法更長了——所以答案是 <code>acad</code>，長度 <strong>4</strong>。下面就用這個例子一步步解。</span></p>
 
-<h2>Watch it solved</h2>
-<p>The algorithm fills a table <code>L</code> where <code>L[i,j]</code> = the LCS length of the first <code>i</code> letters of A and the first <code>j</code> letters of B. Row 0 and column 0 are all <code>0</code> (an empty prefix shares nothing). For each interior cell it compares the current letters <code>aᵢ</code> and <code>bⱼ</code>: on a <strong>match</strong> it takes the <em>diagonal</em> neighbour <code>+1</code>; on a <strong>mismatch</strong> it keeps the larger of the up/left neighbours (no <code>+1</code>). The bottom-right cell is the answer length; a <strong>trace-back</strong> from that corner spells the string.</p>
-<p>Below is the table for <strong>A = bacad</strong> (rows) and <strong>B = accbadcb</strong> (columns). The <span style="color:var(--acc)">gold</span> cell is the one being computed; <span style="color:#e0a72e">amber</span> marks the dependency it reads (diagonal on a match, left/up on a mismatch). The final frames light the <span style="color:#2ea043">green</span> trace-back that spells <code>acad</code>.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">The algorithm fills a table <code>L</code> where <code>L[i,j]</code> = the LCS length of the first <code>i</code> letters of A and the first <code>j</code> letters of B. Row 0 and column 0 are all <code>0</code> (an empty prefix shares nothing). For each interior cell it compares the current letters <code>aᵢ</code> and <code>bⱼ</code>: on a <strong>match</strong> it takes the <em>diagonal</em> neighbour <code>+1</code>; on a <strong>mismatch</strong> it keeps the larger of the up/left neighbours (no <code>+1</code>). The bottom-right cell is the answer length; a <strong>trace-back</strong> from that corner spells the string.</span><span data-tr="zh">演算法會填一張表 <code>L</code>，其中 <code>L[i,j]</code> = A 的前 <code>i</code> 個字母和 B 的前 <code>j</code> 個字母的 LCS 長度。第 0 列和第 0 欄全部是 <code>0</code>（空的前綴跟誰都沒有共同字母）。每個內部格子比一下當下的字母 <code>aᵢ</code> 和 <code>bⱼ</code>：如果<strong>對上了</strong>，就拿<em>左上對角</em>那格 <code>+1</code>；如果<strong>沒對上</strong>，就拿上面和左邊兩格的較大值（不 <code>+1</code>）。右下角那格就是答案長度；從那個角落往回<strong>追溯（trace-back）</strong>就能拼出字串。</span></p>
+<p><span data-tr="en">Below is the table for <strong>A = bacad</strong> (rows) and <strong>B = accbadcb</strong> (columns). The <span style="color:var(--acc)">gold</span> cell is the one being computed; <span style="color:#e0a72e">amber</span> marks the dependency it reads (diagonal on a match, left/up on a mismatch). The final frames light the <span style="color:#2ea043">green</span> trace-back that spells <code>acad</code>.</span><span data-tr="zh">下面是 <strong>A = bacad</strong>（列）和 <strong>B = accbadcb</strong>（欄）的表格。<span style="color:var(--acc)">金色</span>格是正在算的那格；<span style="color:#e0a72e">琥珀色</span>標出它要讀的來源（對上時看對角，沒對上時看左／上）。最後幾格會亮起<span style="color:#2ea043">綠色</span>的 trace-back，拼出 <code>acad</code>。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -39,34 +39,34 @@
   <span class="chip">Answer: <b>acad (4)</b></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="On a match the new letter extends the LCS of the two strictly-shorter prefixes, which lives in the diagonal cell L[i-1,j-1] — so you add 1 to the diagonal. The 'max of left and up, plus 1' option is the classic trap: you only add 1 when letters match (and then from the diagonal), and you never add 1 on a mismatch.">
-  <div class="q">Filling the LCS table, you reach a cell where the row letter and column letter are <strong>both <code>c</code></strong> (a match). The neighbours read: diagonal (up-left) = 2, up = 3, left = 3. What value goes in this cell?</div>
-  <button class="opt">4, because it is max(up, left) + 1</button>
-  <button class="opt">3, because it is diagonal + 1</button>
-  <button class="opt">3, because it is max(up, left)</button>
-  <button class="opt">2, because it is just the diagonal</button>
+<div class="quiz" data-correct="1" data-explain="On a match the new letter extends the LCS of the two strictly-shorter prefixes, which lives in the diagonal cell L[i-1,j-1] — so you add 1 to the diagonal. The 'max of left and up, plus 1' option is the classic trap: you only add 1 when letters match (and then from the diagonal), and you never add 1 on a mismatch." data-explain-zh="對上的時候，這個新字母會把兩段更短前綴的 LCS 接長一個，而那個值就放在對角格 L[i-1,j-1]——所以是對角 +1。「max(左,上) +1」是經典陷阱：只有字母對上才 +1（而且是從對角來），沒對上時絕對不會 +1。">
+  <div class="q"><span data-tr="en">Filling the LCS table, you reach a cell where the row letter and column letter are <strong>both <code>c</code></strong> (a match). The neighbours read: diagonal (up-left) = 2, up = 3, left = 3. What value goes in this cell?</span><span data-tr="zh">在填 LCS 表時，你來到某一格，它的列字母和欄字母<strong>都是 <code>c</code></strong>（對上了）。鄰居的值是：對角（左上）= 2、上 = 3、左 = 3。這格該填多少？</span></div>
+  <button class="opt"><span data-tr="en">4, because it is max(up, left) + 1</span><span data-tr="zh">4，因為是 max(上, 左) + 1</span></button>
+  <button class="opt"><span data-tr="en">3, because it is diagonal + 1</span><span data-tr="zh">3，因為是對角 + 1</span></button>
+  <button class="opt"><span data-tr="en">3, because it is max(up, left)</span><span data-tr="zh">3，因為是 max(上, 左)</span></button>
+  <button class="opt"><span data-tr="en">2, because it is just the diagonal</span><span data-tr="zh">2，因為就是對角的值</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="A and B share a, c, a, d in order (skipping the extra letters of each), and the bottom-right table cell is 4. 'accb' and 'bacad' are substrings/whole strings, not common subsequences of both; 'aca' is common but not the longest.">
-  <div class="q">For <code>A = bacad</code> and <code>B = accbadcb</code>, which string is the longest common subsequence, and what is its length?</div>
-  <button class="opt">aca, length 3</button>
-  <button class="opt">accb, length 4</button>
-  <button class="opt">acad, length 4</button>
-  <button class="opt">bacad, length 5</button>
+<div class="quiz" data-correct="2" data-explain="A and B share a, c, a, d in order (skipping the extra letters of each), and the bottom-right table cell is 4. 'accb' and 'bacad' are substrings/whole strings, not common subsequences of both; 'aca' is common but not the longest." data-explain-zh="A 和 B 依序共有 a, c, a, d（各自把多餘的字母跳過），右下角那格就是 4。'accb' 和 'bacad' 是 substring 或整個字串，不是兩邊共同的 subsequence；'aca' 雖然是共同的，但不是最長。">
+  <div class="q"><span data-tr="en">For <code>A = bacad</code> and <code>B = accbadcb</code>, which string is the longest common subsequence, and what is its length?</span><span data-tr="zh">對 <code>A = bacad</code> 和 <code>B = accbadcb</code>，哪個字串是 longest common subsequence，長度多少？</span></div>
+  <button class="opt"><span data-tr="en">aca, length 3</span><span data-tr="zh">aca，長度 3</span></button>
+  <button class="opt"><span data-tr="en">accb, length 4</span><span data-tr="zh">accb，長度 4</span></button>
+  <button class="opt"><span data-tr="en">acad, length 4</span><span data-tr="zh">acad，長度 4</span></button>
+  <button class="opt"><span data-tr="en">bacad, length 5</span><span data-tr="zh">bacad，長度 5</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-lcs">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-lcs"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Alg07 · Ch 7 §11 (slides 28–29), the <code>L[i,j]</code> recurrence and trace-back. Also CLRS, <em>Introduction to Algorithms</em>, §15.4 "Longest common subsequence" — the same table and recovery.</p>
-<div class="note"><strong>Solved by:</strong> <a href="algo-dynamic-programming.html">Dynamic Programming</a> — the table is built bottom-up because each cell's answer combines the answers to strictly smaller prefix-subproblems (the principle of optimality). <strong>Sibling problems in this bucket:</strong> <a href="prob-knapsack-dp.html">0/1 Knapsack (DP)</a>, <a href="prob-multistage-graph.html">Multistage Graph shortest path</a>, and <a href="prob-resource-allocation.html">Resource Allocation</a> — same machinery, different recurrence.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">深入了解</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> Alg07 · Ch 7 §11 (slides 28–29), the <code>L[i,j]</code> recurrence and trace-back. Also CLRS, <em>Introduction to Algorithms</em>, §15.4 "Longest common subsequence" — the same table and recovery.</span><span data-tr="zh"><strong>主要出處：</strong>Alg07 · Ch 7 §11（slides 28–29），<code>L[i,j]</code> 的遞迴式和 trace-back。另外 CLRS, <em>Introduction to Algorithms</em>, §15.4 "Longest common subsequence"——一樣的表格和回溯方式。</span></p>
+<div class="note"><span data-tr="en"><strong>Solved by:</strong> <a href="algo-dynamic-programming.html">Dynamic Programming</a> — the table is built bottom-up because each cell's answer combines the answers to strictly smaller prefix-subproblems (the principle of optimality). <strong>Sibling problems in this bucket:</strong> <a href="prob-knapsack-dp.html">0/1 Knapsack (DP)</a>, <a href="prob-multistage-graph.html">Multistage Graph shortest path</a>, and <a href="prob-resource-allocation.html">Resource Allocation</a> — same machinery, different recurrence.</span><span data-tr="zh"><strong>用什麼解：</strong><a href="algo-dynamic-programming.html">Dynamic Programming</a>——這張表是由下往上建的，因為每格的答案都是由更小的前綴子問題的答案組合出來的（principle of optimality）。<strong>同一類的問題：</strong><a href="prob-knapsack-dp.html">0/1 Knapsack (DP)</a>、<a href="prob-multistage-graph.html">Multistage Graph shortest path</a> 和 <a href="prob-resource-allocation.html">Resource Allocation</a>——同一套手法，只是遞迴式不一樣。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

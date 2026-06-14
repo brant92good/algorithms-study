@@ -15,16 +15,16 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Branch-and-Bound · Ch6</div>
-<h1>Travelling Salesperson — Branch &amp; Bound</h1>
-<div class="mission">Given a table of city-to-city travel costs, find the <strong>cheapest round trip</strong> that visits <em>every</em> city exactly once and returns home — proven optimal without trying all the orderings.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §9 (TSP via Branch-and-Bound), Tables 6-3/6-4/6-5, Fig. 6-25/6-26.</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
+<div class="kicker"><span data-tr="en">Branch-and-Bound · Ch6</span><span data-tr="zh">Branch-and-Bound · 第六章</span></div>
+<h1><span data-tr="en">Travelling Salesperson — Branch &amp; Bound</span><span data-tr="zh">旅行推銷員問題 — Branch &amp; Bound</span></h1>
+<div class="mission"><span data-tr="en">Given a table of city-to-city travel costs, find the <strong>cheapest round trip</strong> that visits <em>every</em> city exactly once and returns home — proven optimal without trying all the orderings.</span><span data-tr="zh">給你一張城市之間的旅費表，找出一條<strong>最便宜的環遊路線</strong>：<em>每個</em>城市都剛好經過一次再繞回原點。而且我們會證明它是最佳的，卻不必把所有排列都試過一遍。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b> Alg05 · Ch 6 §9 (TSP via Branch-and-Bound), Tables 6-3/6-4/6-5, Fig. 6-25/6-26.</p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">用什麼解：</span></b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
 
-<h2>The problem</h2>
-<p>A salesperson must visit <strong>n cities</strong> and come back to where they started. We're given an <code>n×n</code> <strong>cost matrix</strong> where entry <code>(i, j)</code> is the cost of travelling from city <code>i</code> directly to city <code>j</code> (the diagonal is <code>∞</code> — you can't go from a city to itself). A <strong>tour</strong> is an order in which you visit all the cities, ending back at the start; its cost is the sum of the arc costs along the way.</p>
-<p><strong>The task:</strong> find the tour of <em>minimum</em> total cost. This is the <strong>Travelling Salesperson Problem (TSP)</strong>, and it is <strong>NP-complete</strong> — there are <code>(n−1)!</code> possible tours, so brute force is hopeless even for modest n.</p>
-<p><strong>The concrete instance (Table 6-3).</strong> Seven cities, with this cost matrix (rows = "from", columns = "to", <code>∞</code> on the diagonal):</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">問題是什麼</span></h2>
+<p><span data-tr="en">A salesperson must visit <strong>n cities</strong> and come back to where they started. We're given an <code>n×n</code> <strong>cost matrix</strong> where entry <code>(i, j)</code> is the cost of travelling from city <code>i</code> directly to city <code>j</code> (the diagonal is <code>∞</code> — you can't go from a city to itself). A <strong>tour</strong> is an order in which you visit all the cities, ending back at the start; its cost is the sum of the arc costs along the way.</span><span data-tr="zh">一個推銷員要跑遍 <strong>n 個城市</strong>再回到出發點。我們有一張 <code>n×n</code> 的<strong>成本矩陣</strong>，第 <code>(i, j)</code> 格是從城市 <code>i</code> 直接到城市 <code>j</code> 的旅費（對角線是 <code>∞</code>——你不能從一個城市走到自己）。一條 <strong>tour</strong> 就是把所有城市走完再回到起點的順序，它的成本就是沿途每段 arc 的旅費加總。</span></p>
+<p><strong><span data-tr="en">The task:</span><span data-tr="zh">任務：</span></strong> <span data-tr="en">find the tour of <em>minimum</em> total cost. This is the <strong>Travelling Salesperson Problem (TSP)</strong>, and it is <strong>NP-complete</strong> — there are <code>(n−1)!</code> possible tours, so brute force is hopeless even for modest n.</span><span data-tr="zh">找出總成本<em>最小</em>的那條 tour。這就是 <strong>Travelling Salesperson Problem (TSP)</strong>，它是 <strong>NP-complete</strong>——可能的 tour 有 <code>(n−1)!</code> 條，所以就算 n 不大，硬爆搜也沒救。</span></p>
+<p><strong><span data-tr="en">The concrete instance (Table 6-3).</span><span data-tr="zh">實際例子（Table 6-3）。</span></strong> <span data-tr="en">Seven cities, with this cost matrix (rows = "from", columns = "to", <code>∞</code> on the diagonal):</span><span data-tr="zh">七個城市，成本矩陣如下（列＝「from」、行＝「to」，對角線是 <code>∞</code>）：</span></p>
 <div class="atree" style="line-height:1.5">
        to:   1    2    3    4    5    6    7
   from 1:    ∞    3   93   13   33    9   57
@@ -35,26 +35,26 @@
   from 6:    3   88   18   46   92    ∞    7
   from 7:   44   26   33   27   84   39    ∞
 </div>
-<p>We want the cheapest tour through all 7 cities. The answer turns out to be the tour <strong>1→4→6→7→3→5→2→1</strong> at cost <strong>126</strong> — but the interesting part is <em>how</em> Branch-and-Bound proves no cheaper tour exists without enumerating all <code>6! = 720</code> orderings.</p>
+<p><span data-tr="en">We want the cheapest tour through all 7 cities. The answer turns out to be the tour <strong>1→4→6→7→3→5→2→1</strong> at cost <strong>126</strong> — but the interesting part is <em>how</em> Branch-and-Bound proves no cheaper tour exists without enumerating all <code>6! = 720</code> orderings.</span><span data-tr="zh">我們要找跑遍這 7 個城市最便宜的 tour。答案是 <strong>1→4→6→7→3→5→2→1</strong>，成本 <strong>126</strong>——不過有趣的是 Branch-and-Bound <em>怎麼</em>證明沒有更便宜的 tour，卻不用把全部 <code>6! = 720</code> 種排列都列出來。</span></p>
 
-<div class="note"><strong>The key tool — a lower bound from the reduced cost matrix.</strong> Every tour must <em>leave</em> each city once, so it pays <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum</strong> from that row (now every row has a zero), then <strong>subtract each column's minimum</strong> from any column still without a zero. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — a valid <strong>lower bound</strong>. For this instance the row reductions sum to <strong>84</strong> and the column reductions add <strong>7+1+4 = 12</strong>, for a root lower bound of <strong>96</strong>.</p></div>
+<div class="note"><strong><span data-tr="en">The key tool — a lower bound from the reduced cost matrix.</span><span data-tr="zh">關鍵工具——從 reduced cost matrix 算出來的下界。</span></strong> <span data-tr="en">Every tour must <em>leave</em> each city once, so it pays <em>at least</em> the cheapest exit from each city. <strong>Subtract each row's minimum</strong> from that row (now every row has a zero), then <strong>subtract each column's minimum</strong> from any column still without a zero. The <strong>total amount subtracted</strong> is cost that <em>any</em> tour is forced to pay — a valid <strong>lower bound</strong>. For this instance the row reductions sum to <strong>84</strong> and the column reductions add <strong>7+1+4 = 12</strong>, for a root lower bound of <strong>96</strong>.</span><span data-tr="zh">每條 tour 都得從每個城市<em>離開</em>一次，所以它<em>至少</em>要付掉每個城市最便宜的那條出去的路。先<strong>把每列減掉該列的最小值</strong>（這樣每列都有一個 0），再<strong>把每行減掉該行的最小值</strong>（只挑還沒有 0 的行）。<strong>減掉的總量</strong>就是<em>任何</em> tour 都躲不掉的成本——一個有效的<strong>下界</strong>。這個例子裡，列的 reduction 加起來是 <strong>84</strong>，行的 reduction 再加 <strong>7+1+4 = 12</strong>，根節點下界就是 <strong>96</strong>。</span></p></div>
 
-<h2>Watch it solved</h2>
-<p>The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we <strong>branch</strong> on include/exclude decisions for arcs, carrying a lower <strong>bound</strong> at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best tour found). The left spine of "include" choices reaches the optimal tour. Step through.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">The 7×7 cost matrix reduces to a lower bound of <strong>96</strong>. Then we <strong>branch</strong> on include/exclude decisions for arcs, carrying a lower <strong>bound</strong> at each node. <span style="color:var(--mut)">Dimmed = pruned</span> (its bound can't beat the best tour found). The left spine of "include" choices reaches the optimal tour. Step through.</span><span data-tr="zh">7×7 的成本矩陣 reduce 之後得到下界 <strong>96</strong>。接著我們對每條 arc 做「選／不選」的決策來 <strong>branch</strong>，每個節點都帶著一個下<strong>界（bound）</strong>。<span style="color:var(--mut)">變淡＝被剪掉</span>（它的下界贏不過目前找到的最佳 tour）。一路沿著「選進來」的左側主幹走，就會走到最佳 tour。一步步看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Cities: <b>7</b></span>
-  <span class="chip">Root lower bound: <b>96</b></span>
-  <span class="chip">Optimal tour: <b>1-4-6-7-3-5-2-1</b></span>
-  <span class="chip">Optimal cost: <b>126</b></span>
-  <span class="chip">Hardness: <b>NP-complete</b></span>
+  <span class="chip"><span data-tr="en">Cities: <b>7</b></span><span data-tr="zh">城市數：<b>7</b></span></span>
+  <span class="chip"><span data-tr="en">Root lower bound: <b>96</b></span><span data-tr="zh">根節點下界：<b>96</b></span></span>
+  <span class="chip"><span data-tr="en">Optimal tour: <b>1-4-6-7-3-5-2-1</b></span><span data-tr="zh">最佳 tour：<b>1-4-6-7-3-5-2-1</b></span></span>
+  <span class="chip"><span data-tr="en">Optimal cost: <b>126</b></span><span data-tr="zh">最佳成本：<b>126</b></span></span>
+  <span class="chip"><span data-tr="en">Hardness: <b>NP-complete</b></span><span data-tr="zh">難度：<b>NP-complete</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="The lower bound from a reduced cost matrix is exactly the TOTAL amount subtracted: 84 from the row reductions plus 7+1+4 = 12 from the column reductions = 96. That total is cost every tour is forced to pay, so it is a valid lower bound. 84 forgets the column step; 116 and 222 mix in unrelated numbers.">
-  <div class="q">In the 7-city TSP, reducing the cost matrix subtracts <strong>84</strong> total across all rows, then subtracts <strong>7</strong>, <strong>1</strong>, and <strong>4</strong> from three columns that still lacked a zero. What lower bound does this give for the whole problem?</div>
+<div class="quiz" data-correct="1" data-explain="The lower bound from a reduced cost matrix is exactly the TOTAL amount subtracted: 84 from the row reductions plus 7+1+4 = 12 from the column reductions = 96. That total is cost every tour is forced to pay, so it is a valid lower bound. 84 forgets the column step; 116 and 222 mix in unrelated numbers." data-explain-zh="reduced cost matrix 給的下界，就剛好是<b>減掉的總量</b>：列的 reduction 84，加上行的 reduction 7+1+4 = 12，合計 96。這個總量是每條 tour 都躲不掉、一定要付的成本，所以是有效下界。選 84 是漏掉了行的那一步；116 和 222 則是亂湊不相干的數字。">
+  <div class="q"><span data-tr="en">In the 7-city TSP, reducing the cost matrix subtracts <strong>84</strong> total across all rows, then subtracts <strong>7</strong>, <strong>1</strong>, and <strong>4</strong> from three columns that still lacked a zero. What lower bound does this give for the whole problem?</span><span data-tr="zh">在這個 7 城市的 TSP 裡，對成本矩陣做 reduction：所有列總共減掉 <strong>84</strong>，接著對三個還沒有 0 的行各減掉 <strong>7</strong>、<strong>1</strong>、<strong>4</strong>。這給出整個問題的下界是多少？</span></div>
   <button class="opt">84</button>
   <button class="opt">96</button>
   <button class="opt">116</button>
@@ -62,28 +62,28 @@
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="A node's lower bound is the BEST its subtree could ever do. If that best is already ≥ the best complete tour found (here 126), the subtree can't strictly improve on 126, so prune it. The 'Without 4-6' node has bound 128 ≥ 126 → pruned. Using ≤ (option index 1) is the classic trap: you'd prune the very node whose bound is 126, throwing away the optimal tour itself.">
-  <div class="q">You've already found a complete tour costing <strong>126</strong>. A node's lower bound is <strong>128</strong>. What's the correct rule, and what do you do here?</div>
-  <button class="opt">prune when bound &gt; best; here 128 &gt; 126 so prune</button>
-  <button class="opt">prune when bound ≤ best; here 128 is not ≤ 126 so keep it</button>
-  <button class="opt">prune when bound ≥ best; here 128 ≥ 126 so prune it</button>
-  <button class="opt">never prune; you must expand every node to be safe</button>
+<div class="quiz" data-correct="2" data-explain="A node's lower bound is the BEST its subtree could ever do. If that best is already ≥ the best complete tour found (here 126), the subtree can't strictly improve on 126, so prune it. The 'Without 4-6' node has bound 128 ≥ 126 → pruned. Using ≤ (option index 1) is the classic trap: you'd prune the very node whose bound is 126, throwing away the optimal tour itself." data-explain-zh="一個節點的下界，是它整棵子樹<b>最好</b>能做到的程度。如果這個最好都已經 ≥ 目前找到的最佳完整 tour（這裡是 126），那它就不可能真的贏過 126，可以剪掉。「Without 4-6」那個節點下界 128 ≥ 126 → 剪掉。用 ≤（第二個選項）是經典陷阱：那會把下界剛好等於 126 的那個節點也砍掉，等於把最佳 tour 本身丟掉了。">
+  <div class="q"><span data-tr="en">You've already found a complete tour costing <strong>126</strong>. A node's lower bound is <strong>128</strong>. What's the correct rule, and what do you do here?</span><span data-tr="zh">你已經找到一條成本 <strong>126</strong> 的完整 tour。某個節點的下界是 <strong>128</strong>。正確的規則是什麼，這裡又該怎麼做？</span></div>
+  <button class="opt"><span data-tr="en">prune when bound &gt; best; here 128 &gt; 126 so prune</span><span data-tr="zh">下界 &gt; best 才剪；這裡 128 &gt; 126 所以剪掉</span></button>
+  <button class="opt"><span data-tr="en">prune when bound ≤ best; here 128 is not ≤ 126 so keep it</span><span data-tr="zh">下界 ≤ best 才剪；這裡 128 不 ≤ 126 所以保留</span></button>
+  <button class="opt"><span data-tr="en">prune when bound ≥ best; here 128 ≥ 126 so prune it</span><span data-tr="zh">下界 ≥ best 就剪；這裡 128 ≥ 126 所以剪掉</span></button>
+  <button class="opt"><span data-tr="en">never prune; you must expand every node to be safe</span><span data-tr="zh">永遠不剪；為了保險每個節點都要展開</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-tsp-bnb">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-tsp-bnb"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">學習進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §9 (Tables 6-3/6-4/6-5, Fig. 6-25/6-26) — the reduced-cost-matrix TSP worked here. See also CLRS, <em>Introduction to Algorithms</em>, on branch-and-bound for optimization.</p>
-<div class="note"><strong>See also — the other problems Branch-and-Bound solves in the slides:</strong>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">延伸閱讀</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong> <span data-tr="en">R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §9 (Tables 6-3/6-4/6-5, Fig. 6-25/6-26) — the reduced-cost-matrix TSP worked here. See also CLRS, <em>Introduction to Algorithms</em>, on branch-and-bound for optimization.</span><span data-tr="zh">R.C.T. Lee et al., <em>Introduction to the Design and Analysis of Algorithms</em>, 第六章 §9（Tables 6-3/6-4/6-5, Fig. 6-25/6-26）——本頁就是用 reduced-cost-matrix 解這題 TSP。也可參考 CLRS《Introduction to Algorithms》裡關於 branch-and-bound 解最佳化的部分。</span></p>
+<div class="note"><strong><span data-tr="en">See also — the other problems Branch-and-Bound solves in the slides:</span><span data-tr="zh">延伸——投影片裡 Branch-and-Bound 解的其他問題：</span></strong>
 <ul style="margin:.5rem 0 0;padding-left:1.2rem">
-<li><a href="prob-personnel-assignment.html">Personnel Assignment</a> — assign <em>n</em> people to <em>n</em> jobs (with a precedence order on jobs) at minimum total cost; same reduce-the-matrix lower bound, optimal cost 70.</li>
-<li><a href="prob-knapsack-bnb.html">0/1 Knapsack (B&amp;B)</a> — pick a subset of items (each whole or not) to maximise profit within a weight cap; bounds come from a feasible packing and the fractional relaxation.</li>
+<li><a href="prob-personnel-assignment.html">Personnel Assignment</a> — <span data-tr="en">assign <em>n</em> people to <em>n</em> jobs (with a precedence order on jobs) at minimum total cost; same reduce-the-matrix lower bound, optimal cost 70.</span><span data-tr="zh">把 <em>n</em> 個人指派給 <em>n</em> 個工作（工作之間有 precedence order），讓總成本最小；一樣用 reduce 矩陣的下界，最佳成本 70。</span></li>
+<li><a href="prob-knapsack-bnb.html">0/1 Knapsack (B&amp;B)</a> — <span data-tr="en">pick a subset of items (each whole or not) to maximise profit within a weight cap; bounds come from a feasible packing and the fractional relaxation.</span><span data-tr="zh">在重量上限內挑一組物品（每件全拿或不拿）讓利潤最大；下界／上界來自一個可行的裝法和 fractional relaxation。</span></li>
 </ul>
-The method itself lives on the <a href="algo-branch-and-bound.html">Branch-and-Bound</a> card.</div>
+<span data-tr="en">The method itself lives on the <a href="algo-branch-and-bound.html">Branch-and-Bound</a> card.</span><span data-tr="zh">方法本身的說明在 <a href="algo-branch-and-bound.html">Branch-and-Bound</a> 那張卡。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

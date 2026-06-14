@@ -17,62 +17,62 @@
 
 <div class="kicker">Searching Strategies · Ch6</div>
 <h1>A* Algorithm</h1>
-<div class="mission">Best-first search that is guaranteed to return the <strong>optimal</strong> solution — by ranking nodes with <strong>f(n) = g(n) + h(n)</strong> and using a heuristic that <strong>never overestimates</strong>.</div>
+<div class="mission"><span data-tr="en">Best-first search that is guaranteed to return the <strong>optimal</strong> solution — by ranking nodes with <strong>f(n) = g(n) + h(n)</strong> and using a heuristic that <strong>never overestimates</strong>.</span><span data-tr="zh">一種保證會回傳<strong>最佳</strong>解的 best-first search——靠的是用 <strong>f(n) = g(n) + h(n)</strong> 幫節點排序，再搭配一個<strong>絕不高估</strong>的 heuristic。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (A\*) and §12 (channel routing).</p>
 
-<h2>The idea</h2>
-<p>Many optimization problems can be drawn as a <strong>search tree</strong>: the root is the empty/start state, and each path down to a goal node is one candidate solution. We want the <em>cheapest</em> goal. Plain searches — depth-first, breadth-first, hill-climbing, best-first — all stop at the <em>first</em> goal they reach, and the first goal is not necessarily the cheapest one. A* fixes this.</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心想法</span></h2>
+<p><span data-tr="en">Many optimization problems can be drawn as a <strong>search tree</strong>: the root is the empty/start state, and each path down to a goal node is one candidate solution. We want the <em>cheapest</em> goal. Plain searches — depth-first, breadth-first, hill-climbing, best-first — all stop at the <em>first</em> goal they reach, and the first goal is not necessarily the cheapest one. A* fixes this.</span><span data-tr="zh">很多最佳化問題都可以畫成一棵<strong>搜尋樹</strong>：root 是空的／起始狀態，往下走到某個目標節點的每一條路都是一個候選解。我們要的是<em>最便宜</em>的那個目標。一般的搜尋——DFS、BFS、hill-climbing、best-first——通通都是碰到<em>第一個</em>目標就停，但第一個目標不一定最便宜。A* 就是來解決這件事的。</span></p>
 
-<p>A* is <strong>best-first search</strong> (keep a list of all open nodes, always expand the most promising one) with a carefully chosen cost estimate. For every node <code>n</code> it computes</p>
+<p><span data-tr="en">A* is <strong>best-first search</strong> (keep a list of all open nodes, always expand the most promising one) with a carefully chosen cost estimate. For every node <code>n</code> it computes</span><span data-tr="zh">A* 就是 <strong>best-first search</strong>（維護一份所有 open 節點的清單，每次展開最有希望的那個），再配上一個精心挑過的成本估計。對每個節點 <code>n</code> 它會算出</span></p>
 <ul>
-  <li><b>g(n)</b> — the <em>actual</em> cost already spent getting from the root to <code>n</code> (cost so far);</li>
-  <li><b>h(n)</b> — an <em>estimate</em> of the cost from <code>n</code> onward to a goal;</li>
-  <li><b>f(n) = g(n) + h(n)</b> — the estimated cost of the cheapest full solution that passes through <code>n</code>.</li>
+  <li><span data-tr="en"><b>g(n)</b> — the <em>actual</em> cost already spent getting from the root to <code>n</code> (cost so far);</span><span data-tr="zh"><b>g(n)</b>——從 root 走到 <code>n</code> <em>實際</em>已經花掉的成本（目前花費）；</span></li>
+  <li><span data-tr="en"><b>h(n)</b> — an <em>estimate</em> of the cost from <code>n</code> onward to a goal;</span><span data-tr="zh"><b>h(n)</b>——從 <code>n</code> 往後走到目標的成本<em>估計值</em>；</span></li>
+  <li><span data-tr="en"><b>f(n) = g(n) + h(n)</b> — the estimated cost of the cheapest full solution that passes through <code>n</code>.</span><span data-tr="zh"><b>f(n) = g(n) + h(n)</b>——經過 <code>n</code> 的最便宜完整解，它估計的成本。</span></li>
 </ul>
-<p>The list of open nodes is sorted by <code>f</code>, and each step <strong>expands the open node with the smallest f</strong>, adding its children back into the list.</p>
+<p><span data-tr="en">The list of open nodes is sorted by <code>f</code>, and each step <strong>expands the open node with the smallest f</strong>, adding its children back into the list.</span><span data-tr="zh">open 節點清單會照 <code>f</code> 排序，每一步<strong>展開 f 最小的那個 open 節點</strong>，再把它的子節點放回清單裡。</span></p>
 
-<p><strong>The admissibility condition.</strong> Let <code>h*(n)</code> be the <em>true</em> minimum remaining cost from <code>n</code> to a goal. The heuristic <code>h</code> is <strong>admissible</strong> when it <em>never overestimates</em>:</p>
+<p><span data-tr="en"><strong>The admissibility condition.</strong> Let <code>h*(n)</code> be the <em>true</em> minimum remaining cost from <code>n</code> to a goal. The heuristic <code>h</code> is <strong>admissible</strong> when it <em>never overestimates</em>:</span><span data-tr="zh"><strong>admissibility 條件。</strong>令 <code>h*(n)</code> 是從 <code>n</code> 到目標<em>真正</em>最小的剩餘成本。當 heuristic <code>h</code> <em>絕不高估</em>時，它就是 <strong>admissible</strong> 的：</span></p>
 <p style="text-align:center"><code>h(n) ≤ h*(n)&nbsp;&nbsp;⟹&nbsp;&nbsp;f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code></p>
-<p>So an admissible <code>h</code> makes <code>f(n)</code> a genuine <strong>lower bound</strong> on the best total cost of any solution through <code>n</code>. That is the whole trick: because no node is ever rated <em>better</em> than it really is, the <strong>first goal node selected for expansion (the one with smallest f) is guaranteed optimal</strong> — and A* stops there.</p>
+<p><span data-tr="en">So an admissible <code>h</code> makes <code>f(n)</code> a genuine <strong>lower bound</strong> on the best total cost of any solution through <code>n</code>. That is the whole trick: because no node is ever rated <em>better</em> than it really is, the <strong>first goal node selected for expansion (the one with smallest f) is guaranteed optimal</strong> — and A* stops there.</span><span data-tr="zh">所以 admissible 的 <code>h</code> 會讓 <code>f(n)</code> 成為「經過 <code>n</code> 的任何解，其最佳總成本」的貨真價實<strong>下界</strong>。整個訣竅就在這：因為沒有任何節點會被評得比它實際<em>更好</em>，所以<strong>第一個被選中展開的目標節點（也就是 f 最小的那個）就保證是最佳解</strong>——A* 就停在那裡。</span></p>
 
-<div class="note"><strong>Key intuition:</strong> A* is best-first search where the ranking is a lower bound (<code>g</code> known cost + <code>h</code> optimistic estimate). The instant a goal node becomes the cheapest node in the list, every other open node has <code>f ≥</code> that goal's cost, so none of them can lead anywhere cheaper — the goal must be optimal. <em>(Caution: reaching a goal isn't enough; it must be the node actually selected, i.e. the smallest-f node.)</em></p>
+<div class="note"><span data-tr="en"><strong>Key intuition:</strong> A* is best-first search where the ranking is a lower bound (<code>g</code> known cost + <code>h</code> optimistic estimate). The instant a goal node becomes the cheapest node in the list, every other open node has <code>f ≥</code> that goal's cost, so none of them can lead anywhere cheaper — the goal must be optimal. <em>(Caution: reaching a goal isn't enough; it must be the node actually selected, i.e. the smallest-f node.)</em></span><span data-tr="zh"><strong>關鍵直覺：</strong>A* 是用「下界」當排序依據的 best-first search（<code>g</code> 是已知成本 + <code>h</code> 是樂觀估計）。當某個目標節點變成清單裡最便宜的那一刻，其他每個 open 節點的 <code>f ≥</code> 這個目標的成本，所以它們誰都通不到更便宜的地方——這個目標一定是最佳的。<em>（注意：只是碰到目標還不夠；它必須是真的被選中的那個節點，也就是 f 最小的那個。）</em></span></p>
 
-<h2>A tiny illustration</h2>
-<p>This is the worked example from the slides (Fig. 6-36): a search tree rooted at <b>R</b>. Each edge carries a cost added to <code>g</code>; each node shows its <code>g + h = f</code>. The heuristic here is admissible. We always pop the smallest-<code>f</code> open node. Step through; the badge on each node is its <code>f</code>, green = expanded, gold = currently selected, blue = open in the list.</p>
+<h2><span data-tr="en">A tiny illustration</span><span data-tr="zh">一個小示範</span></h2>
+<p><span data-tr="en">This is the worked example from the slides (Fig. 6-36): a search tree rooted at <b>R</b>. Each edge carries a cost added to <code>g</code>; each node shows its <code>g + h = f</code>. The heuristic here is admissible. We always pop the smallest-<code>f</code> open node. Step through; the badge on each node is its <code>f</code>, green = expanded, gold = currently selected, blue = open in the list.</span><span data-tr="zh">這是投影片上的範例（Fig. 6-36）：一棵以 <b>R</b> 為 root 的搜尋樹。每條邊都帶一個會加進 <code>g</code> 的成本；每個節點都標出它的 <code>g + h = f</code>。這裡的 heuristic 是 admissible 的。我們每次都取出 <code>f</code> 最小的 open 節點。一步步看下去；每個節點上的標記就是它的 <code>f</code>，綠色＝已展開，金色＝目前選中，藍色＝還在清單裡的 open 節點。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Rank by: <b>f = g + h</b></span>
+  <span class="chip"><span data-tr="en">Rank by: <b>f = g + h</b></span><span data-tr="zh">排序依據：<b>f = g + h</b></span></span>
   <span class="chip">Admissible: <b>h ≤ h*</b></span>
-  <span class="chip">Stop: <b>smallest-f node is a goal</b></span>
-  <span class="chip">Guarantee: <b>optimal</b></span>
+  <span class="chip"><span data-tr="en">Stop: <b>smallest-f node is a goal</b></span><span data-tr="zh">停止：<b>f 最小的節點是目標</b></span></span>
+  <span class="chip"><span data-tr="en">Guarantee: <b>optimal</b></span><span data-tr="zh">保證：<b>最佳解</b></span></span>
 </div>
 
-<h2>Problems it solves (in the slides)</h2>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡的）</span></h2>
 <ul>
-  <li><a href="prob-astar-graph.html">A* on a graph (Fig. 6-36)</a> — find the <strong>least-cost path</strong> from a source to a goal node, expanding nodes by <code>f = g + h</code> until the goal is popped.</li>
-  <li><a href="prob-channel-routing.html">Channel routing</a> — wire all the nets in a VLSI channel using the <strong>fewest horizontal tracks</strong>, with <code>g</code> = tracks used so far and <code>h</code> = maximal local density (a lower bound on tracks still needed).</li>
+  <li><a href="prob-astar-graph.html"><span data-tr="en">A* on a graph (Fig. 6-36)</span><span data-tr="zh">graph 上的 A*（Fig. 6-36）</span></a><span data-tr="en"> — find the <strong>least-cost path</strong> from a source to a goal node, expanding nodes by <code>f = g + h</code> until the goal is popped.</span><span data-tr="zh">——找出從起點到目標節點<strong>成本最低的路徑</strong>，照 <code>f = g + h</code> 一個個展開節點，直到目標被取出來。</span></li>
+  <li><a href="prob-channel-routing.html"><span data-tr="en">Channel routing</span><span data-tr="zh">Channel routing</span></a><span data-tr="en"> — wire all the nets in a VLSI channel using the <strong>fewest horizontal tracks</strong>, with <code>g</code> = tracks used so far and <code>h</code> = maximal local density (a lower bound on tracks still needed).</span><span data-tr="zh">——把 VLSI channel 裡所有的 net 都接起來，並且用<strong>最少的水平 track</strong>，其中 <code>g</code> = 目前用掉的 track 數，<code>h</code> = maximal local density（還需要多少 track 的下界）。</span></li>
 </ul>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 1 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 1 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="Admissibility means h(n) ≤ h*(n): the heuristic never overestimates the true remaining cost. That makes f(n) = g(n)+h(n) a lower bound on the cheapest solution through n, which is exactly what guarantees the first goal popped is optimal. If h could overestimate, A* might expand a goal whose f is inflated past a cheaper alternative, losing optimality. Note h does NOT have to equal h* (that would require already solving the problem), and being a tighter under-estimate only makes A* faster, not more correct.">
-  <div class="q">A* is guaranteed to return the optimal goal as long as the heuristic h(n) satisfies which condition?</div>
-  <button class="opt">h(n) = h*(n) exactly — the estimate must equal the true remaining cost</button>
-  <button class="opt">h(n) ≥ h*(n) — the estimate must never underestimate</button>
-  <button class="opt">h(n) ≤ h*(n) — the estimate must never overestimate</button>
-  <button class="opt">h(n) = 0 for every node — no estimate is allowed</button>
+<div class="quiz" data-correct="2" data-explain="Admissibility means h(n) ≤ h*(n): the heuristic never overestimates the true remaining cost. That makes f(n) = g(n)+h(n) a lower bound on the cheapest solution through n, which is exactly what guarantees the first goal popped is optimal. If h could overestimate, A* might expand a goal whose f is inflated past a cheaper alternative, losing optimality. Note h does NOT have to equal h* (that would require already solving the problem), and being a tighter under-estimate only makes A* faster, not more correct." data-explain-zh="Admissibility 的意思是 h(n) ≤ h*(n)：heuristic 絕不會高估真正的剩餘成本。這樣 f(n) = g(n)+h(n) 就是經過 n 的最便宜解的下界，而這正是保證第一個取出的目標是最佳解的關鍵。如果 h 會高估，A* 可能展開一個 f 被灌水、其實比某個更便宜選項還貴的目標，最佳性就破功了。注意 h 不必等於 h*（那等於已經把問題解完了），而估得更緊一點只會讓 A* 變快，不會讓它更正確。">
+  <div class="q"><span data-tr="en">A* is guaranteed to return the optimal goal as long as the heuristic h(n) satisfies which condition?</span><span data-tr="zh">只要 heuristic h(n) 滿足哪個條件，A* 就保證會回傳最佳的目標？</span></div>
+  <button class="opt"><span data-tr="en">h(n) = h*(n) exactly — the estimate must equal the true remaining cost</span><span data-tr="zh">h(n) = h*(n) 完全相等——估計值必須等於真正的剩餘成本</span></button>
+  <button class="opt"><span data-tr="en">h(n) ≥ h*(n) — the estimate must never underestimate</span><span data-tr="zh">h(n) ≥ h*(n)——估計值絕不能低估</span></button>
+  <button class="opt"><span data-tr="en">h(n) ≤ h*(n) — the estimate must never overestimate</span><span data-tr="zh">h(n) ≤ h*(n)——估計值絕不能高估</span></button>
+  <button class="opt"><span data-tr="en">h(n) = 0 for every node — no estimate is allowed</span><span data-tr="zh">每個節點都 h(n) = 0——不准有任何估計</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-astar">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-astar"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (the A* algorithm, Fig. 6-36) and §12 (the channel-routing problem, Figs. 6-40/6-46/6-48). A* is the special case of <strong>branch-and-bound</strong> in which the bound is <code>f = g + h</code> with an admissible <code>h</code>; CLRS / Russell &amp; Norvig (<em>AIMA</em>, Ch. 3) develop the optimality proof in full.</p>
-<div class="note"><strong>Related in this bucket:</strong> A* sharpens the generic <a href="index.html">best-first search</a> with a provable bound. Try it on <a href="prob-astar-graph.html">the graph example</a> first, then see the same machinery minimize wiring tracks in <a href="prob-channel-routing.html">channel routing</a>.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想深入了解</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (the A* algorithm, Fig. 6-36) and §12 (the channel-routing problem, Figs. 6-40/6-46/6-48). A* is the special case of <strong>branch-and-bound</strong> in which the bound is <code>f = g + h</code> with an admissible <code>h</code>; CLRS / Russell &amp; Norvig (<em>AIMA</em>, Ch. 3) develop the optimality proof in full.</span><span data-tr="zh"><strong>主要來源：</strong>Lee–Tseng–Chang–Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11（A* 演算法，Fig. 6-36）和 §12（channel-routing 問題，Figs. 6-40/6-46/6-48）。其實 A* 是 <strong>branch-and-bound</strong> 的特例——它的界就是 <code>f = g + h</code>，配上一個 admissible 的 <code>h</code>；完整的最佳性證明可以看 CLRS 或 Russell &amp; Norvig（<em>AIMA</em>, Ch. 3）。</span></p>
+<div class="note"><span data-tr="en"><strong>Related in this bucket:</strong> A* sharpens the generic <a href="index.html">best-first search</a> with a provable bound. Try it on <a href="prob-astar-graph.html">the graph example</a> first, then see the same machinery minimize wiring tracks in <a href="prob-channel-routing.html">channel routing</a>.</span><span data-tr="zh"><strong>這一類的相關內容：</strong>A* 就是拿一個可證明的界，把一般的 <a href="index.html">best-first search</a> 磨利。先用 <a href="prob-astar-graph.html">graph 範例</a>試試，再去看同一套機制怎麼在 <a href="prob-channel-routing.html">channel routing</a> 裡把佈線 track 數壓到最少。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

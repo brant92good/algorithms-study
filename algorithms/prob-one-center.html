@@ -16,67 +16,67 @@
 <div class="wrap">
 
 <div class="kicker">Prune-and-Search · Alg06 §7</div>
-<h1>1-Center — Smallest Enclosing Circle</h1>
-<div class="mission">Where do you stand so that the <strong>farthest</strong> person is as close as possible? Find the centre of the <strong>smallest circle that covers every point</strong>.</div>
+<h1><span data-tr="en">1-Center — Smallest Enclosing Circle</span><span data-tr="zh">1-Center — 最小包覆圓</span></h1>
+<div class="mission"><span data-tr="en">Where do you stand so that the <strong>farthest</strong> person is as close as possible? Find the centre of the <strong>smallest circle that covers every point</strong>.</span><span data-tr="zh">你要站在哪，才能讓<strong>離你最遠</strong>的那個人盡量靠近你？也就是找出那個<strong>把所有點都蓋住的最小圓</strong>的圓心。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §7 (1-Center / smallest enclosing circle), Fig 7-16, Fig 7-18, Fig 7-23.</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">解法：</span></b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>The problem</h2>
-<p>You are given <code>n</code> points scattered on a flat plane — think of them as houses on a map. You must choose <strong>one</strong> location, the <em>centre</em>, and the cost of that choice is the distance to the point <em>farthest</em> from it. The <strong>1-center problem</strong> asks: pick the centre that makes this farthest distance as <strong>small as possible</strong>.</p>
-<p>Equivalently — and this is the picture to hold onto — find the <strong>smallest circle that encloses all <code>n</code> points</strong>. The circle's centre is the answer; its radius is exactly that smallest-possible farthest distance. Every point lies inside or on the circle, and you can't make the circle any smaller without leaving a point out.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">You are given <code>n</code> points scattered on a flat plane — think of them as houses on a map. You must choose <strong>one</strong> location, the <em>centre</em>, and the cost of that choice is the distance to the point <em>farthest</em> from it. The <strong>1-center problem</strong> asks: pick the centre that makes this farthest distance as <strong>small as possible</strong>.</span><span data-tr="zh">給你 <code>n</code> 個散在平面上的點——想成地圖上的房子。你要挑<strong>一個</strong>位置當<em>圓心</em>，而這個選擇的代價，就是離它<em>最遠</em>那個點的距離。<strong>1-center 問題</strong>要的是：挑一個圓心，讓這個最遠距離<strong>越小越好</strong>。</span></p>
+<p><span data-tr="en">Equivalently — and this is the picture to hold onto — find the <strong>smallest circle that encloses all <code>n</code> points</strong>. The circle's centre is the answer; its radius is exactly that smallest-possible farthest distance. Every point lies inside or on the circle, and you can't make the circle any smaller without leaving a point out.</span><span data-tr="zh">換個等價的講法——也是最該記住的畫面——就是找出<strong>能把全部 <code>n</code> 個點都框進去的最小圓</strong>。這個圓的圓心就是答案；半徑剛好就是那個最小化後的最遠距離。每個點都在圓內或圓上，而且你只要再縮小一點點，就一定會漏掉某個點。</span></p>
 
-<p>The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. Define the terms carefully:</p>
+<p><span data-tr="en">The key phrase is <strong>min-max</strong>: you <em>minimise</em> the <em>maximum</em> distance. Define the terms carefully:</span><span data-tr="zh">關鍵字是 <strong>min-max</strong>：你要<em>最小化</em>那個<em>最大</em>距離。把名詞講清楚：</span></p>
 <ul>
-  <li><b>Centre</b> — the single point you get to place anywhere on the plane.</li>
-  <li><b>Radius</b> — the distance from your centre to the <em>farthest</em> of the <code>n</code> points. This, and only this, is what you pay.</li>
-  <li><b>min-max</b> — you are <em>not</em> minimising the total or the average distance. Only the single worst (largest) distance counts, because that worst point is what forces the circle to be big.</li>
+  <li><b><span data-tr="en">Centre</span><span data-tr="zh">圓心</span></b> <span data-tr="en">— the single point you get to place anywhere on the plane.</span><span data-tr="zh">——你可以擺在平面上任何地方的那一個點。</span></li>
+  <li><b><span data-tr="en">Radius</span><span data-tr="zh">半徑</span></b> <span data-tr="en">— the distance from your centre to the <em>farthest</em> of the <code>n</code> points. This, and only this, is what you pay.</span><span data-tr="zh">——從圓心到 <code>n</code> 個點裡<em>最遠</em>那一個的距離。你付的代價就只有這個，別的都不算。</span></li>
+  <li><b>min-max</b> <span data-tr="en">— you are <em>not</em> minimising the total or the average distance. Only the single worst (largest) distance counts, because that worst point is what forces the circle to be big.</span><span data-tr="zh">——你<em>不是</em>在最小化總距離或平均距離。只有那個最糟（最大）的距離才算數，因為就是那個最糟的點逼著圓變大。</span></li>
 </ul>
 
-<p><strong>Where it's used — facility location.</strong> If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center: nobody should be more than the radius away.</p>
+<p><strong><span data-tr="en">Where it's used — facility location.</span><span data-tr="zh">用在哪——設施選址。</span></strong> <span data-tr="en">If you must place one fire station, hospital, cell tower, or warehouse so that the <em>worst-served</em> customer is as close as possible, that is exactly the 1-center: nobody should be more than the radius away.</span><span data-tr="zh">如果你要蓋一座消防隊、醫院、基地台或倉庫，讓<em>服務最差</em>的那位客戶盡量靠近，這就正好是 1-center：沒有人應該離得比半徑還遠。</span></p>
 
-<div class="note"><strong>A tiny concrete instance.</strong> Three points: <code>A=(0,0)</code>, <code>B=(4,0)</code>, <code>C=(2,1)</code>. Standing at <code>A</code> makes the farthest point <code>B</code>, distance 4. Standing at the midpoint <code>(2,0)</code> drops the farthest distance to 2 (both <code>A</code> and <code>B</code> are exactly 2 away, and <code>C</code> is only ≈1.4 away). No spot does better — the smallest enclosing circle is centred at <code>(2,0)</code> with radius 2. Notice the answer is pinned by the two <em>extreme</em> points, not the middle one.</p></div>
+<div class="note"><strong><span data-tr="en">A tiny concrete instance.</span><span data-tr="zh">來個小例子。</span></strong> <span data-tr="en">Three points: <code>A=(0,0)</code>, <code>B=(4,0)</code>, <code>C=(2,1)</code>. Standing at <code>A</code> makes the farthest point <code>B</code>, distance 4. Standing at the midpoint <code>(2,0)</code> drops the farthest distance to 2 (both <code>A</code> and <code>B</code> are exactly 2 away, and <code>C</code> is only ≈1.4 away). No spot does better — the smallest enclosing circle is centred at <code>(2,0)</code> with radius 2. Notice the answer is pinned by the two <em>extreme</em> points, not the middle one.</span><span data-tr="zh">三個點：<code>A=(0,0)</code>、<code>B=(4,0)</code>、<code>C=(2,1)</code>。站在 <code>A</code>，最遠的是 <code>B</code>，距離 4。站在中點 <code>(2,0)</code>，最遠距離就降到 2（<code>A</code> 和 <code>B</code> 都剛好 2 遠，<code>C</code> 只有約 1.4 遠）。沒有別的位置更好——最小包覆圓的圓心就在 <code>(2,0)</code>，半徑 2。注意：答案是被兩個<em>最外側</em>的點釘住的，不是中間那個。</span></p></div>
 
-<h2>Watch it solved</h2>
-<p>Eight points (the dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one that still covers everything. The red dot is the current <b>farthest</b> point (it sets the radius). Green dots are points <b>pruned</b> because they sit safely deep inside — they can never be the farthest, so the algorithm drops them. Step through.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">跑一遍給你看</span></h2>
+<p><span data-tr="en">Eight points (the dark dots). Watch the enclosing circle shrink and re-centre toward the smallest one that still covers everything. The red dot is the current <b>farthest</b> point (it sets the radius). Green dots are points <b>pruned</b> because they sit safely deep inside — they can never be the farthest, so the algorithm drops them. Step through.</span><span data-tr="zh">八個點（深色的點）。看著包覆圓一邊縮小、一邊重新調整圓心，逼近那個還能蓋住全部的最小圓。紅點是當下<b>最遠</b>的點（半徑就是它決定的）。綠點是被<b>砍掉</b>的，因為它們穩穩待在很裡面——永遠不可能是最遠的，所以演算法把它們丟掉。一步步點下去看。</span></p>
 <div id="viz"></div>
 
-<p><strong>How the solver works (prune-and-search).</strong> The slides solve 1-center in two stages. First the <strong>constrained</strong> version (§7.1): force the centre onto a given line, which is solvable in <code>O(n)</code> by pairing points, taking a median, and discarding the closer point of each pair. Then the <strong>general</strong> version (§7.2–7.3) uses that constrained solver plus a sign-determination test — "should the centre move up or down? left or right?" — to decide which side the true optimum lies on, and <strong>prunes ~n/16 of the points each round</strong>. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</p>
+<p><strong><span data-tr="en">How the solver works (prune-and-search).</span><span data-tr="zh">解法怎麼跑（prune-and-search）。</span></strong> <span data-tr="en">The slides solve 1-center in two stages. First the <strong>constrained</strong> version (§7.1): force the centre onto a given line, which is solvable in <code>O(n)</code> by pairing points, taking a median, and discarding the closer point of each pair. Then the <strong>general</strong> version (§7.2–7.3) uses that constrained solver plus a sign-determination test — "should the centre move up or down? left or right?" — to decide which side the true optimum lies on, and <strong>prunes ~n/16 of the points each round</strong>. Because a constant fraction vanishes every round, the work shrinks geometrically: <code>T(n) = T(15n/16) + O(n) = O(n)</code> — linear time.</span><span data-tr="zh">投影片把 1-center 分兩階段解。先是 <strong>constrained（受限）</strong>版本（§7.1）：強迫圓心落在一條給定的線上，這可以在 <code>O(n)</code> 解出來——把點兩兩配對，取中位數，再把每一對裡比較近的那個丟掉。接著 <strong>general（一般）</strong>版本（§7.2–7.3）拿這個受限解法，再加上一個正負號判定測試——「圓心該往上還往下？往左還往右？」——來決定真正的最佳解在哪一邊，並且<strong>每輪砍掉 ~n/16 個點</strong>。因為每輪都消掉固定比例，工作量是幾何級數縮小：<code>T(n) = T(15n/16) + O(n) = O(n)</code>——線性時間。</span></p>
 
 <div class="chips">
-  <span class="chip">Time: <b>O(n)</b></span>
-  <span class="chip">Prunes: <b>~n/16 each round</b></span>
-  <span class="chip">Goal: <b>min-max distance</b></span>
-  <span class="chip">Brute base: <b>≤ 16 points</b></span>
+  <span class="chip"><span data-tr="en">Time:</span><span data-tr="zh">時間：</span> <b>O(n)</b></span>
+  <span class="chip"><span data-tr="en">Prunes:</span><span data-tr="zh">每輪砍掉：</span> <b>~n/16 each round</b></span>
+  <span class="chip"><span data-tr="en">Goal:</span><span data-tr="zh">目標：</span> <b>min-max distance</b></span>
+  <span class="chip"><span data-tr="en">Brute base:</span><span data-tr="zh">暴力底層：</span> <b>≤ 16 points</b></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="The 1-center minimises the MAXIMUM distance to any point — the radius of the smallest enclosing circle. Moving toward the dense cluster would shrink the average distance but push the lone far point even farther, growing the worst case. Only the farthest point sets the radius.">
-  <div class="q">Seven points are tightly clustered on the left and one lone point sits far to the right. Where does the 1-center put the centre?</div>
-  <button class="opt">on top of the dense cluster, ignoring the lone point</button>
-  <button class="opt">shifted toward the lone point, so the worst (largest) distance is as small as possible</button>
-  <button class="opt">at the average (mean) position of all eight points</button>
-  <button class="opt">exactly halfway between the two closest points</button>
+<div class="quiz" data-correct="1" data-explain="The 1-center minimises the MAXIMUM distance to any point — the radius of the smallest enclosing circle. Moving toward the dense cluster would shrink the average distance but push the lone far point even farther, growing the worst case. Only the farthest point sets the radius." data-explain-zh="1-center 最小化的是到任何點的「最大」距離——也就是最小包覆圓的半徑。往密集的那群靠過去，會縮小平均距離沒錯，但會把那個落單的遠點推得更遠，最糟情況反而變大。半徑只由最遠的點決定。">
+  <div class="q"><span data-tr="en">Seven points are tightly clustered on the left and one lone point sits far to the right. Where does the 1-center put the centre?</span><span data-tr="zh">七個點緊緊擠在左邊，還有一個落單的點遠遠在右邊。1-center 會把圓心放在哪？</span></div>
+  <button class="opt"><span data-tr="en">on top of the dense cluster, ignoring the lone point</span><span data-tr="zh">壓在密集那群上面，無視落單的點</span></button>
+  <button class="opt"><span data-tr="en">shifted toward the lone point, so the worst (largest) distance is as small as possible</span><span data-tr="zh">往落單的點偏過去，讓最糟（最大）的距離盡量小</span></button>
+  <button class="opt"><span data-tr="en">at the average (mean) position of all eight points</span><span data-tr="zh">放在八個點的平均（mean）位置</span></button>
+  <button class="opt"><span data-tr="en">exactly halfway between the two closest points</span><span data-tr="zh">放在最靠近的兩個點正中間</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="Each round provably discards a constant fraction (~n/16) of the points, so the surviving size is 15n/16, then (15/16)²n, and so on. That geometric shrinkage makes the total work T(n)=T(15n/16)+O(n) sum to O(n). Halving the radius or sorting is not what gives linearity.">
-  <div class="q">Why does the prune-and-search 1-center algorithm run in O(n) rather than O(n log n)?</div>
-  <button class="opt">it sorts the points once and then scans them</button>
-  <button class="opt">it halves the radius of the circle every step</button>
-  <button class="opt">each round throws away a constant fraction of the points, so the sizes form a shrinking geometric series</button>
-  <button class="opt">it only ever looks at the two farthest points</button>
+<div class="quiz" data-correct="2" data-explain="Each round provably discards a constant fraction (~n/16) of the points, so the surviving size is 15n/16, then (15/16)²n, and so on. That geometric shrinkage makes the total work T(n)=T(15n/16)+O(n) sum to O(n). Halving the radius or sorting is not what gives linearity." data-explain-zh="每一輪都能證明丟掉固定比例（~n/16）的點，所以活下來的剩 15n/16，再下一輪 (15/16)²n，依此類推。這種幾何級數的縮小讓總工作量 T(n)=T(15n/16)+O(n) 加起來是 O(n)。半徑減半或排序都不是線性的來源。">
+  <div class="q"><span data-tr="en">Why does the prune-and-search 1-center algorithm run in O(n) rather than O(n log n)?</span><span data-tr="zh">為什麼 prune-and-search 的 1-center 演算法是 O(n) 而不是 O(n log n)？</span></div>
+  <button class="opt"><span data-tr="en">it sorts the points once and then scans them</span><span data-tr="zh">它把點排序一次，然後掃一遍</span></button>
+  <button class="opt"><span data-tr="en">it halves the radius of the circle every step</span><span data-tr="zh">它每一步都把圓的半徑減半</span></button>
+  <button class="opt"><span data-tr="en">each round throws away a constant fraction of the points, so the sizes form a shrinking geometric series</span><span data-tr="zh">每一輪都丟掉固定比例的點，所以大小形成一個越縮越小的幾何級數</span></button>
+  <button class="opt"><span data-tr="en">it only ever looks at the two farthest points</span><span data-tr="zh">它從頭到尾只看最遠的那兩個點</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-one-center">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-one-center"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search) — the 1-center problem, constrained (§7.1) and general (§7.2–7.3) versions, with the <code>n/16</code> pruning bound and the <code>T(n)=T(15n/16)+O(n)=O(n)</code> result. See also CLRS on linear-time selection (median of medians), the canonical prune-and-search example.</p>
-<div class="note"><strong>The method:</strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> — discard a guaranteed fraction of the data each round so the work sums to a geometric series. <strong>Sibling problem:</strong> <a href="prob-selection.html">Linear-time Selection</a> (k-th smallest in O(n)) and 2-variable Linear Programming both use the same pruning idea on different data.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要來源：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search) — the 1-center problem, constrained (§7.1) and general (§7.2–7.3) versions, with the <code>n/16</code> pruning bound and the <code>T(n)=T(15n/16)+O(n)=O(n)</code> result. See also CLRS on linear-time selection (median of medians), the canonical prune-and-search example.</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai，《Introduction to the Design and Analysis of Algorithms》第 6/7 章（Prune-and-Search）——1-center 問題的 constrained（§7.1）和 general（§7.2–7.3）版本，含 <code>n/16</code> 修剪界限和 <code>T(n)=T(15n/16)+O(n)=O(n)</code> 的結果。也可以看 CLRS 講線性時間 selection（median of medians），那是 prune-and-search 的經典範例。</span></p>
+<div class="note"><strong><span data-tr="en">The method:</span><span data-tr="zh">這個方法：</span></strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> <span data-tr="en">— discard a guaranteed fraction of the data each round so the work sums to a geometric series. <strong>Sibling problem:</strong> <a href="prob-selection.html">Linear-time Selection</a> (k-th smallest in O(n)) and 2-variable Linear Programming both use the same pruning idea on different data.</span><span data-tr="zh">——每一輪都保證砍掉一定比例的資料，讓總工作量加成一個幾何級數。<strong>兄弟問題：</strong> <a href="prob-selection.html">Linear-time Selection</a>（O(n) 找第 k 小）和 2-variable Linear Programming，都是把同一招修剪用在不同的資料上。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

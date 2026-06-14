@@ -27,83 +27,83 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Heuristic Search · Ch6</div>
-<h1>The 8-Puzzle</h1>
-<div class="mission">Slide numbered tiles around a 3×3 board to reach a goal arrangement — and watch the <strong>same</strong> scoring function get solved two ways: a greedy climber that can <strong>freeze</strong>, and a global searcher that <strong>recovers</strong>.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §5–6 (Hill Climbing &amp; Best-First Search), the 8-puzzle, Fig. 6-15 and Fig. 6-16.</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-hill-climbing.html">Hill Climbing</a> and <a href="algo-best-first.html">Best-First Search</a></p>
+<div class="kicker"><span data-tr="en">Heuristic Search · Ch6</span><span data-tr="zh">Heuristic Search · Ch6</span></div>
+<h1><span data-tr="en">The 8-Puzzle</span><span data-tr="zh">八宮格拼圖（8-Puzzle）</span></h1>
+<div class="mission"><span data-tr="en">Slide numbered tiles around a 3×3 board to reach a goal arrangement — and watch the <strong>same</strong> scoring function get solved two ways: a greedy climber that can <strong>freeze</strong>, and a global searcher that <strong>recovers</strong>.</span><span data-tr="zh">在 3×3 的格子上把數字方塊滑來滑去，想辦法排成目標的樣子。重點是：用<strong>同一個</strong>評分函數，看兩種解法的差別——一個是貪婪往上爬、可能會<strong>卡死</strong>的；另一個有全域視野、卡住還能<strong>繞回來</strong>的。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b><span data-tr="en"> Alg05 · Ch 6 §5–6 (Hill Climbing &amp; Best-First Search), the 8-puzzle, Fig. 6-15 and Fig. 6-16.</span><span data-tr="zh"> Alg05 · Ch 6 §5–6（Hill Climbing 與 Best-First Search），8-puzzle，Fig. 6-15 與 Fig. 6-16。</span></p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">由誰來解：</span></b> <a href="algo-hill-climbing.html">Hill Climbing</a> <span data-tr="en">and</span><span data-tr="zh">和</span> <a href="algo-best-first.html">Best-First Search</a></p>
 
-<h2>The problem</h2>
-<p>The <strong>8-puzzle</strong> is a 3×3 board holding eight numbered tiles (<code>1</code>–<code>8</code>) and one empty square called the <strong>blank</strong>. The only legal move is to slide a tile that sits next to the blank into it — which is the same as moving the blank <em>up, down, left,</em> or <em>right</em>. Each slide produces a new board. The task: starting from a given <strong>start board</strong>, find a sequence of slides that reaches a fixed <strong>goal board</strong>.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">The <strong>8-puzzle</strong> is a 3×3 board holding eight numbered tiles (<code>1</code>–<code>8</code>) and one empty square called the <strong>blank</strong>. The only legal move is to slide a tile that sits next to the blank into it — which is the same as moving the blank <em>up, down, left,</em> or <em>right</em>. Each slide produces a new board. The task: starting from a given <strong>start board</strong>, find a sequence of slides that reaches a fixed <strong>goal board</strong>.</span><span data-tr="zh"><strong>8-puzzle</strong> 是一個 3×3 的格子，上面有八個數字方塊（<code>1</code>–<code>8</code>），還有一個空格叫做 <strong>blank</strong>。你唯一能做的動作就是：把空格旁邊的方塊推進空格——其實也就是讓 blank 往<em>上、下、左、右</em>移一步。每滑一次就變成一個新盤面。任務很單純：給你一個<strong>起始盤面</strong>，找出一連串滑動，把它變成固定的<strong>目標盤面</strong>。</span></p>
 
 <div style="display:flex;gap:2.5rem;flex-wrap:wrap;align-items:center;margin:1rem 0">
   <div class="puzrow" style="margin:0">
     <span class="puz"><span class="t">2</span><span class="t">8</span><span class="t">3</span><span class="t">1</span><span class="t b"></span><span class="t">4</span><span class="t">7</span><span class="t">6</span><span class="t">5</span></span>
-    <span class="nodelabel">START</span>
+    <span class="nodelabel"><span data-tr="en">START</span><span data-tr="zh">START（起始）</span></span>
   </div>
   <div style="font-size:1.6rem;color:var(--mut)">→ … →</div>
   <div class="puzrow" style="margin:0">
     <span class="puz goal"><span class="t">1</span><span class="t">2</span><span class="t">3</span><span class="t">8</span><span class="t b"></span><span class="t">4</span><span class="t">7</span><span class="t">6</span><span class="t">5</span></span>
-    <span class="nodelabel">GOAL</span>
+    <span class="nodelabel"><span data-tr="en">GOAL</span><span data-tr="zh">GOAL（目標）</span></span>
   </div>
 </div>
 
-<p>Searching for the right slides is a <strong>tree problem</strong>: each board is a node, and its children are the boards reachable in one slide. To decide <em>which</em> board to try next, we score every node with an <strong>evaluation function</strong>:</p>
+<p><span data-tr="en">Searching for the right slides is a <strong>tree problem</strong>: each board is a node, and its children are the boards reachable in one slide. To decide <em>which</em> board to try next, we score every node with an <strong>evaluation function</strong>:</span><span data-tr="zh">找出正確的滑動順序，其實就是一個<strong>樹的搜尋問題</strong>：每個盤面是一個節點，它的子節點就是滑一步能到的那些盤面。那要怎麼決定<em>下一個</em>試哪個盤面？我們用一個 <strong>evaluation function（評估函數）</strong>來幫每個節點打分數：</span></p>
 <div class="atree">f(n) = d(n) + w(n)
    d(n) = depth  — how many slides you have already made to reach n
    w(n) = misplaced tiles — numbered tiles not yet on their goal square (the blank doesn't count)</div>
-<p><strong>Lower <code>f</code> is better.</strong> For the START board above: no slides made yet so <code>d = 0</code>; the tiles <code>2</code>, <code>8</code> and <code>1</code> are off their goal squares so <code>w = 3</code>; hence <code>f = 0 + 3 = 3</code>. The whole question is just: <em>in what order do we expand nodes of this tree?</em> Two strategies below answer it differently — and that single difference decides whether the search gets stuck.</p>
+<p><span data-tr="en"><strong>Lower <code>f</code> is better.</strong> For the START board above: no slides made yet so <code>d = 0</code>; the tiles <code>2</code>, <code>8</code> and <code>1</code> are off their goal squares so <code>w = 3</code>; hence <code>f = 0 + 3 = 3</code>. The whole question is just: <em>in what order do we expand nodes of this tree?</em> Two strategies below answer it differently — and that single difference decides whether the search gets stuck.</span><span data-tr="zh"><strong><code>f</code> 越小越好。</strong>拿上面的 START 盤面來看：還沒滑過所以 <code>d = 0</code>；方塊 <code>2</code>、<code>8</code>、<code>1</code> 都沒在自己的目標位置上，所以 <code>w = 3</code>；算出來 <code>f = 0 + 3 = 3</code>。整題講白了就一個問題：<em>我們要用什麼順序展開這棵樹的節點？</em>下面兩種策略給的答案不一樣——而就是這一個差別，決定了搜尋會不會卡住。</span></p>
 
-<h2>Watch it solved</h2>
-<p>Both runs start from the same board and aim at the same goal. Misplaced tiles are tinted; each frame shows that board's <code>f = d + w</code>. The two strategies share the scoring — only the <strong>selection rule</strong> changes.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它一步步解出來</span></h2>
+<p><span data-tr="en">Both runs start from the same board and aim at the same goal. Misplaced tiles are tinted; each frame shows that board's <code>f = d + w</code>. The two strategies share the scoring — only the <strong>selection rule</strong> changes.</span><span data-tr="zh">兩種跑法都從同一個盤面出發、瞄準同一個目標。沒擺對的方塊會被標上顏色；每一格都會顯示那個盤面的 <code>f = d + w</code>。兩種策略用的評分一模一樣——差別只在<strong>挑下一個節點的規則</strong>。</span></p>
 
 <div class="way">
-  <h3>① Hill Climbing — greedy, local view</h3>
-  <p class="tagline">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. Fast — until every child looks worse and it has nothing saved to fall back on.</p>
+  <h3><span data-tr="en">① Hill Climbing — greedy, local view</span><span data-tr="zh">① Hill Climbing——貪婪、只看眼前</span></h3>
+  <p class="tagline"><span data-tr="en">Expand the current board, look <em>only</em> at its own children, jump to the single lowest-<code>f</code> child, and forget the rest. Fast — until every child looks worse and it has nothing saved to fall back on.</span><span data-tr="zh">展開目前的盤面，<em>只</em>看它自己的子節點，跳到 <code>f</code> 最小的那一個，其他通通忘掉。很快——但只要每個子節點都更糟，而它又沒留任何後路，就完了。</span></p>
   <div id="viz-hc"></div>
 </div>
 
 <div class="way">
-  <h3>② Best-First Search — global open list, recovers</h3>
-  <p class="tagline">Keep an <strong>open list</strong> of every discovered-but-unexpanded node across the <em>whole</em> tree, sort it by <code>f</code>, and always expand the globally cheapest node — so a sour branch is no trap: just jump back to a better node seen earlier.</p>
+  <h3><span data-tr="en">② Best-First Search — global open list, recovers</span><span data-tr="zh">② Best-First Search——全域 open list，卡住能繞回來</span></h3>
+  <p class="tagline"><span data-tr="en">Keep an <strong>open list</strong> of every discovered-but-unexpanded node across the <em>whole</em> tree, sort it by <code>f</code>, and always expand the globally cheapest node — so a sour branch is no trap: just jump back to a better node seen earlier.</span><span data-tr="zh">維護一個 <strong>open list</strong>，把<em>整棵</em>樹裡「已經發現但還沒展開」的節點全部記著，照 <code>f</code> 排序，每次都展開全域最便宜的那個——這樣一來，走進爛分支也不怕：直接跳回先前看過、比較好的節點就好。</span></p>
   <div id="viz-bf"></div>
 </div>
 
 <div class="chips">
-  <span class="chip">Score: <b>f = d + w</b></span>
-  <span class="chip">Hill climbing: <b>local · can stall</b></span>
-  <span class="chip">Best-first: <b>global · recovers</b></span>
-  <span class="chip">Goal: <b>1 2 3 / 8 _ 4 / 7 6 5</b></span>
+  <span class="chip"><span data-tr="en">Score: </span><span data-tr="zh">評分：</span><b>f = d + w</b></span>
+  <span class="chip">Hill climbing: <b><span data-tr="en">local · can stall</span><span data-tr="zh">只看局部 · 會卡住</span></b></span>
+  <span class="chip">Best-first: <b><span data-tr="en">global · recovers</span><span data-tr="zh">全域 · 能繞回</span></b></span>
+  <span class="chip"><span data-tr="en">Goal: </span><span data-tr="zh">目標：</span><b>1 2 3 / 8 _ 4 / 7 6 5</b></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="f(n) = d(n) + w(n): d(n) is the depth — how many slides you have already made to reach this board — and w(n) is how many numbered tiles are not yet on their goal square. It does NOT estimate moves still remaining, and it ignores the blank (the blank is not a tile that can be 'misplaced').">
-  <div class="q">A board is reached after 3 slides, and 4 of its numbered tiles sit on the wrong square. Using f(n) = d(n) + w(n), what is f for this board?</div>
-  <button class="opt">4, the misplaced tiles only</button>
-  <button class="opt">7, the slides made plus the misplaced tiles</button>
-  <button class="opt">3, the slides made so far only</button>
-  <button class="opt">5, the misplaced tiles plus the blank</button>
+<div class="quiz" data-correct="1" data-explain="f(n) = d(n) + w(n): d(n) is the depth — how many slides you have already made to reach this board — and w(n) is how many numbered tiles are not yet on their goal square. It does NOT estimate moves still remaining, and it ignores the blank (the blank is not a tile that can be 'misplaced')." data-explain-zh="f(n) = d(n) + w(n)：d(n) 是 depth（深度）——也就是走到這個盤面為止你滑了幾步；w(n) 則是還沒擺到目標位置的數字方塊有幾個。它<strong>不是</strong>在估還要走幾步，而且 blank 不算（blank 不是方塊，不會「擺錯位置」）。所以是 3 + 4 = 7。">
+  <div class="q"><span data-tr="en">A board is reached after 3 slides, and 4 of its numbered tiles sit on the wrong square. Using f(n) = d(n) + w(n), what is f for this board?</span><span data-tr="zh">某個盤面是滑了 3 步才到的，上面有 4 個數字方塊擺錯位置。用 f(n) = d(n) + w(n)，這個盤面的 f 是多少？</span></div>
+  <button class="opt"><span data-tr="en">4, the misplaced tiles only</span><span data-tr="zh">4，只算擺錯的方塊</span></button>
+  <button class="opt"><span data-tr="en">7, the slides made plus the misplaced tiles</span><span data-tr="zh">7，滑過的步數加上擺錯的方塊</span></button>
+  <button class="opt"><span data-tr="en">3, the slides made so far only</span><span data-tr="zh">3，只算到目前滑了幾步</span></button>
+  <button class="opt"><span data-tr="en">5, the misplaced tiles plus the blank</span><span data-tr="zh">5，擺錯的方塊再加上 blank</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="Both score nodes with the SAME f = d + w. Hill climbing keeps only the current node's children and commits to the local best, so when every child looks no better it stalls — a local optimum with nothing saved to back up to. Best-first keeps ALL open nodes in one list and can jump back to a cheaper node on another branch, so it recovers. Memory of every open node — not a cleverer score — is the difference.">
-  <div class="q">Hill climbing and best-first search both score 8-puzzle boards with f = d + w. So what lets best-first reach the goal in a spot where hill climbing gets stuck?</div>
-  <button class="opt">it uses a smarter evaluation function that never traps the search</button>
-  <button class="opt">it remembers all open nodes and can jump back to a better one on another branch</button>
-  <button class="opt">it allows slides that increase f, so it can climb out of any dip</button>
-  <button class="opt">it expands the board level by level like breadth-first search</button>
+<div class="quiz" data-correct="1" data-explain="Both score nodes with the SAME f = d + w. Hill climbing keeps only the current node's children and commits to the local best, so when every child looks no better it stalls — a local optimum with nothing saved to back up to. Best-first keeps ALL open nodes in one list and can jump back to a cheaper node on another branch, so it recovers. Memory of every open node — not a cleverer score — is the difference." data-explain-zh="兩種用的是<strong>同一個</strong> f = d + w。Hill climbing 只留目前節點的子節點，挑局部最好的就一頭栽下去；所以一旦每個子節點看起來都沒比較好，它就卡住了——這就是 local optimum（局部最佳），而且它沒留任何後路可以退回去。Best-first 則是把<strong>所有</strong> open 節點都放在同一個 list 裡，可以跳回別條分支上更便宜的節點，所以卡住還能繞回來。關鍵是它記得每一個 open 節點，而不是評分比較聰明。">
+  <div class="q"><span data-tr="en">Hill climbing and best-first search both score 8-puzzle boards with f = d + w. So what lets best-first reach the goal in a spot where hill climbing gets stuck?</span><span data-tr="zh">Hill climbing 跟 best-first search 都用 f = d + w 幫 8-puzzle 盤面打分數。那在 hill climbing 會卡住的地方，是什麼讓 best-first 還能走到目標？</span></div>
+  <button class="opt"><span data-tr="en">it uses a smarter evaluation function that never traps the search</span><span data-tr="zh">它用了更聰明的 evaluation function，永遠不會讓搜尋陷進去</span></button>
+  <button class="opt"><span data-tr="en">it remembers all open nodes and can jump back to a better one on another branch</span><span data-tr="zh">它記得所有 open 節點，可以跳回別條分支上更好的那個</span></button>
+  <button class="opt"><span data-tr="en">it allows slides that increase f, so it can climb out of any dip</span><span data-tr="zh">它允許讓 f 變大的滑動，所以能從任何低谷爬出來</span></button>
+  <button class="opt"><span data-tr="en">it expands the board level by level like breadth-first search</span><span data-tr="zh">它像 breadth-first search 一樣一層一層展開盤面</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-8-puzzle">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-8-puzzle"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R. C. T. Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 — the 8-puzzle solved by hill climbing (Fig. 6-15) and by best-first search (Fig. 6-16), both using <code>f(n) = d(n) + w(n)</code>. The lesson is that the puzzle is one fixed problem; the <em>search strategy</em> is what differs.</p>
-<div class="note"><strong>The two strategies, on their own pages:</strong> <a href="algo-hill-climbing.html">Hill Climbing</a> (greedy depth-first, only the local best child) and <a href="algo-best-first.html">Best-First Search</a> (a global open list, always the globally best node). Next in the bucket: <em>Branch-and-Bound</em> — best-first plus a bound per node, to solve <em>optimization</em> problems, not just reach any goal.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong><span data-tr="en"> R. C. T. Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 — the 8-puzzle solved by hill climbing (Fig. 6-15) and by best-first search (Fig. 6-16), both using <code>f(n) = d(n) + w(n)</code>. The lesson is that the puzzle is one fixed problem; the <em>search strategy</em> is what differs.</span><span data-tr="zh"> R. C. T. Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>，Ch. 6——同一個 8-puzzle，分別用 hill climbing（Fig. 6-15）和 best-first search（Fig. 6-16）來解，兩個都用 <code>f(n) = d(n) + w(n)</code>。重點是：拼圖本身是固定不變的同一題，真正不一樣的是<em>搜尋策略</em>。</span></p>
+<div class="note"><strong><span data-tr="en">The two strategies, on their own pages:</span><span data-tr="zh">這兩種策略，各有自己的頁面：</span></strong> <a href="algo-hill-climbing.html">Hill Climbing</a><span data-tr="en"> (greedy depth-first, only the local best child) and </span><span data-tr="zh">（貪婪式的 depth-first，只看局部最好的子節點），還有 </span><a href="algo-best-first.html">Best-First Search</a><span data-tr="en"> (a global open list, always the globally best node). Next in the bucket: <em>Branch-and-Bound</em> — best-first plus a bound per node, to solve <em>optimization</em> problems, not just reach any goal.</span><span data-tr="zh">（一個全域的 open list，永遠挑全域最好的節點）。同一桶裡接下來是 <em>Branch-and-Bound</em>——就是 best-first 再幫每個節點加上一個界限（bound），拿來解<em>最佳化</em>問題，而不只是隨便走到某個目標。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

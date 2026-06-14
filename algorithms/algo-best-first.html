@@ -15,71 +15,71 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
+<div class="kicker"><span data-tr="en">Searching Strategies · Ch6</span><span data-tr="zh">Searching Strategies · Ch6</span></div>
 <h1>Best-First Search</h1>
-<div class="mission">Keep <strong>one global list of all open nodes</strong> and always expand the single most promising one — anywhere in the tree. This <em>global view</em> recovers exactly where greedy hill climbing gets stuck.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A05 · <em>The Searching Strategies</em> §6 (Best-First Search), Fig. 6-16.</p>
+<div class="mission"><span data-tr="en">Keep <strong>one global list of all open nodes</strong> and always expand the single most promising one — anywhere in the tree. This <em>global view</em> recovers exactly where greedy hill climbing gets stuck.</span><span data-tr="zh">維護<strong>一份裝著所有 open 節點的全域 list</strong>，每次都展開最有希望的那一個——不管它在樹的哪裡。就是這個<em>全域視野</em>，讓它能在貪婪的 hill climbing 卡死的地方繞回來。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b><span data-tr="en"> A05 · <em>The Searching Strategies</em> §6 (Best-First Search), Fig. 6-16.</span><span data-tr="zh"> A05 · <em>The Searching Strategies</em> §6（Best-First Search），Fig. 6-16。</span></p>
 
-<h2>The idea</h2>
-<p>A tree-search strategy decides <em>which open node to expand next</em>. An <strong>open node</strong> is one that has been generated but not yet expanded (its children not yet produced). Different strategies pick differently:</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心想法</span></h2>
+<p><span data-tr="en">A tree-search strategy decides <em>which open node to expand next</em>. An <strong>open node</strong> is one that has been generated but not yet expanded (its children not yet produced). Different strategies pick differently:</span><span data-tr="zh">樹搜尋策略要決定的，就是<em>下一個展開哪個 open 節點</em>。所謂 <strong>open 節點</strong>，就是已經生出來、但還沒展開（子節點還沒生）的節點。不同策略挑法不一樣：</span></p>
 <ul>
-  <li><strong>Depth-first (DFS)</strong> always dives into the most-recently-generated node (a stack).</li>
-  <li><strong>Breadth-first (BFS)</strong> expands strictly level by level (a queue).</li>
-  <li><strong>Hill climbing</strong> is greedy DFS: it expands the locally best child of the node it is currently at — and <em>commits</em>. If every child looks worse than where it just was, it stalls; it cannot reconsider a promising node it left behind on another branch.</li>
+  <li><strong>Depth-first (DFS)</strong> <span data-tr="en">always dives into the most-recently-generated node (a stack).</span><span data-tr="zh">永遠鑽進最近才生出來的那個節點（用 stack）。</span></li>
+  <li><strong>Breadth-first (BFS)</strong> <span data-tr="en">expands strictly level by level (a queue).</span><span data-tr="zh">嚴格一層一層展開（用 queue）。</span></li>
+  <li><strong>Hill climbing</strong> <span data-tr="en">is greedy DFS: it expands the locally best child of the node it is currently at — and <em>commits</em>. If every child looks worse than where it just was, it stalls; it cannot reconsider a promising node it left behind on another branch.</span><span data-tr="zh">是貪婪版 DFS：它展開目前所在節點當下最好的子節點，而且一去不回頭。如果每個子節點看起來都比它剛剛待的地方更糟，它就卡住了；它沒辦法回頭去理會先前丟在別條分支、其實很有希望的節點。</span></li>
 </ul>
-<p><strong>Best-first search</strong> combines DFS and BFS. It keeps <em>one list holding every open node from the whole tree</em>, scores each with an estimation function <code>f</code>, and always expands the best-<code>f</code> node <strong>among all of them</strong> — no matter how deep or which branch it sits on. Because it can jump back to a promising node it generated earlier anywhere in the tree, best-first has a <strong>global view</strong>, whereas hill climbing only ever sees the children of its current node.</p>
+<p><strong>Best-first search</strong> <span data-tr="en">combines DFS and BFS. It keeps <em>one list holding every open node from the whole tree</em>, scores each with an estimation function <code>f</code>, and always expands the best-<code>f</code> node <strong>among all of them</strong> — no matter how deep or which branch it sits on. Because it can jump back to a promising node it generated earlier anywhere in the tree, best-first has a <strong>global view</strong>, whereas hill climbing only ever sees the children of its current node.</span><span data-tr="zh">把 DFS 和 BFS 揉在一起。它維護<em>一份 list，裝著整棵樹所有的 open 節點</em>，用估計函數 <code>f</code> 幫每個打分，每次都從<strong>全部裡面</strong>展開 <code>f</code> 最好的那個——不管它埋得多深、在哪條分支上。因為它隨時能跳回樹上任何地方、先前生出來的有希望節點，所以 best-first 有<strong>全域視野</strong>；而 hill climbing 從頭到尾只看得到目前節點的子節點。</span></p>
 
-<div class="note"><strong>Key intuition:</strong> hill climbing asks "which of <em>my children</em> is best?" and can dead-end. Best-first asks "which open node <em>in the entire frontier</em> is best?" — so a branch hill climbing abandoned is still in the list, ready to be picked up the moment it becomes the global best.</div>
+<div class="note"><strong><span data-tr="en">Key intuition:</span><span data-tr="zh">關鍵直覺：</span></strong> <span data-tr="en">hill climbing asks "which of <em>my children</em> is best?" and can dead-end. Best-first asks "which open node <em>in the entire frontier</em> is best?" — so a branch hill climbing abandoned is still in the list, ready to be picked up the moment it becomes the global best.</span><span data-tr="zh">hill climbing 問的是「<em>我的子節點</em>裡哪個最好？」，所以可能走進死路。Best-first 問的是「<em>整個 frontier（邊界）</em>裡哪個 open 節點最好？」——所以 hill climbing 放棄的那條分支還乖乖留在 list 裡，一旦它變成全域最好，馬上就會被挑出來。</span></div>
 
-<p>The estimation (lower-is-better) function in the slides is the same one hill climbing uses on the 8-puzzle:</p>
+<p><span data-tr="en">The estimation (lower-is-better) function in the slides is the same one hill climbing uses on the 8-puzzle:</span><span data-tr="zh">投影片裡用的估計函數（越小越好）跟 hill climbing 解 8-puzzle 時用的是同一個：</span></p>
 <ul>
   <li><code>f(n) = d(n) + w(n)</code></li>
-  <li><code>d(n)</code> = depth of node <code>n</code> (moves made so far),</li>
-  <li><code>w(n)</code> = number of misplaced tiles in node <code>n</code>.</li>
+  <li><code>d(n)</code> <span data-tr="en">= depth of node <code>n</code> (moves made so far),</span><span data-tr="zh">＝節點 <code>n</code> 的 depth（到目前為止走了幾步），</span></li>
+  <li><code>w(n)</code> <span data-tr="en">= number of misplaced tiles in node <code>n</code>.</span><span data-tr="zh">＝節點 <code>n</code> 裡擺錯位置的方塊數。</span></li>
 </ul>
 
-<h3>The scheme (Step 1–Step 4)</h3>
+<h3><span data-tr="en">The scheme (Step 1–Step 4)</span><span data-tr="zh">流程（Step 1–Step 4）</span></h3>
 <ol>
-  <li><strong>Step 1.</strong> Form a one-element list consisting of the root node.</li>
-  <li><strong>Step 2.</strong> Remove the first element from the list. Expand it. If one of its descendants is a <strong>goal node</strong>, <strong>stop</strong>; otherwise add the descendants into the list.</li>
-  <li><strong>Step 3.</strong> Sort the <em>entire</em> list by the values of the estimation function.</li>
-  <li><strong>Step 4.</strong> If the list is empty, <strong>failure</strong>. Otherwise go to Step 2.</li>
+  <li><strong>Step 1.</strong> <span data-tr="en">Form a one-element list consisting of the root node.</span><span data-tr="zh">先做一個只有一個元素的 list，裡面放根節點。</span></li>
+  <li><strong>Step 2.</strong> <span data-tr="en">Remove the first element from the list. Expand it. If one of its descendants is a <strong>goal node</strong>, <strong>stop</strong>; otherwise add the descendants into the list.</span><span data-tr="zh">把 list 的第一個元素拿出來，展開它。如果它的某個後代是 <strong>goal 節點</strong>，就<strong>停</strong>；否則把這些後代加進 list。</span></li>
+  <li><strong>Step 3.</strong> <span data-tr="en">Sort the <em>entire</em> list by the values of the estimation function.</span><span data-tr="zh">把<em>整份</em> list 照估計函數的值排序。</span></li>
+  <li><strong>Step 4.</strong> <span data-tr="en">If the list is empty, <strong>failure</strong>. Otherwise go to Step 2.</span><span data-tr="zh">如果 list 空了，就是<strong>失敗</strong>。否則回到 Step 2。</span></li>
 </ol>
-<p>The sort in Step&nbsp;3 over the <em>whole</em> list is the global view in action: it guarantees the "first element" pulled in Step&nbsp;2 is always the globally best-looking open node. <strong>Complexity:</strong> like BFS, the list can grow to hold the whole frontier, so worst-case time and space are exponential in the depth — best-first trades memory for the ability to recover from a bad-looking branch.</p>
+<p><span data-tr="en">The sort in Step&nbsp;3 over the <em>whole</em> list is the global view in action: it guarantees the "first element" pulled in Step&nbsp;2 is always the globally best-looking open node. <strong>Complexity:</strong> like BFS, the list can grow to hold the whole frontier, so worst-case time and space are exponential in the depth — best-first trades memory for the ability to recover from a bad-looking branch.</span><span data-tr="zh">Step&nbsp;3 對<em>整份</em> list 排序，就是全域視野實際在運作的地方：它保證 Step&nbsp;2 拿出的「第一個元素」永遠是全域看起來最好的 open 節點。<strong>複雜度：</strong>跟 BFS 一樣，這份 list 可能膨脹到裝下整個 frontier，所以最差情況下時間和空間都是深度的指數級——best-first 是拿記憶體去換「能從爛分支繞回來」這個能力。</span></p>
 
-<h2>A small illustration</h2>
-<p>The same 8-puzzle Fig. 6-16 the slides use. Start board <code>2 8 3 / 1 _ 4 / 7 6 5</code>, goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>; the number under each board is its <code>f = d + w</code>. We track the global open list across expansions; dimmed nodes stay in the list, the green node is the global best we expand next.</p>
+<h2><span data-tr="en">A small illustration</span><span data-tr="zh">一個小例子</span></h2>
+<p><span data-tr="en">The same 8-puzzle Fig. 6-16 the slides use. Start board <code>2 8 3 / 1 _ 4 / 7 6 5</code>, goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>; the number under each board is its <code>f = d + w</code>. We track the global open list across expansions; dimmed nodes stay in the list, the green node is the global best we expand next.</span><span data-tr="zh">就是投影片用的那個 8-puzzle Fig. 6-16。起始盤面 <code>2 8 3 / 1 _ 4 / 7 6 5</code>，目標 <code>1 2 3 / 8 _ 4 / 7 6 5</code>；每個盤面底下的數字是它的 <code>f = d + w</code>。我們會在每次展開時追蹤這份全域 open list；變暗的節點還留在 list 裡，綠色那個是我們下一步要展開的全域最好節點。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
   <span class="chip">f(n) = <b>d(n) + w(n)</b></span>
-  <span class="chip">Picks: <b>global best-f</b></span>
-  <span class="chip">List: <b>all open nodes</b></span>
-  <span class="chip">Worst case: <b>exponential</b></span>
+  <span class="chip"><span data-tr="en">Picks: </span><span data-tr="zh">怎麼挑：</span><b>global best-f</b></span>
+  <span class="chip"><span data-tr="en">List: <b>all open nodes</b></span><span data-tr="zh">List：<b>所有 open 節點</b></span></span>
+  <span class="chip"><span data-tr="en">Worst case: <b>exponential</b></span><span data-tr="zh">最差情況：<b>指數級</b></span></span>
 </div>
 
-<h2>Problems it solves (in the slides)</h2>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡有）</span></h2>
 <ul>
-  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> — slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal. The <em>same</em> instance where hill climbing stalls: best-first keeps every generated board in one list and recovers by jumping to the globally best-<code>f</code> board, reaching the goal at node 10 via root→2→7→9→10.</li>
+  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> <span data-tr="en">— slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal. The <em>same</em> instance where hill climbing stalls: best-first keeps every generated board in one list and recovers by jumping to the globally best-<code>f</code> board, reaching the goal at node 10 via root→2→7→9→10.</span><span data-tr="zh">——在 3×3 格子上滑動 1–8 的方塊（外加一個 blank），從起始排法推到目標。就是 hill climbing 會卡死的<em>同一個</em>例子：best-first 把每個生出來的盤面都放進同一份 list，靠跳到全域 <code>f</code> 最好的盤面繞回來，走 root→2→7→9→10 在 node 10 抵達目標。</span></li>
 </ul>
 
-<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares the CHILDREN of the node it is currently at; if none improves on the current node it stalls, with no way to return to a promising node on a branch it already left. Best-first keeps ALL open nodes in one sorted list, so that abandoned-but-promising node is still there and gets expanded the moment it becomes the global minimum. It is not about a better heuristic (both use f = d + w here), nor about exploring level-by-level (that is BFS), nor about never revisiting nodes.">
-  <div class="q">Hill climbing stalls on a board where every child has a worse <code>f</code> than the current node. Why does best-first search escape this on the same instance, with the same <code>f = d + w</code>?</div>
-  <button class="opt">it uses a smarter heuristic that never produces a worse child</button>
-  <button class="opt">it expands strictly level by level, so it cannot get stuck on one branch</button>
-  <button class="opt">it keeps all open nodes in one global list and can jump back to the best one anywhere in the tree</button>
-  <button class="opt">it forbids revisiting any board, so it always finds a downhill move</button>
+<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares the CHILDREN of the node it is currently at; if none improves on the current node it stalls, with no way to return to a promising node on a branch it already left. Best-first keeps ALL open nodes in one sorted list, so that abandoned-but-promising node is still there and gets expanded the moment it becomes the global minimum. It is not about a better heuristic (both use f = d + w here), nor about exploring level-by-level (that is BFS), nor about never revisiting nodes." data-explain-zh="Hill climbing 永遠只比它目前所在節點的<strong>子節點</strong>；如果沒有一個比現在更好，它就卡住，而且沒辦法回到先前離開的分支上、那個有希望的節點。Best-first 把<strong>所有</strong> open 節點放在同一份排好序的 list 裡，所以那個「被放棄但其實有希望」的節點還在，一旦它變成全域最小值，馬上就會被展開。重點不是 heuristic 比較聰明（這裡兩邊都用 f = d + w），也不是一層一層展開（那是 BFS），更不是不重複走節點。">
+  <div class="q"><span data-tr="en">Hill climbing stalls on a board where every child has a worse <code>f</code> than the current node. Why does best-first search escape this on the same instance, with the same <code>f = d + w</code>?</span><span data-tr="zh">在某個盤面上，hill climbing 卡住了，因為每個子節點的 <code>f</code> 都比目前節點差。在同一個例子、用同一個 <code>f = d + w</code> 的情況下，為什麼 best-first search 不會被困住？</span></div>
+  <button class="opt"><span data-tr="en">it uses a smarter heuristic that never produces a worse child</span><span data-tr="zh">它用了更聰明的 heuristic，永遠不會生出更差的子節點</span></button>
+  <button class="opt"><span data-tr="en">it expands strictly level by level, so it cannot get stuck on one branch</span><span data-tr="zh">它嚴格一層一層展開，所以不會卡在某一條分支上</span></button>
+  <button class="opt"><span data-tr="en">it keeps all open nodes in one global list and can jump back to the best one anywhere in the tree</span><span data-tr="zh">它把所有 open 節點放在一份全域 list 裡，可以跳回樹上任何地方最好的那個</span></button>
+  <button class="opt"><span data-tr="en">it forbids revisiting any board, so it always finds a downhill move</span><span data-tr="zh">它禁止重走任何盤面，所以一定找得到往下走的一步</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-best-first">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-best-first"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6 "The Searching Strategies" §6 (Best-First Search), Fig. 6-16. Best-first is also the engine behind the optimization searches later in the chapter: <strong>branch-and-bound</strong> and <strong>A\*</strong> (<code>f(n) = g(n) + h(n)</code> with <code>h(n) ≤ h*(n)</code>) both expand the globally best-bounded open node, adding a bound so the <em>first goal reached is optimal</em>.</p>
-<div class="note"><strong>Contrast with:</strong> <a href="prob-8-puzzle.html">the 8-puzzle problem page</a> shows the same instance solved by both hill climbing (which stalls / takes a longer committed path) and best-first (global recovery) side by side.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong><span data-tr="en"> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Chapter 6 "The Searching Strategies" §6 (Best-First Search), Fig. 6-16. Best-first is also the engine behind the optimization searches later in the chapter: <strong>branch-and-bound</strong> and <strong>A\*</strong> (<code>f(n) = g(n) + h(n)</code> with <code>h(n) ≤ h*(n)</code>) both expand the globally best-bounded open node, adding a bound so the <em>first goal reached is optimal</em>.</span><span data-tr="zh"> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>，Chapter 6「The Searching Strategies」§6（Best-First Search），Fig. 6-16。Best-first 也是本章後面那些最佳化搜尋背後的引擎：<strong>branch-and-bound</strong> 和 <strong>A\*</strong>（<code>f(n) = g(n) + h(n)</code>，其中 <code>h(n) ≤ h*(n)</code>）都是展開全域上界限最好的 open 節點，再加上一個 bound，讓<em>第一個走到的目標就是最佳解</em>。</span></p>
+<div class="note"><strong><span data-tr="en">Contrast with:</span><span data-tr="zh">拿來對照：</span></strong> <a href="prob-8-puzzle.html"><span data-tr="en">the 8-puzzle problem page</span><span data-tr="zh">8-puzzle 問題頁</span></a> <span data-tr="en">shows the same instance solved by both hill climbing (which stalls / takes a longer committed path) and best-first (global recovery) side by side.</span><span data-tr="zh">把同一個例子並排放，一邊是 hill climbing（會卡住／走比較長的死路），一邊是 best-first（靠全域視野繞回來），一次看清楚差別。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

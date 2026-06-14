@@ -16,62 +16,62 @@
 <div class="wrap">
 
 <div class="kicker">A* · Ch6</div>
-<h1>Shortest Path with A*</h1>
-<div class="mission">Given a graph of partial solutions with a start and a goal, find the <strong>least-cost</strong> path to a goal — guided by a guess of the cost still ahead that <em>never overestimates</em>.</div>
+<h1><span data-tr="en">Shortest Path with A*</span><span data-tr="zh">用 A* 找最短路徑</span></h1>
+<div class="mission"><span data-tr="en">Given a graph of partial solutions with a start and a goal, find the <strong>least-cost</strong> path to a goal — guided by a guess of the cost still ahead that <em>never overestimates</em>.</span><span data-tr="zh">給你一張由部分解構成的 graph，有起點也有目標，要找出到目標<strong>成本最低</strong>的路徑。靠的是一個對「剩下還要花多少」的猜測，而且這個猜測<em>絕不會高估</em>。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 §11 (A*), Fig. 6-36.</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-astar.html">A* Algorithm</a></p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">解這題的方法：</span></b> <a href="algo-astar.html">A* Algorithm</a></p>
 
-<h2>The problem</h2>
-<p>You are given a <strong>graph</strong> (the slides build it as a search tree of partial solutions). One node is the <strong>start</strong> — call it <code>R</code> — and one or more nodes are <strong>goal nodes</strong>. Every edge carries a non-negative <strong>cost</strong> (a weight). The <strong>cost of a path</strong> is the sum of the edge weights along it.</p>
-<p><strong>The question:</strong> find a path from the start to <em>some</em> goal whose total cost is the <strong>smallest possible</strong>. Not just <em>a</em> path to a goal — the <strong>cheapest</strong> one. This is an <em>optimization</em> problem, and that is the catch: simple searches (depth-first, breadth-first, hill-climbing, plain best-first) stop at the <em>first</em> goal they reach, which need not be the cheapest.</p>
-<p>To steer the search, A* attaches three numbers to every node <code>n</code>:</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">問題是什麼</span></h2>
+<p><span data-tr="en">You are given a <strong>graph</strong> (the slides build it as a search tree of partial solutions). One node is the <strong>start</strong> — call it <code>R</code> — and one or more nodes are <strong>goal nodes</strong>. Every edge carries a non-negative <strong>cost</strong> (a weight). The <strong>cost of a path</strong> is the sum of the edge weights along it.</span><span data-tr="zh">給你一張 <strong>graph</strong>（投影片把它畫成一棵由部分解構成的搜尋樹）。其中一個節點是<strong>起點</strong>，叫它 <code>R</code>，另外有一個或多個<strong>目標節點</strong>。每條邊都帶一個非負的<strong>成本</strong>（也就是權重），而一條<strong>路徑的成本</strong>就是沿路所有邊權重加起來。</span></p>
+<p><span data-tr="en"><strong>The question:</strong> find a path from the start to <em>some</em> goal whose total cost is the <strong>smallest possible</strong>. Not just <em>a</em> path to a goal — the <strong>cheapest</strong> one. This is an <em>optimization</em> problem, and that is the catch: simple searches (depth-first, breadth-first, hill-climbing, plain best-first) stop at the <em>first</em> goal they reach, which need not be the cheapest.</span><span data-tr="zh"><strong>問題：</strong>從起點走到<em>某個</em>目標，找出總成本<strong>最小</strong>的那條路。注意不是隨便找<em>一條</em>到目標的路，而是要<strong>最便宜</strong>的那條。這是個<em>最佳化</em>問題，重點就在這：一般的搜尋（DFS、BFS、hill-climbing、單純的 best-first）一碰到<em>第一個</em>目標就停了，但那不一定是最便宜的。</span></p>
+<p><span data-tr="en">To steer the search, A* attaches three numbers to every node <code>n</code>:</span><span data-tr="zh">為了引導搜尋方向，A* 會在每個節點 <code>n</code> 上掛三個數字：</span></p>
 <ul>
-  <li><code>g(n)</code> — the <strong>cost already paid</strong> to reach <code>n</code> from the start (sum of edge weights so far). Known exactly.</li>
-  <li><code>h(n)</code> — a <strong>heuristic guess</strong> of the cost still remaining from <code>n</code> to a goal. Just an estimate.</li>
-  <li><code>h*(n)</code> — the <strong>true</strong> cheapest remaining cost from <code>n</code> to a goal. Usually unknown; it is what <code>h</code> approximates.</li>
+  <li><span data-tr="en"><code>g(n)</code> — the <strong>cost already paid</strong> to reach <code>n</code> from the start (sum of edge weights so far). Known exactly.</span><span data-tr="zh"><code>g(n)</code>——從起點走到 <code>n</code> <strong>已經花掉的成本</strong>（目前走過的邊權重總和）。這個是確定知道的。</span></li>
+  <li><span data-tr="en"><code>h(n)</code> — a <strong>heuristic guess</strong> of the cost still remaining from <code>n</code> to a goal. Just an estimate.</span><span data-tr="zh"><code>h(n)</code>——對「從 <code>n</code> 到目標<strong>還要花多少</strong>」的 heuristic 猜測。只是估計值。</span></li>
+  <li><span data-tr="en"><code>h*(n)</code> — the <strong>true</strong> cheapest remaining cost from <code>n</code> to a goal. Usually unknown; it is what <code>h</code> approximates.</span><span data-tr="zh"><code>h*(n)</code>——從 <code>n</code> 到目標<strong>真正</strong>最便宜的剩餘成本。通常不知道，<code>h</code> 就是在逼近它。</span></li>
 </ul>
-<p>A* ranks nodes by <code>f(n) = g(n) + h(n)</code> — an estimate of the total cost of the best path <em>through</em> <code>n</code> — and always expands the open node with the <strong>smallest f</strong>. The heuristic must be <strong>admissible</strong>: <code>h(n) ≤ h*(n)</code> for every node (it never overestimates). When that holds, <code>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code>, so <code>f</code> is a <em>lower bound</em> on the true best total cost through <code>n</code> — and the first goal A* <em>selects</em> for expansion is guaranteed optimal.</p>
-<p><strong>A tiny concrete instance.</strong> Suppose from the start <code>R</code> there are two children: <code>A</code> with edge cost 2 and heuristic <code>h=2</code> (so <code>f = 2+2 = 4</code>), and <code>C</code> with edge cost 3 and <code>h=2</code> (so <code>f = 3+2 = 5</code>). A* expands <code>A</code> first because <code>f(A)=4 &lt; f(C)=5</code> — it pursues the route that <em>looks</em> cheapest overall, not merely the one with the smallest step.</p>
+<p><span data-tr="en">A* ranks nodes by <code>f(n) = g(n) + h(n)</code> — an estimate of the total cost of the best path <em>through</em> <code>n</code> — and always expands the open node with the <strong>smallest f</strong>. The heuristic must be <strong>admissible</strong>: <code>h(n) ≤ h*(n)</code> for every node (it never overestimates). When that holds, <code>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code>, so <code>f</code> is a <em>lower bound</em> on the true best total cost through <code>n</code> — and the first goal A* <em>selects</em> for expansion is guaranteed optimal.</span><span data-tr="zh">A* 用 <code>f(n) = g(n) + h(n)</code> 來幫節點排序——這是<em>經過</em> <code>n</code> 的最佳路徑總成本的估計值——然後每次都展開 open list 裡 <strong>f 最小</strong>的那個節點。這個 heuristic 必須是 <strong>admissible</strong> 的：每個節點都要 <code>h(n) ≤ h*(n)</code>（也就是絕不高估）。只要這條件成立，<code>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = f*(n)</code>，所以 <code>f</code> 是經過 <code>n</code> 真正最佳總成本的<em>下界</em>——這樣一來，A* 第一個<em>選中</em>來展開的目標就保證是最佳解。</span></p>
+<p><span data-tr="en"><strong>A tiny concrete instance.</strong> Suppose from the start <code>R</code> there are two children: <code>A</code> with edge cost 2 and heuristic <code>h=2</code> (so <code>f = 2+2 = 4</code>), and <code>C</code> with edge cost 3 and <code>h=2</code> (so <code>f = 3+2 = 5</code>). A* expands <code>A</code> first because <code>f(A)=4 &lt; f(C)=5</code> — it pursues the route that <em>looks</em> cheapest overall, not merely the one with the smallest step.</span><span data-tr="zh"><strong>舉個小例子。</strong>假設從起點 <code>R</code> 出發有兩個子節點：<code>A</code> 的邊成本是 2、heuristic <code>h=2</code>（所以 <code>f = 2+2 = 4</code>），<code>C</code> 的邊成本是 3、<code>h=2</code>（所以 <code>f = 3+2 = 5</code>）。A* 會先展開 <code>A</code>，因為 <code>f(A)=4 &lt; f(C)=5</code>——它追的是<em>看起來</em>整體最便宜的路，而不是單看哪一步走得最短。</span></p>
 
-<h2>Watch it solved</h2>
-<p>This is the graph of <strong>Fig. 6-36</strong>, built as A*'s search tree. Edge labels are step costs (added to <code>g</code>); the small <strong>badge</strong> on each generated node is its <code>f = g + h</code>. Green = the node selected/expanded this step; gold = open nodes on the frontier. We seek the cheapest <code>R</code>→goal path; the goal node is <strong>I</strong>. Watch A* always pick the smallest f.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">This is the graph of <strong>Fig. 6-36</strong>, built as A*'s search tree. Edge labels are step costs (added to <code>g</code>); the small <strong>badge</strong> on each generated node is its <code>f = g + h</code>. Green = the node selected/expanded this step; gold = open nodes on the frontier. We seek the cheapest <code>R</code>→goal path; the goal node is <strong>I</strong>. Watch A* always pick the smallest f.</span><span data-tr="zh">這就是 <strong>Fig. 6-36</strong> 的 graph，畫成 A* 的搜尋樹。邊上的標籤是每一步的成本（加進 <code>g</code> 裡）；每個生出來的節點上那個小<strong>標記</strong>就是它的 <code>f = g + h</code>。綠色＝這一步選中／展開的節點；金色＝frontier 上的 open 節點。我們要找最便宜的 <code>R</code>→目標 路徑，目標節點是 <strong>I</strong>。看 A* 怎麼每次都挑 f 最小的。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
   <span class="chip">Key: <b>f = g + h</b></span>
   <span class="chip">Admissible: <b>h ≤ h*</b></span>
-  <span class="chip">First selected goal is <b>optimal</b></span>
-  <span class="chip">Goal I, cost <b>7</b></span>
+  <span class="chip"><span data-tr="en">First selected goal is <b>optimal</b></span><span data-tr="zh">第一個被選中的目標就是<b>最佳解</b></span></span>
+  <span class="chip"><span data-tr="en">Goal I, cost <b>7</b></span><span data-tr="zh">目標 I，成本 <b>7</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="A goal merely appearing in the open list is not enough — I was generated at step 4 (f=7) but A* kept going, because other open nodes still had smaller f. A* stops only when the smallest-f open node it SELECTS for expansion is itself a goal. That is what makes the result optimal: every other open node then has f ≥ that cost, and f is a lower bound, so no cheaper goal can exist. (Note L is also a goal, reached at f=8 — correctly never preferred over I.)">
-  <div class="q">During the search, goal node I appears on the frontier with f = 7, but another open node still has f = 6. What does A* do, and why?</div>
-  <button class="opt">stop immediately — a goal has been found, so the search is over</button>
-  <button class="opt">keep searching — a goal must be the <em>selected</em> (smallest-f) node before A* may stop</button>
-  <button class="opt">stop and return the f = 6 node, since it is the cheapest open node</button>
-  <button class="opt">restart from the start node to double-check I is reachable</button>
+<div class="quiz" data-correct="1" data-explain="A goal merely appearing in the open list is not enough — I was generated at step 4 (f=7) but A* kept going, because other open nodes still had smaller f. A* stops only when the smallest-f open node it SELECTS for expansion is itself a goal. That is what makes the result optimal: every other open node then has f ≥ that cost, and f is a lower bound, so no cheaper goal can exist. (Note L is also a goal, reached at f=8 — correctly never preferred over I.)" data-explain-zh="目標只是出現在 open list 裡還不夠——I 在第 4 步就被生出來了（f=7），但 A* 繼續走，因為其他 open 節點的 f 還更小。A* 只有在「它選中要展開的那個最小 f 節點本身就是目標」時才會停。這正是結果最佳的原因：到那時其他每個 open 節點的 f 都 ≥ 那個成本，而 f 是下界，所以不可能存在更便宜的目標。（注意 L 其實也是目標，在 f=8 才到達——正確地一直沒被選在 I 之前。）">
+  <div class="q"><span data-tr="en">During the search, goal node I appears on the frontier with f = 7, but another open node still has f = 6. What does A* do, and why?</span><span data-tr="zh">搜尋過程中，目標節點 I 以 f = 7 出現在 frontier 上，但另一個 open 節點的 f 還是 6。A* 會怎麼做，為什麼？</span></div>
+  <button class="opt"><span data-tr="en">stop immediately — a goal has been found, so the search is over</span><span data-tr="zh">馬上停——已經找到目標了，搜尋結束</span></button>
+  <button class="opt"><span data-tr="en">keep searching — a goal must be the <em>selected</em> (smallest-f) node before A* may stop</span><span data-tr="zh">繼續找——要等目標變成<em>被選中</em>（f 最小）的那個節點，A* 才能停</span></button>
+  <button class="opt"><span data-tr="en">stop and return the f = 6 node, since it is the cheapest open node</span><span data-tr="zh">停下來，回傳那個 f = 6 的節點，因為它是最便宜的 open 節點</span></button>
+  <button class="opt"><span data-tr="en">restart from the start node to double-check I is reachable</span><span data-tr="zh">從起點重跑一次，確認 I 真的到得了</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="g is the cost already paid from the start to n (known exactly); h is the estimate of the cost still remaining from n to a goal. Mixing them up is the classic trap: g looks backward at what's spent, h looks forward at what's guessed left. f = g + h = 4 + 1 = 5.">
-  <div class="q">A node n has path cost 4 from the start and a heuristic estimate of 1 to the goal, giving f = 5. Which reading of g and h is correct?</div>
-  <button class="opt">g = 1 (cost so far), h = 4 (estimate to goal)</button>
-  <button class="opt">g = 5 (estimate to goal), h = 4 (cost so far)</button>
-  <button class="opt">g = 4 (cost so far from start), h = 1 (estimate remaining to goal)</button>
-  <button class="opt">g = 4 (estimate remaining), h = 1 (cost so far)</button>
+<div class="quiz" data-correct="2" data-explain="g is the cost already paid from the start to n (known exactly); h is the estimate of the cost still remaining from n to a goal. Mixing them up is the classic trap: g looks backward at what's spent, h looks forward at what's guessed left. f = g + h = 4 + 1 = 5." data-explain-zh="g 是從起點走到 n 已經花掉的成本（確定知道）；h 是從 n 到目標還要花多少的估計值。把兩者搞混是經典陷阱：g 回頭看已經花了多少，h 往前看猜還要多少。f = g + h = 4 + 1 = 5。">
+  <div class="q"><span data-tr="en">A node n has path cost 4 from the start and a heuristic estimate of 1 to the goal, giving f = 5. Which reading of g and h is correct?</span><span data-tr="zh">某節點 n 從起點走過來的路徑成本是 4，到目標的 heuristic 估計是 1，所以 f = 5。下面哪個對 g 和 h 的解讀是對的？</span></div>
+  <button class="opt"><span data-tr="en">g = 1 (cost so far), h = 4 (estimate to goal)</span><span data-tr="zh">g = 1（目前花費），h = 4（到目標的估計）</span></button>
+  <button class="opt"><span data-tr="en">g = 5 (estimate to goal), h = 4 (cost so far)</span><span data-tr="zh">g = 5（到目標的估計），h = 4（目前花費）</span></button>
+  <button class="opt"><span data-tr="en">g = 4 (cost so far from start), h = 1 (estimate remaining to goal)</span><span data-tr="zh">g = 4（從起點到現在的花費），h = 1（到目標還剩多少的估計）</span></button>
+  <button class="opt"><span data-tr="en">g = 4 (estimate remaining), h = 1 (cost so far)</span><span data-tr="zh">g = 4（剩餘估計），h = 1（目前花費）</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-astar-graph">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-astar-graph"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (the A* algorithm, Fig. 6-36); see also CLRS, <em>Introduction to Algorithms</em>, on heuristic/best-first search. A* is best-first search plus the admissible bound <code>f = g + h</code>, <code>h ≤ h*</code>, which turns it into an optimization-safe strategy.</p>
-<div class="note"><strong>The method:</strong> see <a href="algo-astar.html">A* Algorithm</a> for how f = g + h and admissibility work in general. <strong>Sibling problem:</strong> <a href="prob-channel-routing.html">Channel Routing</a> — the same A* engine minimizes the number of wiring tracks, with g = tracks committed so far and h = maximal local density.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想深入了解</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11 (the A* algorithm, Fig. 6-36); see also CLRS, <em>Introduction to Algorithms</em>, on heuristic/best-first search. A* is best-first search plus the admissible bound <code>f = g + h</code>, <code>h ≤ h*</code>, which turns it into an optimization-safe strategy.</span><span data-tr="zh"><strong>主要來源：</strong>Lee, Tseng, Chang &amp; Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §11（A* 演算法，Fig. 6-36）；heuristic／best-first search 也可以參考 CLRS, <em>Introduction to Algorithms</em>。簡單講，A* 就是 best-first search 再加上 admissible 的界 <code>f = g + h</code>、<code>h ≤ h*</code>，這樣它就變成一個能保證最佳化的策略。</span></p>
+<div class="note"><span data-tr="en"><strong>The method:</strong> see <a href="algo-astar.html">A* Algorithm</a> for how f = g + h and admissibility work in general. <strong>Sibling problem:</strong> <a href="prob-channel-routing.html">Channel Routing</a> — the same A* engine minimizes the number of wiring tracks, with g = tracks committed so far and h = maximal local density.</span><span data-tr="zh"><strong>方法：</strong>想看 f = g + h 和 admissibility 一般是怎麼運作的，去 <a href="algo-astar.html">A* Algorithm</a>。<strong>姊妹題：</strong><a href="prob-channel-routing.html">Channel Routing</a>——同一套 A* 引擎拿來把佈線的 track 數壓到最少，這裡 g = 目前用掉的 track 數，h = maximal local density。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

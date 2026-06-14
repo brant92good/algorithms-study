@@ -16,19 +16,19 @@
 <div class="wrap">
 
 <div class="kicker">Dynamic Programming · Ch7</div>
-<h1>Travelling Salesperson — Held–Karp DP</h1>
-<div class="mission">Visit every city exactly once and come home — for the <em>cheapest</em> total. Dynamic programming turns the factorial-many tours into a table you fill subset by subset.</div>
+<h1><span data-tr="en">Travelling Salesperson — Held–Karp DP</span><span data-tr="zh">Travelling Salesperson — Held–Karp DP</span></h1>
+<div class="mission"><span data-tr="en">Visit every city exactly once and come home — for the <em>cheapest</em> total. Dynamic programming turns the factorial-many tours into a table you fill subset by subset.</span><span data-tr="zh">每座城市剛好走一次再回家，而且總花費要<em>最便宜</em>。dynamic programming 把多到階乘等級的 tour，變成一張按 subset 一塊一塊填的表。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg07 · Ch 7 §10 (TSP by DP / Held–Karp), slides 22–25.</p>
 <p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dynamic-programming.html">Dynamic Programming</a> (contrast <a href="prob-tsp-bnb.html">Branch-and-Bound</a>)</p>
 
-<h2>The problem</h2>
-<p>You are given a set of <strong>cities</strong> and a <strong>cost matrix</strong> <code>c(i,j)</code> = the price to travel <em>from</em> city <code>i</code> <em>to</em> city <code>j</code>. The graph is <strong>directed</strong>, so going one way can cost more than coming back (and <code>∞</code> means there is no road that direction). You must find the cheapest <strong>tour</strong>: a route that <strong>starts at city 1, visits every other city exactly once, and returns to city 1</strong>. "Cheapest" means the sum of the edge costs along the route is as small as possible.</p>
-<p><strong>Why is this hard?</strong> With <code>n</code> cities there are <code>(n−1)!</code> possible orderings of the cities you could visit — that explodes fast (10 cities ≈ 360,000 tours; 20 cities ≈ 10¹⁷). Checking every tour separately is hopeless. We need to <em>share work</em> between tours that overlap.</p>
-<p><strong>The DP idea (Held–Karp).</strong> Two half-finished tours that (a) sit at the <em>same current city</em> and (b) still have the <em>same set of cities left to visit</em> have <strong>identical futures</strong> — the cheapest way to finish is the same for both. So we don't care <em>how</em> we arrived, only <em>where we are</em> and <em>what's left</em>. That pair is the <strong>DP state</strong>.</p>
-<p>Define <code>g(i, S)</code> = the length of the shortest path that <strong>starts at city i, visits every city in the set S exactly once, and ends back at city 1</strong>. The recurrence picks the next city <code>j</code> to step to:</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">You are given a set of <strong>cities</strong> and a <strong>cost matrix</strong> <code>c(i,j)</code> = the price to travel <em>from</em> city <code>i</code> <em>to</em> city <code>j</code>. The graph is <strong>directed</strong>, so going one way can cost more than coming back (and <code>∞</code> means there is no road that direction). You must find the cheapest <strong>tour</strong>: a route that <strong>starts at city 1, visits every other city exactly once, and returns to city 1</strong>. "Cheapest" means the sum of the edge costs along the route is as small as possible.</span><span data-tr="zh">給你一組 <strong>city</strong>，還有一張 <strong>cost matrix</strong> <code>c(i,j)</code> = <em>從</em> city <code>i</code> 走<em>到</em> city <code>j</code> 的花費。這張圖是<strong>有向的</strong>，所以去程跟回程的成本可以不一樣（<code>∞</code> 表示那個方向沒路）。你要找最便宜的 <strong>tour</strong>：一條<strong>從 city 1 出發、其他每座城市剛好走一次、最後回到 city 1</strong> 的路線。「最便宜」就是路上所有邊的成本加起來越小越好。</span></p>
+<p><span data-tr="en"><strong>Why is this hard?</strong> With <code>n</code> cities there are <code>(n−1)!</code> possible orderings of the cities you could visit — that explodes fast (10 cities ≈ 360,000 tours; 20 cities ≈ 10¹⁷). Checking every tour separately is hopeless. We need to <em>share work</em> between tours that overlap.</span><span data-tr="zh"><strong>這題難在哪？</strong>有 <code>n</code> 座城市，城市的走訪順序就有 <code>(n−1)!</code> 種——這爆得超快（10 座城市 ≈ 36 萬條 tour；20 座 ≈ 10¹⁷）。一條一條 tour 分開檢查根本沒救。我們得讓重疊的 tour 之間<em>共用計算</em>。</span></p>
+<p><span data-tr="en"><strong>The DP idea (Held–Karp).</strong> Two half-finished tours that (a) sit at the <em>same current city</em> and (b) still have the <em>same set of cities left to visit</em> have <strong>identical futures</strong> — the cheapest way to finish is the same for both. So we don't care <em>how</em> we arrived, only <em>where we are</em> and <em>what's left</em>. That pair is the <strong>DP state</strong>.</span><span data-tr="zh"><strong>DP 的點子（Held–Karp）。</strong>兩條走到一半的 tour，只要 (a) 停在<em>同一個當下城市</em>、而且 (b) <em>還沒走的城市集合一樣</em>，它們的<strong>未來就完全相同</strong>——接下來最便宜的走法對兩者是一樣的。所以我們不在乎<em>怎麼走到這裡的</em>，只在乎<em>現在在哪</em>和<em>還剩哪些沒走</em>。這一對就是 <strong>DP state（狀態）</strong>。</span></p>
+<p><span data-tr="en">Define <code>g(i, S)</code> = the length of the shortest path that <strong>starts at city i, visits every city in the set S exactly once, and ends back at city 1</strong>. The recurrence picks the next city <code>j</code> to step to:</span><span data-tr="zh">定義 <code>g(i, S)</code> = 一條<strong>從 city i 出發、把集合 S 裡每座城市剛好走一次、最後回到 city 1</strong> 的最短路徑長度。遞迴式就是挑下一個要踏去的城市 <code>j</code>：</span></p>
 <p style="text-align:center"><code>g(i, S) = min<sub>j∈S</sub> { c(i,j) + g(j, S − {j}) }</code>, &nbsp; with base case <code>g(i, ∅) = c(i,1)</code>.</p>
-<p>The answer is <code>g(1, {all other cities})</code>. We <strong>build the table up by subset size</strong>: first all the <code>|S|=0</code> values, then <code>|S|=1</code>, and so on — each level only needs values from the level below it.</p>
-<p><strong>A tiny concrete instance.</strong> 4 cities, with the cost matrix below (rows = from, cols = to, <code>∞</code> = no road). We'll watch the table fill and read off the optimal tour <code>1 → 4 → 3 → 2 → 1</code> costing <strong>17</strong>.</p>
+<p><span data-tr="en">The answer is <code>g(1, {all other cities})</code>. We <strong>build the table up by subset size</strong>: first all the <code>|S|=0</code> values, then <code>|S|=1</code>, and so on — each level only needs values from the level below it.</span><span data-tr="zh">答案是 <code>g(1, {其他所有城市})</code>。我們<strong>按 subset 的大小一層層往上建表</strong>：先把所有 <code>|S|=0</code> 的值算完，再 <code>|S|=1</code>，依此類推——每一層只需要用到下一層的值。</span></p>
+<p><span data-tr="en"><strong>A tiny concrete instance.</strong> 4 cities, with the cost matrix below (rows = from, cols = to, <code>∞</code> = no road). We'll watch the table fill and read off the optimal tour <code>1 → 4 → 3 → 2 → 1</code> costing <strong>17</strong>.</span><span data-tr="zh"><strong>來個小例子。</strong>4 座城市，cost matrix 在下面（列 = from，欄 = to，<code>∞</code> = 沒路）。我們會看著表格填起來，讀出最佳 tour <code>1 → 4 → 3 → 2 → 1</code>，花費 <strong>17</strong>。</span></p>
 
 <table style="border-collapse:collapse;margin:.5rem 0;font-family:var(--mono,monospace)">
   <tr><th style="padding:.25rem .6rem"></th><th style="padding:.25rem .6rem">→1</th><th style="padding:.25rem .6rem">→2</th><th style="padding:.25rem .6rem">→3</th><th style="padding:.25rem .6rem">→4</th></tr>
@@ -38,8 +38,8 @@
   <tr><th style="padding:.25rem .6rem">4</th><td style="padding:.25rem .6rem;text-align:center">6</td><td style="padding:.25rem .6rem;text-align:center">8</td><td style="padding:.25rem .6rem;text-align:center">7</td><td style="padding:.25rem .6rem;text-align:center">∞</td></tr>
 </table>
 
-<h2>Watch it solved</h2>
-<p>Left: the 4 cities (the optimal tour's roads light up green as we lock them in). Right: the <code>g(i,S)</code> table filling by subset size — the current cell is highlighted, the cells it depends on are marked.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">Left: the 4 cities (the optimal tour's roads light up green as we lock them in). Right: the <code>g(i,S)</code> table filling by subset size — the current cell is highlighted, the cells it depends on are marked.</span><span data-tr="zh">左邊：4 座城市（最佳 tour 的路會在我們確定時亮成綠色）。右邊：<code>g(i,S)</code> 表按 subset 大小一格格填——當下這格會被標亮，它依賴的格子也會標出來。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -48,34 +48,34 @@
   <span class="chip"><b>exponential</b> — but far better than n!</span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="Held–Karp's insight is that two partial tours sitting at the same city with the same set of unvisited cities have identical cheapest completions — so the state is (current city, set of visited cities). Tracking the exact order taken (option 1) is exactly the wasteful brute-force view DP avoids; the cost-so-far isn't part of the state, and 'just the current city' forgets which cities still need visiting.">
-  <div class="q">In Held–Karp DP for TSP, what information defines one subproblem (the DP state)?</div>
-  <button class="opt">the exact order of cities visited so far</button>
-  <button class="opt">the current city plus the set of cities already visited</button>
-  <button class="opt">the current city plus the total cost paid so far</button>
-  <button class="opt">just the current city</button>
+<div class="quiz" data-correct="1" data-explain="Held–Karp's insight is that two partial tours sitting at the same city with the same set of unvisited cities have identical cheapest completions — so the state is (current city, set of visited cities). Tracking the exact order taken (option 1) is exactly the wasteful brute-force view DP avoids; the cost-so-far isn't part of the state, and 'just the current city' forgets which cities still need visiting." data-explain-zh="Held–Karp 的洞見是：兩條停在同一城市、未走城市集合也相同的部分 tour，後面最便宜的補完方式完全一樣——所以 state 就是（當下城市，已走過的城市集合）。記下確切的走訪順序正是 DP 要避免的暴力法觀點；目前花了多少成本不是 state 的一部分，而「只有當下城市」又忘了還有哪些城市沒走。">
+  <div class="q"><span data-tr="en">In Held–Karp DP for TSP, what information defines one subproblem (the DP state)?</span><span data-tr="zh">在 TSP 的 Held–Karp DP 裡，哪些資訊定義了一個子問題（DP state）？</span></div>
+  <button class="opt"><span data-tr="en">the exact order of cities visited so far</span><span data-tr="zh">到目前為止走訪城市的確切順序</span></button>
+  <button class="opt"><span data-tr="en">the current city plus the set of cities already visited</span><span data-tr="zh">當下城市，加上已經走過的城市集合</span></button>
+  <button class="opt"><span data-tr="en">the current city plus the total cost paid so far</span><span data-tr="zh">當下城市，加上目前已付的總成本</span></button>
+  <button class="opt"><span data-tr="en">just the current city</span><span data-tr="zh">只有當下城市</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="There is one g(i,S) entry for each (city, subset-of-cities) pair — about n·2ⁿ states — and filling each one scans up to n next-cities, giving O(n²·2ⁿ). The 2ⁿ subset factor is exponential, so it's still exponential — just dramatically smaller than the (n−1)! of trying every tour. It is NOT polynomial (option 0) and NOT the same as brute force (option 3).">
-  <div class="q">Held–Karp fills a g(i,S) value for every (city, subset) pair, scanning n choices each. What is its running time, and is that exponential?</div>
-  <button class="opt">O(n³) — polynomial, so no longer exponential</button>
-  <button class="opt">O(n!) — exponential, same as brute force</button>
-  <button class="opt">O(n²·2ⁿ) — still exponential, but far better than n!</button>
-  <button class="opt">O(2ⁿ) only — no extra factor for the cities</button>
+<div class="quiz" data-correct="2" data-explain="There is one g(i,S) entry for each (city, subset-of-cities) pair — about n·2ⁿ states — and filling each one scans up to n next-cities, giving O(n²·2ⁿ). The 2ⁿ subset factor is exponential, so it's still exponential — just dramatically smaller than the (n−1)! of trying every tour. It is NOT polynomial (option 0) and NOT the same as brute force (option 3)." data-explain-zh="每一對（城市，城市子集合）有一個 g(i,S) 值——大約 n·2ⁿ 個 state——填每個都要掃最多 n 個下一城市，所以是 O(n²·2ⁿ)。那個 2ⁿ 的 subset 因子是 exponential，所以它仍然是 exponential——只是比「每條 tour 都試」的 (n−1)! 小得多。它不是 polynomial（選項 0），也不等於暴力法（選項 3）。">
+  <div class="q"><span data-tr="en">Held–Karp fills a g(i,S) value for every (city, subset) pair, scanning n choices each. What is its running time, and is that exponential?</span><span data-tr="zh">Held–Karp 對每一對（城市，subset）填一個 g(i,S) 值，每個都掃 n 種選擇。它的執行時間是多少，那算 exponential 嗎？</span></div>
+  <button class="opt"><span data-tr="en">O(n³) — polynomial, so no longer exponential</span><span data-tr="zh">O(n³)——polynomial，所以不再是 exponential</span></button>
+  <button class="opt"><span data-tr="en">O(n!) — exponential, same as brute force</span><span data-tr="zh">O(n!)——exponential，跟暴力法一樣</span></button>
+  <button class="opt"><span data-tr="en">O(n²·2ⁿ) — still exponential, but far better than n!</span><span data-tr="zh">O(n²·2ⁿ)——還是 exponential，但比 n! 好太多了</span></button>
+  <button class="opt"><span data-tr="en">O(2ⁿ) only — no extra factor for the cities</span><span data-tr="zh">只有 O(2ⁿ)——城市那邊沒有多出的因子</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-tsp-dp">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-tsp-dp"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Alg07 · Ch 7 §10, slides 22–25 (cost matrix, the tour multistage graph, both Held–Karp recurrences, and the explicit <code>O(n²·2ⁿ)</code> complexity sum). The <code>g(i,S)</code> recurrence and the <code>O(n²·2ⁿ)</code> bound are the Held–Karp algorithm (1962).</p>
-<div class="note"><strong>Same problem, different method:</strong> the <a href="prob-tsp-bnb.html">Branch-and-Bound TSP</a> in Ch 6 solves this <em>same</em> instance by pruning a search tree with a reduced-cost lower bound, instead of filling a g(i,S) table — see <a href="algo-dynamic-programming.html">Dynamic Programming</a> for the method behind this page.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">深入了解</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> Alg07 · Ch 7 §10, slides 22–25 (cost matrix, the tour multistage graph, both Held–Karp recurrences, and the explicit <code>O(n²·2ⁿ)</code> complexity sum). The <code>g(i,S)</code> recurrence and the <code>O(n²·2ⁿ)</code> bound are the Held–Karp algorithm (1962).</span><span data-tr="zh"><strong>主要出處：</strong>Alg07 · Ch 7 §10，slides 22–25（cost matrix、tour 的 multistage graph、兩種 Held–Karp 遞迴式，以及明確的 <code>O(n²·2ⁿ)</code> 複雜度推導）。<code>g(i,S)</code> 遞迴式和 <code>O(n²·2ⁿ)</code> 上界就是 Held–Karp 演算法（1962）。</span></p>
+<div class="note"><span data-tr="en"><strong>Same problem, different method:</strong> the <a href="prob-tsp-bnb.html">Branch-and-Bound TSP</a> in Ch 6 solves this <em>same</em> instance by pruning a search tree with a reduced-cost lower bound, instead of filling a g(i,S) table — see <a href="algo-dynamic-programming.html">Dynamic Programming</a> for the method behind this page.</span><span data-tr="zh"><strong>同一題，不同方法：</strong>Ch 6 的 <a href="prob-tsp-bnb.html">Branch-and-Bound TSP</a> 解的是<em>同一個</em>例子，但它是用 reduced-cost 下界去剪搜尋樹，而不是填 g(i,S) 表——這頁背後的方法可以看 <a href="algo-dynamic-programming.html">Dynamic Programming</a>。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

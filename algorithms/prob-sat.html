@@ -15,65 +15,65 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Tree Search · Ch6</div>
-<h1>Satisfiability (SAT)</h1>
-<div class="mission">Given a Boolean formula, is there <em>any</em> true/false assignment to its variables that makes the whole thing true? Search the tree of <strong>2ⁿ</strong> assignments — and prune the instant a clause is broken.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1 (the SAT problem; tree of 2ⁿ assignments; partial tree with early pruning).</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a> (and <a href="algo-bfs.html">BFS</a>)</p>
+<div class="kicker"><span data-tr="en">Tree Search · Ch6</span><span data-tr="zh">樹搜尋 · 第6章</span></div>
+<h1><span data-tr="en">Satisfiability (SAT)</span><span data-tr="zh">Satisfiability（SAT）</span></h1>
+<div class="mission"><span data-tr="en">Given a Boolean formula, is there <em>any</em> true/false assignment to its variables that makes the whole thing true? Search the tree of <strong>2ⁿ</strong> assignments — and prune the instant a clause is broken.</span><span data-tr="zh">給你一個布林公式，問的是：有沒有<em>任何一組</em>變數的 true/false 指派，能讓整個公式成立？我們要搜一棵 <strong>2ⁿ</strong> 種指派的樹，而且只要有 clause 被弄壞，就馬上把那一塊砍掉。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem"><span data-tr="en">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1 (the SAT problem; tree of 2ⁿ assignments; partial tree with early pruning).</span><span data-tr="zh">📄 <b>出處：</b>Alg05 · <em>The Searching Strategies</em> §1（SAT 問題；2ⁿ 種指派的樹；提早剪枝的 partial tree）。</span></p>
+<p style="font-size:.9rem"><span data-tr="en">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a> (and <a href="algo-bfs.html">BFS</a>)</span><span data-tr="zh">🧠 <b>用什麼解：</b><a href="algo-dfs.html">Depth-First Search</a>（也可以用 <a href="algo-bfs.html">BFS</a>）</span></p>
 
-<h2>The problem</h2>
-<p>A <strong>Boolean variable</strong> is one that is either <code>true</code> or <code>false</code>. A <strong>literal</strong> is a variable or its negation — e.g. <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). A <strong>clause</strong> is an OR of literals, e.g. <code>(x₂ ∨ x₅)</code>; it is satisfied if <em>at least one</em> of its literals is true. A formula is in <strong>conjunctive normal form (CNF)</strong> when it is an <strong>AND of clauses</strong> — so it is true only when <em>every</em> clause is satisfied at once.</p>
-<p>The <strong>satisfiability problem</strong> asks: given such a CNF formula in <code>n</code> variables <code>x₁ … xₙ</code>, does there exist a truth assignment that makes the formula <code>true</code>? If yes, the formula is <strong>satisfiable</strong>; if no assignment works, it is <strong>unsatisfiable</strong>.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">A <strong>Boolean variable</strong> is one that is either <code>true</code> or <code>false</code>. A <strong>literal</strong> is a variable or its negation — e.g. <code>x₁</code> or <code>¬x₁</code> (read "not x₁"). A <strong>clause</strong> is an OR of literals, e.g. <code>(x₂ ∨ x₅)</code>; it is satisfied if <em>at least one</em> of its literals is true. A formula is in <strong>conjunctive normal form (CNF)</strong> when it is an <strong>AND of clauses</strong> — so it is true only when <em>every</em> clause is satisfied at once.</span><span data-tr="zh">先講幾個名詞。<strong>Boolean variable</strong>（布林變數）就是只能是 <code>true</code> 或 <code>false</code> 的變數。<strong>literal</strong>（文字）是一個變數或它的否定，例如 <code>x₁</code> 或 <code>¬x₁</code>（唸作「not x₁」）。<strong>clause</strong>（子句）是一堆 literal 用 OR 串起來，像 <code>(x₂ ∨ x₅)</code>；只要裡面<em>至少有一個</em> literal 是 true，這個 clause 就成立。整個公式如果是<strong>一堆 clause 用 AND 串起來</strong>，就叫做 <strong>conjunctive normal form（CNF）</strong>——所以它要成立，必須<em>每一個</em> clause 同時都成立才行。</span></p>
+<p><span data-tr="en">The <strong>satisfiability problem</strong> asks: given such a CNF formula in <code>n</code> variables <code>x₁ … xₙ</code>, does there exist a truth assignment that makes the formula <code>true</code>? If yes, the formula is <strong>satisfiable</strong>; if no assignment works, it is <strong>unsatisfiable</strong>.</span><span data-tr="zh"><strong>satisfiability problem</strong> 問的就是：給你這樣一個有 <code>n</code> 個變數 <code>x₁ … xₙ</code> 的 CNF 公式，到底有沒有一組指派能讓公式變成 <code>true</code>？有的話這公式就是 <strong>satisfiable</strong>（可滿足）；如果怎麼指派都不行，就是 <strong>unsatisfiable</strong>（不可滿足）。</span></p>
 
-<p><strong>The tiny instance (from the slide).</strong> Five clauses over variables <code>x₁ … x₅</code>, all of which must hold simultaneously:</p>
+<p><span data-tr="en"><strong>The tiny instance (from the slide).</strong> Five clauses over variables <code>x₁ … x₅</code>, all of which must hold simultaneously:</span><span data-tr="zh"><strong>投影片上的小例子。</strong>變數 <code>x₁ … x₅</code> 上的五個 clause，全部都要同時成立：</span></p>
 <div class="atree">  (1)  ¬x₁          ← x₁ must be false
   (2)   x₁          ← x₁ must be true
   (3)   x₂ ∨ x₅
   (4)   x₃
   (5)  ¬x₂</div>
-<p>Look at clauses <b>(1)</b> and <b>(2)</b>: one demands <code>x₁ = false</code>, the other demands <code>x₁ = true</code>. They flatly contradict, so <em>no</em> assignment can satisfy both — this instance is <strong>unsatisfiable</strong>. The whole point of §1 is that we can <em>discover</em> this without enumerating all assignments: the very first variable we branch on already breaks a clause on both sides.</p>
+<p><span data-tr="en">Look at clauses <b>(1)</b> and <b>(2)</b>: one demands <code>x₁ = false</code>, the other demands <code>x₁ = true</code>. They flatly contradict, so <em>no</em> assignment can satisfy both — this instance is <strong>unsatisfiable</strong>. The whole point of §1 is that we can <em>discover</em> this without enumerating all assignments: the very first variable we branch on already breaks a clause on both sides.</span><span data-tr="zh">看 clause <b>(1)</b> 跟 <b>(2)</b>：一個要 <code>x₁ = false</code>，另一個要 <code>x₁ = true</code>。這兩個直接打架，所以<em>沒有</em>任何指派能同時滿足它們——這個例子就是 <strong>unsatisfiable</strong>。§1 的重點就在這裡：我們<em>不用</em>把所有指派列出來也能發現這件事，因為光是第一個拿來分支的變數，兩邊都會弄壞某個 clause。</span></p>
 
-<p>With <code>n</code> variables there are <strong>2ⁿ</strong> possible assignments. We lay them out as a <strong>binary tree of depth n</strong>: at level <code>i</code> we branch on <code>xᵢ = T</code> (left) versus <code>xᵢ = F</code> (right). Every root-to-leaf path is one complete assignment; the leaves are the 2ⁿ rows of the truth table.</p>
+<p><span data-tr="en">With <code>n</code> variables there are <strong>2ⁿ</strong> possible assignments. We lay them out as a <strong>binary tree of depth n</strong>: at level <code>i</code> we branch on <code>xᵢ = T</code> (left) versus <code>xᵢ = F</code> (right). Every root-to-leaf path is one complete assignment; the leaves are the 2ⁿ rows of the truth table.</span><span data-tr="zh"><code>n</code> 個變數總共有 <strong>2ⁿ</strong> 種指派。我們把它們攤成一棵<strong>深度為 n 的二元樹</strong>：在第 <code>i</code> 層就針對 <code>xᵢ = T</code>（左）跟 <code>xᵢ = F</code>（右）分支。每一條從 root 到 leaf 的路徑就是一組完整的指派，而那些 leaf 就是真值表的 2ⁿ 列。</span></p>
 
-<h2>Watch it solved</h2>
-<p>We run <strong>depth-first search</strong> down the 2ⁿ-assignment tree, checking after each choice whether any clause is <em>already</em> falsified by the partial assignment. The moment one is, that whole subtree is dead — prune it and back up. Step through.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">We run <strong>depth-first search</strong> down the 2ⁿ-assignment tree, checking after each choice whether any clause is <em>already</em> falsified by the partial assignment. The moment one is, that whole subtree is dead — prune it and back up. Step through.</span><span data-tr="zh">我們用 <strong>depth-first search</strong> 往這棵 2ⁿ 指派的樹下鑽，每做一個選擇就檢查一下：目前這個部分指派有沒有<em>已經</em>讓哪個 clause 不成立了？只要有，那整個 subtree 就死了——直接剪掉，退回上一步。一步一步看下去。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Assignments: <b>2ⁿ</b> leaves</span>
-  <span class="chip">Search: <b>DFS</b> (a stack)</span>
-  <span class="chip">Prune when: <b>a clause is falsified</b></span>
-  <span class="chip">This instance: <b>UNSAT</b></span>
+  <span class="chip"><span data-tr="en">Assignments: <b>2ⁿ</b> leaves</span><span data-tr="zh">指派數：<b>2ⁿ</b> 個 leaf</span></span>
+  <span class="chip"><span data-tr="en">Search: <b>DFS</b> (a stack)</span><span data-tr="zh">搜尋：<b>DFS</b>（用 stack）</span></span>
+  <span class="chip"><span data-tr="en">Prune when: <b>a clause is falsified</b></span><span data-tr="zh">何時剪枝：<b>某個 clause 被弄壞時</b></span></span>
+  <span class="chip"><span data-tr="en">This instance: <b>UNSAT</b></span><span data-tr="zh">這個例子：<b>UNSAT</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="A CNF formula is an AND of clauses, so it is true only if EVERY clause is true; and a clause is an OR of literals, so a clause is true if AT LEAST ONE literal is true. Mixing these up is the classic trap. 'Every literal in every clause true' is far too strong (that's not OR), and 'at least one clause true' is far too weak (that's not AND).">
-  <div class="q">A formula in CNF is an AND of clauses, each clause an OR of literals. For the whole formula to evaluate to <code>true</code>, what exactly must hold?</div>
-  <button class="opt">at least one clause is true</button>
-  <button class="opt">every literal in every clause is true</button>
-  <button class="opt">every clause is true, and each clause needs at least one true literal</button>
-  <button class="opt">exactly one literal per clause is true</button>
+<div class="quiz" data-correct="2" data-explain="A CNF formula is an AND of clauses, so it is true only if EVERY clause is true; and a clause is an OR of literals, so a clause is true if AT LEAST ONE literal is true. Mixing these up is the classic trap. 'Every literal in every clause true' is far too strong (that's not OR), and 'at least one clause true' is far too weak (that's not AND)." data-explain-zh="CNF 是一堆 clause 用 AND 串起來，所以要每一個 clause 都成立、整個公式才成立；而一個 clause 是 literal 用 OR 串起來，所以只要至少有一個 literal 是 true，這個 clause 就成立。把這兩個搞混就是經典陷阱。「每個 clause 裡每個 literal 都 true」太強了（那不是 OR），「至少一個 clause 成立」又太弱（那不是 AND）。">
+  <div class="q"><span data-tr="en">A formula in CNF is an AND of clauses, each clause an OR of literals. For the whole formula to evaluate to <code>true</code>, what exactly must hold?</span><span data-tr="zh">CNF 公式是一堆 clause 用 AND 串起來，每個 clause 又是 literal 用 OR 串起來。那整個公式要算出 <code>true</code>，到底要滿足什麼條件？</span></div>
+  <button class="opt"><span data-tr="en">at least one clause is true</span><span data-tr="zh">至少有一個 clause 成立</span></button>
+  <button class="opt"><span data-tr="en">every literal in every clause is true</span><span data-tr="zh">每個 clause 裡的每個 literal 都成立</span></button>
+  <button class="opt"><span data-tr="en">every clause is true, and each clause needs at least one true literal</span><span data-tr="zh">每個 clause 都成立，而且每個 clause 至少要有一個 literal 是 true</span></button>
+  <button class="opt"><span data-tr="en">exactly one literal per clause is true</span><span data-tr="zh">每個 clause 剛好只有一個 literal 是 true</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="The branch on x₁ pins x₁'s value, and clauses (1) ¬x₁ and (2) x₁ each involve ONLY x₁. So setting x₁ resolves both: x₁=T satisfies (2) but falsifies (1); x₁=F satisfies (1) but falsifies (2). Either way one clause is dead, so DFS prunes both children of the root and reports UNSATISFIABLE — without ever touching x₂…x₅. It is NOT that we must reach a leaf (the power of pruning is stopping early), and a falsified clause is fatal, not something you 'fix later'.">
-  <div class="q">DFS branches on <code>x₁</code> first. Clause (1) is <code>¬x₁</code> and clause (2) is <code>x₁</code>. What happens as soon as <code>x₁</code> is assigned, and why does that settle the instance?</div>
-  <button class="opt">nothing yet — a clause can only be judged once we reach a full leaf assignment</button>
-  <button class="opt">one of (1)/(2) is falsified on each branch, so both subtrees are pruned → UNSAT, never assigning x₂…x₅</button>
-  <button class="opt">we set x₁=T to satisfy (2) and just remember to revisit (1) later</button>
-  <button class="opt">the formula is satisfiable because x₁=T makes clause (2) true</button>
+<div class="quiz" data-correct="1" data-explain="The branch on x₁ pins x₁'s value, and clauses (1) ¬x₁ and (2) x₁ each involve ONLY x₁. So setting x₁ resolves both: x₁=T satisfies (2) but falsifies (1); x₁=F satisfies (1) but falsifies (2). Either way one clause is dead, so DFS prunes both children of the root and reports UNSATISFIABLE — without ever touching x₂…x₅. It is NOT that we must reach a leaf (the power of pruning is stopping early), and a falsified clause is fatal, not something you 'fix later'." data-explain-zh="在 x₁ 上分支就把 x₁ 的值定下來了，而 clause (1) ¬x₁ 跟 (2) x₁ 都只牽涉到 x₁。所以一設 x₁，這兩個 clause 就有定論：x₁=T 滿足 (2) 卻弄壞 (1)；x₁=F 滿足 (1) 卻弄壞 (2)。不管哪邊都有一個 clause 死掉，所以 DFS 把 root 的兩個 children 都剪掉，直接回報 UNSATISFIABLE——根本沒碰到 x₂…x₅。重點是不必走到 leaf（剪枝的威力就在能提早停），而且 clause 一旦被弄壞就是致命的，不是之後可以「再補救」的東西。">
+  <div class="q"><span data-tr="en">DFS branches on <code>x₁</code> first. Clause (1) is <code>¬x₁</code> and clause (2) is <code>x₁</code>. What happens as soon as <code>x₁</code> is assigned, and why does that settle the instance?</span><span data-tr="zh">DFS 先在 <code>x₁</code> 上分支。clause (1) 是 <code>¬x₁</code>、clause (2) 是 <code>x₁</code>。那一旦 <code>x₁</code> 被指派，會發生什麼事，又為什麼這樣就能定案？</span></div>
+  <button class="opt"><span data-tr="en">nothing yet — a clause can only be judged once we reach a full leaf assignment</span><span data-tr="zh">還不會怎樣——要走到 leaf、有完整指派時才判斷得了 clause</span></button>
+  <button class="opt"><span data-tr="en">one of (1)/(2) is falsified on each branch, so both subtrees are pruned → UNSAT, never assigning x₂…x₅</span><span data-tr="zh">每一邊都會弄壞 (1)/(2) 其中一個，所以兩棵 subtree 都被剪掉 → UNSAT，根本不用指派 x₂…x₅</span></button>
+  <button class="opt"><span data-tr="en">we set x₁=T to satisfy (2) and just remember to revisit (1) later</span><span data-tr="zh">先設 x₁=T 滿足 (2)，記得之後再回來處理 (1) 就好</span></button>
+  <button class="opt"><span data-tr="en">the formula is satisfiable because x₁=T makes clause (2) true</span><span data-tr="zh">公式是 satisfiable，因為 x₁=T 讓 clause (2) 成立</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-sat">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-sat"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Alg05 · <em>The Searching Strategies</em> §1 — the SAT problem, the "Tree Representation of Eight Assignments" (the full 2³ truth-table tree), and "A Partial Tree to Determine the Satisfiability Problem," whose message is: <em>we may not need to examine all 2ⁿ assignments</em> — a partial assignment that violates a clause kills its whole subtree. SAT is the historical seed of NP-completeness (Cook–Levin).</p>
-<div class="note"><strong>The method:</strong> this tree is explored by <a href="algo-dfs.html">Depth-First Search</a> (stack / dive-and-backtrack) or <a href="algo-bfs.html">Breadth-First Search</a> (queue / level-by-level) — same tree, different visiting order. <strong>Sibling problems in this chapter:</strong> <a href="prob-hamiltonian.html">Hamiltonian Circuit</a> and <a href="prob-subset-sum.html">Sum of Subsets</a> — both also cast as searching a solution-space tree with early pruning of dead branches.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> Alg05 · <em>The Searching Strategies</em> §1 — the SAT problem, the "Tree Representation of Eight Assignments" (the full 2³ truth-table tree), and "A Partial Tree to Determine the Satisfiability Problem," whose message is: <em>we may not need to examine all 2ⁿ assignments</em> — a partial assignment that violates a clause kills its whole subtree. SAT is the historical seed of NP-completeness (Cook–Levin).</span><span data-tr="zh"><strong>主要出處：</strong>Alg05 · <em>The Searching Strategies</em> §1——SAT 問題、「Tree Representation of Eight Assignments」（完整的 2³ 真值表樹），以及「A Partial Tree to Determine the Satisfiability Problem」，它要講的就是：<em>我們不一定要把全部 2ⁿ 種指派都看過</em>——只要一個部分指派違反了某個 clause，整個 subtree 就直接死掉。SAT 是 NP-completeness 的歷史起點（Cook–Levin）。</span></p>
+<div class="note"><span data-tr="en"><strong>The method:</strong> this tree is explored by <a href="algo-dfs.html">Depth-First Search</a> (stack / dive-and-backtrack) or <a href="algo-bfs.html">Breadth-First Search</a> (queue / level-by-level) — same tree, different visiting order. <strong>Sibling problems in this chapter:</strong> <a href="prob-hamiltonian.html">Hamiltonian Circuit</a> and <a href="prob-subset-sum.html">Sum of Subsets</a> — both also cast as searching a solution-space tree with early pruning of dead branches.</span><span data-tr="zh"><strong>怎麼解：</strong>這棵樹可以用 <a href="algo-dfs.html">Depth-First Search</a>（stack／往下鑽再回溯）或 <a href="algo-bfs.html">Breadth-First Search</a>（queue／一層一層）來走——同一棵樹，只是拜訪順序不同。<strong>同章的姊妹題：</strong><a href="prob-hamiltonian.html">Hamiltonian Circuit</a> 跟 <a href="prob-subset-sum.html">Sum of Subsets</a>——這兩題一樣是把問題變成在一棵解空間樹上搜尋，並且提早把死路砍掉。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

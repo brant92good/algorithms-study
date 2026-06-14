@@ -15,23 +15,23 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Branch-and-Bound · Ch6</div>
-<h1>Personnel Assignment</h1>
-<div class="mission">Hand <strong>n jobs to n people</strong> at minimum total cost — but the jobs come with a <strong>precedence order</strong>, so not every assignment is legal. Search the legal ones cleverly with a cost <em>lower bound</em> that prunes whole subtrees.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §8 (Personnel Assignment by Branch-and-Bound; Tables 6-1 / 6-2, Fig. 6-21).</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
+<div class="kicker"><span data-tr="en">Branch-and-Bound · Ch6</span><span data-tr="zh">Branch-and-Bound · 第六章</span></div>
+<h1><span data-tr="en">Personnel Assignment</span><span data-tr="zh">人員指派問題</span></h1>
+<div class="mission"><span data-tr="en">Hand <strong>n jobs to n people</strong> at minimum total cost — but the jobs come with a <strong>precedence order</strong>, so not every assignment is legal. Search the legal ones cleverly with a cost <em>lower bound</em> that prunes whole subtrees.</span><span data-tr="zh">把 <strong>n 個工作分給 n 個人</strong>，要讓總成本最小。但工作之間有<strong>先後順序（precedence order）</strong>的限制，所以不是每種分法都合法。我們會用成本的<em>下界（lower bound）</em>來聰明地搜尋合法解，順便把整棵不可能更好的子樹直接砍掉。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b> Alg05 · <em>The Searching Strategies</em> §8 (Personnel Assignment by Branch-and-Bound; Tables 6-1 / 6-2, Fig. 6-21).</p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">用什麼解：</span></b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a></p>
 
-<h2>The problem</h2>
-<p>You have <strong>n people</strong> and <strong>n jobs</strong>, and you must give each person exactly one job and each job exactly one person (a one-to-one <em>assignment</em>). Assigning <strong>person Pᵢ to job Jⱼ costs Cᵢⱼ</strong> — these costs are given in a table. The naive goal would be "pick the cheapest one-to-one assignment," but here there is a twist.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">問題是什麼</span></h2>
+<p><span data-tr="en">You have <strong>n people</strong> and <strong>n jobs</strong>, and you must give each person exactly one job and each job exactly one person (a one-to-one <em>assignment</em>). Assigning <strong>person Pᵢ to job Jⱼ costs Cᵢⱼ</strong> — these costs are given in a table. The naive goal would be "pick the cheapest one-to-one assignment," but here there is a twist.</span><span data-tr="zh">你有 <strong>n 個人</strong>和 <strong>n 個工作</strong>，每個人剛好分到一個工作、每個工作剛好分給一個人（一對一的 <em>assignment</em>）。把<strong> Pᵢ 指派去做 Jⱼ 的成本是 Cᵢⱼ</strong>，這些成本都列在表裡。直覺上你會想「挑總成本最小的一對一分法就好」，但這題有個轉折。</span></p>
 
-<p>The <strong>jobs carry a partial order</strong> — a precedence relation. Some jobs <em>must come before</em> others; some pairs of jobs are unrelated (incomparable). The people, by contrast, are <strong>linearly ordered</strong>: P₁ &lt; P₂ &lt; … &lt; Pₙ. The rule that makes an assignment <strong>feasible</strong> is that it must <em>respect</em> the job order:</p>
+<p><span data-tr="en">The <strong>jobs carry a partial order</strong> — a precedence relation. Some jobs <em>must come before</em> others; some pairs of jobs are unrelated (incomparable). The people, by contrast, are <strong>linearly ordered</strong>: P₁ &lt; P₂ &lt; … &lt; Pₙ. The rule that makes an assignment <strong>feasible</strong> is that it must <em>respect</em> the job order:</span><span data-tr="zh">這些<strong>工作之間有 partial order（偏序）</strong>，也就是一種先後關係：有些工作<em>一定要排在</em>別的工作前面，有些工作之間則沒關係（無法比較）。相對地，人是<strong>線性排好的</strong>：P₁ &lt; P₂ &lt; … &lt; Pₙ。一個分法要算<strong>合法（feasible）</strong>，就得<em>遵守</em>工作的順序：</span></p>
 
-<div class="note">If person Pᵢ comes before person Pⱼ (i.e. Pᵢ &lt; Pⱼ), then the job given to Pᵢ must come <strong>before-or-equal</strong> to the job given to Pⱼ in the job order. In short: a feasible assignment lists the jobs in a <strong>topological order</strong> of the precedence relation as you read down the person list P₁, P₂, …, Pₙ.</p></div>
+<div class="note"><span data-tr="en">If person Pᵢ comes before person Pⱼ (i.e. Pᵢ &lt; Pⱼ), then the job given to Pᵢ must come <strong>before-or-equal</strong> to the job given to Pⱼ in the job order. In short: a feasible assignment lists the jobs in a <strong>topological order</strong> of the precedence relation as you read down the person list P₁, P₂, …, Pₙ.</span><span data-tr="zh">如果 Pᵢ 排在 Pⱼ 前面（也就是 Pᵢ &lt; Pⱼ），那 Pᵢ 拿到的工作，在工作順序上也要<strong>排在 Pⱼ 拿到的工作前面或同等</strong>。簡單講：你照 P₁, P₂, …, Pₙ 由上往下讀，他們拿到的工作要剛好是 precedence 關係的一個 <strong>topological order（拓樸排序）</strong>。</span></p></div>
 
-<p><strong>Objective:</strong> minimize the total cost <code>Σᵢ Σⱼ Cᵢⱼ·Xᵢⱼ</code>, where <code>Xᵢⱼ = 1</code> if Pᵢ is assigned to Jⱼ and <code>0</code> otherwise, subject to each person/job used once <em>and</em> the feasibility (precedence) rule.</p>
+<p><strong><span data-tr="en">Objective:</span><span data-tr="zh">目標：</span></strong> <span data-tr="en">minimize the total cost <code>Σᵢ Σⱼ Cᵢⱼ·Xᵢⱼ</code>, where <code>Xᵢⱼ = 1</code> if Pᵢ is assigned to Jⱼ and <code>0</code> otherwise, subject to each person/job used once <em>and</em> the feasibility (precedence) rule.</span><span data-tr="zh">把總成本 <code>Σᵢ Σⱼ Cᵢⱼ·Xᵢⱼ</code> 最小化。其中 Pᵢ 被指派去做 Jⱼ 時 <code>Xᵢⱼ = 1</code>，否則為 <code>0</code>。限制是每個人、每個工作都只用一次，<em>而且</em>要符合上面那條 precedence 規則。</span></p>
 
-<h3>The concrete instance (n = 4)</h3>
-<p>Four people P₁…P₄, four jobs J₁…J₄. The cost matrix <strong>(Table 6-1)</strong> — rows are people, columns are jobs:</p>
+<h3><span data-tr="en">The concrete instance (n = 4)</span><span data-tr="zh">實際例子（n = 4）</span></h3>
+<p><span data-tr="en">Four people P₁…P₄, four jobs J₁…J₄. The cost matrix <strong>(Table 6-1)</strong> — rows are people, columns are jobs:</span><span data-tr="zh">四個人 P₁…P₄、四個工作 J₁…J₄。成本矩陣<strong>（Table 6-1）</strong>，列是人、行是工作：</span></p>
 
 <div class="atree">Person \ Job    J1   J2   J3   J4
    P1           29   19   17   12
@@ -39,44 +39,44 @@
    P3            3   21    7    9
    P4           18   13   10   15</div>
 
-<p>The job precedence <strong>(Fig. 6-21)</strong> is two simple chains — <strong>J1 must precede J3</strong>, and <strong>J2 must precede J4</strong>:</p>
+<p><span data-tr="en">The job precedence <strong>(Fig. 6-21)</strong> is two simple chains — <strong>J1 must precede J3</strong>, and <strong>J2 must precede J4</strong>:</span><span data-tr="zh">工作的 precedence<strong>（Fig. 6-21）</strong>就是兩條簡單的鏈——<strong>J1 一定要排在 J3 前面</strong>，<strong>J2 一定要排在 J4 前面</strong>：</span></p>
 
 <div class="atree">   J1        J2
    |         |
    v         v
    J3        J4</div>
 
-<p>J1 and J2 are incomparable; so are J3 and J4. The legal (topologically sorted) job sequences are therefore:</p>
+<p><span data-tr="en">J1 and J2 are incomparable; so are J3 and J4. The legal (topologically sorted) job sequences are therefore:</span><span data-tr="zh">J1 和 J2 之間沒關係，J3 和 J4 之間也沒關係。所以合法的（topological order）工作序列有這幾種：</span></p>
 <div class="atree">J1, J2, J3, J4      J1, J2, J4, J3      J1, J3, J2, J4
 J2, J1, J3, J4      J2, J1, J4, J3</div>
-<p>An assignment is feasible iff the jobs handed to P₁, P₂, P₃, P₄ (in that order) form one of these sequences. For example <code>P1→J1, P2→J2, P3→J3, P4→J4</code> is feasible (sequence J1,J2,J3,J4). The question: among all feasible assignments, which is cheapest?</p>
+<p><span data-tr="en">An assignment is feasible iff the jobs handed to P₁, P₂, P₃, P₄ (in that order) form one of these sequences. For example <code>P1→J1, P2→J2, P3→J3, P4→J4</code> is feasible (sequence J1,J2,J3,J4). The question: among all feasible assignments, which is cheapest?</span><span data-tr="zh">一個分法合法，當且僅當 P₁, P₂, P₃, P₄（照這個順序）拿到的工作剛好是上面其中一條序列。舉例來說 <code>P1→J1, P2→J2, P3→J3, P4→J4</code> 就合法（對應序列 J1,J2,J3,J4）。問題是：在所有合法分法裡，哪一個最便宜？</span></p>
 
-<h2>Watch it solved</h2>
-<p>Two stages. First we <strong>reduce the cost matrix</strong> (subtract a constant from every row and every column so each has a zero) — the total subtracted is a guaranteed <strong>lower bound</strong> on any assignment. Then we <strong>branch</strong>: a decision tree picks P₁'s job, then P₂'s, and so on, carrying a running cost and using the bound to <strong>prune</strong>. Step through.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">Two stages. First we <strong>reduce the cost matrix</strong> (subtract a constant from every row and every column so each has a zero) — the total subtracted is a guaranteed <strong>lower bound</strong> on any assignment. Then we <strong>branch</strong>: a decision tree picks P₁'s job, then P₂'s, and so on, carrying a running cost and using the bound to <strong>prune</strong>. Step through.</span><span data-tr="zh">分兩個階段。第一步先<strong>把成本矩陣做 reduction</strong>（每一列、每一行都減掉一個常數，讓每列每行都出現一個 0），減掉的總量就是任何分法的<strong>下界（lower bound）</strong>。接著<strong>branch</strong>：用一棵決策樹先選 P₁ 的工作、再選 P₂ 的，一路下去，沿途記錄累積成本，並用下界來<strong>剪枝（prune）</strong>。一步步看下去。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">People: <b>linear order</b></span>
-  <span class="chip">Jobs: <b>partial order</b></span>
-  <span class="chip">Bound: <b>row+col reduction = 54</b></span>
-  <span class="chip">Optimal cost: <b>70</b></span>
-  <span class="chip">Strategy: <b>best-first B&amp;B</b></span>
+  <span class="chip"><span data-tr="en">People: <b>linear order</b></span><span data-tr="zh">人：<b>線性順序</b></span></span>
+  <span class="chip"><span data-tr="en">Jobs: <b>partial order</b></span><span data-tr="zh">工作：<b>partial order</b></span></span>
+  <span class="chip"><span data-tr="en">Bound: <b>row+col reduction = 54</b></span><span data-tr="zh">下界：<b>列+行 reduction = 54</b></span></span>
+  <span class="chip"><span data-tr="en">Optimal cost: <b>70</b></span><span data-tr="zh">最佳成本：<b>70</b></span></span>
+  <span class="chip"><span data-tr="en">Strategy: <b>best-first B&amp;B</b></span><span data-tr="zh">策略：<b>best-first B&amp;B</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="The reduction lower bound (54) comes from subtracting a constant from each row and column so every row and column owns a zero: 12+26+3+10 across the four rows, plus 3 for column 2 that still lacked a zero, = 54. It is a LOWER bound because every feasible assignment must still pay at least those subtracted amounts (one cell per row, one per column). It is NOT the optimal cost — the actual cheapest feasible assignment here costs 70. And it is not the cheapest single cell (that would be C₃₁ = 3), nor the sum of row minimums alone (that ignores the column-2 reduction).">
-  <div class="q">After row+column reduction of the cost matrix, the total amount subtracted is 54. What does that 54 tell you?</div>
-  <button class="opt">it is the optimal assignment cost</button>
-  <button class="opt">it is the cost of the single cheapest cell in the matrix</button>
-  <button class="opt">it is a lower bound — no feasible assignment can cost less than 54</button>
-  <button class="opt">it is the cost of assigning each person their own row-minimum job</button>
+<div class="quiz" data-correct="2" data-explain="The reduction lower bound (54) comes from subtracting a constant from each row and column so every row and column owns a zero: 12+26+3+10 across the four rows, plus 3 for column 2 that still lacked a zero, = 54. It is a LOWER bound because every feasible assignment must still pay at least those subtracted amounts (one cell per row, one per column). It is NOT the optimal cost — the actual cheapest feasible assignment here costs 70. And it is not the cheapest single cell (that would be C₃₁ = 3), nor the sum of row minimums alone (that ignores the column-2 reduction)." data-explain-zh="這個 reduction 下界（54）是這樣來的：每列每行各減掉一個常數，讓每列每行都有 0——四列各減 12+26+3+10，加上第 2 行還缺一個 0 再減 3，總共 54。它是<b>下界</b>，因為任何合法分法（每列一格、每行一格）至少都得付掉這些被減掉的量。它<b>不是</b>最佳成本——這題真正最便宜的合法分法要花 70。它也不是矩陣裡最便宜的單一格（那是 C₃₁ = 3），更不是單純把每列最小值加起來（那會漏掉第 2 行的 reduction）。">
+  <div class="q"><span data-tr="en">After row+column reduction of the cost matrix, the total amount subtracted is 54. What does that 54 tell you?</span><span data-tr="zh">對成本矩陣做完列+行 reduction 後，總共減掉了 54。這個 54 告訴你什麼？</span></div>
+  <button class="opt"><span data-tr="en">it is the optimal assignment cost</span><span data-tr="zh">它就是最佳分法的成本</span></button>
+  <button class="opt"><span data-tr="en">it is the cost of the single cheapest cell in the matrix</span><span data-tr="zh">它是矩陣裡最便宜那一格的成本</span></button>
+  <button class="opt"><span data-tr="en">it is a lower bound — no feasible assignment can cost less than 54</span><span data-tr="zh">它是個下界——任何合法分法都不可能比 54 便宜</span></button>
+  <button class="opt"><span data-tr="en">it is the cost of assigning each person their own row-minimum job</span><span data-tr="zh">它是讓每個人都拿自己那列最小值工作的成本</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="The feasibility rule says the jobs given to P1,P2,P3,P4 (in person order) must form a topological order of the precedence J1→J3, J2→J4. The optimal here is P1→J2, P2→J1, P3→J4, P4→J3, whose job sequence is J2,J1,J4,J3 — one of the five legal orders, and J1 still precedes J3, J2 still precedes J4. The trap answers each break a precedence: e.g. giving J3 before J1 (J3 ahead of J1 in the sequence) violates J1→J3. The minimum-cost cell in each row (P1→J4=12, P2→J3=26, P3→J1=3, P4→J3=10) is NOT even a valid assignment — J3 is used twice — which is exactly why you cannot just grab row minimums.">
-  <div class="q">The optimal feasible assignment costs 70. Which assignment is it (recall J1 must precede J3, and J2 must precede J4)?</div>
-  <button class="opt">P1→J1, P2→J3, P3→J1, P4→J3 (each person's cheapest job)</button>
+<div class="quiz" data-correct="1" data-explain="The feasibility rule says the jobs given to P1,P2,P3,P4 (in person order) must form a topological order of the precedence J1→J3, J2→J4. The optimal here is P1→J2, P2→J1, P3→J4, P4→J3, whose job sequence is J2,J1,J4,J3 — one of the five legal orders, and J1 still precedes J3, J2 still precedes J4. The trap answers each break a precedence: e.g. giving J3 before J1 (J3 ahead of J1 in the sequence) violates J1→J3. The minimum-cost cell in each row (P1→J4=12, P2→J3=26, P3→J1=3, P4→J3=10) is NOT even a valid assignment — J3 is used twice — which is exactly why you cannot just grab row minimums." data-explain-zh="合法規則是：P1,P2,P3,P4（照人的順序）拿到的工作要構成 precedence J1→J3、J2→J4 的一個 topological order。這題最佳解是 P1→J2, P2→J1, P3→J4, P4→J3，工作序列 J2,J1,J4,J3——它是五條合法序列之一，而且 J1 仍排在 J3 前面、J2 仍排在 J4 前面。其他陷阱選項都各自破壞了某條 precedence：例如把 J3 排在 J1 前面就違反了 J1→J3。至於每列最小值那組（P1→J4=12, P2→J3=26, P3→J1=3, P4→J3=10）根本不是合法分法——J3 被用了兩次——這正是為什麼你不能直接抓每列最小值。">
+  <div class="q"><span data-tr="en">The optimal feasible assignment costs 70. Which assignment is it (recall J1 must precede J3, and J2 must precede J4)?</span><span data-tr="zh">最佳合法分法花 70，是下面哪一組？（記得 J1 要排在 J3 前面、J2 要排在 J4 前面）</span></div>
+  <button class="opt"><span data-tr="en">P1→J1, P2→J3, P3→J1, P4→J3 (each person's cheapest job)</span><span data-tr="zh">P1→J1, P2→J3, P3→J1, P4→J3（每個人都拿自己最便宜的工作）</span></button>
   <button class="opt">P1→J2, P2→J1, P3→J4, P4→J3</button>
   <button class="opt">P1→J3, P2→J1, P3→J2, P4→J4</button>
   <button class="opt">P1→J4, P2→J2, P3→J3, P4→J1</button>
@@ -84,14 +84,14 @@ J2, J1, J3, J4      J2, J1, J4, J3</div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-personnel-assignment">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-personnel-assignment"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">學習進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Alg05 · <em>The Searching Strategies</em> §8 — R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6. Table 6-1 (cost matrix), Table 6-2 (reduced matrix → lower bound 54), Fig. 6-21 (partial order of jobs), and the best-first / bounding solution trees (slides 19–21, optimal cost 70).</p>
-<div class="note"><strong>Strategy:</strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — branch the solution space into subtrees, compute a lower bound for each, and prune any subtree whose bound is no better than the best feasible solution found.<br>
-<strong>Sibling problems (same strategy, same chapter):</strong> <a href="prob-tsp-dp.html">Travelling Salesperson</a> (reduced cost matrices, lower bounds, decision tree over arcs) and <a href="prob-knapsack-dp.html">0/1 Knapsack</a> (upper/lower bounds via fractional relaxation).</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">延伸閱讀</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong> <span data-tr="en">Alg05 · <em>The Searching Strategies</em> §8 — R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6. Table 6-1 (cost matrix), Table 6-2 (reduced matrix → lower bound 54), Fig. 6-21 (partial order of jobs), and the best-first / bounding solution trees (slides 19–21, optimal cost 70).</span><span data-tr="zh">Alg05 · <em>The Searching Strategies</em> §8 — R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, 第六章。Table 6-1（成本矩陣）、Table 6-2（reduced matrix → 下界 54）、Fig. 6-21（工作的 partial order），以及 best-first／bounding 的解答樹（slides 19–21，最佳成本 70）。</span></p>
+<div class="note"><strong><span data-tr="en">Strategy:</span><span data-tr="zh">策略：</span></strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — <span data-tr="en">branch the solution space into subtrees, compute a lower bound for each, and prune any subtree whose bound is no better than the best feasible solution found.</span><span data-tr="zh">把解空間 branch 成一棵棵子樹，替每棵算一個下界，只要某棵的下界已經贏不過目前找到的最佳合法解，就把整棵砍掉。</span><br>
+<strong><span data-tr="en">Sibling problems (same strategy, same chapter):</span><span data-tr="zh">同章同策略的姊妹題：</span></strong> <a href="prob-tsp-dp.html">Travelling Salesperson</a> <span data-tr="en">(reduced cost matrices, lower bounds, decision tree over arcs) and</span><span data-tr="zh">（reduced cost matrix、下界、對 arc 做決策樹）和</span> <a href="prob-knapsack-dp.html">0/1 Knapsack</a> <span data-tr="en">(upper/lower bounds via fractional relaxation).</span><span data-tr="zh">（用 fractional relaxation 拿到上界／下界）。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>
@@ -106,15 +106,22 @@ const COST = [
 const PEOPLE = ['P1','P2','P3','P4'];
 const JOBS   = ['J1','J2','J3','J4'];
 
-// Reduced matrix (Table 6-2): row reductions 12,26,3,10 ; column-2 reduction 3
-const ROWRED = [12,26,3,10];
-const REDUCED = [
-  [17, 4, 5, 0],   // P1  (-12)  then col2 -3 applied below
-  [ 6, 1, 0, 2],   // P2  (-26)
-  [ 0,15, 4, 6],   // P3  (-3)
-  [ 8, 0, 0, 5],   // P4  (-10)
+// Reduction shown as TWO separate matrices so the grid never teleports.
+const ROWMINS = [12,26,3,10];           // each row's minimum (subtotal 51)
+// Step 1 — rows reduced ONLY (column J2 still has NO zero: its column = 7,4,18,3):
+const ROWRED = [
+  [17, 7, 5, 0],   // P1  (−12)
+  [ 6, 4, 0, 2],   // P2  (−26)
+  [ 0,18, 4, 6],   // P3  (−3)
+  [ 8, 3, 0, 5],   // P4  (−10)
 ];
-// note: column 2 already has its -3 baked into REDUCED (P1 col2 = 4 after both)
+// Step 2 — column J2 then reduced by −3, so every row AND column owns a 0:
+const REDUCED = [
+  [17, 4, 5, 0],   // P1
+  [ 6, 1, 0, 2],   // P2
+  [ 0,15, 4, 6],   // P3
+  [ 8, 0, 0, 5],   // P4
+];
 
 // ===== the decision-tree frames (best-first B&B, slide 20) =====
 // running partial cost = sum of chosen Cij so far. Optimal path bolded at the end.
@@ -153,13 +160,12 @@ const frames = [
 
 function reducedCls(stage){
   const cls = {};
-  if (stage === 'rowred' || stage === 'colred'){
-    // mark the zeros each row owns
-    REDUCED.forEach((row,r)=> row.forEach((v,c)=>{ if(v===0) cls[r+','+c]='path'; }));
-  }
-  if (stage === 'colred'){
-    // emphasise column 2 (index 1) reduction
-    REDUCED.forEach((_,r)=>{ cls[r+',1'] = (REDUCED[r][1]===0?'path':'act'); });
+  const M = (stage === 'rowred') ? ROWRED : REDUCED;
+  // mark the zero each row now owns (green)
+  M.forEach((row,r)=> row.forEach((v,c)=>{ if(v===0) cls[r+','+c]='path'; }));
+  if (stage === 'rowred'){
+    // column J2 (index 1) still has no zero — flag it as the next thing to fix
+    M.forEach((_,r)=>{ cls[r+',1'] = 'act'; });
   }
   return cls;
 }
@@ -176,12 +182,16 @@ ZOO.stepper({
       return;
     }
     if (f.stage === 'rowred' || f.stage === 'colred'){
+      const M     = (f.stage==='rowred') ? ROWRED : REDUCED;
+      const title = (f.stage==='rowred')
+        ? 'After row reduction (each row −12, −26, −3, −10)'
+        : 'Table 6-2 — after column reduction (J2 −3)';
       const tag = f.stage==='rowred'
-        ? `rows reduced by −12, −26, −3, −10 → subtotal 51`
+        ? `every <b>row</b> now owns a 0 — but column J2 (highlighted) still has none → subtotal 51`
         : `column J2 reduced by −3 → <b>total subtracted = 54 (lower bound)</b>`;
       stage.innerHTML =
-        `<div style="font-weight:600;margin-bottom:.5rem">Table 6-2 — reduced cost matrix</div>` +
-        ZOO.grid(REDUCED, {rows:PEOPLE, cols:JOBS, cls:reducedCls(f.stage)}) +
+        `<div style="font-weight:600;margin-bottom:.5rem">${title}</div>` +
+        ZOO.grid(M, {rows:PEOPLE, cols:JOBS, cls:reducedCls(f.stage)}) +
         `<div style="margin-top:.6rem;font-size:.9rem;color:var(--mut)">${tag}</div>`;
       return;
     }

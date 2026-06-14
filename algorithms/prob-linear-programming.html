@@ -16,67 +16,67 @@
 <div class="wrap">
 
 <div class="kicker">Prune-and-Search · Alg06 §6</div>
-<h1>2-Variable Linear Programming</h1>
-<div class="mission">Given a list of straight-line constraints, find the single point <code>(x, y)</code> that makes a linear objective as small as possible — the lowest point of a convex "valley".</div>
+<h1><span data-tr="en">2-Variable Linear Programming</span><span data-tr="zh">2-Variable Linear Programming</span></h1>
+<div class="mission"><span data-tr="en">Given a list of straight-line constraints, find the single point <code>(x, y)</code> that makes a linear objective as small as possible — the lowest point of a convex "valley".</span><span data-tr="zh">給你一堆直線形式的限制條件，要找出那一個點 <code>(x, y)</code>，讓某個線性目標值越小越好——也就是一個凸「山谷」的最低點。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · §6 (Two-Variable Linear Programming), Fig 7-2 (the F(x) envelope), Fig 7-6 (slope cases).</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">解法：</span></b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>The problem</h2>
-<p>You have two unknowns, <code>x</code> and <code>y</code> — together they pick a single <strong>point in the plane</strong>. You want to make a <strong>linear objective</strong> as small as possible. "Linear" means the objective is just a weighted sum like <code>a·x + b·y</code>; you minimize it. That choice isn't free: it's fenced in by a list of <code>n</code> <strong>linear constraints</strong>, each an inequality of the form <code>aᵢ·x + bᵢ·y ≤ cᵢ</code>. The general statement is:</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">You have two unknowns, <code>x</code> and <code>y</code> — together they pick a single <strong>point in the plane</strong>. You want to make a <strong>linear objective</strong> as small as possible. "Linear" means the objective is just a weighted sum like <code>a·x + b·y</code>; you minimize it. That choice isn't free: it's fenced in by a list of <code>n</code> <strong>linear constraints</strong>, each an inequality of the form <code>aᵢ·x + bᵢ·y ≤ cᵢ</code>. The general statement is:</span><span data-tr="zh">你有兩個未知數 <code>x</code> 跟 <code>y</code>，它們合起來就是平面上的一個<strong>點</strong>。你要讓某個<strong>線性目標</strong>越小越好。「線性」的意思就是目標只是個加權和，像 <code>a·x + b·y</code> 這樣，你要把它最小化。但這個選擇不是隨便挑：它被 <code>n</code> 條<strong>線性限制</strong>框住，每一條都是 <code>aᵢ·x + bᵢ·y ≤ cᵢ</code> 這種不等式。一般的寫法是：</span></p>
 <p style="text-align:center"><code>Minimize&nbsp; a·x + b·y &nbsp;&nbsp; subject to &nbsp; aᵢ·x + bᵢ·y ≤ cᵢ , &nbsp; i = 1 … n</code></p>
-<p>Some vocabulary, defined from zero:</p>
+<p><span data-tr="en">Some vocabulary, defined from zero:</span><span data-tr="zh">幾個名詞，從頭講清楚：</span></p>
 <ul>
-  <li>A constraint <code>aᵢx + bᵢy ≤ cᵢ</code> is a <strong>half-plane</strong> — it splits the plane with a straight line and keeps everything on one side.</li>
-  <li>The <strong>feasible region</strong> is the set of points satisfying <em>all</em> <code>n</code> constraints at once: the intersection of all the half-planes. It is a convex polygon (possibly unbounded).</li>
-  <li>The <strong>optimum</strong> is the feasible point with the smallest objective value. We call it <code>(x₀, y₀)</code>.</li>
+  <li><span data-tr="en">A constraint <code>aᵢx + bᵢy ≤ cᵢ</code> is a <strong>half-plane</strong> — it splits the plane with a straight line and keeps everything on one side.</span><span data-tr="zh">一條限制 <code>aᵢx + bᵢy ≤ cᵢ</code> 就是一個 <strong>half-plane（半平面）</strong>——用一條直線把平面切開，只留下其中一邊。</span></li>
+  <li><span data-tr="en">The <strong>feasible region</strong> is the set of points satisfying <em>all</em> <code>n</code> constraints at once: the intersection of all the half-planes. It is a convex polygon (possibly unbounded).</span><span data-tr="zh"><strong>feasible region（可行區域）</strong>就是同時滿足<em>全部</em> <code>n</code> 條限制的點集合：所有 half-plane 的交集。它是一個凸多邊形（可能是無界的）。</span></li>
+  <li><span data-tr="en">The <strong>optimum</strong> is the feasible point with the smallest objective value. We call it <code>(x₀, y₀)</code>.</span><span data-tr="zh"><strong>optimum（最佳解）</strong>就是可行區域裡目標值最小的那個點，我們叫它 <code>(x₀, y₀)</code>。</span></li>
 </ul>
 
-<p><strong>The canonical, easy-to-picture version.</strong> The slides reduce the general problem to a tidy special case (substituting <code>y' = a·x + b·y</code>), where you simply <strong>minimize <code>y</code></strong> and every constraint is a "must lie on or above this line":</p>
+<p><strong><span data-tr="en">The canonical, easy-to-picture version.</span><span data-tr="zh">最好想像的標準版本。</span></strong> <span data-tr="en">The slides reduce the general problem to a tidy special case (substituting <code>y' = a·x + b·y</code>), where you simply <strong>minimize <code>y</code></strong> and every constraint is a "must lie on or above this line":</span><span data-tr="zh">投影片把一般問題化簡成一個乾淨的特例（用 <code>y' = a·x + b·y</code> 代換），這時你只要<strong>最小化 <code>y</code></strong>，而且每條限制都變成「必須落在這條線上或上方」：</span></p>
 <p style="text-align:center"><code>Minimize&nbsp; y &nbsp;&nbsp; subject to &nbsp; y ≥ aᵢ·x + bᵢ , &nbsp; i = 1 … n</code></p>
-<p>Each rule <code>y ≥ aᵢx + bᵢ</code> says the point must sit <strong>on or above</strong> that line. With <code>n</code> rules, the floor you must stay above at each <code>x</code> is the <strong>highest</strong> of all the lines there — the <strong>pointwise maximum</strong>, called the <strong>upper envelope</strong>:</p>
+<p><span data-tr="en">Each rule <code>y ≥ aᵢx + bᵢ</code> says the point must sit <strong>on or above</strong> that line. With <code>n</code> rules, the floor you must stay above at each <code>x</code> is the <strong>highest</strong> of all the lines there — the <strong>pointwise maximum</strong>, called the <strong>upper envelope</strong>:</span><span data-tr="zh">每條規則 <code>y ≥ aᵢx + bᵢ</code> 都在說：點必須落在那條線<strong>上或上方</strong>。有 <code>n</code> 條規則時，每個 <code>x</code> 處你必須踩在上面的那個地板，就是當地<strong>最高</strong>的那條線——也就是逐點取最大值，叫做 <strong>upper envelope（上包絡）</strong>：</span></p>
 <p style="text-align:center"><code>F(x) = max { a₁x+b₁, a₂x+b₂, …, aₙx+bₙ }</code></p>
-<p>Because it is the max of straight lines, <code>F</code> is a <strong>convex</strong> "valley": it descends, reaches one bottom, and climbs again — it can never dip twice. So the whole problem collapses to: <strong>find the lowest point of <code>F</code></strong>. The answer is that <code>x₀</code>, with <code>y₀ = F(x₀)</code>.</p>
+<p><span data-tr="en">Because it is the max of straight lines, <code>F</code> is a <strong>convex</strong> "valley": it descends, reaches one bottom, and climbs again — it can never dip twice. So the whole problem collapses to: <strong>find the lowest point of <code>F</code></strong>. The answer is that <code>x₀</code>, with <code>y₀ = F(x₀)</code>.</span><span data-tr="zh">因為它是一堆直線取最大值，<code>F</code> 是一個 <strong>convex（凸）</strong>的「山谷」：它先往下走，到一個最低點，再往上爬——絕不會凹兩次。所以整題就濃縮成一句話：<strong>找出 <code>F</code> 的最低點</strong>。答案就是那個 <code>x₀</code>，搭配 <code>y₀ = F(x₀)</code>。</span></p>
 
-<p><strong>Tiny concrete instance.</strong> Three constraints <code>y ≥ 2</code>, <code>y ≥ x</code>, <code>y ≥ −x + 4</code>. At <code>x = 1</code> the three lines give <code>2</code>, <code>1</code>, <code>3</code>, so <code>F(1) = max{2,1,3} = 3</code>. Sweeping <code>x</code>, the valley bottoms out at <code>x = 2</code> where lines <code>y = x</code> and <code>y = −x + 4</code> cross at height <code>2</code> — there the optimum is <code>(x₀, y₀) = (2, 2)</code>.</p>
+<p><strong><span data-tr="en">Tiny concrete instance.</span><span data-tr="zh">來個小例子。</span></strong> <span data-tr="en">Three constraints <code>y ≥ 2</code>, <code>y ≥ x</code>, <code>y ≥ −x + 4</code>. At <code>x = 1</code> the three lines give <code>2</code>, <code>1</code>, <code>3</code>, so <code>F(1) = max{2,1,3} = 3</code>. Sweeping <code>x</code>, the valley bottoms out at <code>x = 2</code> where lines <code>y = x</code> and <code>y = −x + 4</code> cross at height <code>2</code> — there the optimum is <code>(x₀, y₀) = (2, 2)</code>.</span><span data-tr="zh">三條限制 <code>y ≥ 2</code>、<code>y ≥ x</code>、<code>y ≥ −x + 4</code>。在 <code>x = 1</code> 時三條線給出 <code>2</code>、<code>1</code>、<code>3</code>，所以 <code>F(1) = max{2,1,3} = 3</code>。讓 <code>x</code> 掃過去，山谷在 <code>x = 2</code> 觸底——這裡 <code>y = x</code> 跟 <code>y = −x + 4</code> 剛好在高度 <code>2</code> 交會，最佳解就是 <code>(x₀, y₀) = (2, 2)</code>。</span></p>
 
-<h2>Watch it solved</h2>
-<p>Four constraint lines below. Step through: first they stack up, then the gold curve traces the <strong>upper envelope <code>F(x)</code></strong>, then a slope test at a median test point <code>xₘ</code> tells us which way the bottom lies (so the losing line of each pair on the wrong side can be <strong>pruned</strong>), and we land on the lowest point <code>(x₀, y₀)</code>.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">跑一遍給你看</span></h2>
+<p><span data-tr="en">Four constraint lines below. Step through: first they stack up, then the gold curve traces the <strong>upper envelope <code>F(x)</code></strong>, then a slope test at a median test point <code>xₘ</code> tells us which way the bottom lies (so the losing line of each pair on the wrong side can be <strong>pruned</strong>), and we land on the lowest point <code>(x₀, y₀)</code>.</span><span data-tr="zh">下面有四條限制線。一步步看：先把它們疊上來，接著金色曲線描出 <strong>upper envelope <code>F(x)</code></strong>，然後在一個中位測試點 <code>xₘ</code> 做斜率測試，告訴我們谷底在哪一邊（這樣每一對裡站錯邊的那條輸家就可以被<strong>砍掉</strong>），最後落在最低點 <code>(x₀, y₀)</code>。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Time: <b>O(n)</b></span>
+  <span class="chip"><span data-tr="en">Time:</span><span data-tr="zh">時間：</span> <b>O(n)</b></span>
   <span class="chip"><b>F(x) = upper envelope</b></span>
-  <span class="chip">Prune: <b>~n/4 per round</b></span>
+  <span class="chip"><span data-tr="en">Prune:</span><span data-tr="zh">修剪：</span> <b>~n/4 per round</b></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="The feasible point must sit ABOVE every line, so the binding floor at each x is whichever line is HIGHEST — the maximum. Taking the min would give the lower envelope, which is the wrong boundary here and isn't even convex-upward as a valley. F(x)=max is the upper envelope.">
-  <div class="q">Three constraints require <code>y ≥</code> each of the lines <code>2</code>, <code>x</code>, and <code>−x+4</code>. At <code>x = 1</code> the lines give the values <code>2</code>, <code>1</code>, and <code>3</code>. What is <code>F(1)</code>, the boundary the optimum must respect?</div>
-  <button class="opt">1, the smallest of the three values</button>
-  <button class="opt">3, the largest of the three values</button>
-  <button class="opt">2, the middle value</button>
-  <button class="opt">6, the sum of the three values</button>
+<div class="quiz" data-correct="1" data-explain="The feasible point must sit ABOVE every line, so the binding floor at each x is whichever line is HIGHEST — the maximum. Taking the min would give the lower envelope, which is the wrong boundary here and isn't even convex-upward as a valley. F(x)=max is the upper envelope." data-explain-zh="可行點必須落在每條線「上方」，所以每個 x 處真正卡住你的地板，是當地最「高」的那條——也就是取最大值。取最小值會得到 lower envelope，那是錯的邊界，而且根本不會凹成一個山谷。F(x)=max 才是 upper envelope。">
+  <div class="q"><span data-tr="en">Three constraints require <code>y ≥</code> each of the lines <code>2</code>, <code>x</code>, and <code>−x+4</code>. At <code>x = 1</code> the lines give the values <code>2</code>, <code>1</code>, and <code>3</code>. What is <code>F(1)</code>, the boundary the optimum must respect?</span><span data-tr="zh">三條限制要求 <code>y ≥</code> 這三條線 <code>2</code>、<code>x</code>、<code>−x+4</code>。在 <code>x = 1</code> 時這幾條給出 <code>2</code>、<code>1</code>、<code>3</code>。最佳解必須遵守的邊界 <code>F(1)</code> 是多少？</span></div>
+  <button class="opt"><span data-tr="en">1, the smallest of the three values</span><span data-tr="zh">1，三個值裡最小的</span></button>
+  <button class="opt"><span data-tr="en">3, the largest of the three values</span><span data-tr="zh">3，三個值裡最大的</span></button>
+  <button class="opt"><span data-tr="en">2, the middle value</span><span data-tr="zh">2，中間那個值</span></button>
+  <button class="opt"><span data-tr="en">6, the sum of the three values</span><span data-tr="zh">6，三個值加起來</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="2" data-explain="F is a convex valley: max of straight lines. Its slope goes from negative (coming down) through the bottom to positive (going up). A test point where F still slopes downward (negative) is still on the left wall, so the true bottom x₀ lies to its RIGHT. Positive slope ⇒ left; flat (slopes of opposite sign meet) ⇒ you're at it.">
-  <div class="q">You evaluate the upper envelope <code>F</code> at a test point <code>xₘ</code> and find <code>F</code> is sloping <strong>downward</strong> (negative slope) there. Where is the optimum <code>x₀</code>?</div>
-  <button class="opt">exactly at <code>xₘ</code></button>
-  <button class="opt">to the <em>left</em> of <code>xₘ</code></button>
-  <button class="opt">to the <em>right</em> of <code>xₘ</code></button>
-  <button class="opt">cannot be determined from the slope</button>
+<div class="quiz" data-correct="2" data-explain="F is a convex valley: max of straight lines. Its slope goes from negative (coming down) through the bottom to positive (going up). A test point where F still slopes downward (negative) is still on the left wall, so the true bottom x₀ lies to its RIGHT. Positive slope ⇒ left; flat (slopes of opposite sign meet) ⇒ you're at it." data-explain-zh="F 是一個凸山谷：一堆直線取最大值。它的斜率從負（往下走）穿過谷底再變正（往上爬）。如果某個測試點上 F 還在往下（負斜率），代表你還在左邊那面牆上，所以真正的谷底 x₀ 在它「右邊」。正斜率 ⇒ 在左邊；剛好變平（兩邊異號斜率交會）⇒ 你已經站在谷底了。">
+  <div class="q"><span data-tr="en">You evaluate the upper envelope <code>F</code> at a test point <code>xₘ</code> and find <code>F</code> is sloping <strong>downward</strong> (negative slope) there. Where is the optimum <code>x₀</code>?</span><span data-tr="zh">你在測試點 <code>xₘ</code> 上算 upper envelope <code>F</code>，發現 <code>F</code> 在那邊正<strong>往下走</strong>（負斜率）。最佳解 <code>x₀</code> 在哪？</span></div>
+  <button class="opt"><span data-tr="en">exactly at <code>xₘ</code></span><span data-tr="zh">就在 <code>xₘ</code> 上</span></button>
+  <button class="opt"><span data-tr="en">to the <em>left</em> of <code>xₘ</code></span><span data-tr="zh">在 <code>xₘ</code> 的<em>左邊</em></span></button>
+  <button class="opt"><span data-tr="en">to the <em>right</em> of <code>xₘ</code></span><span data-tr="zh">在 <code>xₘ</code> 的<em>右邊</em></span></button>
+  <button class="opt"><span data-tr="en">cannot be determined from the slope</span><span data-tr="zh">光看斜率沒辦法判斷</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-linear-programming">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-linear-programming"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search), §"Linear Programming with Two Variables" (Fig. 7-2, F(x) envelope; Fig. 7-6, slope cases). Megiddo's linear-time 2-variable LP is the classic result; the prune-and-search / median-selection machinery it relies on is covered in CLRS, <em>Introduction to Algorithms</em>.</p>
-<div class="note"><strong>Strategy:</strong> this problem is solved by <a href="algo-prune-and-search.html">Prune-and-Search</a> — pair the lines, take the median intersection as <code>xₘ</code>, read the slope of <code>F</code> there, and delete ~n/4 constraints each round for <code>O(n)</code> total. <strong>Sibling problem in this bucket:</strong> <a href="prob-selection.html">Linear-time Selection</a> — find the k-th smallest of an unsorted list in <code>O(n)</code> by the same prune-a-fraction idea (median of medians).</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要來源：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6/7 (Prune-and-Search), §"Linear Programming with Two Variables" (Fig. 7-2, F(x) envelope; Fig. 7-6, slope cases). Megiddo's linear-time 2-variable LP is the classic result; the prune-and-search / median-selection machinery it relies on is covered in CLRS, <em>Introduction to Algorithms</em>.</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai，《Introduction to the Design and Analysis of Algorithms》第 6/7 章（Prune-and-Search），§「Linear Programming with Two Variables」（Fig. 7-2 的 F(x) envelope；Fig. 7-6 的斜率情況）。Megiddo 的線性時間 2-variable LP 是經典結果；它背後用到的 prune-and-search／median-selection 機制可以在 CLRS《Introduction to Algorithms》找到。</span></p>
+<div class="note"><strong><span data-tr="en">Strategy:</span><span data-tr="zh">策略：</span></strong> <span data-tr="en">this problem is solved by <a href="algo-prune-and-search.html">Prune-and-Search</a> — pair the lines, take the median intersection as <code>xₘ</code>, read the slope of <code>F</code> there, and delete ~n/4 constraints each round for <code>O(n)</code> total. <strong>Sibling problem in this bucket:</strong> <a href="prob-selection.html">Linear-time Selection</a> — find the k-th smallest of an unsorted list in <code>O(n)</code> by the same prune-a-fraction idea (median of medians).</span><span data-tr="zh">這題用 <a href="algo-prune-and-search.html">Prune-and-Search</a> 解——把線兩兩配對，取交點的中位數當 <code>xₘ</code>，讀出 <code>F</code> 在那裡的斜率，每輪刪掉 ~n/4 條限制，總共 <code>O(n)</code>。<strong>同類的兄弟問題：</strong> <a href="prob-selection.html">Linear-time Selection</a>——用同一招「每輪砍一定比例」（median of medians），在 <code>O(n)</code> 找出亂序串列的第 k 小。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

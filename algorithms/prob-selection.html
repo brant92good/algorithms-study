@@ -16,62 +16,62 @@
 <div class="wrap">
 
 <div class="kicker">Prune-and-Search · Alg06</div>
-<h1>Selection — k-th Smallest</h1>
-<div class="mission">Given <strong>n</strong> unsorted numbers and a rank <strong>k</strong>, find the value that would land in position <strong>k</strong> if the list were sorted — <em>without</em> ever fully sorting it.</div>
+<h1><span data-tr="en">Selection — k-th Smallest</span><span data-tr="zh">Selection — 第 k 小</span></h1>
+<div class="mission"><span data-tr="en">Given <strong>n</strong> unsorted numbers and a rank <strong>k</strong>, find the value that would land in position <strong>k</strong> if the list were sorted — <em>without</em> ever fully sorting it.</span><span data-tr="zh">給你 <strong>n</strong> 個沒排序的數字，還有一個名次 <strong>k</strong>，要你找出「如果整串排好序，第 <strong>k</strong> 個會是誰」——但<em>不准</em>真的把整串排完。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg06 · <em>Prune-and-Search</em> §2–5 (selection problem → three-way partition → median-of-medians → O(n)).</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">解法：</span></b> <a href="algo-prune-and-search.html">Prune-and-Search</a></p>
 
-<h2>The problem</h2>
-<p>You are handed a set <code>S</code> of <code>n</code> numbers in no particular order, and an integer <code>k</code> between 1 and n. The <strong>selection problem</strong> asks for the <strong>k-th smallest</strong> element of <code>S</code>: the value that <em>would</em> occupy position <code>k</code> if you sorted <code>S</code> into non-decreasing order — but you must return it without relying on a full sort.</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">You are handed a set <code>S</code> of <code>n</code> numbers in no particular order, and an integer <code>k</code> between 1 and n. The <strong>selection problem</strong> asks for the <strong>k-th smallest</strong> element of <code>S</code>: the value that <em>would</em> occupy position <code>k</code> if you sorted <code>S</code> into non-decreasing order — but you must return it without relying on a full sort.</span><span data-tr="zh">你手上有一組亂序的數字 <code>S</code>（共 <code>n</code> 個），還有一個介於 1 到 n 之間的整數 <code>k</code>。<strong>selection 問題</strong>要的就是 <code>S</code> 裡的<strong>第 k 小</strong>：把 <code>S</code> 由小到大排好後，站在第 <code>k</code> 位的那個值——但你得在不排序的情況下把它找出來。</span></p>
 <ul>
-  <li><b>Given:</b> a bag of <code>n</code> numbers <code>S = {a₁, …, aₙ}</code> and a rank <code>k</code>.</li>
-  <li><b>Asked:</b> the element <code>x ∈ S</code> such that exactly <code>k−1</code> elements of <code>S</code> are smaller than <code>x</code>.</li>
-  <li><b>Median:</b> the special case <code>k = ⌈n/2⌉</code> — the "middle" value, the one with as many elements below it as above.</li>
+  <li><b><span data-tr="en">Given:</span><span data-tr="zh">給定：</span></b> <span data-tr="en">a bag of <code>n</code> numbers <code>S = {a₁, …, aₙ}</code> and a rank <code>k</code>.</span><span data-tr="zh">一堆數字 <code>S = {a₁, …, aₙ}</code>（共 <code>n</code> 個）和一個名次 <code>k</code>。</span></li>
+  <li><b><span data-tr="en">Asked:</span><span data-tr="zh">要找：</span></b> <span data-tr="en">the element <code>x ∈ S</code> such that exactly <code>k−1</code> elements of <code>S</code> are smaller than <code>x</code>.</span><span data-tr="zh">那個 <code>x ∈ S</code>，讓 <code>S</code> 裡剛好有 <code>k−1</code> 個比它小。</span></li>
+  <li><b><span data-tr="en">Median:</span><span data-tr="zh">中位數：</span></b> <span data-tr="en">the special case <code>k = ⌈n/2⌉</code> — the "middle" value, the one with as many elements below it as above.</span><span data-tr="zh">就是 <code>k = ⌈n/2⌉</code> 這個特例——正中間那個值，上下兩邊的元素一樣多。</span></li>
 </ul>
-<p><b>Tiny concrete instance.</b> Take <code>S = [3, 5, 7, 12, 19]</code> and <code>k = 2</code>. Sorted, that's <code>[3, 5, 7, 12, 19]</code>, so the 2nd smallest is <code>5</code>. Here <code>k = ⌈5/2⌉ = 3</code> would give the median, <code>7</code>. The trick is doing this on much larger lists <em>without</em> paying for a sort.</p>
-<p><b>Why not just sort?</b> Sorting <code>S</code> and reading off position <code>k</code> is correct but costs <code>O(n log n)</code>. We can do strictly better — <code>O(n)</code>, linear time — by throwing away a guaranteed fraction of the data each round instead of ordering all of it.</p>
+<p><b><span data-tr="en">Tiny concrete instance.</span><span data-tr="zh">來個小例子。</span></b> <span data-tr="en">Take <code>S = [3, 5, 7, 12, 19]</code> and <code>k = 2</code>. Sorted, that's <code>[3, 5, 7, 12, 19]</code>, so the 2nd smallest is <code>5</code>. Here <code>k = ⌈5/2⌉ = 3</code> would give the median, <code>7</code>. The trick is doing this on much larger lists <em>without</em> paying for a sort.</span><span data-tr="zh">拿 <code>S = [3, 5, 7, 12, 19]</code>、<code>k = 2</code>。排好序是 <code>[3, 5, 7, 12, 19]</code>，所以第 2 小是 <code>5</code>。如果 <code>k = ⌈5/2⌉ = 3</code> 就會拿到中位數 <code>7</code>。重點是：當資料量大很多時，要怎麼<em>不</em>花排序的代價就做到這件事。</span></p>
+<p><b><span data-tr="en">Why not just sort?</span><span data-tr="zh">為什麼不直接排序就好？</span></b> <span data-tr="en">Sorting <code>S</code> and reading off position <code>k</code> is correct but costs <code>O(n log n)</code>. We can do strictly better — <code>O(n)</code>, linear time — by throwing away a guaranteed fraction of the data each round instead of ordering all of it.</span><span data-tr="zh">把 <code>S</code> 排好再讀第 <code>k</code> 個當然對，但要花 <code>O(n log n)</code>。其實可以做得更好——<code>O(n)</code> 線性時間。訣竅是：每一輪都保證砍掉一定比例的資料，而不是把全部都排出順序。</span></p>
 
-<div class="note">The idea is <strong>prune-and-search</strong>: pick a pivot <code>p</code>, split <code>S</code> into <b>S₁</b> (&lt; p), <b>S₂</b> (= p), <b>S₃</b> (&gt; p), then recurse into <em>only one</em> pile. If <code>|S₁| ≥ k</code> the answer is in S₁ (same k); else if <code>|S₁|+|S₂| ≥ k</code> then <code>p</code> itself is the answer; else recurse into S₃ for rank <code>k − |S₁| − |S₂|</code>. The whole thing only stays linear if the pivot reliably splits the list — which is why we pick the <strong>median of medians</strong> (groups of 5), guaranteeing ≥ n/4 elements pruned every round.</p>
+<div class="note"><span data-tr="en">The idea is <strong>prune-and-search</strong>: pick a pivot <code>p</code>, split <code>S</code> into <b>S₁</b> (&lt; p), <b>S₂</b> (= p), <b>S₃</b> (&gt; p), then recurse into <em>only one</em> pile. If <code>|S₁| ≥ k</code> the answer is in S₁ (same k); else if <code>|S₁|+|S₂| ≥ k</code> then <code>p</code> itself is the answer; else recurse into S₃ for rank <code>k − |S₁| − |S₂|</code>. The whole thing only stays linear if the pivot reliably splits the list — which is why we pick the <strong>median of medians</strong> (groups of 5), guaranteeing ≥ n/4 elements pruned every round.</span><span data-tr="zh">核心想法就是 <strong>prune-and-search</strong>：挑一個 pivot <code>p</code>，把 <code>S</code> 切成 <b>S₁</b>（&lt; p）、<b>S₂</b>（= p）、<b>S₃</b>（&gt; p），然後<em>只</em>往其中一堆遞迴。如果 <code>|S₁| ≥ k</code>，答案就在 S₁（k 不變）；不然如果 <code>|S₁|+|S₂| ≥ k</code>，那 <code>p</code> 本身就是答案；再不然就往 S₃ 找名次 <code>k − |S₁| − |S₂|</code>。整件事要保持線性，pivot 一定要把整串切得夠均勻——所以我們挑 <strong>median of medians</strong>（每 5 個一組），保證每一輪都砍掉 ≥ n/4 個元素。</span></p>
 
-<h2>Watch it solved</h2>
-<p>A self-contained instance: <strong>15 numbers</strong>, and we want the <strong>7th smallest</strong>. The bars below are grouped into 5s; gold marks the group medians, the green bar is the chosen pivot <code>p</code>, and dimmed bars are pruned away. Step through.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">跑一遍給你看</span></h2>
+<p><span data-tr="en">A self-contained instance: <strong>15 numbers</strong>, and we want the <strong>7th smallest</strong>. The bars below are grouped into 5s; gold marks the group medians, the green bar is the chosen pivot <code>p</code>, and dimmed bars are pruned away. Step through.</span><span data-tr="zh">一個完整的例子：<strong>15 個數字</strong>，要找<strong>第 7 小</strong>。下面的長條每 5 個一組；金色標出各組的中位數，綠色是選到的 pivot <code>p</code>，變暗的就是被砍掉的。一步一步點下去看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Time: <b>O(n)</b></span>
-  <span class="chip">Naive (sort): <b>O(n log n)</b></span>
+  <span class="chip"><span data-tr="en">Time:</span><span data-tr="zh">時間：</span> <b>O(n)</b></span>
+  <span class="chip"><span data-tr="en">Naive (sort):</span><span data-tr="zh">土法（排序）：</span> <b>O(n log n)</b></span>
   <span class="chip">Pivot: <b>median of medians (groups of 5)</b></span>
-  <span class="chip">Pruned: <b>≥ n/4 each round</b></span>
+  <span class="chip"><span data-tr="en">Pruned:</span><span data-tr="zh">每輪砍掉：</span> <b>≥ n/4 each round</b></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="1" data-explain="The rule is |S₁| ≥ k for 'answer is in S₁' and |S₁|+|S₂| ≥ k for 'p is the answer'. Here |S₁| = 5 &lt; k = 6, so the answer is NOT in S₁. But |S₁|+|S₂| = 5+2 = 7 ≥ 6, so p itself is the 6th smallest. The trap: |S₁| = 5 is only one below k, and a strict-vs-≥ slip would push you into S₃.">
-  <div class="q">You're finding the 6th smallest. After partitioning around p you get |S₁| = 5 (elements &lt; p) and |S₂| = 2 (elements = p). Where is the answer?</div>
-  <button class="opt">inside S₁, still rank 6</button>
-  <button class="opt">it is p itself</button>
-  <button class="opt">inside S₃, at rank 6 − 5 = 1</button>
-  <button class="opt">inside S₃, at rank 6 − 7 = −1</button>
+<div class="quiz" data-correct="1" data-explain="The rule is |S₁| ≥ k for 'answer is in S₁' and |S₁|+|S₂| ≥ k for 'p is the answer'. Here |S₁| = 5 &lt; k = 6, so the answer is NOT in S₁. But |S₁|+|S₂| = 5+2 = 7 ≥ 6, so p itself is the 6th smallest. The trap: |S₁| = 5 is only one below k, and a strict-vs-≥ slip would push you into S₃." data-explain-zh="規則是：|S₁| ≥ k 代表答案在 S₁，|S₁|+|S₂| ≥ k 代表 p 就是答案。這邊 |S₁| = 5 &lt; k = 6，所以答案不在 S₁。但 |S₁|+|S₂| = 5+2 = 7 ≥ 6，所以 p 自己就是第 6 小。陷阱在：|S₁| = 5 只比 k 少 1，這時候 &lt; 跟 ≥ 一不小心搞錯，就會被推去 S₃。">
+  <div class="q"><span data-tr="en">You're finding the 6th smallest. After partitioning around p you get |S₁| = 5 (elements &lt; p) and |S₂| = 2 (elements = p). Where is the answer?</span><span data-tr="zh">你要找第 6 小。繞著 p 切完之後，得到 |S₁| = 5（比 p 小的）跟 |S₂| = 2（等於 p 的）。答案在哪？</span></div>
+  <button class="opt"><span data-tr="en">inside S₁, still rank 6</span><span data-tr="zh">在 S₁ 裡，名次還是 6</span></button>
+  <button class="opt"><span data-tr="en">it is p itself</span><span data-tr="zh">就是 p 本身</span></button>
+  <button class="opt"><span data-tr="en">inside S₃, at rank 6 − 5 = 1</span><span data-tr="zh">在 S₃ 裡，名次 6 − 5 = 1</span></button>
+  <button class="opt"><span data-tr="en">inside S₃, at rank 6 − 7 = −1</span><span data-tr="zh">在 S₃ 裡，名次 6 − 7 = −1</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="Each round does O(n) work, then makes two recursive calls: one on the n/5 medians (to pick the pivot) and one on the ≤ 3n/4 survivors. Because 3/4 + 1/5 = 19/20 &lt; 1, the subproblem sizes shrink geometrically and the total work sums to O(n). If the fractions summed to ≥ 1, the recursion wouldn't shrink and you'd lose the linear bound — that is exactly why a careless first-element pivot can degrade to O(n²).">
-  <div class="q">The recurrence is T(n) = T(3n/4) + T(n/5) + O(n). Why does this solve to O(n) rather than O(n log n)?</div>
-  <button class="opt">the recursive sizes sum to 3/4 + 1/5 &lt; 1, so total work is a converging geometric series</button>
-  <button class="opt">there is only one recursive call, like binary search</button>
-  <button class="opt">sorting each group of 5 is free, so no work happens per level</button>
-  <button class="opt">the recursion depth is constant regardless of n</button>
+<div class="quiz" data-correct="0" data-explain="Each round does O(n) work, then makes two recursive calls: one on the n/5 medians (to pick the pivot) and one on the ≤ 3n/4 survivors. Because 3/4 + 1/5 = 19/20 &lt; 1, the subproblem sizes shrink geometrically and the total work sums to O(n). If the fractions summed to ≥ 1, the recursion wouldn't shrink and you'd lose the linear bound — that is exactly why a careless first-element pivot can degrade to O(n²)." data-explain-zh="每一輪做 O(n) 的事，然後有兩個遞迴呼叫：一個處理 n/5 個中位數（拿來選 pivot），一個處理 ≤ 3n/4 個活下來的元素。因為 3/4 + 1/5 = 19/20 &lt; 1，子問題的大小是幾何級數縮小，總工作量加起來就是 O(n)。如果這些比例加起來 ≥ 1，遞迴就不會縮，線性界限也就沒了——這正是為什麼隨便拿第一個元素當 pivot 會爛成 O(n²)。">
+  <div class="q"><span data-tr="en">The recurrence is T(n) = T(3n/4) + T(n/5) + O(n). Why does this solve to O(n) rather than O(n log n)?</span><span data-tr="zh">遞迴式是 T(n) = T(3n/4) + T(n/5) + O(n)。為什麼解出來是 O(n) 而不是 O(n log n)？</span></div>
+  <button class="opt"><span data-tr="en">the recursive sizes sum to 3/4 + 1/5 &lt; 1, so total work is a converging geometric series</span><span data-tr="zh">遞迴的大小加起來 3/4 + 1/5 &lt; 1，所以總工作量是收斂的幾何級數</span></button>
+  <button class="opt"><span data-tr="en">there is only one recursive call, like binary search</span><span data-tr="zh">只有一個遞迴呼叫，像 binary search 那樣</span></button>
+  <button class="opt"><span data-tr="en">sorting each group of 5 is free, so no work happens per level</span><span data-tr="zh">每組 5 個排序是免費的，所以每一層都不花工</span></button>
+  <button class="opt"><span data-tr="en">the recursion depth is constant regardless of n</span><span data-tr="zh">不管 n 多大，遞迴深度都是常數</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-selection">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-selection"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> Alg06 <em>Prune-and-Search</em> §2–5; or CLRS, <em>Introduction to Algorithms</em>, Ch. 9 "Medians and Order Statistics" (§9.3 selection in worst-case linear time). The key guarantee — the median of medians prunes ≥ n/4 each round — is what turns three-way partitioning into a worst-case <code>O(n)</code> algorithm.</p>
-<div class="note"><strong>The strategy:</strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> — the general method (binary search is its simplest instance) that also solves 2-variable linear programming and the 1-center problem in linear time.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要來源：</span></strong> <span data-tr="en">Alg06 <em>Prune-and-Search</em> §2–5; or CLRS, <em>Introduction to Algorithms</em>, Ch. 9 "Medians and Order Statistics" (§9.3 selection in worst-case linear time). The key guarantee — the median of medians prunes ≥ n/4 each round — is what turns three-way partitioning into a worst-case <code>O(n)</code> algorithm.</span><span data-tr="zh">Alg06 <em>Prune-and-Search</em> §2–5；或 CLRS《Introduction to Algorithms》第 9 章「Medians and Order Statistics」（§9.3 最壞情況線性時間的 selection）。關鍵保證——median of medians 每輪砍掉 ≥ n/4——就是讓三路 partition 變成最壞情況 <code>O(n)</code> 演算法的原因。</span></p>
+<div class="note"><strong><span data-tr="en">The strategy:</span><span data-tr="zh">這個策略：</span></strong> <a href="algo-prune-and-search.html">Prune-and-Search</a> <span data-tr="en">— the general method (binary search is its simplest instance) that also solves 2-variable linear programming and the 1-center problem in linear time.</span><span data-tr="zh">——這個通用方法（binary search 就是它最簡單的特例），也能在線性時間內解 2-variable linear programming 和 1-center 問題。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

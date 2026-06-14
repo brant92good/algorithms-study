@@ -15,67 +15,67 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Tree Search · Ch6</div>
-<h1>Hamiltonian Circuit</h1>
-<div class="mission">Given an undirected graph, does it contain a <strong>cycle that visits every vertex exactly once</strong> and returns to where it started? Search for one by growing a path and <strong>backtracking</strong> at dead ends.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · Ch 6 <em>Searching Strategies</em> §2, Fig. 6-6 (the graph) &amp; Fig. 6-8 (the search tree).</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a></p>
+<div class="kicker"><span data-tr="en">Tree Search · Ch6</span><span data-tr="zh">樹搜尋 · 第6章</span></div>
+<h1><span data-tr="en">Hamiltonian Circuit</span><span data-tr="zh">Hamiltonian Circuit</span></h1>
+<div class="mission"><span data-tr="en">Given an undirected graph, does it contain a <strong>cycle that visits every vertex exactly once</strong> and returns to where it started? Search for one by growing a path and <strong>backtracking</strong> at dead ends.</span><span data-tr="zh">給你一張無向圖，問的是：裡面有沒有一條<strong>剛好把每個 vertex 都走過一次</strong>、最後又繞回起點的環？做法是一邊把路徑接長，一邊在走到死路時<strong>回溯</strong>，去找一條出來。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem"><span data-tr="en">📄 <b>Source:</b> Alg05 · Ch 6 <em>Searching Strategies</em> §2, Fig. 6-6 (the graph) &amp; Fig. 6-8 (the search tree).</span><span data-tr="zh">📄 <b>出處：</b>Alg05 · 第6章 <em>Searching Strategies</em> §2，Fig. 6-6（那張圖）跟 Fig. 6-8（搜尋樹）。</span></p>
+<p style="font-size:.9rem"><span data-tr="en">🧠 <b>Solved by:</b> <a href="algo-dfs.html">Depth-First Search</a></span><span data-tr="zh">🧠 <b>用什麼解：</b><a href="algo-dfs.html">Depth-First Search</a></span></p>
 
-<h2>The problem</h2>
-<p>You are given an <strong>undirected graph</strong> — a set of <em>vertices</em> (dots) joined by <em>edges</em> (lines). A <strong>Hamiltonian circuit</strong> is a closed tour that:</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">這題在問什麼</span></h2>
+<p><span data-tr="en">You are given an <strong>undirected graph</strong> — a set of <em>vertices</em> (dots) joined by <em>edges</em> (lines). A <strong>Hamiltonian circuit</strong> is a closed tour that:</span><span data-tr="zh">給你一張<strong>無向圖</strong>——就是一堆 <em>vertex</em>（點）用 <em>edge</em>（線）連起來。所謂 <strong>Hamiltonian circuit</strong> 是一條封閉的環，它要：</span></p>
 <ul>
-  <li>starts at some vertex,</li>
-  <li>walks along edges of the graph,</li>
-  <li>visits <strong>every vertex exactly once</strong> (no repeats, none skipped), and</li>
-  <li><strong>returns to the starting vertex</strong> at the end.</li>
+  <li><span data-tr="en">starts at some vertex,</span><span data-tr="zh">從某個 vertex 出發，</span></li>
+  <li><span data-tr="en">walks along edges of the graph,</span><span data-tr="zh">只沿著圖上的 edge 走，</span></li>
+  <li><span data-tr="en">visits <strong>every vertex exactly once</strong> (no repeats, none skipped), and</span><span data-tr="zh"><strong>每個 vertex 剛好走一次</strong>（不重複、也不能漏掉），而且</span></li>
+  <li><span data-tr="en"><strong>returns to the starting vertex</strong> at the end.</span><span data-tr="zh">最後要<strong>繞回起點那個 vertex</strong>。</span></li>
 </ul>
-<p>The <strong>Hamiltonian circuit problem</strong> asks a yes/no question: <em>does the given graph contain such a circuit at all?</em> It is a <strong>feasibility</strong> problem (find one valid tour, or prove none exists) — not an optimization problem, so the edges carry no weights and there is no "cheapest" tour to compute.</p>
+<p><span data-tr="en">The <strong>Hamiltonian circuit problem</strong> asks a yes/no question: <em>does the given graph contain such a circuit at all?</em> It is a <strong>feasibility</strong> problem (find one valid tour, or prove none exists) — not an optimization problem, so the edges carry no weights and there is no "cheapest" tour to compute.</span><span data-tr="zh"><strong>Hamiltonian circuit problem</strong> 問的是個 yes/no 的問題：<em>這張圖到底有沒有這種環？</em>這是一個 <strong>feasibility</strong>（可行性）問題——找出一條合法的環，或證明根本沒有——不是最佳化問題，所以 edge 沒有權重，也沒有什麼「最便宜」的環要算。</span></p>
 
-<div class="note"><strong>Do not confuse it with an Euler circuit.</strong> An <strong>Euler</strong> circuit must use every <em>edge</em> exactly once (vertices may repeat); a <strong>Hamiltonian</strong> circuit must visit every <em>vertex</em> exactly once (edges may be left unused). They sound similar but are very different problems — Euler circuits have an easy rule (all vertices even degree), while deciding Hamiltonicity is NP-complete.</div>
+<div class="note"><span data-tr="en"><strong>Do not confuse it with an Euler circuit.</strong> An <strong>Euler</strong> circuit must use every <em>edge</em> exactly once (vertices may repeat); a <strong>Hamiltonian</strong> circuit must visit every <em>vertex</em> exactly once (edges may be left unused). They sound similar but are very different problems — Euler circuits have an easy rule (all vertices even degree), while deciding Hamiltonicity is NP-complete.</span><span data-tr="zh"><strong>別跟 Euler circuit 搞混。</strong><strong>Euler</strong> circuit 是每條 <em>edge</em> 剛好走一次（vertex 可以重複）；<strong>Hamiltonian</strong> circuit 是每個 <em>vertex</em> 剛好走一次（edge 可以不用完）。名字很像，其實是兩個差很多的問題——Euler circuit 有個簡單的判斷法則（每個 vertex 的 degree 都是偶數就有），但判斷一張圖有沒有 Hamiltonian circuit 是 NP-complete。</span></span></div>
 
-<p><strong>The concrete instance (Fig. 6-6).</strong> A graph on <strong>7 vertices</strong> numbered 1–7, with these <strong>9 edges</strong>:</p>
+<p><span data-tr="en"><strong>The concrete instance (Fig. 6-6).</strong> A graph on <strong>7 vertices</strong> numbered 1–7, with these <strong>9 edges</strong>:</span><span data-tr="zh"><strong>具體的例子（Fig. 6-6）。</strong>一張有 <strong>7 個 vertex</strong>（編號 1–7）的圖，共有這 <strong>9 條 edge</strong>：</span></p>
 <p style="font-family:ui-monospace,monospace;font-size:.9rem">1–2, 1–6, 1–3, 2–3, 6–5, 7–5, 7–4, 3–4, 4–5</p>
-<p>Question: is there a circuit through all 7 vertices? We will search for one below — and find that <strong>1 → 6 → 5 → 7 → 4 → 3 → 2 → 1</strong> works (check: every neighbour pair is a real edge, all 7 vertices appear once, and it closes back to 1).</p>
+<p><span data-tr="en">Question: is there a circuit through all 7 vertices? We will search for one below — and find that <strong>1 → 6 → 5 → 7 → 4 → 3 → 2 → 1</strong> works (check: every neighbour pair is a real edge, all 7 vertices appear once, and it closes back to 1).</span><span data-tr="zh">問題：有沒有一條繞完 7 個 vertex 的環？下面我們會去找——結果發現 <strong>1 → 6 → 5 → 7 → 4 → 3 → 2 → 1</strong> 可以（檢查一下：每個相鄰的一對都是真的有 edge、7 個 vertex 各出現一次、而且最後有繞回 1）。</span></p>
 
-<h2>Watch it solved</h2>
-<p>We grow a path from the root vertex <strong>1</strong>, choosing the next vertex one step at a time (this is the tree of Fig. 6-8). The <b>graph</b> shows the partial path so far — green nodes are visited, the gold node is current, green edges are the chosen tour. The <b>tree</b> on the right shows the same search: <code>×</code> marks a dead end (no unvisited neighbour, or can't close the loop) where DFS <strong>backtracks</strong>. Step through to the found circuit.</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">We grow a path from the root vertex <strong>1</strong>, choosing the next vertex one step at a time (this is the tree of Fig. 6-8). The <b>graph</b> shows the partial path so far — green nodes are visited, the gold node is current, green edges are the chosen tour. The <b>tree</b> on the right shows the same search: <code>×</code> marks a dead end (no unvisited neighbour, or can't close the loop) where DFS <strong>backtracks</strong>. Step through to the found circuit.</span><span data-tr="zh">我們從 root vertex <strong>1</strong> 開始把路徑接長，一次選一個下一個要走的 vertex（這就是 Fig. 6-8 那棵樹）。<b>圖</b>顯示目前走到哪——綠色 node 是走過的、金色 node 是現在這個、綠色 edge 是選到的路線。右邊的<b>樹</b>呈現同一個搜尋過程：<code>×</code> 標的是死路（沒有還沒走過的鄰居，或是接不回起點），DFS 就會在那邊<strong>回溯</strong>。一步步走到找到環為止。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Type: <b>feasibility (yes/no)</b></span>
-  <span class="chip">Search: <b>DFS + backtracking</b></span>
-  <span class="chip">Worst case: <b>O(n!) paths</b></span>
-  <span class="chip">Decision: <b>NP-complete</b></span>
+  <span class="chip"><span data-tr="en">Type: <b>feasibility (yes/no)</b></span><span data-tr="zh">類型：<b>feasibility（yes/no）</b></span></span>
+  <span class="chip"><span data-tr="en">Search: <b>DFS + backtracking</b></span><span data-tr="zh">搜尋：<b>DFS + 回溯</b></span></span>
+  <span class="chip"><span data-tr="en">Worst case: <b>O(n!) paths</b></span><span data-tr="zh">最壞情況：<b>O(n!) 條路徑</b></span></span>
+  <span class="chip"><span data-tr="en">Decision: <b>NP-complete</b></span><span data-tr="zh">判定問題：<b>NP-complete</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="A Hamiltonian circuit constrains the VERTICES: each must be visited exactly once, and the tour closes back to the start. It does NOT require using every edge — that is an Euler circuit. Allowing a vertex to repeat, or not returning to the start, would break the definition (the second is merely a Hamiltonian path, not a circuit).">
-  <div class="q">Which condition must a tour satisfy to be a <b>Hamiltonian circuit</b> of a graph?</div>
-  <button class="opt">it uses every edge of the graph exactly once</button>
-  <button class="opt">it visits every vertex, repeats allowed, and need not return to start</button>
-  <button class="opt">it visits every vertex exactly once and returns to the starting vertex</button>
-  <button class="opt">it is the shortest closed tour through all the vertices</button>
+<div class="quiz" data-correct="2" data-explain="A Hamiltonian circuit constrains the VERTICES: each must be visited exactly once, and the tour closes back to the start. It does NOT require using every edge — that is an Euler circuit. Allowing a vertex to repeat, or not returning to the start, would break the definition (the second is merely a Hamiltonian path, not a circuit)." data-explain-zh="Hamiltonian circuit 限制的是 VERTEX：每個剛好走一次，而且環要繞回起點。它並不要求用到每條 edge——那是 Euler circuit。讓某個 vertex 重複、或不繞回起點，都會違反定義（後者只是 Hamiltonian path，不是 circuit）。">
+  <div class="q"><span data-tr="en">Which condition must a tour satisfy to be a <b>Hamiltonian circuit</b> of a graph?</span><span data-tr="zh">一條路線要滿足什麼條件，才算是這張圖的 <b>Hamiltonian circuit</b>？</span></div>
+  <button class="opt"><span data-tr="en">it uses every edge of the graph exactly once</span><span data-tr="zh">把圖上每條 edge 剛好用一次</span></button>
+  <button class="opt"><span data-tr="en">it visits every vertex, repeats allowed, and need not return to start</span><span data-tr="zh">走過每個 vertex、可以重複，而且不用繞回起點</span></button>
+  <button class="opt"><span data-tr="en">it visits every vertex exactly once and returns to the starting vertex</span><span data-tr="zh">每個 vertex 剛好走一次，而且最後繞回起點那個 vertex</span></button>
+  <button class="opt"><span data-tr="en">it is the shortest closed tour through all the vertices</span><span data-tr="zh">是走完所有 vertex 裡最短的那條封閉路線</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="1" data-explain="From the partial path 1-2-3-4-5, the next vertex must be an unvisited neighbour of 5. The neighbours of 5 are 6, 7, and 4 — vertex 4 is already used, so only 6 and 7 remain. But choosing either cannot reach the still-unvisited vertex 7 (or 6) AND close back to 1 afterward, so both extensions dead-end. That is exactly why DFS backtracks here: the partial path painted itself into a corner. (It is not that 5 has no neighbours, nor that the path is already complete — vertices 6 and 7 are still missing.)">
-  <div class="q">Searching the graph 1–2,1–6,1–3,2–3,6–5,7–5,7–4,3–4,4–5, DFS has built the partial path <b>1 → 2 → 3 → 4 → 5</b>. Why does this branch fail and force a backtrack?</div>
-  <button class="opt">vertex 5 has no neighbours left in the graph at all</button>
-  <button class="opt">its only unvisited extensions (6, 7) can't both be reached and still close back to 1</button>
-  <button class="opt">the path already visits all 7 vertices, so it is finished</button>
-  <button class="opt">vertex 1 is not adjacent to vertex 5, so no circuit can exist</button>
+<div class="quiz" data-correct="1" data-explain="From the partial path 1-2-3-4-5, the next vertex must be an unvisited neighbour of 5. The neighbours of 5 are 6, 7, and 4 — vertex 4 is already used, so only 6 and 7 remain. But choosing either cannot reach the still-unvisited vertex 7 (or 6) AND close back to 1 afterward, so both extensions dead-end. That is exactly why DFS backtracks here: the partial path painted itself into a corner. (It is not that 5 has no neighbours, nor that the path is already complete — vertices 6 and 7 are still missing.)" data-explain-zh="從部分路徑 1-2-3-4-5 來看，下一個 vertex 必須是 5 還沒走過的鄰居。5 的鄰居有 6、7、4——4 已經走過了，所以只剩 6 跟 7。但不管選哪一個，都沒辦法既走到另一個還沒去的 vertex（7 或 6），又能在之後繞回 1，所以兩種接法都走進死路。這正是 DFS 在這裡回溯的原因：這條路徑自己把自己逼到死角了。（不是 5 沒鄰居，也不是路徑已經走完——vertex 6 跟 7 都還沒去。）">
+  <div class="q"><span data-tr="en">Searching the graph 1–2,1–6,1–3,2–3,6–5,7–5,7–4,3–4,4–5, DFS has built the partial path <b>1 → 2 → 3 → 4 → 5</b>. Why does this branch fail and force a backtrack?</span><span data-tr="zh">在圖 1–2,1–6,1–3,2–3,6–5,7–5,7–4,3–4,4–5 上搜尋時，DFS 接出了部分路徑 <b>1 → 2 → 3 → 4 → 5</b>。為什麼這條分支會失敗、逼得它得回溯？</span></div>
+  <button class="opt"><span data-tr="en">vertex 5 has no neighbours left in the graph at all</span><span data-tr="zh">vertex 5 在圖上根本沒有任何鄰居了</span></button>
+  <button class="opt"><span data-tr="en">its only unvisited extensions (6, 7) can't both be reached and still close back to 1</span><span data-tr="zh">它唯一還沒走的接法（6、7）沒辦法兩個都走到、又繞回 1</span></button>
+  <button class="opt"><span data-tr="en">the path already visits all 7 vertices, so it is finished</span><span data-tr="zh">這條路徑已經走完 7 個 vertex 了，所以結束了</span></button>
+  <button class="opt"><span data-tr="en">vertex 1 is not adjacent to vertex 5, so no circuit can exist</span><span data-tr="zh">vertex 1 跟 vertex 5 不相鄰，所以不可能有環</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-hamiltonian">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-hamiltonian"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies), §2 "The Hamiltonian Circuit Problem", Fig. 6-6 (graph) and Fig. 6-8 (search tree). For the complexity classification see CLRS, <em>Introduction to Algorithms</em>, Ch. 34 (HAM-CYCLE is NP-complete).</p>
-<div class="note"><strong>Solved by:</strong> <a href="algo-dfs.html">Depth-First Search</a> — it dives down one path of vertices, marks dead ends with <code>×</code>, and backtracks via its stack. Sibling problem in the same DFS chapter: <a href="prob-subset-sum.html">Sum-of-Subsets</a> (does a subset hit a target sum?).</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 (Searching Strategies), §2 "The Hamiltonian Circuit Problem", Fig. 6-6 (graph) and Fig. 6-8 (search tree). For the complexity classification see CLRS, <em>Introduction to Algorithms</em>, Ch. 34 (HAM-CYCLE is NP-complete).</span><span data-tr="zh"><strong>主要出處：</strong>R.C.T. Lee, Tseng, Chang, Tsai——<em>Introduction to the Design and Analysis of Algorithms</em>，第6章（Searching Strategies）§2「The Hamiltonian Circuit Problem」，Fig. 6-6（圖）跟 Fig. 6-8（搜尋樹）。複雜度的歸類可以看 CLRS，<em>Introduction to Algorithms</em>，第34章（HAM-CYCLE 是 NP-complete）。</span></p>
+<div class="note"><span data-tr="en"><strong>Solved by:</strong> <a href="algo-dfs.html">Depth-First Search</a> — it dives down one path of vertices, marks dead ends with <code>×</code>, and backtracks via its stack. Sibling problem in the same DFS chapter: <a href="prob-subset-sum.html">Sum-of-Subsets</a> (does a subset hit a target sum?).</span><span data-tr="zh"><strong>用什麼解：</strong><a href="algo-dfs.html">Depth-First Search</a>——它沿著一條 vertex 路徑往下鑽，死路就標 <code>×</code>，再靠 stack 回溯。同一個 DFS 章節的姊妹題：<a href="prob-subset-sum.html">Sum-of-Subsets</a>（有沒有一個子集合的和剛好等於目標？）。</span></span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

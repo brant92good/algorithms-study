@@ -15,70 +15,70 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Branch-and-Bound · Ch6</div>
-<h1>0/1 Knapsack — Branch &amp; Bound</h1>
-<div class="mission">Pack a knapsack of capacity <strong>M</strong> with whole items (take it or leave it) to <strong>maximize profit</strong> — searching a tree of "in / out" decisions, but using <strong>bounds to prune</strong> most of it away.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §10 (0/1 Knapsack via Branch-and-Bound), Fig. 6-27 (branching) &amp; Fig. 6-28 (the solved tree); example n = 6, M = 34.</p>
-<p style="font-size:.9rem">🧠 <b>Solved by:</b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> (also by <a href="prob-knapsack-dp.html">Dynamic Programming</a>)</p>
+<div class="kicker"><span data-tr="en">Branch-and-Bound · Ch6</span><span data-tr="zh">Branch-and-Bound · 第六章</span></div>
+<h1><span data-tr="en">0/1 Knapsack — Branch &amp; Bound</span><span data-tr="zh">0/1 Knapsack — Branch &amp; Bound</span></h1>
+<div class="mission"><span data-tr="en">Pack a knapsack of capacity <strong>M</strong> with whole items (take it or leave it) to <strong>maximize profit</strong> — searching a tree of "in / out" decisions, but using <strong>bounds to prune</strong> most of it away.</span><span data-tr="zh">用容量為 <strong>M</strong> 的背包裝整件物品（要嘛全拿、要嘛不拿），目標是<strong>讓利潤最大</strong>。我們會搜一棵「拿／不拿」的決策樹，但靠<strong>下界／上界（bounds）來剪枝</strong>，把大部分分支直接砍掉。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b> Alg05 · <em>The Searching Strategies</em> §10 (0/1 Knapsack via Branch-and-Bound), Fig. 6-27 (branching) &amp; Fig. 6-28 (the solved tree); example n = 6, M = 34.</p>
+<p style="font-size:.9rem">🧠 <b><span data-tr="en">Solved by:</span><span data-tr="zh">用什麼解：</span></b> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> <span data-tr="en">(also by <a href="prob-knapsack-dp.html">Dynamic Programming</a>)</span><span data-tr="zh">（也可以用 <a href="prob-knapsack-dp.html">Dynamic Programming</a>）</span></p>
 
-<h2>The problem</h2>
-<p>You have <code>n</code> items. Each item <code>i</code> has a <strong>weight</strong> <code>Wᵢ</code> and a <strong>profit</strong> <code>Pᵢ</code> (both positive integers). You have a knapsack that can carry a total weight of at most <code>M</code> (the <strong>capacity</strong>). For every item you make one yes/no choice — a decision variable <code>Xᵢ ∈ {0, 1}</code>: <code>Xᵢ = 1</code> means "put item <code>i</code> in the bag," <code>Xᵢ = 0</code> means "leave it out." You cannot take a fraction of an item — it is <strong>whole-or-nothing</strong> (that is the "0/1" in the name).</p>
-<p>The goal is to pick the subset of items that <strong>maximizes total profit</strong> without overloading the bag:</p>
+<h2><span data-tr="en">The problem</span><span data-tr="zh">問題是什麼</span></h2>
+<p><span data-tr="en">You have <code>n</code> items. Each item <code>i</code> has a <strong>weight</strong> <code>Wᵢ</code> and a <strong>profit</strong> <code>Pᵢ</code> (both positive integers). You have a knapsack that can carry a total weight of at most <code>M</code> (the <strong>capacity</strong>). For every item you make one yes/no choice — a decision variable <code>Xᵢ ∈ {0, 1}</code>: <code>Xᵢ = 1</code> means "put item <code>i</code> in the bag," <code>Xᵢ = 0</code> means "leave it out." You cannot take a fraction of an item — it is <strong>whole-or-nothing</strong> (that is the "0/1" in the name).</span><span data-tr="zh">你有 <code>n</code> 件物品。每件物品 <code>i</code> 有<strong>重量</strong> <code>Wᵢ</code> 和<strong>利潤</strong> <code>Pᵢ</code>（都是正整數）。背包最多只能裝總重 <code>M</code>（<strong>容量</strong>）。對每件物品你都做一個是／否的選擇——決策變數 <code>Xᵢ ∈ {0, 1}</code>：<code>Xᵢ = 1</code> 代表「把物品 <code>i</code> 放進去」，<code>Xᵢ = 0</code> 代表「不放」。你不能只拿一件物品的一部分，要嘛<strong>整件拿、要嘛不拿</strong>（名字裡的「0/1」就是這個意思）。</span></p>
+<p><span data-tr="en">The goal is to pick the subset of items that <strong>maximizes total profit</strong> without overloading the bag:</span><span data-tr="zh">目標是挑一組物品，在不超重的前提下<strong>讓總利潤最大</strong>：</span></p>
 <div class="note" style="font-family:ui-monospace,monospace">maximize&nbsp;&nbsp; P₁X₁ + P₂X₂ + … + PₙXₙ &nbsp;&nbsp;(total profit)<br>subject to&nbsp; W₁X₁ + W₂X₂ + … + WₙXₙ ≤ M &nbsp;&nbsp;(fits in the bag)<br>with each &nbsp; Xᵢ = 0 or 1</div>
 
-<p><strong>The concrete instance (Fig. 6-28).</strong> <code>n = 6</code> items, capacity <code>M = 34</code>. The items are listed in <em>non-increasing profit density</em> (<code>Pᵢ / Wᵢ</code>), which the bounding step relies on:</p>
+<p><strong><span data-tr="en">The concrete instance (Fig. 6-28).</span><span data-tr="zh">實際例子（Fig. 6-28）。</span></strong> <span data-tr="en"><code>n = 6</code> items, capacity <code>M = 34</code>. The items are listed in <em>non-increasing profit density</em> (<code>Pᵢ / Wᵢ</code>), which the bounding step relies on:</span><span data-tr="zh"><code>n = 6</code> 件物品，容量 <code>M = 34</code>。物品照<em>利潤密度（<code>Pᵢ / Wᵢ</code>）由大到小</em>排好，這正是 bounding 那一步要用到的：</span></p>
 <div class="atree" style="margin:.6rem 0">  item i  │   1     2     3     4     5     6
   ────────┼──────────────────────────────────
   profit P│   6    10     4     5     6     4
   weight W│  10    19     8    10    12     8
   P / W   │ 0.60  0.53  0.50  0.50  0.50  0.50</div>
 
-<p><strong>One quirk of these slides:</strong> branch-and-bound is naturally a <em>minimization</em> machine (it prunes nodes whose bound is too <em>high</em>). So the deck <strong>negates the profit</strong> and minimizes <code>−Σ PᵢXᵢ</code>. A profit of 17 becomes the objective value <code>−17</code>; "more profit" means "more negative," and the best (optimal) value is the <em>smallest</em> (most negative) one. Keep that sign flip in mind — every bound below is a negative number.</p>
+<p><strong><span data-tr="en">One quirk of these slides:</span><span data-tr="zh">投影片的一個怪招：</span></strong> <span data-tr="en">branch-and-bound is naturally a <em>minimization</em> machine (it prunes nodes whose bound is too <em>high</em>). So the deck <strong>negates the profit</strong> and minimizes <code>−Σ PᵢXᵢ</code>. A profit of 17 becomes the objective value <code>−17</code>; "more profit" means "more negative," and the best (optimal) value is the <em>smallest</em> (most negative) one. Keep that sign flip in mind — every bound below is a negative number.</span><span data-tr="zh">branch-and-bound 天生是做<em>最小化</em>的機器（它砍掉下界太<em>高</em>的節點）。所以這份投影片<strong>把利潤取負號</strong>，改去最小化 <code>−Σ PᵢXᵢ</code>。利潤 17 就變成目標值 <code>−17</code>；「利潤越多」等於「越負」，最佳（optimal）值就是<em>最小</em>（最負）的那個。記住這個正負號翻轉——下面每個 bound 都是負數。</span></p>
 
-<h2>Watch it solved</h2>
-<p>Branch-and-bound builds a binary tree (Fig. 6-27): at level <code>i</code> the left edge is <code>Xᵢ = 1</code> (take item <code>i</code>), the right edge is <code>Xᵢ = 0</code> (skip it). At each node it computes two numbers, then prunes:</p>
+<h2><span data-tr="en">Watch it solved</span><span data-tr="zh">看它怎麼解</span></h2>
+<p><span data-tr="en">Branch-and-bound builds a binary tree (Fig. 6-27): at level <code>i</code> the left edge is <code>Xᵢ = 1</code> (take item <code>i</code>), the right edge is <code>Xᵢ = 0</code> (skip it). At each node it computes two numbers, then prunes:</span><span data-tr="zh">branch-and-bound 會建一棵二元樹（Fig. 6-27）：在第 <code>i</code> 層，左邊那條邊是 <code>Xᵢ = 1</code>（拿物品 <code>i</code>），右邊是 <code>Xᵢ = 0</code>（跳過）。每個節點都算兩個數字，然後剪枝：</span></p>
 <ul style="font-size:.92rem">
-  <li><b>U.B.</b> (upper bound) = the value of some <em>feasible whole-item</em> packing — a solution we could actually accept. The best U.B. seen so far is our "best yet."</li>
-  <li><b>L.B.</b> (lower bound) = the value of the <em>fractional relaxation</em> (allow <code>0 ≤ Xᵢ ≤ 1</code>, fill greedily by density, take a fraction of the last item). Because fractions can only help, this L.B. is the <em>best the subtree could ever reach</em> — no integer packing under this node can beat it.</li>
+  <li><b>U.B.</b> <span data-tr="en">(upper bound) = the value of some <em>feasible whole-item</em> packing — a solution we could actually accept. The best U.B. seen so far is our "best yet."</span><span data-tr="zh">（upper bound）＝某個<em>可行的整件裝法</em>的值——一個我們真的能接受的解。目前看過最好的 U.B. 就是我們的「目前最佳」。</span></li>
+  <li><b>L.B.</b> <span data-tr="en">(lower bound) = the value of the <em>fractional relaxation</em> (allow <code>0 ≤ Xᵢ ≤ 1</code>, fill greedily by density, take a fraction of the last item). Because fractions can only help, this L.B. is the <em>best the subtree could ever reach</em> — no integer packing under this node can beat it.</span><span data-tr="zh">（lower bound）＝<em>fractional relaxation</em> 的值（允許 <code>0 ≤ Xᵢ ≤ 1</code>，照密度貪婪地裝，最後一件可以只拿一部分）。因為能拿分數只會更好，所以這個 L.B. 是<em>整棵子樹最好能到的程度</em>——這個節點底下任何整數裝法都贏不過它。</span></li>
 </ul>
-<p>Step through. The viz shows where the root bounds come from, how the tree branches, where the winning packing is found, and how the bounds prove it optimal.</p>
+<p><span data-tr="en">Step through. The viz shows where the root bounds come from, how the tree branches, where the winning packing is found, and how the bounds prove it optimal.</span><span data-tr="zh">一步步看下去。這個視覺化會帶你看：根節點的 bounds 從哪來、樹怎麼 branch、勝出的裝法在哪被找到，以及 bounds 怎麼證明它就是最佳解。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Items: <b>n = 6</b></span>
-  <span class="chip">Capacity: <b>M = 34</b></span>
-  <span class="chip">Root bounds: <b>−18 ≤ opt ≤ −16</b></span>
-  <span class="chip">Optimum: <b>−17</b> = {1,4,5}</span>
+  <span class="chip"><span data-tr="en">Items: <b>n = 6</b></span><span data-tr="zh">物品數：<b>n = 6</b></span></span>
+  <span class="chip"><span data-tr="en">Capacity: <b>M = 34</b></span><span data-tr="zh">容量：<b>M = 34</b></span></span>
+  <span class="chip"><span data-tr="en">Root bounds: <b>−18 ≤ opt ≤ −16</b></span><span data-tr="zh">根節點 bounds：<b>−18 ≤ opt ≤ −16</b></span></span>
+  <span class="chip"><span data-tr="en">Optimum: <b>−17</b> = {1,4,5}</span><span data-tr="zh">最佳解：<b>−17</b> = {1,4,5}</span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 2 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">隨堂測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="The fractional relaxation fills greedily by density: X1=1 (w=10), X2=1 (w=10+19=29), then only 34−29=5 of capacity is left. Item 3 weighs 8, so we take the fraction 5/8 of it. Profit = P1+P2+(5/8)P3 = 6+10+(5/8)·4 = 6+10+2.5 = 18.5, i.e. objective −18.5. Since real 0/1 profit is an integer, this rounds INWARD to −18 — a valid lower bound. The traps: −16 is the feasible UPPER bound (take items 1,2 wholly); −18.5 is the raw fractional value before rounding to an integer bound; −24 is the profit of grabbing every item, which ignores the capacity limit.">
-  <div class="q">For the Fig. 6-28 instance (M = 34; densities already sorted high→low), what lower bound (L.B.) does the fractional relaxation give at the root?</div>
-  <button class="opt">−16, by taking items 1 and 2 only</button>
-  <button class="opt">−18.5, exactly the fractional value, used as-is</button>
-  <button class="opt">−18, the fractional value −18.5 rounded inward to an integer</button>
-  <button class="opt">−24, the total profit of all six items</button>
+<div class="quiz" data-correct="2" data-explain="The fractional relaxation fills greedily by density: X1=1 (w=10), X2=1 (w=10+19=29), then only 34−29=5 of capacity is left. Item 3 weighs 8, so we take the fraction 5/8 of it. Profit = P1+P2+(5/8)P3 = 6+10+(5/8)·4 = 6+10+2.5 = 18.5, i.e. objective −18.5. Since real 0/1 profit is an integer, this rounds INWARD to −18 — a valid lower bound. The traps: −16 is the feasible UPPER bound (take items 1,2 wholly); −18.5 is the raw fractional value before rounding to an integer bound; −24 is the profit of grabbing every item, which ignores the capacity limit." data-explain-zh="fractional relaxation 照密度貪婪地裝：X1=1（w=10）、X2=1（w=10+19=29），這時只剩 34−29=5 的容量。物品 3 重 8，所以只拿它的 5/8。利潤 = P1+P2+(5/8)P3 = 6+10+(5/8)·4 = 6+10+2.5 = 18.5，也就是目標值 −18.5。因為真正的 0/1 利潤是整數，這要<b>往內</b>取整成 −18——一個有效下界。陷阱：−16 是可行的<b>上界</b>（整件拿物品 1、2）；−18.5 是還沒取整成整數 bound 的原始分數值；−24 是把六件全抓的利潤，根本沒管容量限制。">
+  <div class="q"><span data-tr="en">For the Fig. 6-28 instance (M = 34; densities already sorted high→low), what lower bound (L.B.) does the fractional relaxation give at the root?</span><span data-tr="zh">在 Fig. 6-28 這個例子裡（M = 34，密度已經由大到小排好），fractional relaxation 在根節點給出的下界（L.B.）是多少？</span></div>
+  <button class="opt"><span data-tr="en">−16, by taking items 1 and 2 only</span><span data-tr="zh">−16，只拿物品 1 和 2</span></button>
+  <button class="opt"><span data-tr="en">−18.5, exactly the fractional value, used as-is</span><span data-tr="zh">−18.5，直接用分數值、不取整</span></button>
+  <button class="opt"><span data-tr="en">−18, the fractional value −18.5 rounded inward to an integer</span><span data-tr="zh">−18，把分數值 −18.5 往內取整成整數</span></button>
+  <button class="opt"><span data-tr="en">−24, the total profit of all six items</span><span data-tr="zh">−24，六件全拿的總利潤</span></button>
   <div class="fb"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-explain="L.B. is the fractional relaxation — the BEST any integer packing in that subtree could possibly do (fractions only help). So if a node's L.B. is already no better than the best feasible solution we hold, nothing under it can win, and we prune. Concretely: once a feasible −17 packing is found (node 14, 'a good upper bound is found here'), any live node with L.B. ≥ −17 (i.e. −16, −15, −14 …) is hopeless and gets cut. The distractors invert the logic: pruning on U.B., or on a single node's weight/feasibility, would discard branches that might still contain the optimum.">
-  <div class="q">We are minimizing −profit. A node should be pruned exactly when…</div>
-  <button class="opt">its L.B. is no better (≥) than the best feasible value found so far — its subtree can't beat what we already have</button>
-  <button class="opt">its U.B. is worse than the best L.B. anywhere in the tree</button>
-  <button class="opt">the single packing at that node happens to overflow the capacity M</button>
-  <button class="opt">its L.B. equals its U.B., since then the node is fully decided</button>
+<div class="quiz" data-correct="0" data-explain="L.B. is the fractional relaxation — the BEST any integer packing in that subtree could possibly do (fractions only help). So if a node's L.B. is already no better than the best feasible solution we hold, nothing under it can win, and we prune. Concretely: once a feasible −17 packing is found (node 14, 'a good upper bound is found here'), any live node with L.B. ≥ −17 (i.e. −16, −15, −14 …) is hopeless and gets cut. The distractors invert the logic: pruning on U.B., or on a single node's weight/feasibility, would discard branches that might still contain the optimum." data-explain-zh="L.B. 就是 fractional relaxation——那棵子樹裡任何整數裝法<b>最好</b>能做到的程度（拿分數只會更好）。所以只要某個節點的 L.B. 已經贏不過我們手上的最佳可行解，它底下就不可能有更好的，剪掉。具體來說：一旦找到一個可行的 −17 裝法（node 14，投影片寫「a good upper bound is found here」），任何 L.B. ≥ −17 的存活節點（也就是 −16、−15、−14…）都沒救，砍掉。其他選項都把邏輯弄反了：改用 U.B. 來剪、或只看單一節點的重量／可行性來剪，都會把可能還藏著最佳解的分支丟掉。">
+  <div class="q"><span data-tr="en">We are minimizing −profit. A node should be pruned exactly when…</span><span data-tr="zh">我們是在最小化 −利潤。一個節點應該被剪掉，剛好是在什麼時候？</span></div>
+  <button class="opt"><span data-tr="en">its L.B. is no better (≥) than the best feasible value found so far — its subtree can't beat what we already have</span><span data-tr="zh">它的 L.B. 已經不比目前找到的最佳可行值更好（≥）——它的子樹贏不過我們手上的</span></button>
+  <button class="opt"><span data-tr="en">its U.B. is worse than the best L.B. anywhere in the tree</span><span data-tr="zh">它的 U.B. 比樹上任何地方的最佳 L.B. 還差</span></button>
+  <button class="opt"><span data-tr="en">the single packing at that node happens to overflow the capacity M</span><span data-tr="zh">那個節點上的單一裝法剛好超過容量 M</span></button>
+  <button class="opt"><span data-tr="en">its L.B. equals its U.B., since then the node is fully decided</span><span data-tr="zh">它的 L.B. 等於 U.B.，因為這樣節點就完全定下來了</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="prob-knapsack-bnb">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="prob-knapsack-bnb"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">學習進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §10 (0/1 Knapsack), <strong>Fig. 6-27</strong> (the X<sub>i</sub>=1/0 branching mechanism) and <strong>Fig. 6-28</strong> (the full solved tree with per-node U.B./L.B. and pruning). The fractional-relaxation lower bound is the same greedy idea that solves the <em>continuous</em> knapsack optimally.</p>
-<div class="note"><strong>The strategy:</strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — branch the solution space into a tree, bound each subtree, prune the hopeless ones.<br><strong>Same problem, other method:</strong> <a href="prob-knapsack-dp.html">0/1 Knapsack by Dynamic Programming</a> (Ch7) — instead of bounding a search tree, it fills a profit/weight table and reads the answer off the bottom-right.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">延伸閱讀</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §10 (0/1 Knapsack), <strong>Fig. 6-27</strong> (the X<sub>i</sub>=1/0 branching mechanism) and <strong>Fig. 6-28</strong> (the full solved tree with per-node U.B./L.B. and pruning). The fractional-relaxation lower bound is the same greedy idea that solves the <em>continuous</em> knapsack optimally.</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, 第六章 §10（0/1 Knapsack），<strong>Fig. 6-27</strong>（X<sub>i</sub>=1/0 的 branching 機制）和 <strong>Fig. 6-28</strong>（完整解出來的樹，每個節點都標 U.B./L.B. 並做剪枝）。fractional-relaxation 下界，用的就是能最佳解出<em>連續</em> knapsack 的那套貪婪想法。</span></p>
+<div class="note"><strong><span data-tr="en">The strategy:</span><span data-tr="zh">策略：</span></strong> <a href="algo-branch-and-bound.html">Branch-and-Bound</a> — <span data-tr="en">branch the solution space into a tree, bound each subtree, prune the hopeless ones.</span><span data-tr="zh">把解空間 branch 成一棵樹，替每棵子樹算 bound，把沒救的砍掉。</span><br><strong><span data-tr="en">Same problem, other method:</span><span data-tr="zh">同一題、另一種解法：</span></strong> <a href="prob-knapsack-dp.html">0/1 Knapsack by Dynamic Programming</a> <span data-tr="en">(Ch7) — instead of bounding a search tree, it fills a profit/weight table and reads the answer off the bottom-right.</span><span data-tr="zh">（第七章）——不是去 bound 一棵搜尋樹，而是填一張利潤／重量表，從右下角讀出答案。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

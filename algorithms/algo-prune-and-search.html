@@ -17,64 +17,64 @@
 
 <div class="kicker">Prune-and-Search</div>
 <h1>Prune-and-Search</h1>
-<div class="mission">A design strategy: each round <strong>throw away a guaranteed fraction</strong> of the input, then recurse on what's left. Because the work shrinks geometrically, the <strong>first round dominates</strong> — and many problems that look like <code>O(n log n)</code> collapse to <code>O(n)</code>.</div>
+<div class="mission"><span data-tr="en">A design strategy: each round <strong>throw away a guaranteed fraction</strong> of the input, then recurse on what's left. Because the work shrinks geometrically, the <strong>first round dominates</strong> — and many problems that look like <code>O(n log n)</code> collapse to <code>O(n)</code>.</span><span data-tr="zh">一種設計策略：每一輪都<strong>保證丟掉一定比例</strong>的輸入，然後對剩下的遞迴。因為工作量是幾何級數縮小，<strong>第一輪就佔了大部分</strong>——很多看起來像 <code>O(n log n)</code> 的問題，就這樣塌成 <code>O(n)</code>。</span></div>
 <p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A06 · <em>Prune-and-Search</em> §1 (general method) → §2–5 (selection), §6 (linear programming), §7 (1-center).</p>
 
-<h2>The idea</h2>
-<p>Think about how <strong>binary search</strong> works. To find a target in a sorted array, you look at the middle, decide the target is in the left half or the right half, and <strong>discard the other half forever</strong>. Each step <em>prunes</em> half the data and <em>searches</em> what remains. That is the whole strategy, abstracted:</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心想法</span></h2>
+<p><span data-tr="en">Think about how <strong>binary search</strong> works. To find a target in a sorted array, you look at the middle, decide the target is in the left half or the right half, and <strong>discard the other half forever</strong>. Each step <em>prunes</em> half the data and <em>searches</em> what remains. That is the whole strategy, abstracted:</span><span data-tr="zh">想想 <strong>binary search</strong> 怎麼跑。要在排好序的陣列裡找目標，你看正中間，判斷目標在左半還右半，然後<strong>把另一半永遠丟掉</strong>。每一步都<em>修剪</em>掉一半資料，再<em>搜尋</em>剩下的。把它抽象出來，就是整個策略：</span></p>
 <ul>
-  <li><b>Prune.</b> In each iteration, do some <code>O(nᵏ)</code> work that lets you <strong>guarantee</strong> a fixed fraction <code>f</code> (with <code>0 &lt; f &lt; 1</code>) of the current input can never contain the answer. Throw it away.</li>
-  <li><b>Search.</b> Recurse on the surviving <code>(1−f)·n</code> elements with the same algorithm.</li>
-  <li><b>Stop.</b> Once the survivors shrink to a constant size, solve directly in <code>O(1)</code>.</li>
+  <li><b><span data-tr="en">Prune.</span><span data-tr="zh">修剪。</span></b> <span data-tr="en">In each iteration, do some <code>O(nᵏ)</code> work that lets you <strong>guarantee</strong> a fixed fraction <code>f</code> (with <code>0 &lt; f &lt; 1</code>) of the current input can never contain the answer. Throw it away.</span><span data-tr="zh">每一輪花 <code>O(nᵏ)</code> 的工，換來一個<strong>保證</strong>：目前輸入裡有固定比例 <code>f</code>（<code>0 &lt; f &lt; 1</code>）絕不可能藏著答案。把它丟掉。</span></li>
+  <li><b><span data-tr="en">Search.</span><span data-tr="zh">搜尋。</span></b> <span data-tr="en">Recurse on the surviving <code>(1−f)·n</code> elements with the same algorithm.</span><span data-tr="zh">對活下來的 <code>(1−f)·n</code> 個元素，用同一個演算法遞迴下去。</span></li>
+  <li><b><span data-tr="en">Stop.</span><span data-tr="zh">停止。</span></b> <span data-tr="en">Once the survivors shrink to a constant size, solve directly in <code>O(1)</code>.</span><span data-tr="zh">當剩下的縮到常數大小，就直接 <code>O(1)</code> 解掉。</span></li>
 </ul>
 
-<p>The key requirement — and the hard part of every prune-and-search algorithm — is choosing the pruning step so that the fraction <code>f</code> is <strong>guaranteed every round, on any input</strong>. A pruning rule that only <em>sometimes</em> discards a fraction (e.g. always pivoting on the first element) can degrade to removing one element at a time, blowing the bound to <code>O(n²)</code>.</p>
+<p><span data-tr="en">The key requirement — and the hard part of every prune-and-search algorithm — is choosing the pruning step so that the fraction <code>f</code> is <strong>guaranteed every round, on any input</strong>. A pruning rule that only <em>sometimes</em> discards a fraction (e.g. always pivoting on the first element) can degrade to removing one element at a time, blowing the bound to <code>O(n²)</code>.</span><span data-tr="zh">關鍵要求——也是每個 prune-and-search 演算法最難的地方——就是要把修剪步驟設計成讓比例 <code>f</code> <strong>每一輪、對任何輸入都保證</strong>砍得掉。如果某個修剪規則只是<em>有時候</em>砍掉一塊（例如總是拿第一個元素當 pivot），就可能爛成一次只砍一個，把界限炸成 <code>O(n²)</code>。</span></p>
 
-<h3>Why it's linear (the headline result)</h3>
-<p>Let <code>T(n)</code> be the running time and suppose one iteration costs <code>O(nᵏ)</code>. Then:</p>
+<h3><span data-tr="en">Why it's linear (the headline result)</span><span data-tr="zh">為什麼是線性（重頭戲結論）</span></h3>
+<p><span data-tr="en">Let <code>T(n)</code> be the running time and suppose one iteration costs <code>O(nᵏ)</code>. Then:</span><span data-tr="zh">令 <code>T(n)</code> 是執行時間，假設一輪花 <code>O(nᵏ)</code>。那麼：</span></p>
 <p style="text-align:center;font-size:1.05rem"><code>T(n) = T((1−f)·n) + O(nᵏ)</code></p>
-<p>Unrolling, the per-round cost forms a <strong>geometric series</strong> with ratio <code>(1−f)ᵏ &lt; 1</code>:</p>
+<p><span data-tr="en">Unrolling, the per-round cost forms a <strong>geometric series</strong> with ratio <code>(1−f)ᵏ &lt; 1</code>:</span><span data-tr="zh">把它展開，每輪的成本構成一個 ratio 為 <code>(1−f)ᵏ &lt; 1</code> 的<strong>幾何級數</strong>：</span></p>
 <p style="text-align:center"><code>c·nᵏ · ( 1 + (1−f)ᵏ + (1−f)²ᵏ + … ) = c·nᵏ · (a constant)</code></p>
-<p>The series converges, so the sum is just a constant times the first term:</p>
+<p><span data-tr="en">The series converges, so the sum is just a constant times the first term:</span><span data-tr="zh">這個級數會收斂，所以總和就只是常數乘上第一項：</span></p>
 <p style="text-align:center;font-size:1.05rem"><code>T(n) = O(nᵏ)</code></p>
 
-<div class="note"><strong>The punchline:</strong> the whole multi-round process costs the <em>same order</em> as a single round. The <strong>first iteration dominates</strong> — every later round works on an exponentially smaller input, so all of them together add only a constant factor. This is why selection, 2-variable LP, and the 1-center problem all come out <code>O(n)</code> even though each does <code>O(n)</code> work per round.</p></div>
+<div class="note"><strong><span data-tr="en">The punchline:</span><span data-tr="zh">結論一句話：</span></strong> <span data-tr="en">the whole multi-round process costs the <em>same order</em> as a single round. The <strong>first iteration dominates</strong> — every later round works on an exponentially smaller input, so all of them together add only a constant factor. This is why selection, 2-variable LP, and the 1-center problem all come out <code>O(n)</code> even though each does <code>O(n)</code> work per round.</span><span data-tr="zh">整個多輪的過程，和單獨一輪是<em>同一個 order</em>。<strong>第一輪就佔了大部分</strong>——後面每一輪處理的輸入都指數級變小，全部加起來也只多一個常數倍。這就是為什麼 selection、2-variable LP、1-center 即使每輪都做 <code>O(n)</code> 的工，最後都還是 <code>O(n)</code>。</span></p></div>
 
-<h2>See the shrinkage</h2>
-<p>This is the engine of the whole strategy, made concrete. Take <code>n = 100</code> and a pruning fraction <code>f = ¼</code> (the rate the real algorithms achieve). Each bar is the input size at the start of a round; <strong>gold</strong> is the work that round does, <strong>dim</strong> is what gets pruned away. Watch the input — and so the work — collapse geometrically.</p>
+<h2><span data-tr="en">See the shrinkage</span><span data-tr="zh">看它怎麼縮</span></h2>
+<p><span data-tr="en">This is the engine of the whole strategy, made concrete. Take <code>n = 100</code> and a pruning fraction <code>f = ¼</code> (the rate the real algorithms achieve). Each bar is the input size at the start of a round; <strong>gold</strong> is the work that round does, <strong>dim</strong> is what gets pruned away. Watch the input — and so the work — collapse geometrically.</span><span data-tr="zh">這就是整個策略的引擎，具體跑給你看。拿 <code>n = 100</code>、修剪比例 <code>f = ¼</code>（真實演算法做得到的比例）。每一根長條是某一輪開頭的輸入大小；<strong>金色</strong>是那輪做的工，<strong>變暗</strong>的是被砍掉的。看著輸入——連帶工作量——一路幾何級數塌下去。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Per round: <b>O(nᵏ)</b></span>
-  <span class="chip">Prunes: <b>fraction f each round</b></span>
-  <span class="chip">Total: <b>O(nᵏ)</b> — first round dominates</span>
+  <span class="chip"><span data-tr="en">Per round:</span><span data-tr="zh">每輪：</span> <b>O(nᵏ)</b></span>
+  <span class="chip"><span data-tr="en">Prunes:</span><span data-tr="zh">修剪：</span> <b>fraction f each round</b></span>
+  <span class="chip"><span data-tr="en">Total:</span><span data-tr="zh">總計：</span> <b>O(nᵏ)</b> <span data-tr="en">— first round dominates</span><span data-tr="zh">——第一輪主導</span></span>
 </div>
 
-<h2>Problems it solves (in the slides)</h2>
-<p>All three pick a clever pivot/median so a constant fraction (≈¼) is provably pruned each round, turning an <code>O(n log n)</code>-or-worse problem into <strong>linear time</strong>:</p>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡的）</span></h2>
+<p><span data-tr="en">All three pick a clever pivot/median so a constant fraction (≈¼) is provably pruned each round, turning an <code>O(n log n)</code>-or-worse problem into <strong>linear time</strong>:</span><span data-tr="zh">這三題都靠巧妙挑 pivot／median，讓每輪都能證明砍掉固定比例（≈¼），把原本 <code>O(n log n)</code> 甚至更慢的問題變成<strong>線性時間</strong>：</span></p>
 <ul class="problem-list">
-  <li>🎯 <a href="prob-selection.html"><b>Selection — k-th smallest</b></a> — given <code>n</code> unsorted numbers and a rank <code>k</code>, return the value that would sit at position <code>k</code> if sorted (the median when <code>k = ⌈n/2⌉</code>). Solved in <code>O(n)</code> via the median-of-medians pivot.</li>
-  <li>📐 <a href="prob-linear-programming.html"><b>2-variable linear programming</b></a> — minimize <code>y</code> subject to <code>n</code> half-plane constraints <code>y ≥ aᵢx + bᵢ</code>; find the lowest point of their upper envelope in <code>O(n)</code> by pairing constraints and testing the median intersection.</li>
-  <li>⭕ <a href="prob-one-center.html"><b>1-center — smallest enclosing circle</b></a> — given <code>n</code> planar points, find the smallest circle that covers them all, in <code>O(n)</code> by pairing points and pruning on median bisector slopes.</li>
+  <li>🎯 <a href="prob-selection.html"><b><span data-tr="en">Selection — k-th smallest</span><span data-tr="zh">Selection — 第 k 小</span></b></a> <span data-tr="en">— given <code>n</code> unsorted numbers and a rank <code>k</code>, return the value that would sit at position <code>k</code> if sorted (the median when <code>k = ⌈n/2⌉</code>). Solved in <code>O(n)</code> via the median-of-medians pivot.</span><span data-tr="zh">——給 <code>n</code> 個亂序數字和名次 <code>k</code>，回傳排好序後站在第 <code>k</code> 位的值（<code>k = ⌈n/2⌉</code> 時就是中位數）。用 median-of-medians 當 pivot，在 <code>O(n)</code> 解出來。</span></li>
+  <li>📐 <a href="prob-linear-programming.html"><b><span data-tr="en">2-variable linear programming</span><span data-tr="zh">2-variable linear programming</span></b></a> <span data-tr="en">— minimize <code>y</code> subject to <code>n</code> half-plane constraints <code>y ≥ aᵢx + bᵢ</code>; find the lowest point of their upper envelope in <code>O(n)</code> by pairing constraints and testing the median intersection.</span><span data-tr="zh">——在 <code>n</code> 條 half-plane 限制 <code>y ≥ aᵢx + bᵢ</code> 下最小化 <code>y</code>；把限制兩兩配對、測試交點的中位數，在 <code>O(n)</code> 找出它們 upper envelope 的最低點。</span></li>
+  <li>⭕ <a href="prob-one-center.html"><b><span data-tr="en">1-center — smallest enclosing circle</span><span data-tr="zh">1-center — 最小包覆圓</span></b></a> <span data-tr="en">— given <code>n</code> planar points, find the smallest circle that covers them all, in <code>O(n)</code> by pairing points and pruning on median bisector slopes.</span><span data-tr="zh">——給 <code>n</code> 個平面上的點，找出能蓋住全部的最小圓；把點兩兩配對，靠中位 bisector 斜率來修剪，在 <code>O(n)</code> 解出來。</span></li>
 </ul>
 
-<div class="quiz" data-correct="2" data-explain="The defining move of prune-and-search is discarding a GUARANTEED constant fraction of the input each round, then recursing on the rest. Because the per-round work forms a geometric series, the total is the same order as one round — the first iteration dominates. It is NOT about dividing into equal halves and combining (that's divide-and-conquer like mergesort, where both halves are kept and recombined). It does not require sorting, and it keeps only one piece — never merges results back together.">
-  <div class="q">What single property makes an algorithm a <em>prune-and-search</em> algorithm (and gives it its complexity)?</div>
-  <button class="opt">it splits the input into two equal halves and recursively solves both, then merges</button>
-  <button class="opt">it sorts the input first, then scans it once</button>
-  <button class="opt">each round discards a guaranteed constant fraction of the input and recurses on the rest</button>
-  <button class="opt">it tries every candidate and keeps the best, pruning none</button>
+<div class="quiz" data-correct="2" data-explain="The defining move of prune-and-search is discarding a GUARANTEED constant fraction of the input each round, then recursing on the rest. Because the per-round work forms a geometric series, the total is the same order as one round — the first iteration dominates. It is NOT about dividing into equal halves and combining (that's divide-and-conquer like mergesort, where both halves are kept and recombined). It does not require sorting, and it keeps only one piece — never merges results back together." data-explain-zh="prune-and-search 的招牌動作，是每一輪都「保證」砍掉固定比例的輸入，然後對剩下的遞迴。因為每輪的工作量構成幾何級數，總和跟單獨一輪同一個 order——第一輪就主導。它「不是」把輸入切成相等兩半再合併（那是 divide-and-conquer，像 mergesort，兩半都保留再重組）。它不需要排序，而且只保留一塊——從不把結果合回去。">
+  <div class="q"><span data-tr="en">What single property makes an algorithm a <em>prune-and-search</em> algorithm (and gives it its complexity)?</span><span data-tr="zh">是哪一個特性讓一個演算法算是 <em>prune-and-search</em>（也決定了它的複雜度）？</span></div>
+  <button class="opt"><span data-tr="en">it splits the input into two equal halves and recursively solves both, then merges</span><span data-tr="zh">把輸入切成相等兩半，兩半都遞迴解完再合併</span></button>
+  <button class="opt"><span data-tr="en">it sorts the input first, then scans it once</span><span data-tr="zh">先把輸入排序，再掃過一遍</span></button>
+  <button class="opt"><span data-tr="en">each round discards a guaranteed constant fraction of the input and recurses on the rest</span><span data-tr="zh">每一輪都保證砍掉固定比例的輸入，再對剩下的遞迴</span></button>
+  <button class="opt"><span data-tr="en">it tries every candidate and keeps the best, pruning none</span><span data-tr="zh">把每個候選都試過、留下最好的，完全不修剪</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-prune-and-search">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-prune-and-search"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, the Prune-and-Search chapter (general method §1; selection §2–5; two-variable LP §6; 1-center §7). For worst-case linear selection specifically, see also CLRS Ch. 9 "Medians and Order Statistics."</p>
-<div class="note"><strong>Contrast it with divide-and-conquer.</strong> Divide-and-conquer (mergesort, etc.) keeps <em>both</em> halves and recombines their results — that recombination is why it lands at <code>O(n log n)</code>. Prune-and-search keeps <em>only one</em> piece and never recombines, so the work decays geometrically to <code>O(n)</code>. The three problems above — <a href="prob-selection.html">selection</a>, <a href="prob-linear-programming.html">2-variable LP</a>, and <a href="prob-one-center.html">1-center</a> — are the canonical instances.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要來源：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, the Prune-and-Search chapter (general method §1; selection §2–5; two-variable LP §6; 1-center §7). For worst-case linear selection specifically, see also CLRS Ch. 9 "Medians and Order Statistics."</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai，《Introduction to the Design and Analysis of Algorithms》的 Prune-and-Search 章節（通用方法 §1；selection §2–5；two-variable LP §6；1-center §7）。想專門看最壞情況線性的 selection，也可以參考 CLRS 第 9 章「Medians and Order Statistics」。</span></p>
+<div class="note"><strong><span data-tr="en">Contrast it with divide-and-conquer.</span><span data-tr="zh">跟 divide-and-conquer 比一比。</span></strong> <span data-tr="en">Divide-and-conquer (mergesort, etc.) keeps <em>both</em> halves and recombines their results — that recombination is why it lands at <code>O(n log n)</code>. Prune-and-search keeps <em>only one</em> piece and never recombines, so the work decays geometrically to <code>O(n)</code>. The three problems above — <a href="prob-selection.html">selection</a>, <a href="prob-linear-programming.html">2-variable LP</a>, and <a href="prob-one-center.html">1-center</a> — are the canonical instances.</span><span data-tr="zh">divide-and-conquer（像 mergesort）會把<em>兩半都</em>留下，再把結果合回去——就是這個合併讓它落在 <code>O(n log n)</code>。Prune-and-search 只留<em>一塊</em>、從不合併，所以工作量幾何級數衰減到 <code>O(n)</code>。上面那三題——<a href="prob-selection.html">selection</a>、<a href="prob-linear-programming.html">2-variable LP</a>、<a href="prob-one-center.html">1-center</a>——就是經典範例。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

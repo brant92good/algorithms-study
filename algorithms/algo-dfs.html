@@ -15,28 +15,28 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
-<h1>Depth-First Search</h1>
-<div class="mission">Search a tree of candidate solutions by <strong>diving as deep as possible</strong> down one branch, then <strong>backtracking</strong> the moment you hit a dead end — driven by a single <strong>stack</strong>.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1–3 (solution-space trees → DFS guided by a stack).</p>
+<div class="kicker"><span data-tr="en">Searching Strategies · Ch6</span><span data-tr="zh">搜尋策略 · 第6章</span></div>
+<h1><span data-tr="en">Depth-First Search</span><span data-tr="zh">Depth-First Search</span></h1>
+<div class="mission"><span data-tr="en">Search a tree of candidate solutions by <strong>diving as deep as possible</strong> down one branch, then <strong>backtracking</strong> the moment you hit a dead end — driven by a single <strong>stack</strong>.</span><span data-tr="zh">搜一棵候選解的樹：沿著一條分支<strong>盡量往深處鑽</strong>，一踩到死路就<strong>回溯</strong>——整個過程靠一個 <strong>stack</strong> 驅動。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem"><span data-tr="en">📄 <b>Source:</b> Alg05 · <em>The Searching Strategies</em> §1–3 (solution-space trees → DFS guided by a stack).</span><span data-tr="zh">📄 <b>出處：</b>Alg05 · <em>The Searching Strategies</em> §1–3（解空間樹 → 用 stack 引導的 DFS）。</span></p>
 
-<h2>The idea</h2>
-<p>Many hard yes/no problems share one shape: <em>"can I build a complete object by making a sequence of choices?"</em> Lay those choices out as a <strong>solution tree</strong> (also called a state-space tree). The <strong>root</strong> is the empty partial solution; each <strong>edge</strong> fixes one more decision; each <strong>node</strong> is the partial solution so far; a <strong>leaf</strong> is a complete candidate. A node we are happy with is a <strong>goal node</strong>. The whole job is to find a goal node somewhere in this tree.</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心觀念</span></h2>
+<p><span data-tr="en">Many hard yes/no problems share one shape: <em>"can I build a complete object by making a sequence of choices?"</em> Lay those choices out as a <strong>solution tree</strong> (also called a state-space tree). The <strong>root</strong> is the empty partial solution; each <strong>edge</strong> fixes one more decision; each <strong>node</strong> is the partial solution so far; a <strong>leaf</strong> is a complete candidate. A node we are happy with is a <strong>goal node</strong>. The whole job is to find a goal node somewhere in this tree.</span><span data-tr="zh">很多難的 yes/no 問題其實長得一樣：<em>「我能不能靠一連串選擇，拼出一個完整的東西？」</em>把這些選擇攤成一棵 <strong>solution tree</strong>（也叫 state-space tree）。<strong>root</strong> 是還什麼都沒選的空解；每條 <strong>edge</strong> 多定下一個決策；每個 <strong>node</strong> 是目前為止的部分解；<strong>leaf</strong> 則是一個完整的候選解。我們滿意的 node 就是 <strong>goal node</strong>。整件事就是要在這棵樹裡找到一個 goal node。</span></p>
 
-<p><strong>Depth-first search</strong> is one order for visiting that tree. The rule is simple: from the current node, walk down to its first child, then <em>that</em> node's first child, and keep going <strong>as deep as you can</strong>. When you reach a node that is a dead end — it violates a constraint, or it has no unexplored children — you <strong>backtrack</strong>: step back up to the most recent node that still has an untried child, and dive again. You only ever back up the minimum needed.</p>
+<p><span data-tr="en"><strong>Depth-first search</strong> is one order for visiting that tree. The rule is simple: from the current node, walk down to its first child, then <em>that</em> node's first child, and keep going <strong>as deep as you can</strong>. When you reach a node that is a dead end — it violates a constraint, or it has no unexplored children — you <strong>backtrack</strong>: step back up to the most recent node that still has an untried child, and dive again. You only ever back up the minimum needed.</span><span data-tr="zh"><strong>Depth-first search</strong> 是拜訪這棵樹的其中一種順序。規則很簡單：從目前的 node 走到它的第一個 child，再走<em>那個</em> node 的第一個 child，<strong>能多深就多深</strong>。等你走到一個死路——違反了某個條件，或是沒有還沒探索過的 child——就<strong>回溯</strong>：退回到最近一個還有 child 沒試過的 node，再往下鑽。每次都只退剛好需要的那麼多。</span></p>
 
-<p>The bookkeeping is a <strong>stack</strong> (LIFO — last in, first out):</p>
+<p><span data-tr="en">The bookkeeping is a <strong>stack</strong> (LIFO — last in, first out):</span><span data-tr="zh">記帳用的是一個 <strong>stack</strong>（LIFO——last in, first out）：</span></p>
 <ol>
-  <li>Push the <strong>root</strong> onto the stack.</li>
-  <li><strong>Pop</strong> a node. If it is a goal node, stop — success.</li>
-  <li>Otherwise push its children, and repeat from step 2 until the stack is empty (failure).</li>
+  <li><span data-tr="en">Push the <strong>root</strong> onto the stack.</span><span data-tr="zh">把 <strong>root</strong> push 進 stack。</span></li>
+  <li><span data-tr="en"><strong>Pop</strong> a node. If it is a goal node, stop — success.</span><span data-tr="zh"><strong>Pop</strong> 出一個 node。如果它是 goal node，就停——成功。</span></li>
+  <li><span data-tr="en">Otherwise push its children, and repeat from step 2 until the stack is empty (failure).</span><span data-tr="zh">否則把它的 children push 進去，然後回到第 2 步重複，直到 stack 空了（失敗）。</span></li>
 </ol>
-<p>Because the stack hands back the <em>most recently pushed</em> node first, the children you just added are explored before their cousins — that LIFO ordering <em>is</em> what produces the deep-first exploration order. (Swap the stack for a FIFO queue and the very same loop becomes <a href="algo-bfs.html">breadth-first search</a>, which sweeps level by level instead.)</p>
+<p><span data-tr="en">Because the stack hands back the <em>most recently pushed</em> node first, the children you just added are explored before their cousins — that LIFO ordering <em>is</em> what produces the deep-first exploration order. (Swap the stack for a FIFO queue and the very same loop becomes <a href="algo-bfs.html">breadth-first search</a>, which sweeps level by level instead.)</span><span data-tr="zh">因為 stack 每次先還給你<em>最近 push 進去</em>的那個 node，所以你剛加進來的 children 會比它們的堂兄弟先被探索——就是這個 LIFO 順序<em>造成</em>了往深處走的探索順序。（把 stack 換成 FIFO 的 queue，同一個迴圈就變成 <a href="algo-bfs.html">breadth-first search</a>，改成一層一層掃。）</span></p>
 
-<div class="note"><strong>Why it is cheap.</strong> DFS does not need the whole tree in memory — only the current root-to-node path sits on the stack. And it can <strong>prune</strong>: the instant a partial solution already breaks a rule (a clause is false, a running sum overshoots the target), the entire subtree below it is abandoned without ever being built. That is why search beats brute-forcing all 2ⁿ candidates.</p>
+<div class="note"><span data-tr="en"><strong>Why it is cheap.</strong> DFS does not need the whole tree in memory — only the current root-to-node path sits on the stack. And it can <strong>prune</strong>: the instant a partial solution already breaks a rule (a clause is false, a running sum overshoots the target), the entire subtree below it is abandoned without ever being built. That is why search beats brute-forcing all 2ⁿ candidates.</span><span data-tr="zh"><strong>為什麼它很省。</strong>DFS 不用把整棵樹放在記憶體裡——stack 上只有目前這條從 root 到 node 的路徑。而且它能<strong>剪枝</strong>：只要一個部分解已經違反了規則（某個 clause 不成立、或目前的和超過了 target），它底下整個 subtree 就直接放掉，根本不用建出來。這就是為什麼用搜尋會贏過硬把 2ⁿ 個候選解全部試一遍。</span></div>
 
-<h2>A tiny illustration</h2>
-<p>Here is the deck's sum-of-subsets tree (Fig. 6-11): from <code>S = {7, 5, 1, 2, 10}</code>, is there a subset summing to <strong>9</strong>? Each node holds the running sum; going down the left edge of level <code>i</code> means "include element <code>i</code>". DFS starts at <code>0</code>, includes 7, then dives. <code>×</code> marks a pruned dead end (sum already &gt; 9).</p>
+<h2><span data-tr="en">A tiny illustration</span><span data-tr="zh">小範例</span></h2>
+<p><span data-tr="en">Here is the deck's sum-of-subsets tree (Fig. 6-11): from <code>S = {7, 5, 1, 2, 10}</code>, is there a subset summing to <strong>9</strong>? Each node holds the running sum; going down the left edge of level <code>i</code> means "include element <code>i</code>". DFS starts at <code>0</code>, includes 7, then dives. <code>×</code> marks a pruned dead end (sum already &gt; 9).</span><span data-tr="zh">這是投影片裡的 sum-of-subsets 樹（Fig. 6-11）：從 <code>S = {7, 5, 1, 2, 10}</code> 裡，有沒有一個 subset 加起來等於 <strong>9</strong>？每個 node 記著目前的和；在第 <code>i</code> 層往左走代表「把第 <code>i</code> 個元素放進來」。DFS 從 <code>0</code> 開始，放入 7，然後往下鑽。<code>×</code> 標的是被剪掉的死路（和已經 &gt; 9）。</span></p>
 <div class="atree">
 0  (root, take nothing yet)
 └─ +7 ──▶ <b>7</b>
@@ -46,42 +46,42 @@
           │         └─ +10 ─▶ 18  <span style="color:var(--bad)">× overshoot</span>
           └─ +2 ──▶ <b style="color:var(--good)">9  ◀ GOAL: {7, 2}</b>
 </div>
-<p>DFS dives <code>0 → 7 → 12</code>, finds 12 &gt; 9, <strong>backtracks</strong> to 7, tries <code>+1 → 8</code>, dives again to 10 and 18 (both overshoot, backtrack), pops back to 7, tries <code>+2 → 9</code> — a goal. Answer: <strong>{7, 2}</strong>. The same machine never had to look at element 10 on the winning path.</p>
+<p><span data-tr="en">DFS dives <code>0 → 7 → 12</code>, finds 12 &gt; 9, <strong>backtracks</strong> to 7, tries <code>+1 → 8</code>, dives again to 10 and 18 (both overshoot, backtrack), pops back to 7, tries <code>+2 → 9</code> — a goal. Answer: <strong>{7, 2}</strong>. The same machine never had to look at element 10 on the winning path.</span><span data-tr="zh">DFS 一路鑽 <code>0 → 7 → 12</code>，發現 12 &gt; 9，<strong>回溯</strong>回 7，試 <code>+1 → 8</code>，再往下鑽到 10 跟 18（都超過，回溯），pop 回 7，試 <code>+2 → 9</code>——這就是 goal。答案：<strong>{7, 2}</strong>。在這條成功的路徑上，它從頭到尾根本沒碰到元素 10。</span></p>
 
-<div class="note"><strong>One strategy, many trees.</strong> DFS itself is problem-agnostic — change only what the tree's nodes and "dead end" mean, and the identical dive-and-backtrack stack solves a whole family: SAT (branch on each variable true/false), Hamiltonian circuits (branch on the next vertex), sum-of-subsets (branch on in/out of each element). Same search, different solution trees.</p>
+<div class="note"><span data-tr="en"><strong>One strategy, many trees.</strong> DFS itself is problem-agnostic — change only what the tree's nodes and "dead end" mean, and the identical dive-and-backtrack stack solves a whole family: SAT (branch on each variable true/false), Hamiltonian circuits (branch on the next vertex), sum-of-subsets (branch on in/out of each element). Same search, different solution trees.</span><span data-tr="zh"><strong>同一個策略，很多種樹。</strong>DFS 本身跟問題無關——只要改一下樹的 node 是什麼、「死路」是什麼意思，同一套往下鑽再回溯的 stack 就能解一整族問題：SAT（在每個變數的 true/false 上分支）、Hamiltonian circuit（在下一個 vertex 上分支）、sum-of-subsets（在每個元素的 in/out 上分支）。同一個搜尋，不同的 solution tree。</span></div>
 
-<h2>Problems it solves (in the slides)</h2>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡的）</span></h2>
 <ul>
-  <li><a href="prob-sat.html"><strong>Satisfiability (SAT)</strong></a> — given a Boolean formula in <code>n</code> variables, is there a true/false assignment making it true? (binary tree of 2ⁿ assignments)</li>
-  <li><a href="prob-hamiltonian.html"><strong>Hamiltonian Circuit</strong></a> — does a graph contain a cycle that visits every vertex exactly once and returns to the start?</li>
-  <li><a href="prob-subset-sum.html"><strong>Sum-of-Subsets</strong></a> — given a set of numbers and a target, is there a subset that sums exactly to the target?</li>
+  <li><a href="prob-sat.html"><strong>Satisfiability (SAT)</strong></a> — <span data-tr="en">given a Boolean formula in <code>n</code> variables, is there a true/false assignment making it true? (binary tree of 2ⁿ assignments)</span><span data-tr="zh">給一個 <code>n</code> 個變數的布林公式，有沒有一組 true/false 指派能讓它成立？（2ⁿ 種指派的二元樹）</span></li>
+  <li><a href="prob-hamiltonian.html"><strong>Hamiltonian Circuit</strong></a> — <span data-tr="en">does a graph contain a cycle that visits every vertex exactly once and returns to the start?</span><span data-tr="zh">一張圖裡有沒有一個環，剛好把每個 vertex 走過一次又繞回起點？</span></li>
+  <li><a href="prob-subset-sum.html"><strong>Sum-of-Subsets</strong></a> — <span data-tr="en">given a set of numbers and a target, is there a subset that sums exactly to the target?</span><span data-tr="zh">給一堆數字跟一個 target，有沒有一個 subset 加起來剛好等於 target？</span></li>
 </ul>
 
 <div class="chips">
-  <span class="chip">Data structure: <b>stack (LIFO)</b></span>
-  <span class="chip">Memory: <b>O(tree depth)</b></span>
-  <span class="chip">Stops at: <b>first goal node</b></span>
+  <span class="chip"><span data-tr="en">Data structure: <b>stack (LIFO)</b></span><span data-tr="zh">資料結構：<b>stack（LIFO）</b></span></span>
+  <span class="chip"><span data-tr="en">Memory: <b>O(tree depth)</b></span><span data-tr="zh">記憶體：<b>O(樹的深度)</b></span></span>
+  <span class="chip"><span data-tr="en">Stops at: <b>first goal node</b></span><span data-tr="zh">停在：<b>第一個 goal node</b></span></span>
 </div>
 
-<h2 class="qa-head">Quick check <span class="score" id="score">0 / 1 answered</span></h2>
+<h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 1 answered</span></h2>
 
-<div class="quiz" data-correct="2" data-explain="DFS is driven by a stack (LIFO): pushing children and always popping the most-recently-pushed node forces the search to commit to one branch and follow it all the way down before considering siblings — that is exactly 'dive deep, backtrack on a dead end'. A FIFO queue would instead pop the oldest node first, giving breadth-first (level-by-level) order. A priority queue gives best-first; recursion depth alone isn't the mechanism — the LIFO discipline is.">
-  <div class="q">What makes the generic push-children / pop-a-node loop explore <em>depth-first</em> rather than level-by-level?</div>
-  <button class="opt">it uses a FIFO queue, so the oldest node comes out first</button>
-  <button class="opt">it sorts open nodes by an estimate and expands the best one</button>
-  <button class="opt">it uses a stack (LIFO), so the just-pushed children come out first</button>
-  <button class="opt">it visits all nodes at one depth before going deeper</button>
+<div class="quiz" data-correct="2" data-explain="DFS is driven by a stack (LIFO): pushing children and always popping the most-recently-pushed node forces the search to commit to one branch and follow it all the way down before considering siblings — that is exactly 'dive deep, backtrack on a dead end'. A FIFO queue would instead pop the oldest node first, giving breadth-first (level-by-level) order. A priority queue gives best-first; recursion depth alone isn't the mechanism — the LIFO discipline is." data-explain-zh="DFS 靠一個 stack（LIFO）驅動：push children、永遠 pop 最近 push 進去的那個，這會逼搜尋認定一條分支、一路跟到底，才去看兄弟節點——這正是「往深處鑽、踩到死路就回溯」。如果是 FIFO 的 queue，會先 pop 最舊的 node，那就變成 breadth-first（一層一層）的順序了。priority queue 給的是 best-first；光是遞迴深度本身不是關鍵——關鍵是 LIFO 這個規矩。">
+  <div class="q"><span data-tr="en">What makes the generic push-children / pop-a-node loop explore <em>depth-first</em> rather than level-by-level?</span><span data-tr="zh">是什麼讓這個「push children／pop 一個 node」的通用迴圈是<em>深度優先</em>地走，而不是一層一層走？</span></div>
+  <button class="opt"><span data-tr="en">it uses a FIFO queue, so the oldest node comes out first</span><span data-tr="zh">它用 FIFO 的 queue，所以最舊的 node 先出來</span></button>
+  <button class="opt"><span data-tr="en">it sorts open nodes by an estimate and expands the best one</span><span data-tr="zh">它把待處理的 node 依估計值排序，展開最好的那個</span></button>
+  <button class="opt"><span data-tr="en">it uses a stack (LIFO), so the just-pushed children come out first</span><span data-tr="zh">它用 stack（LIFO），所以剛 push 進去的 children 先出來</span></button>
+  <button class="opt"><span data-tr="en">it visits all nodes at one depth before going deeper</span><span data-tr="zh">它把同一層的 node 全走完才往下一層</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-dfs">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-dfs"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 "The Searching Strategies", §§1–3 (Fig. 6-11, sum-of-subsets by DFS). The chapter frames every node as a partial solution in a state-space tree and uses a stack to guide the deep-first order.</p>
-<div class="note"><strong>Siblings in this bucket:</strong> <a href="algo-bfs.html">Breadth-First Search</a> swaps the stack for a queue (same tree, level order); <a href="algo-hill-climbing.html">Hill Climbing</a> is a greedy DFS that always dives into the locally best child; <a href="algo-best-first.html">Best-First Search</a> keeps a global view by expanding the most promising open node anywhere in the tree.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><span data-tr="en"><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai — <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 "The Searching Strategies", §§1–3 (Fig. 6-11, sum-of-subsets by DFS). The chapter frames every node as a partial solution in a state-space tree and uses a stack to guide the deep-first order.</span><span data-tr="zh"><strong>主要出處：</strong>R.C.T. Lee, Tseng, Chang, Tsai——<em>Introduction to the Design and Analysis of Algorithms</em>，第6章「The Searching Strategies」§§1–3（Fig. 6-11，用 DFS 解 sum-of-subsets）。這一章把每個 node 都看成 state-space tree 裡的一個部分解，並用 stack 來引導往深處走的順序。</span></p>
+<div class="note"><span data-tr="en"><strong>Siblings in this bucket:</strong> <a href="algo-bfs.html">Breadth-First Search</a> swaps the stack for a queue (same tree, level order); <a href="algo-hill-climbing.html">Hill Climbing</a> is a greedy DFS that always dives into the locally best child; <a href="algo-best-first.html">Best-First Search</a> keeps a global view by expanding the most promising open node anywhere in the tree.</span><span data-tr="zh"><strong>同一類的姊妹：</strong><a href="algo-bfs.html">Breadth-First Search</a> 把 stack 換成 queue（同一棵樹，改成一層一層）；<a href="algo-hill-climbing.html">Hill Climbing</a> 是貪婪版的 DFS，永遠往當下最好的 child 鑽；<a href="algo-best-first.html">Best-First Search</a> 則維持全局視野，展開整棵樹裡任何地方最有希望的那個待處理 node。</span></span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

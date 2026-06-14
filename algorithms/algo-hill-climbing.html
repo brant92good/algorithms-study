@@ -27,62 +27,62 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
+<div class="kicker"><span data-tr="en">Searching Strategies · Ch6</span><span data-tr="zh">Searching Strategies · Ch6</span></div>
 <h1>Hill Climbing</h1>
-<div class="mission">A <strong>greedy variant of depth-first search</strong>: at every step, expand only the <em>locally best-looking</em> child by an evaluation function <code>f(n)</code> — fast, but it sees only one step ahead and can stall at a local optimum.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A05 · <em>Searching Strategies</em> §5 (Hill Climbing, the 8-puzzle, Fig. 6-15).</p>
+<div class="mission"><span data-tr="en">A <strong>greedy variant of depth-first search</strong>: at every step, expand only the <em>locally best-looking</em> child by an evaluation function <code>f(n)</code> — fast, but it sees only one step ahead and can stall at a local optimum.</span><span data-tr="zh">它是 <strong>depth-first search 的貪婪版</strong>：每一步只用 evaluation function <code>f(n)</code> 挑出<em>當下看起來最好的</em>那個子節點去展開——很快，但它只看得到眼前一步，可能會卡在 local optimum（局部最佳）。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b><span data-tr="en"> A05 · <em>Searching Strategies</em> §5 (Hill Climbing, the 8-puzzle, Fig. 6-15).</span><span data-tr="zh"> A05 · <em>Searching Strategies</em> §5（Hill Climbing、8-puzzle、Fig. 6-15）。</span></p>
 
-<h2>The idea</h2>
-<p>Many problems are solved by exploring a <strong>solution-space tree</strong>: the root is the start state, each child is a state you can reach in one move, and somewhere down the tree sits a <strong>goal</strong> state. The searching <em>strategy</em> just decides the <strong>order</strong> in which you expand nodes.</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心想法</span></h2>
+<p><span data-tr="en">Many problems are solved by exploring a <strong>solution-space tree</strong>: the root is the start state, each child is a state you can reach in one move, and somewhere down the tree sits a <strong>goal</strong> state. The searching <em>strategy</em> just decides the <strong>order</strong> in which you expand nodes.</span><span data-tr="zh">很多問題都是靠走一棵 <strong>solution-space tree（解空間樹）</strong>來解的：根節點是起始狀態，每個子節點是你走一步能到的狀態，而樹的某個地方藏著一個 <strong>goal</strong> 狀態。所謂搜尋<em>策略</em>，講白了就是決定你用什麼<strong>順序</strong>展開節點。</span></p>
 
-<p>Plain <strong>depth-first search (DFS)</strong> dives down one branch, expanding children in a fixed arbitrary order, and backtracks on dead ends. <strong>Hill climbing</strong> keeps the dive-deep spirit of DFS but adds <em>judgement</em>: instead of taking children in arbitrary order, it scores each child with an <strong>evaluation function</strong> <code>f(n)</code> and always expands the <strong>locally best one</strong> (lowest <code>f</code>). It is the search equivalent of always walking uphill toward higher ground.</p>
+<p><span data-tr="en">Plain <strong>depth-first search (DFS)</strong> dives down one branch, expanding children in a fixed arbitrary order, and backtracks on dead ends. <strong>Hill climbing</strong> keeps the dive-deep spirit of DFS but adds <em>judgement</em>: instead of taking children in arbitrary order, it scores each child with an <strong>evaluation function</strong> <code>f(n)</code> and always expands the <strong>locally best one</strong> (lowest <code>f</code>). It is the search equivalent of always walking uphill toward higher ground.</span><span data-tr="zh">純 <strong>depth-first search（DFS）</strong>會一路往一條分支鑽下去，子節點照固定但隨意的順序展開，撞到死路就退回去（backtrack）。<strong>Hill climbing</strong> 保留了 DFS 那種一直往深鑽的精神，但多了一點<em>判斷力</em>：它不照隨意的順序拿子節點，而是用 <strong>evaluation function</strong> <code>f(n)</code> 幫每個子節點打分，永遠展開<strong>當下最好的那個</strong>（<code>f</code> 最小）。換成爬山的比喻，就是每一步都往更高的地方走。</span></p>
 
-<div class="note"><strong>Key intuition — and its trap.</strong> Hill climbing has only a <em>local view</em>: it compares a node's children to each other and commits to the best of <em>those</em>, never reconsidering. If the best child still leads nowhere good, hill climbing is stuck — it has climbed a small hill (a <strong>local optimum</strong>) with no way to see that a taller peak lies across the valley. (Best-first search fixes exactly this by keeping a <em>global</em> view of all open nodes.)</p>
+<div class="note"><strong><span data-tr="en">Key intuition — and its trap.</span><span data-tr="zh">關鍵直覺——還有它的陷阱。</span></strong> <span data-tr="en">Hill climbing has only a <em>local view</em>: it compares a node's children to each other and commits to the best of <em>those</em>, never reconsidering. If the best child still leads nowhere good, hill climbing is stuck — it has climbed a small hill (a <strong>local optimum</strong>) with no way to see that a taller peak lies across the valley. (Best-first search fixes exactly this by keeping a <em>global</em> view of all open nodes.)</span><span data-tr="zh">Hill climbing 只有<em>局部視野</em>：它拿一個節點的子節點互相比，選出<em>這幾個裡面</em>最好的就下去，之後絕不回頭。如果那個最好的子節點還是通往爛地方，它就卡住了——它爬上了一座小山頭（<strong>local optimum</strong>），卻完全看不到山谷對面其實有更高的峰。（Best-first search 修的正是這個，靠的是對所有 open 節點保有<em>全域</em>視野。）</span></p>
 
-<p><strong>When to use it.</strong> When you want a quick, low-memory guided search and a decent (not necessarily optimal) solution is acceptable. It expands one node per level along a single path, so it is cheap — but it gives <em>no optimality guarantee</em> and can fail to reach a goal at all. For guaranteed-optimal search you need bounding (branch-and-bound, A*).</p>
+<p><strong><span data-tr="en">When to use it.</span><span data-tr="zh">什麼時候用它。</span></strong> <span data-tr="en">When you want a quick, low-memory guided search and a decent (not necessarily optimal) solution is acceptable. It expands one node per level along a single path, so it is cheap — but it gives <em>no optimality guarantee</em> and can fail to reach a goal at all. For guaranteed-optimal search you need bounding (branch-and-bound, A*).</span><span data-tr="zh">當你想要一個快又省記憶體的引導式搜尋，而且找到一個還可以（不一定最佳）的解就能接受時。它沿著單一一條路徑、每層只展開一個節點，所以很省——但它<em>不保證最佳</em>，甚至有可能根本走不到目標。如果你要保證最佳解，就得加上界限（branch-and-bound、A*）。</span></p>
 
-<h2>The evaluation function (8-puzzle)</h2>
-<p>The <strong>8-puzzle</strong> is a 3×3 board holding tiles <code>1</code>–<code>8</code> and one blank; you slide a tile into the blank to reach a goal arrangement. The slides score each board with:</p>
+<h2><span data-tr="en">The evaluation function (8-puzzle)</span><span data-tr="zh">evaluation function（拿 8-puzzle 當例子）</span></h2>
+<p><span data-tr="en">The <strong>8-puzzle</strong> is a 3×3 board holding tiles <code>1</code>–<code>8</code> and one blank; you slide a tile into the blank to reach a goal arrangement. The slides score each board with:</span><span data-tr="zh"><strong>8-puzzle</strong> 是一個 3×3 的格子，上面有 <code>1</code>–<code>8</code> 的方塊跟一個 blank；你把方塊推進 blank，想辦法排成目標的樣子。每個盤面的分數是這樣算的：</span></p>
 <p style="text-align:center;font-size:1.05rem"><code>f(n) = d(n) + w(n)</code></p>
 <ul>
-  <li><code>d(n)</code> — the <strong>depth</strong> of node <code>n</code> (how many moves made so far),</li>
-  <li><code>w(n)</code> — the number of <strong>misplaced tiles</strong> in <code>n</code> (tiles not yet in their goal cell).</li>
+  <li><code>d(n)</code> <span data-tr="en">— the <strong>depth</strong> of node <code>n</code> (how many moves made so far),</span><span data-tr="zh">——節點 <code>n</code> 的 <strong>depth（深度）</strong>，也就是到目前為止走了幾步，</span></li>
+  <li><code>w(n)</code> <span data-tr="en">— the number of <strong>misplaced tiles</strong> in <code>n</code> (tiles not yet in their goal cell).</span><span data-tr="zh">——<code>n</code> 裡面 <strong>擺錯位置的方塊</strong>有幾個（還沒到自己目標格子的方塊）。</span></li>
 </ul>
-<p>Lower <code>f</code> is better. At each step hill climbing generates the children, computes <code>f</code> for each, and descends into the child with the smallest <code>f</code> — never looking at any other node again.</p>
+<p><span data-tr="en">Lower <code>f</code> is better. At each step hill climbing generates the children, computes <code>f</code> for each, and descends into the child with the smallest <code>f</code> — never looking at any other node again.</span><span data-tr="zh"><code>f</code> 越小越好。每一步 hill climbing 都把子節點生出來，算出各自的 <code>f</code>，然後鑽進 <code>f</code> 最小的那個——其他節點從此再也不看一眼。</span></p>
 
-<h2>Watch it climb</h2>
-<p>The goal is <span style="white-space:nowrap"><code>1 2 3 / 8 _ 4 / 7 6 5</code></span>. Starting from the board below, hill climbing expands the locally best child at each step. The number under each board is <code>f(n)=d(n)+w(n)</code>; the green-outlined board is the one it commits to. Step through.</p>
+<h2><span data-tr="en">Watch it climb</span><span data-tr="zh">看它怎麼爬</span></h2>
+<p><span data-tr="en">The goal is <span style="white-space:nowrap"><code>1 2 3 / 8 _ 4 / 7 6 5</code></span>. Starting from the board below, hill climbing expands the locally best child at each step. The number under each board is <code>f(n)=d(n)+w(n)</code>; the green-outlined board is the one it commits to. Step through.</span><span data-tr="zh">目標是 <span style="white-space:nowrap"><code>1 2 3 / 8 _ 4 / 7 6 5</code></span>。從下面的盤面出發，hill climbing 每一步都展開當下最好的子節點。每個盤面底下的數字是 <code>f(n)=d(n)+w(n)</code>；綠框那個就是它選定要走的。一步一步點下去看看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">Type: <b>greedy DFS</b></span>
-  <span class="chip">Picks: <b>min f(n) child</b></span>
-  <span class="chip">View: <b>local only</b></span>
-  <span class="chip">Optimal? <b>no — can stall</b></span>
+  <span class="chip"><span data-tr="en">Type: </span><span data-tr="zh">類型：</span><b>greedy DFS</b></span>
+  <span class="chip"><span data-tr="en">Picks: </span><span data-tr="zh">怎麼挑：</span><b>min f(n) child</b></span>
+  <span class="chip"><span data-tr="en">View: </span><span data-tr="zh">視野：</span><b><span data-tr="en">local only</span><span data-tr="zh">只看局部</span></b></span>
+  <span class="chip"><span data-tr="en">Optimal? <b>no — can stall</b></span><span data-tr="zh">最佳？<b>不一定——會卡住</b></span></span>
 </div>
 
-<h2>Problems it solves (in the slides)</h2>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡有）</span></h2>
 <ul>
-  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> — slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal, with each board scored by <code>f(n)=d(n)+w(n)</code> (depth plus misplaced tiles); hill climbing always descends into the lowest-<code>f</code> child, here solving it via initial→1→5→7→8.</li>
+  <li><a href="prob-8-puzzle.html"><strong>8-puzzle</strong></a> <span data-tr="en">— slide tiles 1–8 (with one blank) on a 3×3 board from a start configuration to the goal, with each board scored by <code>f(n)=d(n)+w(n)</code> (depth plus misplaced tiles); hill climbing always descends into the lowest-<code>f</code> child, here solving it via initial→1→5→7→8.</span><span data-tr="zh">——在 3×3 格子上滑動 1–8 的方塊（外加一個 blank），從起始排法推到目標，每個盤面用 <code>f(n)=d(n)+w(n)</code>（深度加上擺錯的方塊）打分；hill climbing 永遠鑽進 <code>f</code> 最小的子節點，這裡走 initial→1→5→7→8 就解出來了。</span></li>
 </ul>
 
-<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares a node's own children and commits to the best of THOSE, with no memory of other open nodes elsewhere in the tree. So if the locally best child leads into a dead-end region, it cannot back out to a better node it passed earlier — it is trapped at a local optimum. It is NOT that f is computed wrong (a is false), nor that it explores breadth-first (b — that's BFS), nor that ties are the issue (d — a local optimum can occur with no ties at all). Best-first search avoids this precisely by keeping a global list of all open nodes.">
-  <div class="q">Hill climbing's defining weakness is that it can get stuck at a local optimum. Why does that happen?</div>
-  <button class="opt">it computes f(n) = d(n) + w(n) incorrectly near the goal</button>
-  <button class="opt">it expands the whole tree level by level and runs out of memory</button>
-  <button class="opt">it only compares a node's own children and never reconsiders nodes elsewhere in the tree</button>
-  <button class="opt">it cannot break ties when two children have equal f(n)</button>
+<div class="quiz" data-correct="2" data-explain="Hill climbing only ever compares a node's own children and commits to the best of THOSE, with no memory of other open nodes elsewhere in the tree. So if the locally best child leads into a dead-end region, it cannot back out to a better node it passed earlier — it is trapped at a local optimum. It is NOT that f is computed wrong (a is false), nor that it explores breadth-first (b — that's BFS), nor that ties are the issue (d — a local optimum can occur with no ties at all). Best-first search avoids this precisely by keeping a global list of all open nodes." data-explain-zh="Hill climbing 永遠只比一個節點<strong>自己的</strong>子節點，從這幾個裡挑最好的就下去，完全不記得樹上其他地方的 open 節點。所以一旦那個局部最好的子節點通往死路區，它就沒辦法退回先前經過、其實更好的節點——這就被困在 local optimum 了。問題<strong>不是</strong> f 算錯（a 錯），<strong>不是</strong>它用 breadth-first 展開（b 那是 BFS），也<strong>不是</strong>同分的問題（d——就算完全沒有同分也照樣會出現 local optimum）。Best-first search 正是靠保留一份所有 open 節點的全域 list 來避開這個。">
+  <div class="q"><span data-tr="en">Hill climbing's defining weakness is that it can get stuck at a local optimum. Why does that happen?</span><span data-tr="zh">Hill climbing 最致命的弱點就是會卡在 local optimum。這是為什麼？</span></div>
+  <button class="opt"><span data-tr="en">it computes f(n) = d(n) + w(n) incorrectly near the goal</span><span data-tr="zh">它在接近目標時把 f(n) = d(n) + w(n) 算錯了</span></button>
+  <button class="opt"><span data-tr="en">it expands the whole tree level by level and runs out of memory</span><span data-tr="zh">它一層一層展開整棵樹，結果記憶體爆掉</span></button>
+  <button class="opt"><span data-tr="en">it only compares a node's own children and never reconsiders nodes elsewhere in the tree</span><span data-tr="zh">它只比節點自己的子節點，從不回頭考慮樹上其他地方的節點</span></button>
+  <button class="opt"><span data-tr="en">it cannot break ties when two children have equal f(n)</span><span data-tr="zh">當兩個子節點 f(n) 相同時，它沒辦法處理平手</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-hill-climbing">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-hill-climbing"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §5 (Hill Climbing) and Fig. 6-15 (the 8-puzzle solved by hill climbing). The evaluation rule <code>f(n) = d(n) + w(n)</code> and the "expand the locally best child" mechanic are stated there.</p>
-<div class="note"><strong>Compare:</strong> <a href="algo-best-first.html">Best-First Search</a> uses the <em>same</em> <code>f(n) = d(n) + w(n)</code> but keeps a sorted list of <strong>all</strong> open nodes and expands the globally best one — a global view that escapes the local optima that trap hill climbing. See it on the same puzzle: <a href="prob-8-puzzle.html">The 8-Puzzle</a>.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">想再深入</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong><span data-tr="en"> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §5 (Hill Climbing) and Fig. 6-15 (the 8-puzzle solved by hill climbing). The evaluation rule <code>f(n) = d(n) + w(n)</code> and the "expand the locally best child" mechanic are stated there.</span><span data-tr="zh"> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>，Ch. 6 §5（Hill Climbing）以及 Fig. 6-15（用 hill climbing 解 8-puzzle）。評估規則 <code>f(n) = d(n) + w(n)</code> 跟「展開當下最好的子節點」這個機制都寫在那裡。</span></p>
+<div class="note"><strong><span data-tr="en">Compare:</span><span data-tr="zh">對照一下：</span></strong> <a href="algo-best-first.html">Best-First Search</a> <span data-tr="en">uses the <em>same</em> <code>f(n) = d(n) + w(n)</code> but keeps a sorted list of <strong>all</strong> open nodes and expands the globally best one — a global view that escapes the local optima that trap hill climbing. See it on the same puzzle: <a href="prob-8-puzzle.html">The 8-Puzzle</a>.</span><span data-tr="zh">用的是<em>同一個</em> <code>f(n) = d(n) + w(n)</code>，差別在於它把<strong>所有</strong> open 節點放進一份排好序的 list，每次展開全域最好的那個——有了這個全域視野，就能避開卡死 hill climbing 的那些 local optima。在同一題上看看效果：<a href="prob-8-puzzle.html">The 8-Puzzle</a>。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>

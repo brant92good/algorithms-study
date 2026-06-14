@@ -15,65 +15,65 @@
 </div></div>
 <div class="wrap">
 
-<div class="kicker">Searching Strategies · Ch6</div>
+<div class="kicker"><span data-tr="en">Searching Strategies · Ch6</span><span data-tr="zh">Searching Strategies · 第六章</span></div>
 <h1>Branch-and-Bound</h1>
-<div class="mission">Search a tree of partial solutions <strong>best-first</strong>, but for an <strong>optimization</strong> problem — and use a <strong>lower bound</strong> at every node to throw away whole branches that <em>cannot possibly</em> beat the best solution you've already found.</div>
-<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b>Source:</b> A05 · <em>The Searching Strategies</em> §7 (branch-and-bound), §8–10 (the three problems it solves).</p>
+<div class="mission"><span data-tr="en">Search a tree of partial solutions <strong>best-first</strong>, but for an <strong>optimization</strong> problem — and use a <strong>lower bound</strong> at every node to throw away whole branches that <em>cannot possibly</em> beat the best solution you've already found.</span><span data-tr="zh">用 <strong>best-first</strong> 的方式搜尋一棵部分解的樹，但這次是為了解<strong>最佳化（optimization）</strong>問題——並在每個節點用一個<strong>下界（lower bound）</strong>，把那些<em>絕不可能</em>贏過你手上最佳解的整條分支直接丟掉。</span></div>
+<p style="color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem">📄 <b><span data-tr="en">Source:</span><span data-tr="zh">出處：</span></b> A05 · <em>The Searching Strategies</em> §7 (branch-and-bound), §8–10 (the three problems it solves).</p>
 
-<h2>The idea</h2>
-<p>Plain tree searches — <strong>depth-first</strong>, <strong>breadth-first</strong>, <strong>hill climbing</strong>, <strong>best-first</strong> — all stop at the <em>first</em> goal node they reach. That's fine for a <strong>decision</strong> problem ("does <em>a</em> solution exist?"), but it's useless for an <strong>optimization</strong> problem ("find the <em>cheapest</em> solution"): the first goal found is almost never the best one. Branch-and-bound is the fix.</p>
+<h2><span data-tr="en">The idea</span><span data-tr="zh">核心概念</span></h2>
+<p><span data-tr="en">Plain tree searches — <strong>depth-first</strong>, <strong>breadth-first</strong>, <strong>hill climbing</strong>, <strong>best-first</strong> — all stop at the <em>first</em> goal node they reach. That's fine for a <strong>decision</strong> problem ("does <em>a</em> solution exist?"), but it's useless for an <strong>optimization</strong> problem ("find the <em>cheapest</em> solution"): the first goal found is almost never the best one. Branch-and-bound is the fix.</span><span data-tr="zh">一般的樹搜尋——<strong>depth-first</strong>、<strong>breadth-first</strong>、<strong>hill climbing</strong>、<strong>best-first</strong>——都是碰到<em>第一個</em> goal 節點就停。這對 <strong>decision</strong> 問題（「<em>有沒有</em>解？」）沒問題，但對 <strong>optimization</strong> 問題（「找<em>最便宜</em>的解」）就沒用了：第一個找到的 goal 幾乎不會是最好的。Branch-and-bound 就是來補這個洞。</span></p>
 
-<p>It has two ingredients, hence the name:</p>
+<p><span data-tr="en">It has two ingredients, hence the name:</span><span data-tr="zh">它有兩個成分，名字就是這麼來的：</span></p>
 <ul>
-  <li><b>Branch</b> — split the solution space into subsets, each a subtree. (For a tour: "tours that use arc 4→6" vs "tours that don't." For knapsack: "take item i" vs "leave it.") This is ordinary tree search.</li>
-  <li><b>Bound</b> — for <em>every</em> node, compute a <strong>lower bound</strong>: a number that is guaranteed to be ≤ the cost of <em>any</em> complete solution living in that subtree. It's an optimistic estimate — the best the subtree could conceivably do.</li>
+  <li><b>Branch</b> — <span data-tr="en">split the solution space into subsets, each a subtree. (For a tour: "tours that use arc 4→6" vs "tours that don't." For knapsack: "take item i" vs "leave it.") This is ordinary tree search.</span><span data-tr="zh">把解空間切成幾塊，每塊是一棵子樹。（以 tour 為例：「用 arc 4→6 的 tour」對「不用的 tour」；以 knapsack 為例：「拿物品 i」對「不拿」。）這部分就是普通的樹搜尋。</span></li>
+  <li><b>Bound</b> — <span data-tr="en">for <em>every</em> node, compute a <strong>lower bound</strong>: a number that is guaranteed to be ≤ the cost of <em>any</em> complete solution living in that subtree. It's an optimistic estimate — the best the subtree could conceivably do.</span><span data-tr="zh">對<em>每個</em>節點算一個<strong>下界</strong>：一個保證 ≤ 那棵子樹裡<em>任何</em>完整解成本的數字。它是個樂觀的估計——這棵子樹最理想能做到的程度。</span></li>
 </ul>
 
-<p>You expand nodes <strong>best-first</strong> (always open the live node with the smallest lower bound, using the Step 1–4 best-first scheme). You also keep the <strong>best complete solution found so far</strong> — call its cost <code>best</code>. Then the whole payoff is one rule:</p>
+<p><span data-tr="en">You expand nodes <strong>best-first</strong> (always open the live node with the smallest lower bound, using the Step 1–4 best-first scheme). You also keep the <strong>best complete solution found so far</strong> — call its cost <code>best</code>. Then the whole payoff is one rule:</span><span data-tr="zh">你用 <strong>best-first</strong> 展開節點（永遠先打開下界最小的那個存活節點，照 Step 1–4 的 best-first 流程）。同時你也一直記著<strong>目前找到的最佳完整解</strong>——把它的成本叫做 <code>best</code>。整個威力就濃縮成一條規則：</span></p>
 
-<div class="note"><strong>The prune rule.</strong> If a node's lower bound <code>≥ best</code>, <strong>kill the entire subtree</strong>. Reason: every solution down there costs at least the bound, which is already no better than a solution you <em>already have in hand</em> — so nothing in that subtree can win. No need to look.</div>
+<div class="note"><strong><span data-tr="en">The prune rule.</span><span data-tr="zh">剪枝規則。</span></strong> <span data-tr="en">If a node's lower bound <code>≥ best</code>, <strong>kill the entire subtree</strong>. Reason: every solution down there costs at least the bound, which is already no better than a solution you <em>already have in hand</em> — so nothing in that subtree can win. No need to look.</span><span data-tr="zh">如果一個節點的下界 <code>≥ best</code>，就<strong>把整棵子樹砍掉</strong>。理由：那裡面每個解的成本至少都是這個下界，而這已經不比你<em>手上已經有的</em>解更好——所以那棵子樹裡不可能有贏家，根本不用看。</span></div>
 
-<p>Why a <em>lower</em> bound (and why <code>≥</code>, not <code>&gt;</code>)? Because we're <strong>minimizing</strong>. The bound is a promise: "you can't do better than this here." If that promise is already as bad as your current champion, the branch is hopeless. (Maximization problems flip the signs — the slides actually turn the knapsack into a minimization by minimizing <em>negative</em> profit, so the same lower-bound machinery applies.)</p>
+<p><span data-tr="en">Why a <em>lower</em> bound (and why <code>≥</code>, not <code>&gt;</code>)? Because we're <strong>minimizing</strong>. The bound is a promise: "you can't do better than this here." If that promise is already as bad as your current champion, the branch is hopeless. (Maximization problems flip the signs — the slides actually turn the knapsack into a minimization by minimizing <em>negative</em> profit, so the same lower-bound machinery applies.)</span><span data-tr="zh">為什麼是<em>下</em>界（又為什麼是 <code>≥</code> 而不是 <code>&gt;</code>）？因為我們在<strong>最小化</strong>。下界等於一個保證：「這裡你不可能比它更好。」如果這個保證已經跟你現在的冠軍一樣爛，這條分支就沒希望了。（最大化問題只要翻正負號——投影片其實就是把 knapsack 改成最小化<em>負</em>利潤，這樣同一套下界機制照樣能用。）</span></p>
 
-<p>A common way to get the lower bound is a <strong>relaxation</strong>: solve an easier version whose answer can only be optimistic. For assignment and TSP that's the <em>reduced cost matrix</em> (subtract a constant from each row/column until each has a zero; the total subtracted can't be avoided, so it's a lower bound). For knapsack it's the <em>fractional</em> knapsack (allow taking part of an item), solved greedily.</p>
+<p><span data-tr="en">A common way to get the lower bound is a <strong>relaxation</strong>: solve an easier version whose answer can only be optimistic. For assignment and TSP that's the <em>reduced cost matrix</em> (subtract a constant from each row/column until each has a zero; the total subtracted can't be avoided, so it's a lower bound). For knapsack it's the <em>fractional</em> knapsack (allow taking part of an item), solved greedily.</span><span data-tr="zh">拿下界常見的招數是 <strong>relaxation（鬆弛）</strong>：解一個比較簡單、答案只會偏樂觀的版本。對 assignment 和 TSP 來說，那就是 <em>reduced cost matrix</em>（每列每行各減一個常數直到都有 0；減掉的總量躲不掉，所以是個下界）。對 knapsack 來說，那就是 <em>fractional</em> knapsack（允許只拿一件物品的一部分），用貪婪解。</span></p>
 
-<p><strong>Complexity:</strong> worst case still exponential — these are NP-complete problems (TSP, knapsack) and B&B does not change that. Its value is <em>pruning</em>: a good bound chops away enormous subtrees, so in practice it explores far fewer nodes than brute force. A&nbsp;tighter bound prunes more.</p>
+<p><strong><span data-tr="en">Complexity:</span><span data-tr="zh">複雜度：</span></strong> <span data-tr="en">worst case still exponential — these are NP-complete problems (TSP, knapsack) and B&B does not change that. Its value is <em>pruning</em>: a good bound chops away enormous subtrees, so in practice it explores far fewer nodes than brute force. A&nbsp;tighter bound prunes more.</span><span data-tr="zh">最壞情況還是指數級——這些是 NP-complete 問題（TSP、knapsack），B&B 改變不了這點。它的價值在<em>剪枝</em>：一個好的 bound 能砍掉超大片的子樹，所以實務上它探索的節點數遠少於硬爆搜。bound 越緊，剪掉的越多。</span></p>
 
-<h2>A tiny illustration</h2>
-<p>The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V₀</code> to sink <code>V₃</code>, choosing one vertex per layer. Each tree node's number is its lower bound (cost so far + cheapest possible finish). We expand best-first and prune any node whose bound is already ≥ the best path cost we can reach (here a path of cost <b>5</b> via <code>V₀→V₁,₁→V₂,₃→V₃</code>). Step through.</p>
+<h2><span data-tr="en">A tiny illustration</span><span data-tr="zh">一個小示範</span></h2>
+<p><span data-tr="en">The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V₀</code> to sink <code>V₃</code>, choosing one vertex per layer. Each tree node's number is its lower bound (cost so far + cheapest possible finish). We expand best-first and prune any node whose bound is already ≥ the best path cost we can reach (here a path of cost <b>5</b> via <code>V₀→V₁,₁→V₂,₃→V₃</code>). Step through.</span><span data-tr="zh">投影片裡最乾淨的例子（Fig. 6-17）是一張 <strong>multi-stage graph</strong>：從源點 <code>V₀</code> 到匯點 <code>V₃</code> 找最便宜的路徑，每層挑一個頂點。樹上每個節點的數字就是它的下界（目前累積成本 + 之後最便宜的收尾）。我們用 best-first 展開，並把任何下界已經 ≥ 我們能到的最佳路徑成本的節點剪掉（這裡是一條成本 <b>5</b> 的路徑，走 <code>V₀→V₁,₁→V₂,₃→V₃</code>）。一步步看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
-  <span class="chip">For: <b>optimization</b></span>
-  <span class="chip">Order: <b>best-first</b></span>
-  <span class="chip">Prune when: <b>bound ≥ best</b></span>
-  <span class="chip">Bound from: <b>a relaxation</b></span>
+  <span class="chip"><span data-tr="en">For: <b>optimization</b></span><span data-tr="zh">用途：<b>最佳化</b></span></span>
+  <span class="chip"><span data-tr="en">Order: <b>best-first</b></span><span data-tr="zh">展開順序：<b>best-first</b></span></span>
+  <span class="chip"><span data-tr="en">Prune when: <b>bound ≥ best</b></span><span data-tr="zh">何時剪：<b>bound ≥ best</b></span></span>
+  <span class="chip"><span data-tr="en">Bound from: <b>a relaxation</b></span><span data-tr="zh">bound 來源：<b>relaxation</b></span></span>
 </div>
 
-<h2>Problems it solves (in the slides)</h2>
+<h2><span data-tr="en">Problems it solves (in the slides)</span><span data-tr="zh">它能解的問題（投影片裡的）</span></h2>
 <ul>
-  <li><a href="prob-personnel-assignment.html"><b>Personnel assignment</b></a> — assign each person to one job at minimum total cost, while respecting a <em>partial order</em> on jobs (some jobs must come before others). Lower bound = reduced-cost-matrix total.</li>
-  <li><a href="prob-tsp-bnb.html"><b>Travelling salesperson (TSP)</b></a> — find the cheapest tour visiting all cities exactly once and returning home. Branch on including/excluding an arc; lower bound from row/column reductions. (NP-complete; optimal tour in the deck costs 126.)</li>
-  <li><a href="prob-knapsack-bnb.html"><b>0/1 knapsack</b></a> — pick a subset of items to <em>maximize</em> profit without exceeding the weight capacity. Lower bound from the fractional (greedy) relaxation; branch on take/leave each item.</li>
+  <li><a href="prob-personnel-assignment.html"><b><span data-tr="en">Personnel assignment</span><span data-tr="zh">人員指派</span></b></a> — <span data-tr="en">assign each person to one job at minimum total cost, while respecting a <em>partial order</em> on jobs (some jobs must come before others). Lower bound = reduced-cost-matrix total.</span><span data-tr="zh">在遵守工作 <em>partial order</em>（有些工作得排在別的前面）的前提下，把每個人指派去做一個工作、讓總成本最小。下界＝reduced-cost-matrix 減掉的總量。</span></li>
+  <li><a href="prob-tsp-bnb.html"><b><span data-tr="en">Travelling salesperson (TSP)</span><span data-tr="zh">旅行推銷員（TSP）</span></b></a> — <span data-tr="en">find the cheapest tour visiting all cities exactly once and returning home. Branch on including/excluding an arc; lower bound from row/column reductions. (NP-complete; optimal tour in the deck costs 126.)</span><span data-tr="zh">找一條每個城市剛好走一次再回家的最便宜 tour。對「選／不選某條 arc」做 branch；下界來自列／行的 reduction。（NP-complete；投影片裡的最佳 tour 成本 126。）</span></li>
+  <li><a href="prob-knapsack-bnb.html"><b><span data-tr="en">0/1 knapsack</span><span data-tr="zh">0/1 knapsack</span></b></a> — <span data-tr="en">pick a subset of items to <em>maximize</em> profit without exceeding the weight capacity. Lower bound from the fractional (greedy) relaxation; branch on take/leave each item.</span><span data-tr="zh">在不超過重量上限下挑一組物品，<em>最大化</em>利潤。下界來自 fractional（貪婪）relaxation；對每件物品的「拿／不拿」做 branch。</span></li>
 </ul>
 
-<div class="quiz" data-correct="2" data-explain="The bound is a LOWER bound: every complete solution in that subtree costs at least the bound. If that bound is ≥ the best complete solution already found, nothing in the subtree can beat what you already have, so the whole subtree is pruned. A bound below best does NOT justify pruning — there might be a better solution down there, so you must keep exploring. And you never prune just because a node is deep or because it's not yet a goal.">
-  <div class="q">You're minimizing. A live node has lower bound 70, and the best complete solution found so far costs 64. What should branch-and-bound do with that node's subtree?</div>
-  <button class="opt">expand it — its bound (70) is a promising estimate</button>
-  <button class="opt">keep it only if it is a goal node</button>
-  <button class="opt">prune it — every solution there costs ≥ 70 ≥ 64, so it can't win</button>
-  <button class="opt">replace best with 70, since 70 is the newest value</button>
+<div class="quiz" data-correct="2" data-explain="The bound is a LOWER bound: every complete solution in that subtree costs at least the bound. If that bound is ≥ the best complete solution already found, nothing in the subtree can beat what you already have, so the whole subtree is pruned. A bound below best does NOT justify pruning — there might be a better solution down there, so you must keep exploring. And you never prune just because a node is deep or because it's not yet a goal." data-explain-zh="這個 bound 是<b>下界</b>：那棵子樹裡每個完整解的成本至少都是這個下界。如果這個下界 ≥ 已經找到的最佳完整解，子樹裡就不可能有東西贏過你手上的，所以整棵砍掉。下界<b>低於</b> best 並不能拿來剪枝——底下可能還藏著更好的解，你得繼續探。另外，絕不會只因為節點很深、或還不是 goal 就剪掉它。">
+  <div class="q"><span data-tr="en">You're minimizing. A live node has lower bound 70, and the best complete solution found so far costs 64. What should branch-and-bound do with that node's subtree?</span><span data-tr="zh">你在做最小化。某個存活節點的下界是 70，而目前找到的最佳完整解成本 64。branch-and-bound 該怎麼處理這個節點的子樹？</span></div>
+  <button class="opt"><span data-tr="en">expand it — its bound (70) is a promising estimate</span><span data-tr="zh">展開它——它的下界（70）看起來蠻有希望的</span></button>
+  <button class="opt"><span data-tr="en">keep it only if it is a goal node</span><span data-tr="zh">只有它是 goal 節點時才保留</span></button>
+  <button class="opt"><span data-tr="en">prune it — every solution there costs ≥ 70 ≥ 64, so it can't win</span><span data-tr="zh">剪掉它——那裡每個解的成本都 ≥ 70 ≥ 64，贏不了</span></button>
+  <button class="opt"><span data-tr="en">replace best with 70, since 70 is the newest value</span><span data-tr="zh">把 best 換成 70，因為 70 是最新的值</span></button>
   <div class="fb"></div>
 </div>
 
 <div class="learned-row">
-  <button class="learnbtn" data-learn="algo-branch-and-bound">Mark as learned</button>
-  <span style="color:var(--mut);font-size:.9rem">progress syncs to the Zoo map →</span>
+  <button class="learnbtn" data-learn="algo-branch-and-bound"><span data-tr="en">Mark as learned</span><span data-tr="zh">標記為已學會</span></button>
+  <span style="color:var(--mut);font-size:.9rem"><span data-tr="en">progress syncs to the Zoo map →</span><span data-tr="zh">學習進度會同步到 Zoo 地圖 →</span></span>
 </div>
 
-<h2>Go deeper</h2>
-<p><strong>Primary source:</strong> R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §7–10 (deck <code>Alg05</code>). Branch-and-bound = best-first search + a per-node lower bound that prunes any subtree whose bound is no better than the incumbent.</p>
-<div class="note"><strong>Sibling strategy:</strong> <a href="prob-knapsack-bnb.html">A\*</a> is branch-and-bound's close cousin — best-first search with <code>f(n) = g(n) + h(n)</code> where the admissible heuristic <code>h(n) ≤ h*(n)</code> is exactly a lower bound, so the first goal <em>selected for expansion</em> is guaranteed optimal.</div>
+<h2><span data-tr="en">Go deeper</span><span data-tr="zh">延伸閱讀</span></h2>
+<p><strong><span data-tr="en">Primary source:</span><span data-tr="zh">主要出處：</span></strong> <span data-tr="en">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, Ch. 6 §7–10 (deck <code>Alg05</code>). Branch-and-bound = best-first search + a per-node lower bound that prunes any subtree whose bound is no better than the incumbent.</span><span data-tr="zh">R.C.T. Lee, Tseng, Chang, Tsai, <em>Introduction to the Design and Analysis of Algorithms</em>, 第六章 §7–10（投影片 <code>Alg05</code>）。Branch-and-bound＝best-first search ＋ 每個節點一個下界，把任何下界已經贏不過現有最佳解的子樹剪掉。</span></p>
+<div class="note"><strong><span data-tr="en">Sibling strategy:</span><span data-tr="zh">姊妹策略：</span></strong> <a href="prob-knapsack-bnb.html">A\*</a> <span data-tr="en">is branch-and-bound's close cousin — best-first search with <code>f(n) = g(n) + h(n)</code> where the admissible heuristic <code>h(n) ≤ h*(n)</code> is exactly a lower bound, so the first goal <em>selected for expansion</em> is guaranteed optimal.</span><span data-tr="zh">是 branch-and-bound 的近親——它是用 <code>f(n) = g(n) + h(n)</code> 的 best-first search，其中 admissible heuristic <code>h(n) ≤ h*(n)</code> 正好就是一個下界，所以第一個<em>被挑出來展開</em>的 goal 保證是最佳解。</span></div>
 
 </div>
 <script src="../assets/zoo.js"></script>
