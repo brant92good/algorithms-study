@@ -175,23 +175,32 @@ const EDGES = [
 // ---- frames ----
 const frames = [
   { fill:0, lit:0, act:-1,
-    cap:`Goal: cheapest tour from city <b>1</b> visiting all cities, back to <b>1</b>. State <code>g(i,S)</code> = shortest path from <b>i</b>, through set <b>S</b>, ending at 1. We fill the table bottom-up by subset size.` },
+    cap:`Goal: cheapest tour from city <b>1</b> visiting all cities, back to <b>1</b>. State <code>g(i,S)</code> = shortest path from <b>i</b>, through set <b>S</b>, ending at 1. We fill the table bottom-up by subset size.`,
+    capZh:`目標：從 city <b>1</b> 出發走遍所有城市再回到 <b>1</b> 的最便宜 tour。State <code>g(i,S)</code> = 從 <b>i</b> 出發、經過集合 <b>S</b>、最後停在 1 的最短路徑。我們按 subset 大小由下往上填表。` },
   { fill:3, lit:0, act:2,
-    cap:`<b>|S|=0 (base case).</b> <code>g(i,∅)=c(i,1)</code> — the cost to go straight home. g(2,∅)=2, g(3,∅)=4, g(4,∅)=6.` },
+    cap:`<b>|S|=0 (base case).</b> <code>g(i,∅)=c(i,1)</code> — the cost to go straight home. g(2,∅)=2, g(3,∅)=4, g(4,∅)=6.`,
+    capZh:`<b>|S|=0（base case）。</b><code>g(i,∅)=c(i,1)</code>——直接回家的花費。g(2,∅)=2、g(3,∅)=4、g(4,∅)=6。` },
   { fill:8, lit:0, act:7,
-    cap:`<b>|S|=1.</b> One city left, then home. e.g. g(4,{3}) = c(4,3)+g(3,∅) = 7+4 = 11; g(3,{2}) = 3+2 = 5. Each reads one base-case cell below.` },
+    cap:`<b>|S|=1.</b> One city left, then home. e.g. g(4,{3}) = c(4,3)+g(3,∅) = 7+4 = 11; g(3,{2}) = 3+2 = 5. Each reads one base-case cell below.`,
+    capZh:`<b>|S|=1。</b>剩一座城市要走，走完就回家。例如 g(4,{3}) = c(4,3)+g(3,∅) = 7+4 = 11；g(3,{2}) = 3+2 = 5。每個都讀下面一個 base-case 格子。` },
   { fill:9, lit:0, act:8,
-    cap:`<b>|S|=2.</b> g(2,{3,4}) = min{ c(2,3)+g(3,{4}), c(2,4)+g(4,{3}) } = min{9+10, ∞} = <b>19</b> (no road 2→4).` },
+    cap:`<b>|S|=2.</b> g(2,{3,4}) = min{ c(2,3)+g(3,{4}), c(2,4)+g(4,{3}) } = min{9+10, ∞} = <b>19</b> (no road 2→4).`,
+    capZh:`<b>|S|=2。</b>g(2,{3,4}) = min{ c(2,3)+g(3,{4}), c(2,4)+g(4,{3}) } = min{9+10, ∞} = <b>19</b>（2→4 沒路）。` },
   { fill:11, lit:0, act:10,
-    cap:`g(4,{2,3}) = min{ c(4,2)+g(2,{3}), c(4,3)+g(3,{2}) } = min{8+13, 7+5} = <b>12</b> — winner steps to city 3. And g(3,{2,4}) = min{ c(3,2)+g(2,{4}), c(3,4)+g(4,{2}) } = min{3+∞, 4+10} = <b>14</b> (no road 2→4, so g(2,{4})=∞; g(4,{2})=8+2=10).` },
+    cap:`g(4,{2,3}) = min{ c(4,2)+g(2,{3}), c(4,3)+g(3,{2}) } = min{8+13, 7+5} = <b>12</b> — winner steps to city 3. And g(3,{2,4}) = min{ c(3,2)+g(2,{4}), c(3,4)+g(4,{2}) } = min{3+∞, 4+10} = <b>14</b> (no road 2→4, so g(2,{4})=∞; g(4,{2})=8+2=10).`,
+    capZh:`g(4,{2,3}) = min{ c(4,2)+g(2,{3}), c(4,3)+g(3,{2}) } = min{8+13, 7+5} = <b>12</b>——贏家踏去 city 3。再來 g(3,{2,4}) = min{ c(3,2)+g(2,{4}), c(3,4)+g(4,{2}) } = min{3+∞, 4+10} = <b>14</b>（2→4 沒路，所以 g(2,{4})=∞；g(4,{2})=8+2=10）。` },
   { fill:12, lit:1, act:11,
-    cap:`<b>The answer.</b> g(1,{2,3,4}) = min{ 2+g(2,{3,4}), 10+g(3,{2,4}), 5+g(4,{2,3}) } = min{2+19, 10+14, <b>5+12</b>} = <b>17</b>. Best first step: city 4.` },
+    cap:`<b>The answer.</b> g(1,{2,3,4}) = min{ 2+g(2,{3,4}), 10+g(3,{2,4}), 5+g(4,{2,3}) } = min{2+19, 10+14, <b>5+12</b>} = <b>17</b>. Best first step: city 4.`,
+    capZh:`<b>答案。</b>g(1,{2,3,4}) = min{ 2+g(2,{3,4}), 10+g(3,{2,4}), 5+g(4,{2,3}) } = min{2+19, 10+14, <b>5+12</b>} = <b>17</b>。最佳的第一步：city 4。` },
   { fill:12, lit:2, act:11,
-    cap:`Follow the winners back: 1→<b>4</b> (g(4,{2,3})=12, next was 3) … so 4→<b>3</b>.` },
+    cap:`Follow the winners back: 1→<b>4</b> (g(4,{2,3})=12, next was 3) … so 4→<b>3</b>.`,
+    capZh:`順著贏家往回追：1→<b>4</b>（g(4,{2,3})=12，下一步是 3）……所以 4→<b>3</b>。` },
   { fill:12, lit:3, act:11,
-    cap:`…3→<b>2</b> (g(3,{2})=5, next was 2), then g(2,∅)=2 sends us 2→<b>1</b> home.` },
+    cap:`…3→<b>2</b> (g(3,{2})=5, next was 2), then g(2,∅)=2 sends us 2→<b>1</b> home.`,
+    capZh:`……3→<b>2</b>（g(3,{2})=5，下一步是 2），接著 g(2,∅)=2 讓我們 2→<b>1</b> 回家。` },
   { fill:12, lit:4, act:-1,
-    cap:`<b>Optimal tour: 1 → 4 → 3 → 2 → 1</b> = 5 + 7 + 3 + 2 = <b>17</b>. Done — and we touched ~n·2ⁿ states, not (n−1)! tours.` }
+    cap:`<b>Optimal tour: 1 → 4 → 3 → 2 → 1</b> = 5 + 7 + 3 + 2 = <b>17</b>. Done — and we touched ~n·2ⁿ states, not (n−1)! tours.`,
+    capZh:`<b>最佳 tour：1 → 4 → 3 → 2 → 1</b> = 5 + 7 + 3 + 2 = <b>17</b>。搞定——而且我們只碰了大約 n·2ⁿ 個 state，不是 (n−1)! 條 tour。` }
 ];
 
 ZOO.stepper({

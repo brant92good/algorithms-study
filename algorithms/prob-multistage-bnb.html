@@ -115,6 +115,7 @@ function tree(lines){ return `<div class="atree">${lines.join("\n")}</div>`; }
 function gframe(opts){
   return {
     cap: opts.cap,
+    capZh: opts.capZh,
     nodeCls: opts.nodeCls || {},
     edgeCls: opts.edgeCls || {},
     tree: opts.tree
@@ -126,6 +127,7 @@ const frames = [];
 // Frame 0 — the bare graph
 frames.push(gframe({
   cap: `<b>The graph.</b> Source <b>V₀</b> on the left, sink <b>V₃</b> on the right, four stages. Every edge points to the next stage and carries a weight. Goal: cheapest V₀→V₃ path. <em>In the tree below, letters a,b,c… are just node names; the colored number after each is its bound (= path cost so far).</em>`,
+  capZh: `<b>The graph.</b> 起點 <b>V₀</b> 在左邊，終點 <b>V₃</b> 在右邊，總共四個 stage。每條邊都指向下一個 stage，並帶一個權重。目標：找最便宜的 V₀→V₃ 路徑。<em>下面那棵樹裡，字母 a,b,c… 只是節點名字；每個後面那個有顏色的數字是它的 bound（= 目前的路徑成本）。</em>`,
   tree: tree([
     `Best-first B&B search tree  (slide 13)`,
     `  letters a,b,c… = tree-node names;`,
@@ -139,6 +141,7 @@ frames.push(gframe({
 // Frame 1 — expand source, three stage-1 children
 frames.push(gframe({
   cap: `<b>Expand V₀.</b> Branch on the three exits: V₁,₁ (bound <b>1</b>), V₁,₃ (bound <b>2</b>), V₁,₂ (bound <b>3</b>). A node's bound = its path cost so far. Best-first will take the smallest, <b>V₁,₁ (1)</b>, first.`,
+  capZh: `<b>Expand V₀.</b> 對三個出口分岔：V₁,₁ (bound <b>1</b>)、V₁,₃ (bound <b>2</b>)、V₁,₂ (bound <b>3</b>)。一個節點的 bound = 它目前的路徑成本。Best-first 會先挑最小的 <b>V₁,₁ (1)</b>。`,
   nodeCls:{V0:'done', V11:'frontier', V12:'frontier', V13:'frontier'},
   edgeCls:{'V0-V11':'tree','V0-V12':'tree','V0-V13':'tree'},
   tree: tree([
@@ -154,6 +157,7 @@ frames.push(gframe({
 // Frame 2 — expand V1,1 (bound 1)
 frames.push(gframe({
   cap: `<b>Expand V₁,₁ (bound 1).</b> Its exits: V₂,₃ via weight 3 → bound 1+3 = <b>4</b>; V₂,₁ via weight 5 → bound 1+5 = <b>6</b>. The frontier now also holds d=2 and c=3, so we keep going where it's cheapest.`,
+  capZh: `<b>Expand V₁,₁ (bound 1).</b> 它的出口：走權重 3 到 V₂,₃ → bound 1+3 = <b>4</b>；走權重 5 到 V₂,₁ → bound 1+5 = <b>6</b>。frontier 現在還留著 d=2 跟 c=3，所以哪裡最便宜就往哪裡走。`,
   nodeCls:{V0:'done', V11:'done', V23:'frontier', V21:'frontier', V12:'frontier', V13:'frontier'},
   edgeCls:{'V0-V11':'tree','V11-V23':'tree','V11-V21':'tree'},
   tree: tree([
@@ -171,6 +175,7 @@ frames.push(gframe({
 // Frame 3 — expand V1,3 (bound 2) and V1,2 (bound 3): stage-2 nodes
 frames.push(gframe({
   cap: `<b>Expand the next-cheapest, V₁,₃ (2) then V₁,₂ (3).</b> V₁,₃→V₂,₂ → bound 2+2 = <b>4</b>; V₁,₃→V₂,₃ → 2+7 = <b>9</b>. V₁,₂→V₂,₂ → 3+3 = <b>6</b>; V₁,₂→V₂,₁ → 3+4 = <b>7</b>. The cheapest open node is now V₂,₃ at bound <b>4</b> (node f).`,
+  capZh: `<b>Expand the next-cheapest, V₁,₃ (2) then V₁,₂ (3).</b> V₁,₃→V₂,₂ → bound 2+2 = <b>4</b>；V₁,₃→V₂,₃ → 2+7 = <b>9</b>。V₁,₂→V₂,₂ → 3+3 = <b>6</b>；V₁,₂→V₂,₁ → 3+4 = <b>7</b>。現在最便宜的開放節點是 V₂,₃，bound <b>4</b>（節點 f）。`,
   nodeCls:{V0:'done', V11:'done', V12:'done', V13:'done', V23:'frontier', V22:'frontier', V21:'frontier'},
   edgeCls:{'V0-V11':'tree','V0-V12':'tree','V0-V13':'tree','V11-V23':'tree','V11-V21':'tree','V12-V21':'tree','V12-V22':'tree','V13-V22':'tree','V13-V23':'tree'},
   tree: tree([
@@ -189,6 +194,7 @@ frames.push(gframe({
 // Frame 4 — expand f (V2,3, bound 4) -> complete first tour, cost 5
 frames.push(gframe({
   cap: `<b>Expand V₂,₃ (node f, bound 4).</b> One exit: V₂,₃→V₃ weight 1 → <b>5</b>. That reaches the sink — a complete path <b>V₀→V₁,₁→V₂,₃→V₃ = 5</b>. First full solution → <b>best-so-far = 5</b>.`,
+  capZh: `<b>Expand V₂,₃ (node f, bound 4).</b> 只有一個出口：V₂,₃→V₃ 權重 1 → <b>5</b>。這就到了終點——一條完整路徑 <b>V₀→V₁,₁→V₂,₃→V₃ = 5</b>。第一個完整解 → <b>best-so-far = 5</b>。`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([
@@ -207,6 +213,7 @@ frames.push(gframe({
 // Frame 5 — prune everything with bound >= 5
 frames.push(gframe({
   cap: `<b>Prune.</b> Best-so-far = 5, so any open node with bound <b>≥ 5</b> can't win → ${C.dim("dimmed")}. The <b>x&gt;k</b> tag means "any full path through this node costs x ≥ its bound k ≥ 5": e=6 (x&gt;6), i=6 (x&gt;6), h=7 (x&gt;7), k=9 (x&gt;9) all die. Node j=4 is still &lt; 5, so it stays alive — we must check it.`,
+  capZh: `<b>Prune.</b> Best-so-far = 5，所以任何開放節點只要 bound <b>≥ 5</b> 就贏不了 → ${C.dim("dimmed")}。<b>x&gt;k</b> 這個標記的意思是「任何穿過這節點的完整路徑成本 x ≥ 它的 bound k ≥ 5」：e=6 (x&gt;6)、i=6 (x&gt;6)、h=7 (x&gt;7)、k=9 (x&gt;9) 全部掛掉。節點 j=4 還是 &lt; 5，所以它還活著——我們得去檢查它。`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([
@@ -225,6 +232,7 @@ frames.push(gframe({
 // Frame 6 — expand j (V2,2, bound 4) -> second complete path cost 5, a TIE (not better)
 frames.push(gframe({
   cap: `<b>Expand V₂,₂ (node j, bound 4).</b> Exit V₂,₂→V₃ weight 1 → bound 4 + edge 1 = <b>5</b> (node l). That completes <b>V₀→V₁,₃→V₂,₂→V₃ = 2+2+1 = 5</b> — a second optimal path, but it only <em>ties</em> best-so-far (5), so it does <em>not</em> replace it. We keep the path we already hold. Either 5-cost path is a valid answer.`,
+  capZh: `<b>Expand V₂,₂ (node j, bound 4).</b> 出口 V₂,₂→V₃ 權重 1 → bound 4 + edge 1 = <b>5</b>（節點 l）。這湊出 <b>V₀→V₁,₃→V₂,₂→V₃ = 2+2+1 = 5</b>——第二條最佳路徑，但它只是跟 best-so-far <em>打平</em>（5），所以<em>不會</em>取代它。我們留著手上原本那條。兩條 5 的路徑都是有效答案。`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([
@@ -243,6 +251,7 @@ frames.push(gframe({
 // Frame 7 — done, optimal proved
 frames.push(gframe({
   cap: `<b>Done.</b> Every remaining branch has bound ≥ 5, so none can beat the path we hold. The cheapest path is <b>V₀→V₁,₁→V₂,₃→V₃</b> at cost <b>5</b> — proven optimal without expanding the pruned subtrees.`,
+  capZh: `<b>Done.</b> 剩下每一個分支 bound 都 ≥ 5，所以沒有一個能贏過我們手上這條路徑。最便宜的路徑是 <b>V₀→V₁,₁→V₂,₃→V₃</b>，cost <b>5</b>——而且不用展開那些被剪掉的子樹就證明它是最佳解。`,
   nodeCls:{V0:'done', V11:'done', V23:'done', V3:'done'},
   edgeCls:{'V0-V11':'act','V11-V23':'act','V23-V3':'act'},
   tree: tree([

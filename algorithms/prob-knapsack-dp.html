@@ -117,37 +117,44 @@ const frames = [];
 
 frames.push({
   reveal: n, act:null, dep:[],
-  cap: `Base row <b>g₄(y) = 0</b> for every capacity — no items left means no profit. We build upward from here.`
+  cap: `Base row <b>g₄(y) = 0</b> for every capacity — no items left means no profit. We build upward from here.`,
+  capZh: `Base row <b>g₄(y) = 0</b>，每個容量都一樣——沒有物品可放，就沒有利潤。我們從這裡往上一列一列蓋上去。`
 });
 
 frames.push({
   reveal: 3, act:[3,7], dep:[[4,7],[4,2]],
-  cap: `Fill <b>g₃(7)</b> — only item 4 (w=5, p=7) is available. <b>skip</b>: g₄(7)=0. <b>take</b>: g₄(7−5)+7 = g₄(2)+7 = 7. max(0,7)=<b>7</b>.`
+  cap: `Fill <b>g₃(7)</b> — only item 4 (w=5, p=7) is available. <b>skip</b>: g₄(7)=0. <b>take</b>: g₄(7−5)+7 = g₄(2)+7 = 7. max(0,7)=<b>7</b>.`,
+  capZh: `填 <b>g₃(7)</b>——這時只有 item 4 (w=5, p=7) 可選。<b>skip</b>（不拿）：g₄(7)=0。<b>take</b>（拿）：g₄(7−5)+7 = g₄(2)+7 = 7。max(0,7)=<b>7</b>。`
 });
 
 frames.push({
   reveal: 2, act:[2,4], dep:[[3,4],[3,0]],
-  cap: `Row <b>g₂</b> adds item 3 (w=4, p=5). At y=4 — <b>skip</b>: g₃(4)=0. <b>take</b>: g₃(4−4)+5 = g₃(0)+5 = 5. max(0,5)=<b>5</b>.`
+  cap: `Row <b>g₂</b> adds item 3 (w=4, p=5). At y=4 — <b>skip</b>: g₃(4)=0. <b>take</b>: g₃(4−4)+5 = g₃(0)+5 = 5. max(0,5)=<b>5</b>.`,
+  capZh: `這一列 <b>g₂</b> 多了 item 3 (w=4, p=5)。在 y=4——<b>skip</b>：g₃(4)=0。<b>take</b>：g₃(4−4)+5 = g₃(0)+5 = 5。max(0,5)=<b>5</b>。`
 });
 
 frames.push({
   reveal: 1, act:[1,7], dep:[[2,7],[2,4]],
-  cap: `Row <b>g₁</b> adds item 2 (w=3, p=4). At y=7 — <b>skip</b>: g₂(7)=7. <b>take</b>: g₂(7−3)+4 = g₂(4)+4 = 5+4 = 9. max(7,9)=<b>9</b>.`
+  cap: `Row <b>g₁</b> adds item 2 (w=3, p=4). At y=7 — <b>skip</b>: g₂(7)=7. <b>take</b>: g₂(7−3)+4 = g₂(4)+4 = 5+4 = 9. max(7,9)=<b>9</b>.`,
+  capZh: `這一列 <b>g₁</b> 多了 item 2 (w=3, p=4)。在 y=7——<b>skip</b>：g₂(7)=7。<b>take</b>：g₂(7−3)+4 = g₂(4)+4 = 5+4 = 9。max(7,9)=<b>9</b>。`
 });
 
 frames.push({
   reveal: 0, act:[0,7], dep:[[1,7],[1,6]],
-  cap: `Top row <b>g₀</b> adds item 1 (w=1, p=1). At the full bag y=7 — <b>skip</b>: g₁(7)=9. <b>take</b>: g₁(7−1)+1 = g₁(6)+1 = 7+1 = 8. max(9,8)=<b>9</b>.`
+  cap: `Top row <b>g₀</b> adds item 1 (w=1, p=1). At the full bag y=7 — <b>skip</b>: g₁(7)=9. <b>take</b>: g₁(7−1)+1 = g₁(6)+1 = 7+1 = 8. max(9,8)=<b>9</b>.`,
+  capZh: `最上面這列 <b>g₀</b> 多了 item 1 (w=1, p=1)。在裝滿的 y=7——<b>skip</b>：g₁(7)=9。<b>take</b>：g₁(7−1)+1 = g₁(6)+1 = 7+1 = 8。max(9,8)=<b>9</b>。`
 });
 
 frames.push({
   reveal: 0, act:[0,7], dep:[],
-  cap: `<b>Answer: g₀(7) = 9.</b> The table is complete; the top-row cell g₀(M) holds the optimum profit for the whole problem.`
+  cap: `<b>Answer: g₀(7) = 9.</b> The table is complete; the top-row cell g₀(M) holds the optimum profit for the whole problem.`,
+  capZh: `<b>答案：g₀(7) = 9。</b>表格填完了；最上面那格 g₀(M) 就是整個問題的最佳利潤。`
 });
 
 frames.push({
   reveal: 0, act:null, dep:[], path:[[0,7],[1,7],[2,4],[3,0]],
-  cap: `<b>Which items?</b> Trace the choices: skip item 1, take item 2 (now y=4), take item 3 (now y=0), skip item 4. Load = items 2+3, weight 3+4=7, profit 4+5=<b>9</b>.`
+  cap: `<b>Which items?</b> Trace the choices: skip item 1, take item 2 (now y=4), take item 3 (now y=0), skip item 4. Load = items 2+3, weight 3+4=7, profit 4+5=<b>9</b>.`,
+  capZh: `<b>到底拿了哪些？</b>把選擇回溯一遍：skip item 1、take item 2（現在 y=4）、take item 3（現在 y=0）、skip item 4。裝的是 items 2+3，重量 3+4=7，利潤 4+5=<b>9</b>。`
 });
 
 ZOO.stepper({

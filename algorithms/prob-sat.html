@@ -84,13 +84,17 @@
 
 const frames = [
   { stage:'root',
-    cap:`We build the tree of <b>2ⁿ</b> assignments and search it depth-first. At the <b>root</b> nothing is assigned yet; clauses (1)–(5) are all still "open." The first variable to branch on is <b>x₁</b>.` },
+    cap:`We build the tree of <b>2ⁿ</b> assignments and search it depth-first. At the <b>root</b> nothing is assigned yet; clauses (1)–(5) are all still "open." The first variable to branch on is <b>x₁</b>.`,
+    capZh:`我們把 <b>2ⁿ</b> 種指派建成一棵樹，然後用 depth-first 去搜。在 <b>root</b> 還什麼都沒指派；clause (1)–(5) 全都還「沒滿足」。第一個拿來分支的變數是 <b>x₁</b>。` },
   { stage:'left',
-    cap:`<b>Go left: x₁ = T.</b> Now clause <b>(2) x₁</b> is satisfied ✓ — but clause <b>(1) ¬x₁</b> needs x₁ false, so it is <b>falsified ✗</b>. A broken clause cannot be repaired by later variables, so this <b>entire subtree is pruned</b>. Back up.` },
+    cap:`<b>Go left: x₁ = T.</b> Now clause <b>(2) x₁</b> is satisfied ✓ — but clause <b>(1) ¬x₁</b> needs x₁ false, so it is <b>falsified ✗</b>. A broken clause cannot be repaired by later variables, so this <b>entire subtree is pruned</b>. Back up.`,
+    capZh:`<b>往左走：x₁ = T。</b>這下 clause <b>(2) x₁</b> 滿足 ✓——但 clause <b>(1) ¬x₁</b> 需要 x₁ 為 false，所以它<b>被弄假 ✗</b>。一個 clause 一旦壞掉，後面的變數再怎麼指派都救不回來，所以這<b>整棵 subtree 直接剪掉</b>。退回去。` },
   { stage:'right',
-    cap:`<b>Go right: x₁ = F.</b> Symmetric: clause <b>(1) ¬x₁</b> is satisfied ✓ — but clause <b>(2) x₁</b> is now <b>falsified ✗</b>. Prune this subtree too. We never had to assign x₂…x₅.` },
+    cap:`<b>Go right: x₁ = F.</b> Symmetric: clause <b>(1) ¬x₁</b> is satisfied ✓ — but clause <b>(2) x₁</b> is now <b>falsified ✗</b>. Prune this subtree too. We never had to assign x₂…x₅.`,
+    capZh:`<b>往右走：x₁ = F。</b>對稱情況：clause <b>(1) ¬x₁</b> 滿足 ✓——但 clause <b>(2) x₁</b> 現在<b>被弄假 ✗</b>。這棵 subtree 也剪掉。我們根本沒機會去指派 x₂…x₅。` },
   { stage:'done',
-    cap:`<b>Both children of the root are dead.</b> Every assignment lives under one of those two branches, so <b>no assignment satisfies the formula</b> → the instance is <b>UNSATISFIABLE</b>. DFS pruned 2ⁿ leaves after touching just one variable.` },
+    cap:`<b>Both children of the root are dead.</b> Every assignment lives under one of those two branches, so <b>no assignment satisfies the formula</b> → the instance is <b>UNSATISFIABLE</b>. DFS pruned 2ⁿ leaves after touching just one variable.`,
+    capZh:`<b>root 的兩個小孩都死了。</b>所有指派都落在這兩條分支底下，所以<b>沒有任何指派能滿足這條 formula</b> → 這個 instance 是 <b>UNSATISFIABLE</b>。DFS 只碰了一個變數，就把 2ⁿ 個 leaf 全剪掉了。` },
 ];
 
 function tree(stage){

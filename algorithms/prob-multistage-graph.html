@@ -104,21 +104,29 @@ const TREE = ['S-C','C-F','F-T'];
 
 const frames = [
   { done:[], act:null, badge:{}, tree:false,
-    cap:`The graph, all weights shown. We want the cheapest <b>S→T</b> path. <b>d(X,T)</b> = cost of the cheapest path from X to T. We fill it in <b>backward from T</b>.` },
+    cap:`The graph, all weights shown. We want the cheapest <b>S→T</b> path. <b>d(X,T)</b> = cost of the cheapest path from X to T. We fill it in <b>backward from T</b>.`,
+    capZh:`這是整張圖，所有權重都標出來了。我們要找最便宜的 <b>S→T</b> 路徑。<b>d(X,T)</b> = 從 X 到 T 最便宜路徑的成本。我們<b>從 T 往回</b>一格一格填。` },
   { done:['T'], act:null, badge:{T:0}, tree:false,
-    cap:`Base: <b>d(T,T)=0</b> — you're already at the sink, nothing to pay.` },
+    cap:`Base: <b>d(T,T)=0</b> — you're already at the sink, nothing to pay.`,
+    capZh:`Base：<b>d(T,T)=0</b>——你已經在終點了，不用付任何成本。` },
   { done:['T'], act:'D,E,F', badge:{T:0,D:18,E:13,F:2}, tree:false,
-    cap:`Stage 3 nodes have only one hop to T. <b>d(D,T)=18</b>, <b>d(E,T)=13</b>, <b>d(F,T)=2</b> — just the edge to T.` },
+    cap:`Stage 3 nodes have only one hop to T. <b>d(D,T)=18</b>, <b>d(E,T)=13</b>, <b>d(F,T)=2</b> — just the edge to T.`,
+    capZh:`Stage 3 的節點到 T 只有一步。<b>d(D,T)=18</b>、<b>d(E,T)=13</b>、<b>d(F,T)=2</b>——就是到 T 那條邊的權重。` },
   { done:['T','D','E','F'], act:'C', badge:{T:0,D:18,E:13,F:2,C:4}, tree:false,
-    cap:`<b>d(C,T)</b> = min{ 2 + d(F,T) } = 2 + 2 = <b>4</b>. C's only outgoing edge is C→F.` },
+    cap:`<b>d(C,T)</b> = min{ 2 + d(F,T) } = 2 + 2 = <b>4</b>. C's only outgoing edge is C→F.`,
+    capZh:`<b>d(C,T)</b> = min{ 2 + d(F,T) } = 2 + 2 = <b>4</b>。C 只有 C→F 這一條出邊。` },
   { done:['T','D','E','F','C'], act:'A', badge:{T:0,D:18,E:13,F:2,C:4,A:22}, tree:false,
-    cap:`<b>d(A,T)</b> = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{22, 24} = <b>22</b>.` },
+    cap:`<b>d(A,T)</b> = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{22, 24} = <b>22</b>.`,
+    capZh:`<b>d(A,T)</b> = min{ 4+d(D,T), 11+d(E,T) } = min{ 4+18, 11+13 } = min{22, 24} = <b>22</b>。` },
   { done:['T','D','E','F','C','A'], act:'B', badge:{T:0,D:18,E:13,F:2,C:4,A:22,B:18}, tree:false,
-    cap:`<b>d(B,T)</b> = min{ 9+18, 5+13, 16+2 } = min{27, 18, 18} = <b>18</b>.` },
+    cap:`<b>d(B,T)</b> = min{ 9+18, 5+13, 16+2 } = min{27, 18, 18} = <b>18</b>.`,
+    capZh:`<b>d(B,T)</b> = min{ 9+18, 5+13, 16+2 } = min{27, 18, 18} = <b>18</b>。` },
   { done:['T','D','E','F','C','A','B'], act:'S', badge:{T:0,D:18,E:13,F:2,C:4,A:22,B:18,S:9}, tree:false,
-    cap:`<b>d(S,T)</b> = min{ 1+d(A,T), 2+d(B,T), 5+d(C,T) } = min{ 1+22, 2+18, 5+4 } = min{23, 20, <b>9</b>} = <b>9</b>. The winner is the C-branch!` },
+    cap:`<b>d(S,T)</b> = min{ 1+d(A,T), 2+d(B,T), 5+d(C,T) } = min{ 1+22, 2+18, 5+4 } = min{23, 20, <b>9</b>} = <b>9</b>. The winner is the C-branch!`,
+    capZh:`<b>d(S,T)</b> = min{ 1+d(A,T), 2+d(B,T), 5+d(C,T) } = min{ 1+22, 2+18, 5+4 } = min{23, 20, <b>9</b>} = <b>9</b>。贏家是走 C 的那條分支！` },
   { done:['T','D','E','F','C','A','B','S'], act:null, badge:D, tree:true,
-    cap:`Optimal path <b>S→C→F→T = 5+2+2 = 9</b> (solid edges). Greedy would have taken S→A→D→T = 1+4+18 = <b>23</b> — the cheap first edge trapped it in an expensive finish.` }
+    cap:`Optimal path <b>S→C→F→T = 5+2+2 = 9</b> (solid edges). Greedy would have taken S→A→D→T = 1+4+18 = <b>23</b> — the cheap first edge trapped it in an expensive finish.`,
+    capZh:`最佳路徑 <b>S→C→F→T = 5+2+2 = 9</b>（實線邊）。Greedy 會去走 S→A→D→T = 1+4+18 = <b>23</b>——第一步貪便宜，結果被困在一個超貴的結尾。` }
 ];
 
 ZOO.stepper({

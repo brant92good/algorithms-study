@@ -116,15 +116,20 @@ function board(id, state){
 // expanded/closed nodes ('done'), and a caption.
 const frames = [
   { exp:'root', open:['n1','n2','n3','n4'], done:[],
-    cap:`<b>Step 1–2.</b> List = {root}, f=3 (d=0, w=3 misplaced tiles). Expand root, slide the blank 4 ways → children 1–4. None is the goal. Sort the whole list by f: 1(4), 2(4), 3(5), 4(5). Nodes 1 and 2 TIE at f=4 (the lowest); we break ties by node id (insertion order), so node 1 goes first.` },
+    cap:`<b>Step 1–2.</b> List = {root}, f=3 (d=0, w=3 misplaced tiles). Expand root, slide the blank 4 ways → children 1–4. None is the goal. Sort the whole list by f: 1(4), 2(4), 3(5), 4(5). Nodes 1 and 2 TIE at f=4 (the lowest); we break ties by node id (insertion order), so node 1 goes first.`,
+    capZh:`<b>Step 1–2.</b> 清單 = {root}，f=3（d=0，有 w=3 個方塊放錯位置）。展開 root，把空格往四個方向滑 → 子節點 1–4。都不是目標。把整個清單依 f 排序：1(4)、2(4)、3(5)、4(5)。節點 1 和 2 在 f=4 打平（最小）；平手時用節點 id（也就是插入順序）來決定，所以節點 1 先走。` },
   { exp:'n1', open:['n2','n3','n4','n5','n6'], done:['n1'],
-    cap:`<b>Global best is node 1 (f=4).</b> Expand it → children 5(f=5) and 6(f=6). They join the same list. After re-sorting, node 1's children did NOT beat node 2, so node 2 (f=4, the other root-child) is now the unique global best.` },
+    cap:`<b>Global best is node 1 (f=4).</b> Expand it → children 5(f=5) and 6(f=6). They join the same list. After re-sorting, node 1's children did NOT beat node 2, so node 2 (f=4, the other root-child) is now the unique global best.`,
+    capZh:`<b>目前全域最好的是節點 1 (f=4)。</b> 展開它 → 子節點 5(f=5) 和 6(f=6)，一起丟進同一個清單。重新排序後，節點 1 的小孩都沒贏過節點 2，所以節點 2（f=4，另一個 root 的子節點）現在變成唯一的全域最好。` },
   { exp:'n2', open:['n3','n4','n5','n6','n7','n8'], done:['n1','n2'],
-    cap:`<b>Global best is node 2 (f=4)</b>, on a different branch from node 1 where we just were. A hill climber committed to node 1 could not jump back here — best-first just picks it off the sorted list. Expand → 7(f=4), 8(f=6).` },
+    cap:`<b>Global best is node 2 (f=4)</b>, on a different branch from node 1 where we just were. A hill climber committed to node 1 could not jump back here — best-first just picks it off the sorted list. Expand → 7(f=4), 8(f=6).`,
+    capZh:`<b>全域最好的是節點 2 (f=4)</b>，它跟我們剛剛待的節點 1 在不同分支上。hill climbing 一旦走進節點 1 就跳不回這裡了——但 best-first 直接從排好序的清單把它挑出來就好。展開 → 7(f=4)、8(f=6)。` },
   { exp:'n7', open:['n3','n4','n5','n6','n8','n9'], done:['n1','n2','n7'],
-    cap:`<b>Node 7 (f=4) is the new global minimum.</b> Expand it → child 9 (f=4: depth 3, w=1 — only the tile 8 is still out of place). Every other open board still sits in the list, but none beats f=4.` },
+    cap:`<b>Node 7 (f=4) is the new global minimum.</b> Expand it → child 9 (f=4: depth 3, w=1 — only the tile 8 is still out of place). Every other open board still sits in the list, but none beats f=4.`,
+    capZh:`<b>節點 7 (f=4) 是新的全域最小值。</b> 展開它 → 子節點 9（f=4：深度 3，w=1——只剩方塊 8 還沒歸位）。其他 open 的盤面都還擺在清單裡，但沒有誰贏得過 f=4。` },
   { exp:'n9', open:['n3','n4','n5','n6','n8','n11'], done:['n1','n2','n7','n9'],
-    cap:`<b>Expand node 9 (f=4).</b> Its children are 10 (f=4) and 11 (f=6). Node 10 is a <b>goal node</b> (1 2 3 / 8 _ 4 / 7 6 5) → <b>STOP</b> (Step 2 stops the instant a goal is generated). The goal's ancestor chain — its solution path — is root→2→7→9→10. (That is the path TO the goal, NOT the order nodes were expanded, which was root,1,2,7,9.)` },
+    cap:`<b>Expand node 9 (f=4).</b> Its children are 10 (f=4) and 11 (f=6). Node 10 is a <b>goal node</b> (1 2 3 / 8 _ 4 / 7 6 5) → <b>STOP</b> (Step 2 stops the instant a goal is generated). The goal's ancestor chain — its solution path — is root→2→7→9→10. (That is the path TO the goal, NOT the order nodes were expanded, which was root,1,2,7,9.)`,
+    capZh:`<b>展開節點 9 (f=4)。</b> 它的子節點是 10 (f=4) 和 11 (f=6)。節點 10 是 <b>目標節點</b>（1 2 3 / 8 _ 4 / 7 6 5）→ <b>STOP</b>（Step 2 一產生出目標就立刻停）。目標往上追的祖先鏈——也就是它的解路徑——是 root→2→7→9→10。（這是通往目標的「路徑」，不是節點被展開的順序，展開順序其實是 root,1,2,7,9。）` },
 ];
 
 ZOO.stepper({

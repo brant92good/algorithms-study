@@ -143,6 +143,7 @@ const frames = [];
 // Frame 0 — the matrix idea / starting bound
 frames.push({
   cap: `<b>Start.</b> Reduce the 7×7 cost matrix (worked out in full above): row mins sum to 84, then 3 zero-less columns add 7+1+4 = 12. Total subtracted = 84+12 = <b>96</b> = the root lower bound every tour must pay.`,
+  capZh: `<b>Start.</b> 先把 7×7 成本矩陣做 reduce（上面有完整算過）：各列最小值加起來是 84，再加上 3 個沒有 0 的行 7+1+4 = 12。總共減掉 = 84+12 = <b>96</b> = 根節點的 lower bound，每條 tour 至少都要付這麼多。`,
   html: tree([
     `Reduced cost matrix  (7 cities, ∞ on diagonal)`,
     ``,
@@ -160,6 +161,7 @@ frames.push({
 // Frame 1 — first branch on arc 4-6
 frames.push({
   cap: `<b>Branch on arc 4-6.</b> We pick it because its exclude-penalty (+32) is the largest of any zero (beats 3-5's +18). Include side just inherits 96 for now. Exclude side: penalty = (row-4 next-best 32) + (col-6 next-best 0) = 32, so LB = 96+32 = <b>128</b>.`,
+  capZh: `<b>Branch on arc 4-6.</b> 選它是因為它的 exclude-penalty（+32）是所有 0 裡面最大的（贏過 3-5 的 +18）。Include 這邊暫時先繼承 96。Exclude 這邊：penalty =（row-4 次便宜 32）+（col-6 次便宜 0）= 32，所以 LB = 96+32 = <b>128</b>。`,
   html: tree([
     `              All solutions  LB=${C.bound("96")}`,
     `             /                       \\`,
@@ -174,6 +176,7 @@ frames.push({
 // Frame 2 — why we keep "with 4-6": 128 is worse, but no tour found yet so not pruned yet
 frames.push({
   cap: `Now re-reduce the <b>with 4-6</b> side: delete row 4 & col 6 (its exit/entry are fixed) and block 6→4 to forbid the subtour. Row 5 lost its only zero (was 5→6), so its cheapest exit is now 5→1 = 3 → re-reduce by 3 → LB rises 96 → <b>99</b>. (Same node, second-stage bound.) Expand the cheaper side first.`,
+  capZh: `現在對 <b>with 4-6</b> 這邊重新 reduce：刪掉 row 4 跟 col 6（它的出入點都固定了），再把 6→4 擋掉以免形成 subtour。Row 5 失去它唯一的零（原本是 5→6），所以它現在最便宜的出口變成 5→1 = 3 → 再 reduce 3 → LB 從 96 升到 <b>99</b>。（同一個節點，第二階段的 bound。）先展開比較便宜的那邊。`,
   html: tree([
     `              All solutions  LB=${C.bound("96")}`,
     `             /                       \\`,
@@ -188,6 +191,7 @@ frames.push({
 // Frame 3 — spine grows: 2-1
 frames.push({
   cap: `Keep diving down the cheapest "include" branch. Branch on arc <b>2-1</b>: include deletes another row+col and re-reduces (a freshly zero-less row bumps it) → LB <b>112</b>; exclude adds its penalty → LB <b>125</b>. Includes stay below the excludes, so we keep going down.`,
+  capZh: `繼續往最便宜的「include」分支鑽下去。Branch on arc <b>2-1</b>：include 再刪掉一組 row+col 並重新 reduce（新出現一個沒有零的列把 bound 往上頂）→ LB <b>112</b>；exclude 加上它的 penalty → LB <b>125</b>。Include 都還壓在 exclude 底下，所以繼續往下走。`,
   html: tree([
     `   All solutions  LB=${C.bound("96")}`,
     `      |`,
@@ -202,6 +206,7 @@ frames.push({
 // Frame 4 — spine grows: 1-4 ; first big prune (153)
 frames.push({
   cap: `Branch on arc <b>1-4</b>: include re-reduces to → LB <b>126</b>, exclude adds its penalty → LB <b>153</b>. The "without 1-4" bound 153 is huge; once we find a tour ≤153 it dies (prune rule next).`,
+  capZh: `Branch on arc <b>1-4</b>：include 重新 reduce 後 → LB <b>126</b>，exclude 加上它的 penalty → LB <b>153</b>。「without 1-4」那個 bound 153 大得誇張；等我們找到任何 ≤153 的 tour，它就掛了（剪枝規則下一步講）。`,
   html: tree([
     `   with 4-6  LB=${C.bound("99")} ─── without 4-6  ${C.dim("LB=128")}`,
     `      |`,
@@ -216,6 +221,7 @@ frames.push({
 // Frame 5 — complete a tour: best-so-far = 126
 frames.push({
   cap: `Branch on <b>6-7</b> then <b>5-2</b>. By now n−2 arcs are committed, so each row/column has one legal cell left — the remaining arcs are <b>forced</b> (only one way to close the loop). Excluding 5-2 leaves a city with no legal exit → <b>(no solution)</b>. Tour <b>1-4-6-7-3-5-2-1</b>, cost <b>126</b> → best-so-far = <b>126</b>.`,
+  capZh: `Branch on <b>6-7</b> 再 <b>5-2</b>。到這裡已經敲定 n−2 條 arc，所以每列每行只剩一個合法格子——剩下的 arc 都是<b>強制</b>的（只有一種方式能把圈收起來）。如果把 5-2 排除掉，會有一個城市完全沒有合法出口 → <b>(no solution)</b>。Tour <b>1-4-6-7-3-5-2-1</b>，cost <b>126</b> → best-so-far = <b>126</b>。`,
   html: tree([
     `   with 1-4  LB=${C.bound("126")} ── without 1-4  ${C.dim("LB=153")}`,
     `      |`,
@@ -230,6 +236,7 @@ frames.push({
 // Frame 6 — the prune rule fires everywhere bound >= 126
 frames.push({
   cap: `<b>Prune rule.</b> A node's LB is the best its subtree could reach. Any node with <b>LB ≥ 126</b> (best-so-far) can't beat it → ${C.dim("dimmed = pruned")}. 128, 153, 141 all die. (≤ would be the trap: it'd kill 126 itself!)`,
+  capZh: `<b>Prune rule.</b> 一個節點的 LB 就是它整個子樹能達到的最好結果。任何 <b>LB ≥ 126</b>（best-so-far）的節點都贏不過它 → ${C.dim("dimmed = pruned")}。128、153、141 全部掛掉。（用 ≤ 就踩雷了：那會把 126 自己也砍掉！）`,
   html: tree([
     `              All solutions  LB=${C.bound("96")}`,
     `             /                       \\`,
@@ -252,6 +259,7 @@ frames.push({
 // Frame 7 — finished / proof of optimality
 frames.push({
   cap: `<b>Done.</b> Every un-expanded branch has LB ≥ 126, so none can improve on the tour we hold. The tour <b>1-4-6-7-3-5-2-1</b>, cost <b>126</b>, is <b>proven optimal</b> — without examining all 6! orderings.`,
+  capZh: `<b>Done.</b> 每個還沒展開的分支 LB 都 ≥ 126，所以沒有任何一個能贏過我們手上這條 tour。Tour <b>1-4-6-7-3-5-2-1</b>，cost <b>126</b>，<b>證明是最佳解</b>——而且根本不用把 6! 種排法全試過。`,
   html: tree([
     `   No live node has LB < 126.`,
     `   ⇒ no unexplored branch can beat the best tour.`,

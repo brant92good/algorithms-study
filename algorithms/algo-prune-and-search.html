@@ -100,6 +100,13 @@ ZOO.stepper({
     const pruned = Math.round(cur * F), next = cur - pruned;
     return `Round <b>${r}</b>: input size <b>${cur}</b>. Do O(${cur}) work, prune <b>${pruned}</b> (¼), recurse on <b>${next}</b>. Each round's work is ¾ of the last — a geometric decay.`;
   },
+  captionZh: f => {
+    const r = f.round, cur = sizes[r];
+    if (r === sizes.length - 1)
+      return `第 <b>${r}</b> 輪：存活的資料已經縮到<b>常數</b>大小——直接用 O(1) 解掉。前面幾輪分別做了 O(n)、O(¾n)、O((¾)²n)… 的工，全部加起來還是 <b>O(n)</b>。`;
+    const pruned = Math.round(cur * F), next = cur - pruned;
+    return `第 <b>${r}</b> 輪：輸入大小 <b>${cur}</b>。做 O(${cur}) 的工，砍掉 <b>${pruned}</b>（¼），剩 <b>${next}</b> 繼續遞迴。每一輪的工都是上一輪的 ¾——等比衰減。`;
+  },
   render: (f, stage) => {
     const r = f.round;
     // one bar per round: gold = this round's work; bars before it are 'done', after it 'dim'

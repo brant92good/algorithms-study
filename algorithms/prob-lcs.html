@@ -107,7 +107,8 @@ const frames = [];
 frames.push({
   M: (()=>{const M=Array.from({length:m+1},()=>Array(n+1).fill(null));
         for(let j=0;j<=n;j++)M[0][j]=0; for(let i=0;i<=m;i++)M[i][0]=0; return M;})(),
-  cls:{}, cap:`Set up the table for <b>A=bacad</b> (rows) and <b>B=accbadcb</b> (cols). Row 0 and column 0 are all <b>0</b> — an empty prefix shares nothing.`
+  cls:{}, cap:`Set up the table for <b>A=bacad</b> (rows) and <b>B=accbadcb</b> (cols). Row 0 and column 0 are all <b>0</b> — an empty prefix shares nothing.`,
+  capZh:`為 <b>A=bacad</b>（列）和 <b>B=accbadcb</b>（欄）擺好表格。第 0 列和第 0 欄全是 <b>0</b>——空前綴跟誰都沒有共同字母。`
 });
 
 // pick a few illustrative interior cells: 2 matches and 2 mismatches, then fill-to-end
@@ -123,21 +124,24 @@ steps.forEach(s=>{
   const {i,j}=s; const match = A[i-1]===B[j-1];
   const M = partial(i,j);
   const cls = {}; cls[`${i},${j}`]='act';
-  let cap;
+  let cap, capZh;
   if (match){
     cls[`${i-1},${j-1}`]='dep';
     cap = `<b>a${i}=${A[i-1]}</b> = <b>b${j}=${B[j-1]}</b> → <b>match</b>. Take the diagonal ${L[i-1][j-1]} and add 1 → <b>${L[i][j]}</b>.`;
+    capZh = `<b>a${i}=${A[i-1]}</b> = <b>b${j}=${B[j-1]}</b> → <b>對上了</b>。拿對角的 ${L[i-1][j-1]} 加 1 → <b>${L[i][j]}</b>。`;
   } else {
     cls[`${i-1},${j}`]='dep'; cls[`${i},${j-1}`]='dep';
     cap = `a${i}=${A[i-1]} ≠ b${j}=${B[j-1]} → <b>mismatch</b>. Take max(up ${L[i-1][j]}, left ${L[i][j-1]}) = <b>${L[i][j]}</b> — no +1.`;
+    capZh = `a${i}=${A[i-1]} ≠ b${j}=${B[j-1]} → <b>沒對上</b>。取 max(上 ${L[i-1][j]}, 左 ${L[i][j-1]}) = <b>${L[i][j]}</b>——不 +1。`;
   }
-  frames.push({M, cls, cap});
+  frames.push({M, cls, cap, capZh});
 });
 
 // Frame: fully filled table, no highlight
 frames.push({
   M: L.map(r=>r.slice()), cls:{},
-  cap:`The whole table is filled the same way, row by row. The <b>bottom-right cell = ${L[m][n]}</b> is the LCS length.`
+  cap:`The whole table is filled the same way, row by row. The <b>bottom-right cell = ${L[m][n]}</b> is the LCS length.`,
+  capZh:`整張表都用同樣方式一列一列填完。<b>右下角那格 = ${L[m][n]}</b> 就是 LCS 的長度。`
 });
 
 // trace-back: from (m,n) walk to (0,0)
@@ -154,7 +158,8 @@ const lcsStr = letters.join('');
 
 frames.push({
   M: L.map(r=>r.slice()), cls:(()=>{const c={}; path.forEach(([i,j])=>c[`${i},${j}`]='path'); return c;})(),
-  cap:`<b>Trace back</b> from the corner: on a <b>match</b> step diagonally and record its letter; on a <b>mismatch</b> move toward the larger of up/left (ties go up, no letter recorded). Walking backward you record <b>d, a, c, a</b>; reverse it to read the LCS in order <b>${lcsStr}</b> (top-to-bottom along the green cells) — length <b>${L[m][n]}</b>. ✅`
+  cap:`<b>Trace back</b> from the corner: on a <b>match</b> step diagonally and record its letter; on a <b>mismatch</b> move toward the larger of up/left (ties go up, no letter recorded). Walking backward you record <b>d, a, c, a</b>; reverse it to read the LCS in order <b>${lcsStr}</b> (top-to-bottom along the green cells) — length <b>${L[m][n]}</b>. ✅`,
+  capZh:`從角落開始<b>往回追</b>：<b>對上</b>就往對角走一步、記下那個字母；<b>沒對上</b>就往上／左較大的那邊走（平手往上，不記字母）。往回走時你會記成 <b>d, a, c, a</b>；反轉過來才是正確順序的 LCS <b>${lcsStr}</b>（沿著綠色格子由上往下）——長度 <b>${L[m][n]}</b>。✅`
 });
 
 ZOO.stepper({

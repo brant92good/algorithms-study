@@ -123,21 +123,29 @@ function misplaced(b){ let c=0; for(let i=0;i<9;i++){ if(b[i]!==0 && b[i]!==GOAL
 // ----------------------------------------------------------------------
 const hcFrames = [
   { board:[2,8,3, 1,0,4, 7,6,5], d:0,
-    cap:`<b>Start.</b> d=0 slides, w=3 misplaced (the 2, 8 and 1) → <b>f = 0 + 3 = 3</b>. Generate every neighbour and greedily pick the lowest f.` },
+    cap:`<b>Start.</b> d=0 slides, w=3 misplaced (the 2, 8 and 1) → <b>f = 0 + 3 = 3</b>. Generate every neighbour and greedily pick the lowest f.`,
+    capZh:`<b>Start.</b> 還沒滑動，d=0；有 3 塊放錯位置（2、8、1），所以 w=3 → <b>f = 0 + 3 = 3</b>。把所有鄰居都生出來，greedy 直接挑 f 最小的。` },
   { board:[2,0,3, 1,8,4, 7,6,5], d:1, pick:true,
-    cap:`Slide the blank <b>up</b>. Best neighbour by f: d=1, w=3 → <b>f = 1 + 3 = 4</b>. Commit here and dive — no list of the rejected siblings is kept.` },
+    cap:`Slide the blank <b>up</b>. Best neighbour by f: d=1, w=3 → <b>f = 1 + 3 = 4</b>. Commit here and dive — no list of the rejected siblings is kept.`,
+    capZh:`空格往<b>上</b>滑。f 最小的鄰居：d=1, w=3 → <b>f = 1 + 3 = 4</b>。就選這個往下鑽——被淘汰的其他兄弟節點不會留著。` },
   { board:[0,2,3, 1,8,4, 7,6,5], d:2, pick:true,
-    cap:`Slide the blank <b>left</b>. d=2, w=2 → <b>f = 2 + 2 = 4</b>. Lowest-f child again — keep descending.` },
+    cap:`Slide the blank <b>left</b>. d=2, w=2 → <b>f = 2 + 2 = 4</b>. Lowest-f child again — keep descending.`,
+    capZh:`空格往<b>左</b>滑。d=2, w=2 → <b>f = 2 + 2 = 4</b>。一樣挑 f 最小的小孩——繼續往下。` },
   { board:[1,2,3, 0,8,4, 7,6,5], d:3, pick:true,
-    cap:`Slide the blank <b>down</b>. d=3, w=1 (only the 8) → <b>f = 3 + 1 = 4</b>. One tile from done — take the best child.` },
+    cap:`Slide the blank <b>down</b>. d=3, w=1 (only the 8) → <b>f = 3 + 1 = 4</b>. One tile from done — take the best child.`,
+    capZh:`空格往<b>下</b>滑。d=3, w=1（只剩 8 沒歸位）→ <b>f = 3 + 1 = 4</b>。差一塊就完成——挑最好的小孩。` },
   { board:[1,2,3, 8,0,4, 7,6,5], d:4, goal:true,
-    cap:`Slide the 8 <b>right</b>. d=4, w=0 → <b>f = 4 + 0 = 4</b>. 🎉 <b>Goal reached.</b> This run was lucky: the lowest-f child each step happened to be a real step toward the goal (w fell to 0), even as f drifted up with d.` },
+    cap:`Slide the 8 <b>right</b>. d=4, w=0 → <b>f = 4 + 0 = 4</b>. 🎉 <b>Goal reached.</b> This run was lucky: the lowest-f child each step happened to be a real step toward the goal (w fell to 0), even as f drifted up with d.`,
+    capZh:`把 8 往<b>右</b>滑。d=4, w=0 → <b>f = 4 + 0 = 4</b>。🎉 <b>到目標了。</b>這次算運氣好：每一步 f 最小的小孩剛好都是真的朝目標前進（w 一路降到 0），即使 f 因為 d 變大而緩緩上升。` },
   { board:[1,2,0, 3,8,4, 7,6,5], d:0, stuck:true,
-    cap:`<b>The lesson — a different start.</b> Run the <em>same</em> greedy rule from this board: d=0, w=2 → <b>f = 2</b>. It looks close to the goal. Now generate its children and pick the lowest-f one, just like before.` },
+    cap:`<b>The lesson — a different start.</b> Run the <em>same</em> greedy rule from this board: d=0, w=2 → <b>f = 2</b>. It looks close to the goal. Now generate its children and pick the lowest-f one, just like before.`,
+    capZh:`<b>重點來了——換一個起點。</b>用<em>一模一樣</em>的 greedy 規則從這個盤面跑：d=0, w=2 → <b>f = 2</b>。看起來離目標很近。一樣生出小孩、挑 f 最小的。` },
   { board:[1,2,0, 3,8,4, 7,6,5], d:0, stuck:true, showNbr:true,
-    cap:`Only two legal slides here, both scoring <b>f = 4</b>. Tie → take the first in the fixed child order (slide the blank <b>down</b>). Note this does <em>not</em> reduce w — it walks away from the goal. But hill climbing has no reason to prefer the other: it just picks a lowest-f child and commits.` },
+    cap:`Only two legal slides here, both scoring <b>f = 4</b>. Tie → take the first in the fixed child order (slide the blank <b>down</b>). Note this does <em>not</em> reduce w — it walks away from the goal. But hill climbing has no reason to prefer the other: it just picks a lowest-f child and commits.`,
+    capZh:`這裡只有兩種合法滑法，兩個都是 <b>f = 4</b>。打平 → 按固定的小孩順序挑第一個（空格往<b>下</b>滑）。注意這<em>沒有</em>讓 w 變小——它其實是在遠離目標。但 hill climbing 沒理由偏好另一個：它就是挑 f 最小的小孩，然後一頭栽進去。` },
   { board:[1,2,4, 3,8,0, 7,6,5], d:1, dead:true,
-    cap:`<b>STUCK — and it cycles.</b> d=1, w=3 → f=4. This board's lowest-f child (slide the blank <b>up</b>, f=4) is the board we just came from, so greedy hops straight back — then forward, then back, forever. With <b>no open list</b>, hill climbing cannot try the other f=4 branch it ignored at the start; it never reaches the goal even though a solution exists. That global memory is exactly what Best-First Search adds below.` },
+    cap:`<b>STUCK — and it cycles.</b> d=1, w=3 → f=4. This board's lowest-f child (slide the blank <b>up</b>, f=4) is the board we just came from, so greedy hops straight back — then forward, then back, forever. With <b>no open list</b>, hill climbing cannot try the other f=4 branch it ignored at the start; it never reaches the goal even though a solution exists. That global memory is exactly what Best-First Search adds below.`,
+    capZh:`<b>卡住了——而且還鬼打牆。</b>d=1, w=3 → f=4。這個盤面 f 最小的小孩（空格往<b>上</b>滑，f=4）正好就是我們剛剛來的那個盤面，所以 greedy 直接跳回去——然後又往前、又跳回去，無限循環。因為<b>沒有 open list</b>，hill climbing 沒辦法回頭去試一開始被忽略掉的另一條 f=4 分支；明明有解卻永遠走不到目標。下面的 Best-First Search 補上的，正是這種「全域記憶」。` },
 ];
 
 ZOO.stepper({
@@ -215,31 +223,38 @@ const tok = n => `${n.id}(${n.f})`;
 const bfFrames = [];
 bfFrames.push({
   boards:[root], sel:null, open:[root],
-  cap:`<b>Step 1.</b> Put the root on the open list. Root scores f = d + w = 0 + 3 = <b>3</b> (3 tiles out of place) — the same scoring hill climbing used.`
+  cap:`<b>Step 1.</b> Put the root on the open list. Root scores f = d + w = 0 + 3 = <b>3</b> (3 tiles out of place) — the same scoring hill climbing used.`,
+  capZh:`<b>Step 1.</b> 把 root 放進 open list。root 的分數 f = d + w = 0 + 3 = <b>3</b>（3 塊放錯位置）——跟 hill climbing 用的計分方式一樣。`
 });
 bfFrames.push({
   boards:[n1,n2,n3,n4], sel:'root', open:[root],
-  cap:`<b>Step 2.</b> Expand the root. Score its four children — none is the goal — and add them all to the list.`
+  cap:`<b>Step 2.</b> Expand the root. Score its four children — none is the goal — and add them all to the list.`,
+  capZh:`<b>Step 2.</b> 展開 root。把它的四個小孩算分——沒有一個是目標——然後全部丟進 list。`
 });
 bfFrames.push({
   boards:[n1,n2,n3,n4], sel:null, open:sortf([n1,n2,n3,n4]),
-  cap:`<b>Step 3.</b> Sort the whole list by f. Nodes 1 and 2 tie at f=4 and move to the front; nodes 3, 4 (f=5) sit behind. <b>Step 4:</b> list not empty, repeat.`
+  cap:`<b>Step 3.</b> Sort the whole list by f. Nodes 1 and 2 tie at f=4 and move to the front; nodes 3, 4 (f=5) sit behind. <b>Step 4:</b> list not empty, repeat.`,
+  capZh:`<b>Step 3.</b> 把整個 list 按 f 排序。node 1 和 2 同樣 f=4，排到最前面；node 3、4（f=5）排在後面。<b>Step 4：</b>list 還沒空，重複。`
 });
 bfFrames.push({
   boards:[n5,n6], sel:'1', open:sortf([n2,n3,n4,n5,n6]),
-  cap:`<b>Global view.</b> Tied at the front, node <b>1</b> is removed and expanded first. Both its children climb: node 5 → f=5, node 6 → f=6. Re-sort and node <b>2</b> (still f=4) is now alone at the front.`
+  cap:`<b>Global view.</b> Tied at the front, node <b>1</b> is removed and expanded first. Both its children climb: node 5 → f=5, node 6 → f=6. Re-sort and node <b>2</b> (still f=4) is now alone at the front.`,
+  capZh:`<b>全域視角。</b>並列在最前面，node <b>1</b> 先被取出展開。它兩個小孩的 f 都往上爬：node 5 → f=5、node 6 → f=6。重新排序後，node <b>2</b>（還是 f=4）現在獨自排在最前面。`
 });
 bfFrames.push({
   boards:[n7,n8], sel:'2', open:sortf([n3,n4,n5,n6,n7,n8]),
-  cap:`<b>Step 2.</b> Remove and expand the front node <b>2</b>. Its child node <b>7</b> keeps f=4; the other (node 8) jumps to f=6. Re-sort: node 7 is the lone cheapest at f=4.`
+  cap:`<b>Step 2.</b> Remove and expand the front node <b>2</b>. Its child node <b>7</b> keeps f=4; the other (node 8) jumps to f=6. Re-sort: node 7 is the lone cheapest at f=4.`,
+  capZh:`<b>Step 2.</b> 取出並展開最前面的 node <b>2</b>。它的小孩 node <b>7</b> 維持 f=4；另一個（node 8）跳到 f=6。重新排序：node 7 以 f=4 獨佔最便宜。`
 });
 bfFrames.push({
   boards:[n9], sel:'7', open:sortf([n3,n4,n5,n6,n8,n9]),
-  cap:`<b>Global view.</b> The lowest-f node is node <b>7</b>. Expand it; its two children score f=4 and f=6 — the useful one, node <b>9</b>, keeps f=4. (The f=6 sibling sinks in the sort — kept in the list, just not picked while node 9 is cheaper.)`
+  cap:`<b>Global view.</b> The lowest-f node is node <b>7</b>. Expand it; its two children score f=4 and f=6 — the useful one, node <b>9</b>, keeps f=4. (The f=6 sibling sinks in the sort — kept in the list, just not picked while node 9 is cheaper.)`,
+  capZh:`<b>全域視角。</b>f 最小的是 node <b>7</b>。展開它，兩個小孩分別是 f=4 和 f=6——有用的那個 node <b>9</b> 維持 f=4。（f=6 的兄弟在排序裡沉下去——還留在 list 裡，只是 node 9 比較便宜時不會被挑到。）`
 });
 bfFrames.push({
   boards:[n10,n11], sel:'9', open:sortf([n3,n4,n5,n6,n8,n10,n11]), goal:'10',
-  cap:`<b>Step 2.</b> Expand front node <b>9</b>. A child — node <b>10</b> — is the <b>goal</b> 1 2 3 / 8 _ 4 / 7 6 5. <b>Stop.</b> The open list still held nodes 3, 4, 5, 6, 8 on other branches: the global view let best-first commit to the cheapest node every step, so no local optimum could trap it.`
+  cap:`<b>Step 2.</b> Expand front node <b>9</b>. A child — node <b>10</b> — is the <b>goal</b> 1 2 3 / 8 _ 4 / 7 6 5. <b>Stop.</b> The open list still held nodes 3, 4, 5, 6, 8 on other branches: the global view let best-first commit to the cheapest node every step, so no local optimum could trap it.`,
+  capZh:`<b>Step 2.</b> 展開最前面的 node <b>9</b>。其中一個小孩 node <b>10</b> 就是<b>目標</b> 1 2 3 / 8 _ 4 / 7 6 5。<b>停。</b>open list 裡其他分支還留著 node 3、4、5、6、8：有了全域視角，best-first 每一步都能挑最便宜的節點，所以不會被任何 local optimum 困住。`
 });
 
 function puz(n, klass){

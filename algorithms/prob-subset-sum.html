@@ -112,23 +112,32 @@ function tree(cur, dead, goalLit){
 
 const frames = [
   { cur:'r', dead:[], goal:null, st:[],
-    cap:`Solution tree for <b>S={7,5,1,2,10}</b>, target <b>9</b>. Root = empty subset, running sum <b>0</b>. Push the root; DFS begins.` },
+    cap:`Solution tree for <b>S={7,5,1,2,10}</b>, target <b>9</b>. Root = empty subset, running sum <b>0</b>. Push the root; DFS begins.`,
+    capZh:`<b>S={7,5,1,2,10}</b>、target <b>9</b> 的解空間樹。Root = 空集合，目前的總和 <b>0</b>。把 root 推入，DFS 開始。` },
   { cur:'a', dead:[], goal:null, st:['in 7'],
-    cap:`Dive deepest first. Decide element <b>7</b> → <b>in</b>. Push it. Running sum = <b>7</b> (≤ 9, still promising).` },
+    cap:`Dive deepest first. Decide element <b>7</b> → <b>in</b>. Push it. Running sum = <b>7</b> (≤ 9, still promising).`,
+    capZh:`先一路往最深處鑽。決定元素 <b>7</b> → <b>放進去</b>。推入。目前總和 = <b>7</b>（≤ 9，還有戲）。` },
   { cur:'b', dead:['b'], goal:null, st:['in 7','in 5'],
-    cap:`Keep diving: <b>5</b> → in. Sum = 7+5 = <b>12</b> &gt; 9. Overshot! Positive numbers only grow, so this branch is hopeless — mark <b>×</b>.` },
+    cap:`Keep diving: <b>5</b> → in. Sum = 7+5 = <b>12</b> &gt; 9. Overshot! Positive numbers only grow, so this branch is hopeless — mark <b>×</b>.`,
+    capZh:`繼續往下鑽：<b>5</b> → 放進去。總和 = 7+5 = <b>12</b> &gt; 9。爆掉了！都是正數只會越加越大，這條分支沒救了——標 <b>×</b>。` },
   { cur:'a', dead:['b'], goal:null, st:['in 7'],
-    cap:`<b>Backtrack.</b> Pop "in 5" off the stack — undo that decision and return to node 7.` },
+    cap:`<b>Backtrack.</b> Pop "in 5" off the stack — undo that decision and return to node 7.`,
+    capZh:`<b>Backtrack（回溯）。</b>把「放 5」從 stack 彈掉——撤銷這個決定，退回 node 7。` },
   { cur:'c', dead:['b'], goal:null, st:['in 7','in 1'],
-    cap:`Try the next option at node 7: <b>1</b> → in. Sum = 7+1 = <b>8</b> (≤ 9). Promising — dive deeper.` },
+    cap:`Try the next option at node 7: <b>1</b> → in. Sum = 7+1 = <b>8</b> (≤ 9). Promising — dive deeper.`,
+    capZh:`在 node 7 試下一個選項：<b>1</b> → 放進去。總和 = 7+1 = <b>8</b>（≤ 9）。有戲——繼續往下鑽。` },
   { cur:'d', dead:['b','d'], goal:null, st:['in 7','in 1','in 2'],
-    cap:`From 8: <b>2</b> → in. Sum = 8+2 = <b>10</b> &gt; 9. Dead end — mark <b>×</b> and prepare to backtrack.` },
+    cap:`From 8: <b>2</b> → in. Sum = 8+2 = <b>10</b> &gt; 9. Dead end — mark <b>×</b> and prepare to backtrack.`,
+    capZh:`從 8 接著走：<b>2</b> → 放進去。總和 = 8+2 = <b>10</b> &gt; 9。死路——標 <b>×</b>，準備回溯。` },
   { cur:'e', dead:['b','d','e'], goal:null, st:['in 7','in 1','in 10'],
-    cap:`Pop "in 2"; try <b>10</b> → in. Sum = 8+10 = <b>18</b> &gt; 9. Also dead. Node 8 has no good children — backtrack out of it.` },
+    cap:`Pop "in 2"; try <b>10</b> → in. Sum = 8+10 = <b>18</b> &gt; 9. Also dead. Node 8 has no good children — backtrack out of it.`,
+    capZh:`彈掉「放 2」；改試 <b>10</b> → 放進去。總和 = 8+10 = <b>18</b> &gt; 9。也是死路。node 8 沒有好的小孩——退出來回溯。` },
   { cur:'g', dead:['b','d','e'], goal:null, st:['in 7','in 2'],
-    cap:`Back at node 7, pop down to its last option: <b>2</b> → in. Sum = 7+2 = <b>9</b>.` },
+    cap:`Back at node 7, pop down to its last option: <b>2</b> → in. Sum = 7+2 = <b>9</b>.`,
+    capZh:`回到 node 7，一路彈到它最後一個選項：<b>2</b> → 放進去。總和 = 7+2 = <b>9</b>。` },
   { cur:'g', dead:['b','d','e'], goal:'g', st:['in 7','in 2'],
-    cap:`Sum = <b>9 = target</b>. <b>Goal node found!</b> The subset on the stack is <b>{7, 2}</b>. DFS stops.` }
+    cap:`Sum = <b>9 = target</b>. <b>Goal node found!</b> The subset on the stack is <b>{7, 2}</b>. DFS stops.`,
+    capZh:`總和 = <b>9 = target</b>。<b>找到 goal node 了！</b>stack 上的子集合就是 <b>{7, 2}</b>。DFS 停止。` }
 ];
 
 ZOO.stepper({

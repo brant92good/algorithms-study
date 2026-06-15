@@ -99,21 +99,29 @@ const P = [
 // never pruned — they are exactly what pins the answer.
 const frames = [
   {cx:50, cy:42, r:40, pruned:[], far:6,
-   cap:'Eight points. Start with a big circle (r=40) that covers them all — far too large. Right now point 6 (74,40) is the farthest, ~24 away.'},
+   cap:'Eight points. Start with a big circle (r=40) that covers them all — far too large. Right now point 6 (74,40) is the farthest, ~24 away.',
+   capZh:'八個點。先用一個大圓（r=40）把它們全部蓋住——明顯太大了。現在最遠的是 point 6 (74,40)，大約 24 遠。'},
   {cx:50, cy:42, r:34, pruned:[], far:6,
-   cap:'Shrink the circle (r=34) until it hugs the points more tightly. The <b>farthest</b> survivor still sets the radius — keep tracking it.'},
+   cap:'Shrink the circle (r=34) until it hugs the points more tightly. The <b>farthest</b> survivor still sets the radius — keep tracking it.',
+   capZh:'把圓縮小（r=34），讓它更貼著這些點。半徑還是由<b>最遠</b>的那個點決定，繼續盯著它。'},
   {cx:51, cy:40, r:30, pruned:[], far:0,
-   cap:'Constrained step: pretend the centre must lie on this line (the constrained sub-problem, explained below) and slide it to the spot that minimises the worst distance. Now point 0 (30,30) is the farthest, ~23 away.'},
+   cap:'Constrained step: pretend the centre must lie on this line (the constrained sub-problem, explained below) and slide it to the spot that minimises the worst distance. Now point 0 (30,30) is the farthest, ~23 away.',
+   capZh:'Constrained step：先假裝圓心一定要落在這條線上（也就是下面講的 constrained 子問題），再把它滑到讓最糟距離最小的位置。現在最遠的是 point 0 (30,30)，大約 23 遠。'},
   {cx:51, cy:40, r:30, pruned:[7,2], far:0,
-   cap:'<b>Prune rule:</b> the farthest survivor is ~23 away. Point 7 (46,40) is only 5.0 away and point 2 (55,34) only 7.2 — far below 23, so they can NEVER become the farthest. Drop them (green).'},
+   cap:'<b>Prune rule:</b> the farthest survivor is ~23 away. Point 7 (46,40) is only 5.0 away and point 2 (55,34) only 7.2 — far below 23, so they can NEVER become the farthest. Drop them (green).',
+   capZh:'<b>修剪規則：</b>最遠的點大約 23 遠。Point 7 (46,40) 只有 5.0 遠、point 2 (55,34) 只有 7.2 遠——遠遠不到 23，所以它們永遠不可能變成最遠的點。直接砍掉（變綠）。'},
   {cx:51, cy:39, r:27, pruned:[7,2], far:5,
-   cap:'Re-centre (51,39) using the survivors; circle tightens to r=27. The farthest is now point 5 (50,62), ~23 away.'},
+   cap:'Re-centre (51,39) using the survivors; circle tightens to r=27. The farthest is now point 5 (50,62), ~23 away.',
+   capZh:'用活下來的點重新算圓心 (51,39)，圓縮到 r=27。現在最遠的是 point 5 (50,62)，大約 23 遠。'},
   {cx:51, cy:39, r:25, pruned:[7,2,3,4], far:5,
-   cap:'<b>Prune again:</b> points 3 (38,50) and 4 (62,52) are each only ~17 from the centre — still comfortably less than the ~23 of the farthest, so neither can be binding. Prune both.'},
+   cap:'<b>Prune again:</b> points 3 (38,50) and 4 (62,52) are each only ~17 from the centre — still comfortably less than the ~23 of the farthest, so neither can be binding. Prune both.',
+   capZh:'<b>再砍一輪：</b>point 3 (38,50) 和 point 4 (62,52) 離圓心都只有大約 17——還是明顯小於最遠點的大約 23，所以這兩個都卡不住結果。兩個一起砍。'},
   {cx:51, cy:39, r:23.5, pruned:[7,2,3,4,1], far:5,
-   cap:'Point 1 (42,24) is ~17.5 away, below the ~23 rim — prune it too. Only points 0, 5, 6 remain, all ~23 from the centre: they touch the rim and pin it.'},
+   cap:'Point 1 (42,24) is ~17.5 away, below the ~23 rim — prune it too. Only points 0, 5, 6 remain, all ~23 from the centre: they touch the rim and pin it.',
+   capZh:'Point 1 (42,24) 大約 17.5 遠，低於 23 的圓周——也砍掉。只剩下 point 0、5、6，離圓心都大約 23：它們碰到圓周，把答案釘死了。'},
   {cx:51, cy:39, r:23.5, pruned:[7,2,3,4,1], far:5, done:true,
-   cap:'<b>Smallest enclosing circle found</b> (centre 51,39, r≈23.5). All 8 points lie inside or on it; the three rim points 0, 5, 6 are tied at the radius. That radius is the minimised maximum distance — the 1-center.'}
+   cap:'<b>Smallest enclosing circle found</b> (centre 51,39, r≈23.5). All 8 points lie inside or on it; the three rim points 0, 5, 6 are tied at the radius. That radius is the minimised maximum distance — the 1-center.',
+   capZh:'<b>找到最小包覆圓了</b>（圓心 51,39，r≈23.5）。八個點全都在圓內或圓上；圓周上的三個點 0、5、6 都剛好等於半徑。這個半徑就是最小化後的最大距離——也就是 1-center。'}
 ];
 
 function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }

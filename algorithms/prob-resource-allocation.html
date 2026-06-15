@@ -127,7 +127,8 @@ const done = [];
 for (let q = 0; q <= m; q++) done.push([1, q]);
 frames.push({
   filled: done.slice(), cur: null, deps: [],
-  cap: `<b>Base row.</b> f(1,q) = p(1,q): with only project 1, just take its profit for q units → 0, 2, 8, 9.`
+  cap: `<b>Base row.</b> f(1,q) = p(1,q): with only project 1, just take its profit for q units → 0, 2, 8, 9.`,
+  capZh: `<b>Base row。</b>f(1,q) = p(1,q)：只有 project 1 可分時，q 個單位的利潤就直接照抄它的 profit → 0, 2, 8, 9。`
 });
 
 // helper to compute best k for a cell (for caption + the chosen dep)
@@ -153,7 +154,10 @@ for (let i = 2; i <= n; i++) {
       filled: done.slice(), cur: [i, q], deps,
       cap: `<b>f(${i},${q})</b> — best profit, projects 1–${i}, ${q} unit${q===1?'':'s'}. Try every k for project ${i}: ` +
            (q === 0 ? `nothing to give → 0.` :
-            `${optsTxt.join('; ')}. <b>Max = ${best}</b> (give project ${i} ${bk} unit${bk===1?'':'s'}).`)
+            `${optsTxt.join('; ')}. <b>Max = ${best}</b> (give project ${i} ${bk} unit${bk===1?'':'s'}).`),
+      capZh: `<b>f(${i},${q})</b> — 最佳利潤，projects 1–${i}，${q} 個單位。對 project ${i} 試每個 k： ` +
+           (q === 0 ? `沒東西可分 → 0。` :
+            `${optsTxt.join('; ')}。<b>Max = ${best}</b>（分給 project ${i} ${bk} 個單位）。`)
     });
   }
 }
@@ -163,7 +167,8 @@ for (let i = 2; i <= n; i++) {
 const pathCells = [[4,3],[3,3],[2,3],[1,2]];
 frames.push({
   filled: done.slice(), cur: null, deps: [], path: pathCells,
-  cap: `<b>Answer: f(4,3) = 13.</b> Trace back the choices that won each cell: project 4 gets 0, project 3 gets 0, project 2 gets 1 (profit 5), project 1 gets 2 (profit 8) → <b>8 + 5 = 13</b>. That allocation is the optimal split of all 3 units.`
+  cap: `<b>Answer: f(4,3) = 13.</b> Trace back the choices that won each cell: project 4 gets 0, project 3 gets 0, project 2 gets 1 (profit 5), project 1 gets 2 (profit 8) → <b>8 + 5 = 13</b>. That allocation is the optimal split of all 3 units.`,
+  capZh: `<b>答案：f(4,3) = 13。</b>把每一格的勝出選擇回溯一遍：project 4 分 0、project 3 分 0、project 2 分 1（profit 5）、project 1 分 2（profit 8）→ <b>8 + 5 = 13</b>。這個分法就是把全部 3 個單位切開的最佳解。`
 });
 
 ZOO.stepper({

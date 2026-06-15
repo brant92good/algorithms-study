@@ -87,19 +87,26 @@ const PIVOT_IDX = 7;                                    // S[7] = 9 is the media
 
 const frames = [
   { cls:'start',
-    cap:`A set of <b>15</b> numbers, broken into <b>3 groups of 5</b>. Goal: the <b>7th smallest</b> overall.` },
+    cap:`A set of <b>15</b> numbers, broken into <b>3 groups of 5</b>. Goal: the <b>7th smallest</b> overall.`,
+    capZh:`一組 <b>15</b> 個數字，切成 <b>3 組、每組 5 個</b>。目標：找出整體<b>第 7 小</b>的那個。` },
   { cls:'groupmed',
-    cap:`Sort each group of 5 and take its <b>median</b> (gold): G1→<b>7</b>, G2→<b>9</b>, G3→<b>15</b>. Medians = [7, 9, 15].` },
+    cap:`Sort each group of 5 and take its <b>median</b> (gold): G1→<b>7</b>, G2→<b>9</b>, G3→<b>15</b>. Medians = [7, 9, 15].`,
+    capZh:`每組 5 個各自排序，取它的 <b>median</b>（金色）：G1→<b>7</b>、G2→<b>9</b>、G3→<b>15</b>。Medians = [7, 9, 15]。` },
   { cls:'pivot',
-    cap:`The <b>median of those medians</b> is <b>9</b> → that is our pivot <b>p</b> (green). It's guaranteed "central enough".` },
+    cap:`The <b>median of those medians</b> is <b>9</b> → that is our pivot <b>p</b> (green). It's guaranteed "central enough".`,
+    capZh:`這幾個 median 再取一次 <b>median</b> 就是 <b>9</b> → 它就是我們的 pivot <b>p</b>（綠色）。它保證「夠中間」。` },
   { cls:'partition',
-    cap:`Partition around p = 9: <b>S₁</b> (&lt; 9) has 7 elements, <b>S₂</b> (= 9) has 1, <b>S₃</b> (&gt; 9) has 7.` },
+    cap:`Partition around p = 9: <b>S₁</b> (&lt; 9) has 7 elements, <b>S₂</b> (= 9) has 1, <b>S₃</b> (&gt; 9) has 7.`,
+    capZh:`以 p = 9 做 partition：<b>S₁</b>（&lt; 9）有 7 個、<b>S₂</b>（= 9）有 1 個、<b>S₃</b>（&gt; 9）有 7 個。` },
   { cls:'decide',
-    cap:`Compare k to the piles: |S₁| = <b>7</b> ≥ k = <b>7</b>, so the 7th smallest lives in <b>S₁</b>. Recurse there (same k); prune S₂ and S₃ — ≥ n/4 gone.` },
+    cap:`Compare k to the piles: |S₁| = <b>7</b> ≥ k = <b>7</b>, so the 7th smallest lives in <b>S₁</b>. Recurse there (same k); prune S₂ and S₃ — ≥ n/4 gone.`,
+    capZh:`拿 k 跟各堆比一下：|S₁| = <b>7</b> ≥ k = <b>7</b>，所以第 7 小就在 <b>S₁</b> 裡。往這邊遞迴（k 不變）；S₂、S₃ 直接砍掉——一口氣去掉 ≥ n/4。` },
   { cls:'recurse',
-    cap:`Survivors = S₁ = [3,5,7,1,8,6,2] (7 elements). The other 8 are dimmed away. Same algorithm runs again on this smaller set...` },
+    cap:`Survivors = S₁ = [3,5,7,1,8,6,2] (7 elements). The other 8 are dimmed away. Same algorithm runs again on this smaller set...`,
+    capZh:`活下來的 = S₁ = [3,5,7,1,8,6,2]（7 個）。另外 8 個變灰淘汰掉。同一套演算法在這個更小的集合上再跑一次……` },
   { cls:'answer',
-    cap:`Survivor set has exactly <b>7</b> elements and we want its <b>7th smallest</b> — when the rank equals the set size, the k-th smallest is just the <b>largest</b> of them. The max here is <b>8</b>. So the <b>7th smallest of the whole set is 8</b>.` },
+    cap:`Survivor set has exactly <b>7</b> elements and we want its <b>7th smallest</b> — when the rank equals the set size, the k-th smallest is just the <b>largest</b> of them. The max here is <b>8</b>. So the <b>7th smallest of the whole set is 8</b>.`,
+    capZh:`活下來的集合剛好 <b>7</b> 個，而我們要的是它的<b>第 7 小</b>——當排名等於集合大小，第 k 小其實就是裡面<b>最大</b>的那個。這裡的最大值是 <b>8</b>。所以<b>整組第 7 小就是 8</b>。` },
 ];
 
 // classify each index for a given frame

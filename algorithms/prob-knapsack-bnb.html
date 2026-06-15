@@ -109,6 +109,7 @@ const frames = [];
 // Frame 0 — the data + the upper bound (a feasible packing)
 frames.push({
   cap: `<b>Upper bound — a feasible packing.</b> Greedily take whole items 1 and 2: weight 10+19 = <b>29 ≤ 34</b> ✓. Profit 6+10 = 16, objective <b>U.B. = −16</b>. A real feasible −16 means the optimum is <b>at most −16</b> (at least as good): it is our current best-yet that any later packing must BEAT. (Higher = worse here, since we minimize −profit.)`,
+  capZh: `<b>Upper bound — a feasible packing.</b> 用 greedy 把整顆的 item 1 跟 2 拿走：weight 10+19 = <b>29 ≤ 34</b> ✓。Profit 6+10 = 16，目標值 <b>U.B. = −16</b>。一個真的可行的 −16，代表最佳解<b>頂多 −16</b>（至少這麼好）：它就是我們目前的最佳紀錄，後面任何裝法都得 BEAT 它。（這裡數字愈大愈差，因為我們在最小化 −profit。）`,
   html: tree([
     `n = 6 items,  capacity M = 34   (densities sorted high → low)`,
     ``,
@@ -126,6 +127,7 @@ frames.push({
 // Frame 1 — the lower bound (fractional relaxation)
 frames.push({
   cap: `<b>Lower bound — relax to fractions.</b> Allow 0 ≤ Xᵢ ≤ 1 and fill greedily by density: X1=1, X2=1 (weight 29), then only 5 capacity left, so take 5/8 of item 3. Value −18.5; rounded inward to an integer → <b>L.B. = −18</b>.`,
+  capZh: `<b>Lower bound — relax to fractions.</b> 放寬成 0 ≤ Xᵢ ≤ 1，依 density 用 greedy 來裝：X1=1、X2=1（weight 29），這時只剩 5 的容量，所以拿 item 3 的 5/8。值是 −18.5；往內取整成整數 → <b>L.B. = −18</b>。`,
   html: tree([
     `Relaxation: allow fractional Xᵢ  (0 ≤ Xᵢ ≤ 1)`,
     `Fill by decreasing density until the bag is full:`,
@@ -145,6 +147,7 @@ frames.push({
 // Frame 2 — branching mechanism (Fig. 6-27)
 frames.push({
   cap: `<b>Branch (Fig. 6-27).</b> Split on item 1: left edge <b>X1 = 1</b> (take it), right edge <b>X1 = 0</b> (skip it). Each child re-computes its own U.B. (a feasible packing) and L.B. (fractional fill of the still-free items). The X1=1 child keeps the full window [−18,−16]; the X1=0 child's best feasible drops to −16 and its fractional L.B. tightens to −17. We dive take-first, down X1=1.`,
+  capZh: `<b>Branch (Fig. 6-27).</b> 對 item 1 分岔：左邊 <b>X1 = 1</b>（拿它），右邊 <b>X1 = 0</b>（跳過）。每個小孩各自重算自己的 U.B.（一個可行的裝法）和 L.B.（把還沒決定的 item 用分數裝滿）。X1=1 這個小孩維持整個區間 [−18,−16]；X1=0 那個小孩最好的可行解掉到 −16，分數 L.B. 收緊到 −17。我們採 take-first，先往 X1=1 鑽下去。`,
   html: tree([
     `                  root  (nothing fixed)`,
     `              ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
@@ -163,6 +166,7 @@ frames.push({
 // Frame 3 — the X1=1 dive finds a good feasible upper bound −17 ({1,4,5})
 frames.push({
   cap: `<b>A good upper bound appears.</b> Dive take-first down X1=1, then X2=0, then X3=0. At node <b>[X1=1,X2=0,X3=0]</b> the greedy fill of the still-free items 4,5,6 grabs items 4 and 5 → packing {1,4,5}, profit 6+5+6 = 17, objective <b>−17</b> — better than −16. THIS is where the slide's "a good upper bound is found here" really belongs (it sits on the X1=1 branch, not under any X1=0 node). Best-yet is now −17.`,
+  capZh: `<b>A good upper bound appears.</b> 採 take-first 往下鑽 X1=1，再 X2=0，再 X3=0。在節點 <b>[X1=1,X2=0,X3=0]</b>，對還沒決定的 item 4,5,6 做 greedy 裝填，抓到 item 4 跟 5 → 裝法 {1,4,5}，profit 6+5+6 = 17，目標值 <b>−17</b>——比 −16 還好。投影片那句「a good upper bound is found here」其實是指這裡（它在 X1=1 這條，不是掛在任何 X1=0 節點底下）。Best-yet 現在是 −17。`,
   html: tree([
     `   root         ${C.ub("U.B. −16")}  ${C.lb("L.B. −18")}`,
     `      |  X1 = 1`,
@@ -180,6 +184,7 @@ frames.push({
 // Frame 4 — confirm the optimal packing on this branch
 frames.push({
   cap: `<b>The winning packing.</b> Continue the same X1=1 dive: X4=1, X5=1, X6=0. This reaches the leaf <b>X1=1, X4=1, X5=1</b> (X2=X3=X6=0). Weight 10+10+12 = <b>32 ≤ 34</b> ✓, profit 6+5+6 = 17 → objective <b>−17</b>. Note it lives on the X1=1 branch — exactly where an X1=1 set belongs (it could never sit under an X1=0 node).`,
+  capZh: `<b>The winning packing.</b> 沿著同一條 X1=1 繼續鑽：X4=1, X5=1, X6=0。這就到了葉子 <b>X1=1, X4=1, X5=1</b>（X2=X3=X6=0）。Weight 10+10+12 = <b>32 ≤ 34</b> ✓，profit 6+5+6 = 17 → 目標值 <b>−17</b>。注意它就在 X1=1 這條上——一個 X1=1 的集合本來就該在這（不可能掛在 X1=0 節點底下）。`,
   html: tree([
     `   [X1=1,X2=0,X3=0]  ${C.ub("−17")}`,
     `      |  X4 = 1`,
@@ -198,6 +203,7 @@ frames.push({
 // Frame 5 — pruning: nodes whose L.B. cannot beat −17 are cut
 frames.push({
   cap: `<b>Prune with the bounds.</b> We hold −17. Any live node whose <b>L.B. ≥ −17</b> can never do better, so its whole subtree is cut. The big win: the entire <b>X1=0</b> branch has L.B. = −17 (its best fractional fill is only profit 17.5 → floored 17), so it ties but can't IMPROVE on −17 — cut it all. Skipping the dense item 1 simply costs too much.`,
+  capZh: `<b>Prune with the bounds.</b> 我們手上是 −17。任何活節點只要 <b>L.B. ≥ −17</b> 就不可能更好，所以它整個子樹直接砍掉。最爽的一刀：整條 <b>X1=0</b> 分支 L.B. = −17（它最好的分數裝填也只有 profit 17.5 → 取整 17），所以它頂多打平、沒辦法 IMPROVE −17——全部砍掉。跳過密度最高的 item 1 代價就是太大了。`,
   html: tree([
     `   best feasible held  =  ${C.best("−17")}`,
     `   prune rule:  cut any node with  ${C.lb("L.B.")} ≥ ${C.best("−17")}`,
@@ -217,6 +223,7 @@ frames.push({
 // Frame 6 — done / proof of optimality
 frames.push({
   cap: `<b>Done.</b> No live node has L.B. &lt; −17, so nothing can beat the packing we hold. Optimum is <b>−17</b> = items <b>{1, 4, 5}</b> (X1=X4=X5=1), comfortably inside the root window <b>[−18, −16]</b> — found by one take-first dive plus pruning, without enumerating all 2⁶ = 64 subsets.`,
+  capZh: `<b>Done.</b> 沒有任何活節點的 L.B. &lt; −17，所以沒東西能贏過我們手上的裝法。最佳解是 <b>−17</b> = items <b>{1, 4, 5}</b>（X1=X4=X5=1），穩穩落在根節點區間 <b>[−18, −16]</b> 裡面——靠一次 take-first 往下鑽加上剪枝就找到，不用把 2⁶ = 64 種子集合全列出來。`,
   html: tree([
     `   No live node has L.B. < −17.`,
     `   ⇒ no unexplored subtree can beat the best packing.`,

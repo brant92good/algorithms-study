@@ -88,9 +88,19 @@
     dots.innerHTML = frames.map((_, i) => `<span class="dot" data-i="${i}"></span>`).join('');
     const playBtn = root.querySelector('[data-a=play]');
     let i = 0, timer = null;
+    function capFor(f, k) {
+      const lang = document.documentElement.getAttribute('data-lang') || 'en';
+      if (lang === 'zh') {
+        if (opts.captionZh) return opts.captionZh(f, k);
+        if (f && f.capZh != null) return f.capZh;
+      }
+      return opts.caption ? opts.caption(f, k) : (f && f.cap != null ? f.cap : '');
+    }
+    // re-render only the caption when the language toggles (live, without stepping)
+    window.addEventListener('zoo:lang', () => { cap.innerHTML = capFor(frames[i], i); });
     function draw() {
       opts.render(frames[i], stage);
-      cap.innerHTML = opts.caption ? opts.caption(frames[i], i) : (frames[i].cap || '');
+      cap.innerHTML = capFor(frames[i], i);
       stepn.textContent = `${i + 1}/${N}`;
       dots.querySelectorAll('.dot').forEach((d, k) => d.classList.toggle('on', k <= i));
       root.querySelector('[data-a=prev]').disabled = i === 0;

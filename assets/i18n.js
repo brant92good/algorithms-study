@@ -11,6 +11,7 @@
     r.setAttribute('lang', l === 'zh' ? 'zh-Hant-TW' : 'en');
     try { localStorage.setItem('lang', l); } catch (e) {}
     var b = document.getElementById('langbtn'); if (b) b.textContent = l === 'zh' ? 'EN' : '中';
+    try { window.dispatchEvent(new Event('zoo:lang')); } catch (e) {} // let interactive viz captions re-render
     // re-render any already-answered quiz feedback in the new language
     document.querySelectorAll('.quiz[data-done] .fb').forEach(function (fb) {
       var q = fb.closest('.quiz'); if (!q) return;

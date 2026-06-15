@@ -101,24 +101,29 @@ function board(arr,f,chosen){ return {b:arr, f, chosen:!!chosen}; }
 const STEPS = [
   { lead: board([2,8,3, 1,0,4, 7,6,5], 3, true),
     kids: [], // shown alone as the start
-    cap: `<b>Start.</b> f = d+w = 0 + 3 = <b>3</b>. Compare to the goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>: tiles <b>1, 2 and 8</b> are not in their goal cells, so w = 3 (the highlighted tiles). Depth is 0, so f = 3. We expand its children next.` },
+    cap: `<b>Start.</b> f = d+w = 0 + 3 = <b>3</b>. Compare to the goal <code>1 2 3 / 8 _ 4 / 7 6 5</code>: tiles <b>1, 2 and 8</b> are not in their goal cells, so w = 3 (the highlighted tiles). Depth is 0, so f = 3. We expand its children next.`,
+    capZh: `<b>起點。</b> f = d+w = 0 + 3 = <b>3</b>。跟目標 <code>1 2 3 / 8 _ 4 / 7 6 5</code> 比一下：方塊 <b>1、2、8</b> 都還沒在正確位置，所以 w = 3（就是被標起來的那幾塊）。深度是 0，所以 f = 3。接下來展開它的子節點。` },
   { lead: board([2,8,3, 1,0,4, 7,6,5], 3),
     kids: [ board([2,0,3, 1,8,4, 7,6,5], 4, true),   // node 1 (blank up)
             board([2,8,3, 0,1,4, 7,6,5], 4),          // node 2
             board([2,8,3, 1,4,0, 7,6,5], 5),          // node 3
             board([2,8,3, 1,6,4, 7,0,5], 5) ],        // node 4
-    cap: `<b>Step 1.</b> Four children. Their f-values: <b>4, 4, 5, 5</b>. Hill climbing takes the smallest — the first <b>f = 4</b> (blank slides up). Ties broken by order; the other three are abandoned, never reconsidered.` },
+    cap: `<b>Step 1.</b> Four children. Their f-values: <b>4, 4, 5, 5</b>. Hill climbing takes the smallest — the first <b>f = 4</b> (blank slides up). Ties broken by order; the other three are abandoned, never reconsidered.`,
+    capZh: `<b>Step 1.</b> 四個子節點，f 值分別是 <b>4, 4, 5, 5</b>。hill climbing 挑最小的——也就是第一個 <b>f = 4</b>（空格往上滑）。平手就照順序挑；另外三個直接丟掉，再也不會回頭看。` },
   { lead: board([2,0,3, 1,8,4, 7,6,5], 4),
     kids: [ board([0,2,3, 1,8,4, 7,6,5], 4, true),   // node 5
             board([2,3,0, 1,8,4, 7,6,5], 6) ],        // node 6
-    cap: `<b>Step 2.</b> From that board, two children: <b>f = 4</b> and <b>f = 6</b>. Descend into the <b>f = 4</b> child (blank slides left).` },
+    cap: `<b>Step 2.</b> From that board, two children: <b>f = 4</b> and <b>f = 6</b>. Descend into the <b>f = 4</b> child (blank slides left).`,
+    capZh: `<b>Step 2.</b> 從這個盤面長出兩個子節點：<b>f = 4</b> 和 <b>f = 6</b>。往 <b>f = 4</b> 那個鑽下去（空格往左滑）。` },
   { lead: board([0,2,3, 1,8,4, 7,6,5], 4),
     kids: [ board([1,2,3, 0,8,4, 7,6,5], 4, true) ],  // node 7
-    cap: `<b>Step 3.</b> Its best child has <b>f = 4</b> (blank slides down; tile 1 lands home). Take it.` },
+    cap: `<b>Step 3.</b> Its best child has <b>f = 4</b> (blank slides down; tile 1 lands home). Take it.`,
+    capZh: `<b>Step 3.</b> 它最好的子節點是 <b>f = 4</b>（空格往下滑，方塊 1 剛好歸位）。選它。` },
   { lead: board([1,2,3, 0,8,4, 7,6,5], 4),
     kids: [ board([1,2,3, 8,0,4, 7,6,5], 4, true),   // node 8 GOAL: d=4, w=0, so f=4+0=4
             board([1,2,3, 7,8,4, 0,6,5], 6) ],        // node 9
-    cap: `<b>Step 4.</b> The best child is the <b>GOAL</b>: <code>1 2 3 / 8 _ 4 / 7 6 5</code>. It sits at depth 4 with 0 misplaced tiles, so by the same formula f = d+w = 4+0 = <b>4</b> (NOT 0 — f always counts the depth too). A goal is recognized by <b>w = 0</b> (zero misplaced tiles), not by f = 0; the goal's f is simply its depth. Note f went 3 → 4 → 4 → 4 → 4 along this path: hill climbing only takes the minimum child, so f need never strictly decrease. Solved in a single greedy descent: initial → 1 → 5 → 7 → 8.` },
+    cap: `<b>Step 4.</b> The best child is the <b>GOAL</b>: <code>1 2 3 / 8 _ 4 / 7 6 5</code>. It sits at depth 4 with 0 misplaced tiles, so by the same formula f = d+w = 4+0 = <b>4</b> (NOT 0 — f always counts the depth too). A goal is recognized by <b>w = 0</b> (zero misplaced tiles), not by f = 0; the goal's f is simply its depth. Note f went 3 → 4 → 4 → 4 → 4 along this path: hill climbing only takes the minimum child, so f need never strictly decrease. Solved in a single greedy descent: initial → 1 → 5 → 7 → 8.`,
+    capZh: `<b>Step 4.</b> 最好的子節點就是 <b>目標</b>：<code>1 2 3 / 8 _ 4 / 7 6 5</code>。它在深度 4、0 個方塊放錯，所以用同一條公式 f = d+w = 4+0 = <b>4</b>（不是 0 喔——f 永遠也把深度算進去）。判斷是不是目標看的是 <b>w = 0</b>（沒有方塊放錯），不是看 f = 0；目標的 f 其實就是它的深度。注意這條路上 f 是 3 → 4 → 4 → 4 → 4：hill climbing 只挑最小的子節點，所以 f 不一定要嚴格變小。一路 greedy 鑽下去就解掉了：initial → 1 → 5 → 7 → 8。` },
 ];
 
 function pzHTML(cell){

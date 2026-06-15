@@ -115,13 +115,20 @@ const xm = 4.2, ym = Fval(xm), slopeAt = L[Fidx(xm)].a;
 
 // ---- frames -----------------------------------------------------------
 const frames = [
-  {show:[0],            cap:`One rule: <code>y ≥ a₁x+b₁</code>. Feasible points lie <b>on or above</b> this line (a half-plane).`},
-  {show:[0,1],          cap:`Add a second rule. Now you must be above <b>both</b> lines at once.`},
-  {show:[0,1,2,3],      cap:`All four constraint lines drawn. The feasible region is everything above <b>every</b> line.`},
-  {show:[0,1,2,3], env:true, cap:`The gold curve is <b>F(x) = max of the lines</b> — the <b>upper envelope</b>. It is the floor of the feasible region.`},
-  {show:[0,1,2,3], env:true, test:true, cap:`Pick a <b>test point xₘ</b> (in the full algorithm this is the median of the pair-crossings). Read the slope of F there — i.e. the slope of whichever line is highest at xₘ: it is <b>${slopeAt<0?'negative (going down)':'positive (going up)'}</b>.`},
-  {show:[0,1,2,3], env:true, test:true, side:true, cap:`Rule: <b>${slopeAt<0?'down ⇒ optimum to the RIGHT':'up ⇒ optimum to the LEFT'}</b> (flat ⇒ you are at it). Here slope is ${slopeAt<0?'down':'up'}, so x₀ is to the <b>${slopeAt<0?'right':'left'}</b>. Each far-side pair drops its lower line — <b>pruned</b> (~n/4 per round).`},
-  {show:[0,1,2,3], env:true, opt:true, cap:`Convex valley ⇒ a single lowest point. Optimum <b>(x₀, y₀) ≈ (${x0.toFixed(1)}, ${y0.toFixed(1)})</b> — the minimum of F.`}
+  {show:[0],            cap:`One rule: <code>y ≥ a₁x+b₁</code>. Feasible points lie <b>on or above</b> this line (a half-plane).`,
+                        capZh:`一條規則：<code>y ≥ a₁x+b₁</code>。可行的點落在這條線<b>上或上方</b>（一個半平面）。`},
+  {show:[0,1],          cap:`Add a second rule. Now you must be above <b>both</b> lines at once.`,
+                        capZh:`再加第二條規則。現在你得同時待在<b>兩條</b>線的上方。`},
+  {show:[0,1,2,3],      cap:`All four constraint lines drawn. The feasible region is everything above <b>every</b> line.`,
+                        capZh:`四條 constraint 線都畫出來了。可行區就是<b>每一條</b>線都在你下面的那塊。`},
+  {show:[0,1,2,3], env:true, cap:`The gold curve is <b>F(x) = max of the lines</b> — the <b>upper envelope</b>. It is the floor of the feasible region.`,
+                        capZh:`金色那條曲線就是 <b>F(x) = max of the lines</b>——也就是 <b>upper envelope</b>。它是可行區的地板。`},
+  {show:[0,1,2,3], env:true, test:true, cap:`Pick a <b>test point xₘ</b> (in the full algorithm this is the median of the pair-crossings). Read the slope of F there — i.e. the slope of whichever line is highest at xₘ: it is <b>${slopeAt<0?'negative (going down)':'positive (going up)'}</b>.`,
+                        capZh:`挑一個 <b>test point xₘ</b>（完整演算法裡這是 pair-crossings 的 median）。看看 F 在那裡的斜率——也就是 xₘ 上最高那條線的斜率：它是 <b>${slopeAt<0?'negative (going down)':'positive (going up)'}</b>。`},
+  {show:[0,1,2,3], env:true, test:true, side:true, cap:`Rule: <b>${slopeAt<0?'down ⇒ optimum to the RIGHT':'up ⇒ optimum to the LEFT'}</b> (flat ⇒ you are at it). Here slope is ${slopeAt<0?'down':'up'}, so x₀ is to the <b>${slopeAt<0?'right':'left'}</b>. Each far-side pair drops its lower line — <b>pruned</b> (~n/4 per round).`,
+                        capZh:`規則：<b>${slopeAt<0?'down ⇒ optimum to the RIGHT':'up ⇒ optimum to the LEFT'}</b>（平的 ⇒ 你已經站在上面了）。這裡斜率是 ${slopeAt<0?'down':'up'}，所以 x₀ 在 <b>${slopeAt<0?'right':'left'}</b> 邊。每一對在遠側的線，比較低的那條就丟掉——<b>pruned</b>（每輪約砍 n/4）。`},
+  {show:[0,1,2,3], env:true, opt:true, cap:`Convex valley ⇒ a single lowest point. Optimum <b>(x₀, y₀) ≈ (${x0.toFixed(1)}, ${y0.toFixed(1)})</b> — the minimum of F.`,
+                        capZh:`凸的山谷 ⇒ 只有一個最低點。最佳解 <b>(x₀, y₀) ≈ (${x0.toFixed(1)}, ${y0.toFixed(1)})</b>——也就是 F 的最小值。`}
 ];
 
 // ---- SVG renderer (custom HTML string) --------------------------------
