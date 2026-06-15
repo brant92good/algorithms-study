@@ -53,6 +53,60 @@
 
 <div class="note"><span data-tr="en"><strong>Closing the loop: does <code>C(1,4) = 32</code> really equal the cost of the tree we drew?</strong> The final tree is root <strong>7</strong> (level 1); <strong>3</strong> and <strong>9</strong> at level 2; <strong>12</strong> at level 3. Score it with the full objective. <strong>Keys:</strong> <code>Σ Pᵢ·level = 3·1 (key 7) + 3·2 (key 3) + 1·2 (key 9) + 1·3 (key 12) = 3+6+2+3 = 14</code>. <strong>Failure gaps</strong> <code>Q₀…Q₄ = (2,3,1,1,1)</code>: <code>Q₀,Q₁</code> hang under key 3 (level 3, cost 2 each), <code>Q₂</code> under key 9 (level 3, cost 2), <code>Q₃,Q₄</code> under key 12 (level 4, cost 3 each), giving <code>Σ Qᵢ·(level−1) = 2·2 + 3·2 + 1·2 + 1·3 + 1·3 = 4+6+2+3+3 = 18</code>. Total <code>14 + 18 = 32 = C(1,4)</code>. The recurrence really did minimize the thing the problem asked for.</span><span data-tr="zh"><strong>把圈圈收回來：<code>C(1,4) = 32</code> 真的等於我們畫出來那棵樹的成本嗎？</strong>最終樹是 root <strong>7</strong>（level 1）；<strong>3</strong> 和 <strong>9</strong> 在 level 2；<strong>12</strong> 在 level 3。用完整目標來算它一次。<strong>Key 部分：</strong><code>Σ Pᵢ·level = 3·1（key 7）+ 3·2（key 3）+ 1·2（key 9）+ 1·3（key 12）= 3+6+2+3 = 14</code>。<strong>Failure gap</strong> <code>Q₀…Q₄ = (2,3,1,1,1)</code>：<code>Q₀,Q₁</code> 掛在 key 3 下面（level 3，各花 2），<code>Q₂</code> 在 key 9 下面（level 3，花 2），<code>Q₃,Q₄</code> 在 key 12 下面（level 4，各花 3），所以 <code>Σ Qᵢ·(level−1) = 2·2 + 3·2 + 1·2 + 1·3 + 1·3 = 4+6+2+3+3 = 18</code>。合計 <code>14 + 18 = 32 = C(1,4)</code>。遞迴式真的最小化了題目要求的那個東西。</span></div>
 
+<details class="note" style="margin:1.2rem 0">
+<summary style="cursor:pointer;font-weight:600"><span data-tr="en">🔍 Deep dive: length 1 and length 2, one tree at a time</span><span data-tr="zh">🔍 詳解：長度 1、長度 2，逐棵樹算給你看</span></summary>
+
+<p style="margin-top:1rem"><span data-tr="en">The stepper above bundles each cell into the formula <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>. Here we <em>un-bundle</em> two cells — actually drawing every candidate tree and counting its cost directly, so you can see exactly where the numbers come from. Recall the rule: a <strong>key</strong> at level <code>L</code> costs <code>L</code>; a <strong>gap</strong> at level <code>L</code> costs <code>L−1</code>. Weights: <code>P = (3,3,1,1)</code>, <code>Q = (2,3,1,1,1)</code>.</span><span data-tr="zh">上面的逐步播放把每一格打包成公式 <code>C(i,k−1)+C(k+1,j)+W(i,j)</code>。這裡我們把兩格<em>拆開</em>——把每一棵候選樹真的畫出來、直接數成本，讓你看清楚數字到底從哪來。記住規則：<strong>key</strong> 在 level <code>L</code> 花 <code>L</code>；<strong>gap</strong> 在 level <code>L</code> 花 <code>L−1</code>。weight：<code>P = (3,3,1,1)</code>、<code>Q = (2,3,1,1,1)</code>。</span></p>
+
+<h3><span data-tr="en">Length 1: computing <code>C(1,2)</code>, keys 3, 7</span><span data-tr="zh">長度 1：算 <code>C(1,2)</code>，keys 3, 7</span></h3>
+<p><span data-tr="en">Two keys can form exactly <strong>two</strong> BSTs. The gaps in this range are <code>Q₀, Q₁, Q₂</code>.</span><span data-tr="zh">兩個 key 剛好能排成<strong>兩種</strong> BST。這個範圍的 gap 是 <code>Q₀, Q₁, Q₂</code>。</span></p>
+
+<p><strong><span data-tr="en">Candidate A — root 3:</span><span data-tr="zh">候選 A — root 3：</span></strong></p>
+<div class="atree">        3   (lvl1)
+       / \
+     Q0   7     (7 at lvl2)
+         / \
+       Q1   Q2  (lvl3)</div>
+<p style="margin:.4rem 0"><code>key:  3·1(key3) + 3·2(key7)              = 3 + 6 = 9</code><br>
+<code>gap:  Q0·1 + Q1·2 + Q2·2 = 2·1+3·2+1·2  = 2 + 6 + 2 = 10</code><br>
+<code><b>total = 19</b></code></p>
+
+<p><strong><span data-tr="en">Candidate B — root 7:</span><span data-tr="zh">候選 B — root 7：</span></strong></p>
+<div class="atree">        7   (lvl1)
+       / \
+      3   Q2   (3 at lvl2)
+     / \
+   Q0   Q1     (lvl3)</div>
+<p style="margin:.4rem 0"><code>key:  3·1(key7) + 3·2(key3)              = 3 + 6 = 9</code><br>
+<code>gap:  Q2·1 + Q0·2 + Q1·2 = 1·1+2·2+3·2  = 1 + 4 + 6 = 11</code><br>
+<code><b>total = 20</b></code></p>
+
+<p><span data-tr="en"><strong>Why A wins.</strong> The key cost is identical (both 9). The difference is the gaps: A puts the <em>heavy</em> gap <code>Q₀</code> (weight 2) high up at level 2 (cost 1), while B buries it at level 3 (cost 2). Keeping heavy gaps shallow is cheaper → <code>C(1,2) = 19</code>, root 3.</span><span data-tr="zh"><strong>為什麼 A 贏。</strong>key 成本兩邊一樣（都 9）。差別在 gap：A 把<em>重的</em> gap <code>Q₀</code>（weight 2）放在高處 level 2（花 1），B 卻把它壓到 level 3（花 2）。把重的 gap 放淺比較便宜 → <code>C(1,2) = 19</code>，root 3。</span></p>
+
+<p><span data-tr="en"><strong>Matching the formula:</strong> root 3 → <code>C(1,0)+C(2,2)+W(1,2) = 0+7+12 = 19</code> ✓; root 7 → <code>C(1,1)+C(3,2)+W(1,2) = 8+0+12 = 20</code>. The <code>+W(1,2)=12</code> is exactly "everyone in the range drops one level when the root is added"; <code>C(2,2)=7</code> is the standalone cost of the <code>{7}</code> subtree. The formula just packages the direct count.</span><span data-tr="zh"><strong>對回公式：</strong>root 3 → <code>C(1,0)+C(2,2)+W(1,2) = 0+7+12 = 19</code> ✓；root 7 → <code>C(1,1)+C(3,2)+W(1,2) = 8+0+12 = 20</code>。那個 <code>+W(1,2)=12</code> 正是「加 root 後範圍裡每個節點都掉一層」；<code>C(2,2)=7</code> 是 <code>{7}</code> 這棵 subtree 單獨算的成本。公式只是把直接數的結果打包起來。</span></p>
+
+<h3><span data-tr="en">Length 2: computing <code>C(1,3)</code>, keys 3, 7, 9</span><span data-tr="zh">長度 2：算 <code>C(1,3)</code>，keys 3, 7, 9</span></h3>
+<p><span data-tr="en">Now <strong>three</strong> candidate roots. The formula pulls already-stored sub-answers straight from the table (<code>W(1,3)=14</code>):</span><span data-tr="zh">這次有<strong>三個</strong>候選 root。公式直接從表裡抓已經存好的子答案（<code>W(1,3)=14</code>）：</span></p>
+<p style="margin:.4rem 0"><code>root 3 → C(1,0)+C(2,3)+14 = 0 +12+14 = 26</code><br>
+<code><b>root 7 → C(1,1)+C(3,3)+14 = 8 + 3+14 = 25</b>  ✓</code><br>
+<code>root 9 → C(1,2)+C(4,3)+14 = 19+ 0+14 = 33</code></p>
+
+<p><strong><span data-tr="en">Verify the winner (root 7) by drawing it:</span><span data-tr="zh">把贏家（root 7）畫出來驗證：</span></strong></p>
+<div class="atree">        7   (lvl1)
+       / \
+      3   9    (both lvl2)
+     /|   |\
+   Q0 Q1 Q2 Q3  (all lvl3)</div>
+<p style="margin:.4rem 0"><code>key:  3·1(key7) + 3·2(key3) + 1·2(key9)  = 3 + 6 + 2 = 11</code><br>
+<code>gap:  (Q0+Q1+Q2+Q3)·2 = (2+3+1+1)·2     = 7·2 = 14</code><br>
+<code><b>total = 25</b></code> ✓</p>
+
+<p><span data-tr="en"><strong>Why root 7 beats the others.</strong> Root 3 buries keys 7 and 9 down the right chain (9 reaches level 3) → 26. Root 9 dumps the whole heavy left side <code>C(1,2)=19</code> below it → 33. Root 7 is balanced — keys 3 and 9 both stay at level 2 → cheapest, 25.</span><span data-tr="zh"><strong>為什麼 root 7 贏過其他。</strong>root 3 把 key 7、9 擠到右邊鏈下去（9 掉到 level 3）→ 26。root 9 把整個重的左半 <code>C(1,2)=19</code> 都壓在底下 → 33。root 7 最平衡——key 3 和 9 都停在 level 2 → 最便宜，25。</span></p>
+
+<p><span data-tr="en"><strong>The DP win, visible here.</strong> Computing <code>C(1,3)</code> at root 7 just grabbed the already-stored <code>C(1,1)=8</code> and <code>C(3,3)=3</code> — no recomputation. Root 3 reused <code>C(2,3)=12</code> (the best tree over 7,9, which itself had chosen root 7). Small ranges are solved once, then reused by every larger range — that is exactly how DP beats brute-force tree enumeration.</span><span data-tr="zh"><strong>DP 賺到的地方，在這裡看得到。</strong>算 <code>C(1,3)</code> 的 root 7 時，直接抓了已經存好的 <code>C(1,1)=8</code> 和 <code>C(3,3)=3</code>——完全沒重算。root 3 重用了 <code>C(2,3)=12</code>（7,9 的最佳樹，它自己又是選 root 7 算出來的）。小範圍只算一次，之後被每個更大範圍重複使用——這正是 DP 打敗暴力枚舉每棵樹的原因。</span></p>
+
+</details>
+
 <div class="chips">
   <span class="chip">Time: <b>O(n³)</b></span>
   <span class="chip">Space: <b>O(n²)</b></span>
