@@ -45,16 +45,16 @@
 <p><strong><span data-tr="en">Complexity:</span><span data-tr="zh">複雜度：</span></strong> <span data-tr="en">worst case still exponential — these are NP-complete problems (TSP, knapsack) and B&B does not change that. Its value is <em>pruning</em>: a good bound chops away enormous subtrees, so in practice it explores far fewer nodes than brute force. A&nbsp;tighter bound prunes more.</span><span data-tr="zh">最壞情況還是指數級——這些是 NP-complete 問題（TSP、knapsack），B&B 改變不了這點。它的價值在<em>剪枝</em>：一個好的 bound 能砍掉超大片的子樹，所以實務上它探索的節點數遠少於硬爆搜。bound 越緊，剪掉的越多。</span></p>
 
 <h2><span data-tr="en">A tiny illustration</span><span data-tr="zh">一個小示範</span></h2>
-<p><span data-tr="en">The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V₀</code> to sink <code>V₃</code>, choosing one vertex per layer. Here is the actual graph, with its edge weights — every number below is derived from <em>these</em> weights, nothing is assumed:</span><span data-tr="zh">投影片裡最乾淨的例子（Fig. 6-17）是一張 <strong>multi-stage graph</strong>：從源點 <code>V₀</code> 到匯點 <code>V₃</code> 找最便宜的路徑，每層挑一個頂點。下面就是那張圖，連邊上的權重都畫出來了——後面每個數字都是從<em>這些</em>權重算出來的，沒有任何用猜的：</span></p>
+<p><span data-tr="en">The cleanest example in the slides (Fig. 6-17) is a <strong>multi-stage graph</strong>: find the cheapest path from source <code>V<sub>0</sub></code> to sink <code>V<sub>3</sub></code>, choosing one vertex per layer. Here is the actual graph, with its edge weights — every number below is derived from <em>these</em> weights, nothing is assumed:</span><span data-tr="zh">投影片裡最乾淨的例子（Fig. 6-17）是一張 <strong>multi-stage graph</strong>：從源點 <code>V<sub>0</sub></code> 到匯點 <code>V<sub>3</sub></code> 找最便宜的路徑，每層挑一個頂點。下面就是那張圖，連邊上的權重都畫出來了——後面每個數字都是從<em>這些</em>權重算出來的，沒有任何用猜的：</span></p>
 <div id="mgraph"></div>
 <p><span data-tr="en"><strong>How we get the lower bound here.</strong> The bound is a <strong>relaxation</strong>: "cost committed so far + the cheapest edge in <em>each</em> stage still ahead." That's optimistic (no real path can spend <em>less</em> than the cheapest edge per stage), so it's a legitimate lower bound. The cheapest edge in stage 0 is 1, in stage 1 is 1, in stage 2 is 1. Worked examples you can check against the graph:</span><span data-tr="zh"><strong>這裡的下界怎麼來的。</strong>這個 bound 用的是 <strong>relaxation（鬆弛）</strong>：「目前已付出的成本 ＋ 之後<em>每一個</em>還沒走的 stage 裡最便宜的那條邊」。這很樂觀（沒有任何真實路徑能花得比「每個 stage 最便宜的邊」還少），所以它是合法的下界。stage 0 最便宜的邊是 1、stage 1 是 1、stage 2 是 1。你可以對著上面的圖驗算：</span></p>
 <ul>
-  <li><span data-tr="en"><code>bound(root V₀)</code> = 0 committed + cheapest edge of stages 0,1,2 = 0 + 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(root V₀)</code> ＝ 已付 0 ＋ stage 0、1、2 各自最便宜的邊 ＝ 0 + 1 + 1 + 1 ＝ <b>3</b>。</span></li>
-  <li><span data-tr="en"><code>bound(b = V₁,₁)</code> = cost(V₀→V₁,₁)=1, then 2 stages ahead (min 1+1) = 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(b = V₁,₁)</code> ＝ cost(V₀→V₁,₁)=1，後面還有 2 個 stage（min 1+1）＝ 1 + 1 + 1 ＝ <b>3</b>。</span></li>
-  <li><span data-tr="en"><code>bound(f = V₂,₃)</code> = cost(V₀→V₁,₁→V₂,₃)=1+1=2, then 1 stage ahead (min 1) = 2 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(f = V₂,₃)</code> ＝ cost(V₀→V₁,₁→V₂,₃)=1+1=2，後面剩 1 個 stage（min 1）＝ 2 + 1 ＝ <b>3</b>。</span></li>
-  <li><span data-tr="en"><code>bound(e = V₂,₁)</code> = cost(V₀→V₁,₁→V₂,₁)=1+6=7, + 1 = <b>8</b>. (Costly first edge → loose-but-honest bound, here ≥ best so it gets pruned.)</span><span data-tr="zh"><code>bound(e = V₂,₁)</code> ＝ cost(V₀→V₁,₁→V₂,₁)=1+6=7，＋ 1 ＝ <b>8</b>。（第一條邊就很貴 → 下界雖鬆但誠實，這裡 ≥ best 就被剪掉。）</span></li>
+  <li><span data-tr="en"><code>bound(root V<sub>0</sub>)</code> = 0 committed + cheapest edge of stages 0,1,2 = 0 + 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(root V<sub>0</sub>)</code> ＝ 已付 0 ＋ stage 0、1、2 各自最便宜的邊 ＝ 0 + 1 + 1 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(b = V<sub>1</sub>,<sub>1</sub>)</code> = cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>)=1, then 2 stages ahead (min 1+1) = 1 + 1 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(b = V<sub>1</sub>,<sub>1</sub>)</code> ＝ cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>)=1，後面還有 2 個 stage（min 1+1）＝ 1 + 1 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(f = V<sub>2</sub>,<sub>3</sub>)</code> = cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>)=1+1=2, then 1 stage ahead (min 1) = 2 + 1 = <b>3</b>.</span><span data-tr="zh"><code>bound(f = V<sub>2</sub>,<sub>3</sub>)</code> ＝ cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>)=1+1=2，後面剩 1 個 stage（min 1）＝ 2 + 1 ＝ <b>3</b>。</span></li>
+  <li><span data-tr="en"><code>bound(e = V<sub>2</sub>,<sub>1</sub>)</code> = cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>1</sub>)=1+6=7, + 1 = <b>8</b>. (Costly first edge → loose-but-honest bound, here ≥ best so it gets pruned.)</span><span data-tr="zh"><code>bound(e = V<sub>2</sub>,<sub>1</sub>)</code> ＝ cost(V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>1</sub>)=1+6=7，＋ 1 ＝ <b>8</b>。（第一條邊就很貴 → 下界雖鬆但誠實，這裡 ≥ best 就被剪掉。）</span></li>
 </ul>
-<p><span data-tr="en">The true cheapest path turns out to cost <b>5</b> via <code>V₀→V₁,₁→V₂,₃→V₃</code> (1+1+3). We expand best-first (smallest bound first) and prune any node whose bound is already ≥ the best <em>complete</em> path found so far. Notice the bounds are concrete integers, not "&gt; something" — every one is a single number you can recompute. Step through.</span><span data-tr="zh">真正最便宜的路徑成本是 <b>5</b>，走 <code>V₀→V₁,₁→V₂,₃→V₃</code>（1+1+3）。我們用 best-first 展開（下界最小的先開），並把任何下界已經 ≥ 目前找到的最佳<em>完整</em>路徑的節點剪掉。注意這些下界都是確定的整數，不是「&gt; 某個值」——每一個都是你能自己重算出來的單一數字。一步步看。</span></p>
+<p><span data-tr="en">The true cheapest path turns out to cost <b>5</b> via <code>V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>→V<sub>3</sub></code> (1+1+3). We expand best-first (smallest bound first) and prune any node whose bound is already ≥ the best <em>complete</em> path found so far. Notice the bounds are concrete integers, not "&gt; something" — every one is a single number you can recompute. Step through.</span><span data-tr="zh">真正最便宜的路徑成本是 <b>5</b>，走 <code>V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>→V<sub>3</sub></code>（1+1+3）。我們用 best-first 展開（下界最小的先開），並把任何下界已經 ≥ 目前找到的最佳<em>完整</em>路徑的節點剪掉。注意這些下界都是確定的整數，不是「&gt; 某個值」——每一個都是你能自己重算出來的單一數字。一步步看。</span></p>
 <div id="viz"></div>
 
 <div class="chips">
@@ -101,14 +101,14 @@
 //   is a valid LOWER bound (a relaxation: cheapest edge per remaining stage).
 const G = {
   nodes:[
-    {id:'V0', x:50, y:8,  label:'V₀'},
-    {id:'V11',x:20, y:38, label:'V₁₁'},
-    {id:'V12',x:50, y:38, label:'V₁₂'},
-    {id:'V13',x:80, y:38, label:'V₁₃'},
-    {id:'V21',x:20, y:68, label:'V₂₁'},
-    {id:'V22',x:50, y:68, label:'V₂₂'},
-    {id:'V23',x:80, y:68, label:'V₂₃'},
-    {id:'V3', x:50, y:94, label:'V₃'},
+    {id:'V0', x:50, y:8,  label:'V<sub>0</sub>'},
+    {id:'V11',x:20, y:38, label:'V<sub>11</sub>'},
+    {id:'V12',x:50, y:38, label:'V<sub>12</sub>'},
+    {id:'V13',x:80, y:38, label:'V<sub>13</sub>'},
+    {id:'V21',x:20, y:68, label:'V<sub>21</sub>'},
+    {id:'V22',x:50, y:68, label:'V<sub>22</sub>'},
+    {id:'V23',x:80, y:68, label:'V<sub>23</sub>'},
+    {id:'V3', x:50, y:94, label:'V<sub>3</sub>'},
   ],
   edges:[
     {u:'V0',v:'V11',w:1},{u:'V0',v:'V12',w:1},{u:'V0',v:'V13',w:1},
@@ -122,18 +122,18 @@ document.getElementById('mgraph').innerHTML = ZOO.graph(G, {});
 
 // ---- The same graph searched as a B&B tree (node label = vertex · lower bound) ----
 const nodes = [
-  {id:'a', x:50, y:8,  label:'V₀·3'},
-  {id:'b', x:20, y:34, label:'V₁₁·3'},
-  {id:'c', x:50, y:34, label:'V₁₂·3'},
-  {id:'d', x:80, y:34, label:'V₁₃·3'},
-  {id:'e', x:8,  y:62, label:'V₂₁·8'},
-  {id:'f', x:28, y:62, label:'V₂₃·3'},
-  {id:'h', x:44, y:62, label:'V₂₁·9'},
-  {id:'i', x:58, y:62, label:'V₂₂·8'},
-  {id:'j', x:74, y:62, label:'V₂₂·6'},
-  {id:'k', x:92, y:62, label:'V₂₃·11'},
-  {id:'g', x:28, y:90, label:'V₃·5'},
-  {id:'l', x:74, y:90, label:'V₃·8'},
+  {id:'a', x:50, y:8,  label:'V<sub>0</sub>·3'},
+  {id:'b', x:20, y:34, label:'V<sub>11</sub>·3'},
+  {id:'c', x:50, y:34, label:'V<sub>12</sub>·3'},
+  {id:'d', x:80, y:34, label:'V<sub>13</sub>·3'},
+  {id:'e', x:8,  y:62, label:'V<sub>21</sub>·8'},
+  {id:'f', x:28, y:62, label:'V<sub>23</sub>·3'},
+  {id:'h', x:44, y:62, label:'V<sub>21</sub>·9'},
+  {id:'i', x:58, y:62, label:'V<sub>22</sub>·8'},
+  {id:'j', x:74, y:62, label:'V<sub>22</sub>·6'},
+  {id:'k', x:92, y:62, label:'V<sub>23</sub>·11'},
+  {id:'g', x:28, y:90, label:'V<sub>3</sub>·5'},
+  {id:'l', x:74, y:90, label:'V<sub>3</sub>·8'},
 ];
 const edges = [
   {u:'a',v:'b'},{u:'a',v:'c'},{u:'a',v:'d'},
@@ -144,26 +144,26 @@ const edges = [
 ];
 
 const frames = [
-  { cap:`Root <b>a</b> = source V₀, cost so far 0. Three stages lie ahead, cheapest edge in each is 1, so lower bound = 0+1+1+1 = <b>3</b>. We expand best-first (open the smallest bound first) and keep the cheapest complete path as <code>best</code>.`,
-    capZh:`根節點 <b>a</b> = 起點 V₀，目前成本 0。前面還有三個 stage，每個 stage 最便宜的邊都是 1，所以下界 = 0+1+1+1 = <b>3</b>。我們用 best-first 展開（先打開下界最小的），並把目前最便宜的完整路徑記成 <code>best</code>。`,
+  { cap:`Root <b>a</b> = source V<sub>0</sub>, cost so far 0. Three stages lie ahead, cheapest edge in each is 1, so lower bound = 0+1+1+1 = <b>3</b>. We expand best-first (open the smallest bound first) and keep the cheapest complete path as <code>best</code>.`,
+    capZh:`根節點 <b>a</b> = 起點 V<sub>0</sub>，目前成本 0。前面還有三個 stage，每個 stage 最便宜的邊都是 1，所以下界 = 0+1+1+1 = <b>3</b>。我們用 best-first 展開（先打開下界最小的），並把目前最便宜的完整路徑記成 <code>best</code>。`,
     node:{a:'act'} },
-  { cap:`Branch on layer 1. Each of V₀→V₁,₁ (<b>b</b>), V₀→V₁,₂ (<b>c</b>), V₀→V₁,₃ (<b>d</b>) costs 1; two stages remain (min 1+1), so each bound = 1+1+1 = <b>3</b>. Three-way tie, all alive.`,
-    capZh:`在第 1 層分支。V₀→V₁,₁ (<b>b</b>)、V₀→V₁,₂ (<b>c</b>)、V₀→V₁,₃ (<b>d</b>) 每條都花 1；後面還剩兩個 stage（最少 1+1），所以每個的下界 = 1+1+1 = <b>3</b>。三方打平，全都還活著。`,
+  { cap:`Branch on layer 1. Each of V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub> (<b>b</b>), V<sub>0</sub>→V<sub>1</sub>,<sub>2</sub> (<b>c</b>), V<sub>0</sub>→V<sub>1</sub>,<sub>3</sub> (<b>d</b>) costs 1; two stages remain (min 1+1), so each bound = 1+1+1 = <b>3</b>. Three-way tie, all alive.`,
+    capZh:`在第 1 層分支。V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub> (<b>b</b>)、V<sub>0</sub>→V<sub>1</sub>,<sub>2</sub> (<b>c</b>)、V<sub>0</sub>→V<sub>1</sub>,<sub>3</sub> (<b>d</b>) 每條都花 1；後面還剩兩個 stage（最少 1+1），所以每個的下界 = 1+1+1 = <b>3</b>。三方打平，全都還活著。`,
     node:{a:'done', b:'frontier', c:'frontier', d:'frontier'} },
-  { cap:`Tie at 3 — break it by diving to <i>finish a path fast</i> (we want an incumbent to prune with). Expand <b>b</b> (V₁,₁): child <b>e</b> (V₂,₁) cost 1+6=7, bound 7+1=<b>8</b>; child <b>f</b> (V₂,₃) cost 1+1=2, bound 2+1=<b>3</b>. f ties the smallest bound, so follow f to sink <b>g</b>: full path cost 1+1+3=<b>5</b>. Set <code>best = 5</code>.`,
-    capZh:`在 3 打平——這次我們用「<i>趕快把一條路徑走完</i>」來打破平手（因為想先弄到一個 incumbent 來剪枝）。展開 <b>b</b> (V₁,₁)：子節點 <b>e</b> (V₂,₁) 成本 1+6=7，下界 7+1=<b>8</b>；子節點 <b>f</b> (V₂,₃) 成本 1+1=2，下界 2+1=<b>3</b>。f 平了最小下界，所以順著 f 一路走到 sink <b>g</b>：整條路徑成本 1+1+3=<b>5</b>。設 <code>best = 5</code>。`,
+  { cap:`Tie at 3 — break it by diving to <i>finish a path fast</i> (we want an incumbent to prune with). Expand <b>b</b> (V<sub>1</sub>,<sub>1</sub>): child <b>e</b> (V<sub>2</sub>,<sub>1</sub>) cost 1+6=7, bound 7+1=<b>8</b>; child <b>f</b> (V<sub>2</sub>,<sub>3</sub>) cost 1+1=2, bound 2+1=<b>3</b>. f ties the smallest bound, so follow f to sink <b>g</b>: full path cost 1+1+3=<b>5</b>. Set <code>best = 5</code>.`,
+    capZh:`在 3 打平——這次我們用「<i>趕快把一條路徑走完</i>」來打破平手（因為想先弄到一個 incumbent 來剪枝）。展開 <b>b</b> (V<sub>1</sub>,<sub>1</sub>)：子節點 <b>e</b> (V<sub>2</sub>,<sub>1</sub>) 成本 1+6=7，下界 7+1=<b>8</b>；子節點 <b>f</b> (V<sub>2</sub>,<sub>3</sub>) 成本 1+1=2，下界 2+1=<b>3</b>。f 平了最小下界，所以順著 f 一路走到 sink <b>g</b>：整條路徑成本 1+1+3=<b>5</b>。設 <code>best = 5</code>。`,
     node:{a:'done', b:'done', c:'frontier', d:'frontier', e:'dim', f:'done', g:'act'} },
   { cap:`Now <code>best = 5</code>. <b>Prune any live node with bound ≥ 5.</b> Node <b>e</b> has bound 8 ≥ 5 → killed, and its whole subtree with it. Still alive: c (3) and d (3), both below 5.`,
     capZh:`現在 <code>best = 5</code>。<b>把任何下界 ≥ 5 的活節點剪掉。</b> 節點 <b>e</b> 下界 8 ≥ 5 → 砍掉，連它底下整棵子樹一起砍。還活著的：c (3) 和 d (3)，兩個都低於 5。`,
     node:{a:'done', b:'done', g:'done', f:'done', e:'dim', c:'frontier', d:'frontier'} },
-  { cap:`Smallest live bound is 3 (tie c, d). Expand <b>c</b> (V₁,₂): child <b>h</b> (V₂,₁) cost 1+7=8, bound <b>9</b>; child <b>i</b> (V₂,₂) cost 1+6=7, bound <b>8</b>. Both ≥ 5 → <b>both pruned</b>. The V₁,₂ branch dies without finishing a path.`,
-    capZh:`最小的活節點下界是 3（c、d 打平）。展開 <b>c</b> (V₁,₂)：子節點 <b>h</b> (V₂,₁) 成本 1+7=8，下界 <b>9</b>；子節點 <b>i</b> (V₂,₂) 成本 1+6=7，下界 <b>8</b>。兩個都 ≥ 5 → <b>全剪掉</b>。V₁,₂ 這條分支還沒走完一條路徑就死了。`,
+  { cap:`Smallest live bound is 3 (tie c, d). Expand <b>c</b> (V<sub>1</sub>,<sub>2</sub>): child <b>h</b> (V<sub>2</sub>,<sub>1</sub>) cost 1+7=8, bound <b>9</b>; child <b>i</b> (V<sub>2</sub>,<sub>2</sub>) cost 1+6=7, bound <b>8</b>. Both ≥ 5 → <b>both pruned</b>. The V<sub>1</sub>,<sub>2</sub> branch dies without finishing a path.`,
+    capZh:`最小的活節點下界是 3（c、d 打平）。展開 <b>c</b> (V<sub>1</sub>,<sub>2</sub>)：子節點 <b>h</b> (V<sub>2</sub>,<sub>1</sub>) 成本 1+7=8，下界 <b>9</b>；子節點 <b>i</b> (V<sub>2</sub>,<sub>2</sub>) 成本 1+6=7，下界 <b>8</b>。兩個都 ≥ 5 → <b>全剪掉</b>。V<sub>1</sub>,<sub>2</sub> 這條分支還沒走完一條路徑就死了。`,
     node:{a:'done', b:'done', g:'done', f:'done', c:'done', h:'dim', i:'dim', d:'frontier'} },
-  { cap:`Expand <b>d</b> (V₁,₃): child <b>j</b> (V₂,₂) cost 1+4=5, bound 5+1=<b>6</b>; child <b>k</b> (V₂,₃) cost 1+9=10, bound <b>11</b>. Both 6 ≥ 5 and 11 ≥ 5 → <b>both pruned</b>. We do NOT expand j — the rule kills it (sink l below it would have cost 8 anyway).`,
-    capZh:`展開 <b>d</b> (V₁,₃)：子節點 <b>j</b> (V₂,₂) 成本 1+4=5，下界 5+1=<b>6</b>；子節點 <b>k</b> (V₂,₃) 成本 1+9=10，下界 <b>11</b>。6 ≥ 5、11 ≥ 5 → <b>兩個都剪掉</b>。我們不展開 j——規則直接把它砍了（反正它底下的 sink l 成本也會是 8）。`,
+  { cap:`Expand <b>d</b> (V<sub>1</sub>,<sub>3</sub>): child <b>j</b> (V<sub>2</sub>,<sub>2</sub>) cost 1+4=5, bound 5+1=<b>6</b>; child <b>k</b> (V<sub>2</sub>,<sub>3</sub>) cost 1+9=10, bound <b>11</b>. Both 6 ≥ 5 and 11 ≥ 5 → <b>both pruned</b>. We do NOT expand j — the rule kills it (sink l below it would have cost 8 anyway).`,
+    capZh:`展開 <b>d</b> (V<sub>1</sub>,<sub>3</sub>)：子節點 <b>j</b> (V<sub>2</sub>,<sub>2</sub>) 成本 1+4=5，下界 5+1=<b>6</b>；子節點 <b>k</b> (V<sub>2</sub>,<sub>3</sub>) 成本 1+9=10，下界 <b>11</b>。6 ≥ 5、11 ≥ 5 → <b>兩個都剪掉</b>。我們不展開 j——規則直接把它砍了（反正它底下的 sink l 成本也會是 8）。`,
     node:{a:'done', b:'done', g:'done', f:'done', c:'done', d:'done', j:'dim', k:'dim', l:'dim'} },
-  { cap:`No live node has bound < 5, so nothing can beat the incumbent. Answer: cheapest path <b>V₀→V₁,₁→V₂,₃→V₃</b>, cost <b>5</b> (node <b>g</b>). Bounding pruned e, h, i, j, k — five subtrees never searched.`,
-    capZh:`沒有任何活節點的下界 < 5，所以沒有誰能贏過目前的 incumbent。答案：最便宜的路徑 <b>V₀→V₁,₁→V₂,₃→V₃</b>，成本 <b>5</b>（節點 <b>g</b>）。靠 bounding 剪掉了 e、h、i、j、k——有五棵子樹根本沒搜過。`,
+  { cap:`No live node has bound < 5, so nothing can beat the incumbent. Answer: cheapest path <b>V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>→V<sub>3</sub></b>, cost <b>5</b> (node <b>g</b>). Bounding pruned e, h, i, j, k — five subtrees never searched.`,
+    capZh:`沒有任何活節點的下界 < 5，所以沒有誰能贏過目前的 incumbent。答案：最便宜的路徑 <b>V<sub>0</sub>→V<sub>1</sub>,<sub>1</sub>→V<sub>2</sub>,<sub>3</sub>→V<sub>3</sub></b>，成本 <b>5</b>（節點 <b>g</b>）。靠 bounding 剪掉了 e、h、i、j、k——有五棵子樹根本沒搜過。`,
     node:{a:'done', b:'done', f:'done', g:'done', c:'done', d:'done', j:'dim', k:'dim', l:'dim', e:'dim', h:'dim', i:'dim'} },
 ];
 

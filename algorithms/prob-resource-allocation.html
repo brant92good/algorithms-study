@@ -49,10 +49,10 @@
 
 <div class="chips">
   <span class="chip">Type: <b>DP</b></span>
-  <span class="chip">Time: <b>O(n · m²)</b></span>
+  <span class="chip">Time: <b>O(n · m<sup>2</sup>)</b></span>
   <span class="chip">Answer: <b>profit 13</b></span>
 </div>
-<p style="font-size:.85rem;color:var(--mut)"><span data-tr="en"><b>Where O(n·m²) comes from:</b> the table has one row per project and one column per budget value, so there are <code>n × m</code> cells to fill. Filling a single cell <code>f(i, q)</code> means trying every <code>k = 0..q</code> — up to <code>m</code> choices each. So <code>n·m</code> cells × <code>m</code> work per cell = <code>O(n·m²)</code>. This is exactly why the DP beats brute force: instead of enumerating exponentially many full splits, each cell is computed once and reused by later rows.</span><span data-tr="zh"><b>O(n·m²) 怎麼來的：</b>這張表一個 project 一列、一個預算值一欄，所以總共有 <code>n × m</code> 格要填。填一格 <code>f(i, q)</code> 要把每個 <code>k = 0..q</code> 都試一遍——最多 <code>m</code> 種選擇。所以 <code>n·m</code> 格 × 每格 <code>m</code> 的工作 = <code>O(n·m²)</code>。這正是 DP 贏過暴力法的地方：不用把指數多種完整分法一一列出來，每一格只算一次，後面的列都能直接重用。</span></p>
+<p style="font-size:.85rem;color:var(--mut)"><span data-tr="en"><b>Where O(n·m<sup>2</sup>) comes from:</b> the table has one row per project and one column per budget value, so there are <code>n × m</code> cells to fill. Filling a single cell <code>f(i, q)</code> means trying every <code>k = 0..q</code> — up to <code>m</code> choices each. So <code>n·m</code> cells × <code>m</code> work per cell = <code>O(n·m<sup>2</sup>)</code>. This is exactly why the DP beats brute force: instead of enumerating exponentially many full splits, each cell is computed once and reused by later rows.</span><span data-tr="zh"><b>O(n·m<sup>2</sup>) 怎麼來的：</b>這張表一個 project 一列、一個預算值一欄，所以總共有 <code>n × m</code> 格要填。填一格 <code>f(i, q)</code> 要把每個 <code>k = 0..q</code> 都試一遍——最多 <code>m</code> 種選擇。所以 <code>n·m</code> 格 × 每格 <code>m</code> 的工作 = <code>O(n·m<sup>2</sup>)</code>。這正是 DP 贏過暴力法的地方：不用把指數多種完整分法一一列出來，每一格只算一次，後面的列都能直接重用。</span></p>
 
 <h2 class="qa-head"><span data-tr="en">Quick check</span><span data-tr="zh">小測驗</span> <span class="score" id="score">0 / 2 answered</span></h2>
 
