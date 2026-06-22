@@ -227,22 +227,58 @@ T(n) = T(n/5) + T(3n/4) + O(n) = O(n)
 <!-- ============ Q8 ============ -->
 <div class="qcard">
 <h3>Q8 · Prove Clique decision ∝ Node Cover decision（10%）</h3>
-<p>核心引理：<strong>S 是 G 的 clique ⟺ V∖S 是<u>補圖</u> Ḡ 的 vertex cover。</strong></p>
-<pre class="mx">建構：給 CLIQUE 實例 (G, k)，|V|=n。
-  造補圖 Ḡ：{u,v}∈Ē  ⟺  {u,v}∉E
-  輸出 NODE COVER 實例 (Ḡ, n−k)。   ← 多項式時間
+<p class="tag">這題其實有在講義裡：<strong>Alg08，Reduction 10，slides 62–63</strong>（用補圖 complement graph）。下面從零教一次，最後給精簡面試版。</p>
 
-(⇒) S 是 G 中大小 k 的 clique：
-    取 Ḡ 任一邊 {u,v} → {u,v}∉E → u,v 不同時在 S
-    → 至少一端在 V∖S → V∖S 蓋住 Ḡ 每條邊
-    → V∖S 是大小 n−k 的 vertex cover ✓
-(⇐) C 是 Ḡ 大小 ≤ n−k 的 vertex cover：
-    V∖C（大小 ≥ k）內沒有 Ḡ 的邊
-    → V∖C 內每對都是 G 的邊 → 是 G 的 clique ✓
+<div class="note"><strong>先講會用到的符號（之後一直出現）：</strong><br>
+<code>V</code> = 圖裡<strong>所有點</strong>的集合；　<code>V\K</code> = 「V 裡面、<strong>但不在 K 裡</strong>的點」（K 以外的點，set difference）。<br>
+<code>∝</code> 和 <code>⇔</code> 在這題都當「<strong>可以互相翻譯</strong>」用（A∝B = A 能翻成 B；圖上的 ⇔ = 兩邊答案同生同死）。</div>
 
-∴ G 有 size-k clique ⟺ Ḡ 有 size-(n−k) vertex cover
-  多項式建構 → CLIQUE ∝ NODE COVER ∎</pre>
-<div class="say">「關鍵一句話：<strong>S 在 G 是 clique，等於 V∖S 在補圖 Ḡ 是 vertex cover</strong>。所以給 Clique 的 (G,k)，我就造補圖 Ḡ、問它有沒有大小 <strong>n−k</strong> 的 node cover。證兩個方向：clique 裡兩兩相鄰 → 補圖裡它們之間沒邊 → 補圖每條邊至少一端在 clique 外 → 外面那組就 cover 了所有邊；反向同理。建構是多項式 → Clique ∝ Node Cover。」</div>
+<p><strong>先把三個名詞講清楚（看下面那張圖會更好懂）。</strong></p>
+
+<div class="note"><strong>① clique（團）</strong>：圖裡一群點，<strong>兩兩之間都有邊</strong>（每對都直接相連）。<br>
+<strong>Clique decision problem</strong>：給一張圖 G 和一個數字 k，問「G 裡<strong>存不存在</strong>一個大小 ≥ k 的 clique？」（是/否）。<br>
+<span class="tag">例：下圖左邊 {c,d,e,f} 四個點兩兩都有邊 → 是一個 size-4 的 clique。</span></div>
+
+<div class="note"><strong>② node cover / vertex cover（點覆蓋）</strong>：一群點 S，<strong>每一條邊都至少有一端在 S 裡</strong>（用 S 把所有邊「蓋住」）。<br>
+<strong>Node Cover decision problem</strong>：給圖 H 和數字 j，問「存不存在一個大小 ≤ j 的 node cover？」<br>
+<span class="tag">例：下圖右邊每條邊都碰到 a 或 b → {a,b} 蓋住全部邊 → 是一個 size-2 的 node cover。</span></div>
+
+<div class="note"><strong>③ ∝ 是什麼（reduction，化約）</strong>：<code>A ∝ B</code> = 「把 A 的題目<strong>翻譯</strong>成 B 的題目」，翻譯只花多項式時間，且<strong>A 有解 ⟺ 翻出來的 B 有解</strong>。意義：若你會解 B，就會解 A → B <strong>至少和 A 一樣難</strong>。這題要證 <code>Clique ∝ Node Cover</code>：把任何 clique 問題翻成一個 node cover 問題。</div>
+
+<p><strong>關鍵工具：補圖（complement graph）G′。</strong>同樣那些點，把邊<strong>反過來</strong>——G 裡<u>有</u>的邊，G′ 裡就<u>沒有</u>；G 裡<u>沒有</u>的，G′ 裡就<u>有</u>。</p>
+
+<img class="qfig" src="exam-q8.png" alt="Clique in G corresponds to node cover in complement graph G-prime">
+
+<p><strong>核心觀念（一條等價鏈）：</strong></p>
+<p class="tag">先補一個名詞：<strong>獨立集 (independent set)</strong> = 一群點，彼此<strong>之間完全沒有邊</strong>（剛好和 clique 相反）。</p>
+<pre class="mx">G 裡的 clique  K
+   │ clique 內兩兩有邊 → 補圖把「G 有的邊」全刪 → 這些邊在 G′ 裡通通消失
+   ▼
+K 在 G′ 裡是「獨立集」(K 內部完全沒有邊)
+   │ 為什麼？若 G′ 有一條邊兩端都在 K 裡，代表那一對在 G 裡「沒邊」；
+   │ 但 K 是 clique、內部兩兩都有邊 → 矛盾。所以 G′ 的邊不可能整條躲在 K 內，
+   │ 每條邊至少有一端落在 K 外面。
+   ▼
+K 以外的點 V\K  蓋住 G′ 的每一條邊  = G′ 的 node cover
+
+size 對應：  |K| = k    →    |V\K| = n − k</pre>
+
+<p><strong>所以建構超簡單：</strong>給 Clique 實例 <code>(G, k)</code>，造補圖 <code>G′</code>，輸出 Node Cover 實例 <code>(G′, n−k)</code>。造補圖是 <code>O(n²)</code>，多項式。</p>
+
+<p><strong>兩個方向都要證（⟺）：</strong></p>
+<pre class="mx">(⇒) 若 G 有大小 k 的 clique K：
+    G′ 任一條邊 (u,v) → 在 G 裡(u,v)沒邊 → u,v 不會同時在 K
+    （因為 K 內部兩兩都有邊）→ 至少一端在 V\K
+    → V\K 蓋住 G′ 每條邊 → V\K 是大小 n−k 的 node cover ✓
+
+(⇐) 若 G′ 有大小 n−k 的 node cover C：
+    V\C（大小 k）內部沒有任何 G′ 的邊（否則那條邊沒被 C 蓋到）
+    → V\C 在 G′ 是獨立集 → 在 G 裡兩兩有邊 → 是 G 的 clique ✓</pre>
+
+<p>兩邊合起來：<strong>G 有 size-k clique ⟺ G′ 有 size-(n−k) node cover</strong>。建構多項式 → <code>Clique ∝ Node Cover</code>。∎<br>
+<span class="tag">附帶結論：因為 Clique 是 NP-complete，這個 reduction 也證明了 Node Cover 是 NP-hard（在 NP 裡 → NP-complete）。</span></p>
+
+<div class="say">「先講三個名詞：<strong>clique</strong> = 兩兩相連的點群；<strong>node cover</strong> = 蓋住每條邊的點群；<strong>∝</strong> = 把一題多項式翻譯成另一題、答案同生同死。要證 Clique ∝ Node Cover，工具是<strong>補圖 G′</strong>（邊反過來）。一句話：<strong>K 是 G 的 clique，等於 V\K 是 G′ 的 node cover</strong>，size 從 k 變成 n−k。直覺：clique 內部兩兩有邊，這些邊在 G′ 消失，所以 G′ 的邊都在 clique 外面，clique 外那群點就把 G′ 全蓋住了。兩個方向都成立、建構是多項式，所以 Clique ∝ Node Cover。這在講義 Reduction 10、slide 62–63。」</div>
 </div>
 
 <div class="note" style="margin-top:2rem"><strong>面試心法（通用）：</strong>每題先講<strong>用什麼方法</strong>（reduce／DP／A*／prune-and-search），再講<strong>關鍵那一步</strong>（reduction 方向、VCG cycle、pivot 怎麼選、下界怎麼來）。NP 題最愛考<strong>方向</strong>和 <strong>P vs NP 未解</strong>這兩個陷阱——Q4(a) 跟 Q4(b) 就是。</div>
