@@ -153,8 +153,17 @@ net5 = 單一終端(col10) → 沒有水平線、可略</pre>
 <p><strong>(b)</strong> 「A is NP-complete. Since B is polynomially reducible to A, B must be NP-complete.」　<span class="verdict v-wrong">正解：✗ 錯</span></p>
 <p><strong>根據：NP-complete 的定義（reduction 方向）。</strong><code>B ∝ A</code>（B reduce 到 A）只代表 <strong>B 不會比 A 難</strong>，B 甚至可能在 P 裡。要證 B 是 NPC，必須把<strong>已知的 NPC reduce 到 B</strong>（<code>A ∝ B</code>），再證 B ∈ NP。方向剛好反了。</p>
 <p><strong>(c)</strong> 「If the lower bound of an NP-complete problem is exponential, then NP ≠ P.」　<span class="verdict v-ok">正解：○ 對</span></p>
-<p><strong>根據：P 的定義 + NPC ⊆ NP。</strong>指數下界 = 該 NPC 問題<u>沒有</u>多項式解 → 它不在 P。但 NPC 問題在 NP 裡，「某個 NPC ∉ P」就等於 P ≠ NP。</p>
-<div class="say">「(a) 是錯的——重點在『never』。我們<strong>沒有證明</strong> NPC 沒有多項式解，那就是 P vs NP，至今未解；若 P=NP 它就有多項式解。所以不能說『永遠不可能』。(b) 也是錯的，reduction <strong>方向</strong>要反過來：B reduce 到 A 只說 B 不比 A 難，要證 B 難必須把已知 NPC reduce 到 B。(c) 對：指數下界代表這個 NPC 不在 P，而它在 NP，所以 P≠NP。」</div>
+<p><strong>根據：P 的定義 +「P ⊆ NP」。</strong>一步一步推：</p>
+<pre class="mx">1. 指數下界 = 證明了「這個問題沒有多項式時間演算法」。
+2. 「有多項式解」正是 P 的定義 → 沒有 → 這個問題 ∉ P。
+3. 它是 NP-complete → 它一定 ∈ NP。
+4. 所以我們手上有一個問題：∈ NP 但 ∉ P。
+5. 而 P ⊆ NP 永遠成立（P 包含在 NP 裡）。
+   假設 P = NP：那 NP 裡每個問題都該也在 P 裡。
+   但第 4 步找到一個「在 NP、不在 P」的問題 → 矛盾。
+   ∴ P ≠ NP。</pre>
+<p class="tag">白話：只要在 NP 裡<strong>抓到任何一個跑不出多項式解的問題</strong>，就證明 P 跟 NP 不一樣大 → P ≠ NP。指數下界就是「抓到」的那一刻。</p>
+<div class="say">「(a) 是錯的——重點在『never』。我們<strong>沒有證明</strong> NPC 沒有多項式解，那就是 P vs NP，至今未解；若 P=NP 它就有多項式解。所以不能說『永遠不可能』。(b) 也是錯的，reduction <strong>方向</strong>要反過來：B reduce 到 A 只說 B 不比 A 難，要證 B 難必須把已知 NPC reduce 到 B。(c) 對：指數下界代表這個問題沒有多項式解 → 它<strong>不在 P</strong>；但它是 NPC 所以<strong>在 NP</strong>。我們等於在 NP 裡抓到一個不在 P 的問題。因為 P 一定包含在 NP 裡，如果 P=NP，NP 的東西就都該在 P；現在抓到反例 → P≠NP。」</div>
 </div>
 
 <!-- ============ Q5 ============ -->
