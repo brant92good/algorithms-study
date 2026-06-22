@@ -1,0 +1,204 @@
+<!DOCTYPE html><html lang="zh-Hant-TW"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期末考訂正 + 面試準備 — Algorithm Zoo</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/zoo.css">
+<script src="../assets/site.js"></script>
+<style>
+  .exam-photo{max-width:480px;width:100%;border:1px solid var(--rule);border-radius:8px;display:block;margin:1rem auto}
+  .qfig{max-width:100%;border:1px solid var(--rule);border-radius:8px;display:block;margin:1rem auto;background:#fff}
+  .qcard{border:1px solid var(--rule);border-radius:10px;padding:1rem 1.2rem;margin:1.4rem 0;background:var(--card,rgba(255,255,255,.02))}
+  .qcard h3{margin-top:0}
+  .verdict{display:inline-block;font-weight:700;padding:.1rem .5rem;border-radius:6px;font-size:.85rem}
+  .v-wrong{background:#5a1f1f;color:#ffd4d4}
+  .v-ok{background:#1f4a2a;color:#cdebd5}
+  .say{border-left:3px solid #f0ad4e;padding:.5rem .9rem;margin:.8rem 0;background:rgba(240,173,78,.08);border-radius:0 6px 6px 0}
+  .say::before{content:"🎤 面試這樣講：";font-weight:700;color:#f0ad4e;display:block;margin-bottom:.3rem}
+  pre.mx{font-family:ui-monospace,monospace;background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.8rem;overflow-x:auto;font-size:.85rem;line-height:1.45}
+  table.dp{border-collapse:collapse;margin:.6rem 0;font-size:.8rem}
+  table.dp td,table.dp th{border:1px solid var(--rule);padding:.25rem .5rem;text-align:center}
+  table.dp th{color:var(--mut)}
+  .tag{font-size:.78rem;color:var(--mut)}
+</style>
+</head><body>
+<div class="topbar"><div class="inner">
+  <a class="home" href="../index.html">📘 Study Hub</a>
+  <a class="crumb" href="index.html">🧬 Algorithm Zoo</a>
+  <span class="sp"></span>
+  <button class="themebtn" onclick="toggleTheme()" title="Toggle dark mode">◐</button>
+</div></div>
+<div class="wrap">
+
+<div class="kicker">期末考訂正 · 加分面試準備</div>
+<h1>期末考 8 題：正確解 + 面試怎麼講</h1>
+<div class="mission">老師給加分面試，針對<strong>答錯的題目</strong>口頭問答。下面每題都有 <strong>正確解</strong> 和 <strong>🎤 面試這樣講</strong>。所有數字都用程式跑過、再用 Opus subagent 獨立複驗一次（Q3 channel routing 因為是<strong>改過的</strong>題目，特別小心、沒有套課本記憶）。</div>
+
+<img class="exam-photo" src="exam-q.jpg" alt="期末考考卷照片">
+<p class="tag" style="text-align:center">考卷原圖（2026/6/16）</p>
+
+<div class="note"><strong>先講結論——你最可能被扣分的是 Q4(a)。</strong>你在考卷上把 4(a) 圈成「○（對）」，但正確答案是 <strong>✗（錯）</strong>。下面 Q4 詳述。其餘 Q1、Q2、Q3、Q5–Q8 不管你考卷寫什麼，這裡都給完整正解 + 口頭講法，面試直接用。</p>
+
+<!-- ============ Q1 ============ -->
+<div class="qcard">
+<h3>Q1 · TSP by Branch-and-Bound（15%）</h3>
+<p>距離矩陣（5 城，對角線 ∞）：</p>
+<pre class="mx">     1   2   3   4   5
+1    ∞   9   2   12  8
+2    3   ∞   6   19  9
+3    5   8   ∞   6   16
+4    9   7   5   ∞   11
+5    18  14  9   8   ∞</pre>
+
+<p><strong>① reduce 矩陣 → 下界。</strong>每列減最小值（2,3,5,5,8），再每行減最小值（0,2,0,0,6）：</p>
+<pre class="mx">列減 2+3+5+5+8 = 23 ，行減 0+2+0+0+6 = 8
+root 下界 = 23 + 8 = 31
+
+reduced matrix:
+ ∞  5  0 10  0
+ 0  ∞  3 16  0
+ 0  1  ∞  1  5
+ 4  0  0  ∞  0
+10  4  1  0  ∞</pre>
+
+<p><strong>② decision tree（branch on include/exclude an arc）。</strong>挑「exclusion penalty 最大」的 0 格當分裂弧。各 0 格 penalty = (同列其他最小) + (同行其他最小)。最大的是弧 <strong>5→4</strong>，penalty = 1+1 = <strong>2</strong>：</p>
+<pre class="mx">              All tours  (LB=31)
+             /                    \
+    include 5-4 (LB=31)     exclude 5-4 (LB=31+2=33)
+         |
+   沿最小下界往下展開 (best-first)，
+   再 include 1-5, 4-3, 3-2 … 收斂</pre>
+
+<p><strong>③ 最佳解（brute-force 驗證，唯一最佳，次佳=33）：</strong></p>
+<pre class="mx">最佳 tour:  1 → 5 → 4 → 3 → 2 → 1
+成本     :  8 + 8 + 5 + 8 + 3 = 32</pre>
+<div class="say">「先 row/column reduction 得下界 <strong>31</strong>。decision tree 用 include/exclude 一條弧來分支，每個節點重算 reduced matrix 更新下界，<strong>best-first 展開下界最小的節點</strong>，下界 ≥ 目前最佳 tour 就 prune。挑分裂弧的標準是『把這條 0 弧排除後下界上升最多』——這裡是 5-4，penalty 2。最後最佳 tour 是 <strong>1-5-4-3-2-1，成本 32</strong>。注意下界 31 < 最佳 32，這是正常的，鬆弛下界本來就會略低。」</div>
+</div>
+
+<!-- ============ Q2 ============ -->
+<div class="qcard">
+<h3>Q2 · Longest Common Subsequence（15%）</h3>
+<p><code>A = b a b a c d a e f</code>，<code>B = b b a e b d e c f</code>。DP：<code>L[i][j]=L[i-1][j-1]+1</code>（字元相同）否則 <code>max(L[i-1][j], L[i][j-1])</code>。</p>
+<table class="dp"><tr><th></th><th>·</th><th>b</th><th>b</th><th>a</th><th>e</th><th>b</th><th>d</th><th>e</th><th>c</th><th>f</th></tr>
+<tr><th>·</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>b</th><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><th>a</th><td>0</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><th>b</th><td>0</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr>
+<tr><th>a</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr>
+<tr><th>c</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><th>d</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td>4</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><th>a</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td>4</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><th>e</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td><td>5</td></tr>
+<tr><th>f</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td><td><b>6</b></td></tr></table>
+<p><strong>LCS 長度 = 6</strong>，一條 LCS = <strong><code>b a b d e f</code></strong>（另一條合法答案 <code>bbadef</code> 也對）。</p>
+<pre class="mx">驗證 babdef:
+A 位置: b(1) a(2) b(3) d(6) e(8) f(9)   遞增 ✓
+B 位置: b(1) a(3) b(5) d(6) e(7) f(9)   遞增 ✓</pre>
+<div class="say">「填 9×9 的 L 表，右下角 <strong>6</strong> 就是長度。從右下角 trace-back：字元相同就斜走並記下字元，否則往大的那邊（上或左）走。倒著收集再反轉，得到 <strong>babdef</strong>。長度 6 是唯一的，序列可能有不只一條（babdef / bbadef 都算對）。」</div>
+</div>
+
+<!-- ============ Q3 ============ -->
+<div class="qcard">
+<h3>Q3 · Channel Routing by A*（15%）<span class="tag"> ← 改過的題目，特別小心</span></h3>
+<p>13 欄的終端（已逐欄核對原圖，並用 subagent 重讀驗證）：</p>
+<pre class="mx">col :  1  2  3  4  5  6  7  8  9 10 11 12 13
+top :  4  8  0  0  7  3  0  6  0  5  1  9  2
+bot :  0  0  7  8  0  4  0  2  3  9  2  6  1</pre>
+<p>每個 net 的終端欄 → 水平 span：</p>
+<pre class="mx">net1[11,13] net2[8,13] net3[6,9] net4[1,6]
+net6[8,12] net7[3,5] net8[2,4] net9[10,12]
+net5 = 單一終端(col10) → 沒有水平線、可略</pre>
+
+<p><strong>HCG（水平限制）+ VCG（垂直限制）：</strong></p>
+<img class="qfig" src="exam-q3-hcgvcg.png" alt="HCG and VCG for the channel routing instance">
+<ul>
+<li><strong>HCG</strong>：span 重疊的 net 不能同 track。最大 clique = <strong>{1,2,6,9} = 4</strong> → 至少要 <strong>4 條 track</strong>（= max local density，瓶頸在第 11–12 欄）。</li>
+<li><strong>VCG</strong>：每欄 top net 必須在 bottom net 之上。邊：3→4、6→2、9→6、1→2、2→1。<strong>⚠ 1→2 和 2→1 形成 cycle</strong>（col11 是 1 上 2 下、col13 是 2 上 1 下）。</li>
+</ul>
+<div class="note"><strong>這題改過的「陷阱」就是這個 VCG cycle。</strong>有 cycle 代表<strong>沒辦法用直線（無 dogleg）排線</strong>——net1 要在 net2 上、net2 又要在 net1 上，互相矛盾。必須對 net 2 做 <strong>dogleg</strong>（把它拆成左右兩段、用一段垂直線換 track），才能左邊在 net1 下、右邊在 net1 上。</div>
+
+<p><strong>A* track-assignment 搜尋</strong>（<code>f = g + h</code>，g = 已用 track 數，h = 剩餘 nets 的 max local density，是 admissible 下界）：</p>
+<img class="qfig" src="exam-q3-astar.png" alt="A* search tree for track assignment with deadlock and dogleg">
+<p>A* 一條 track 一條 track 往下排：先 {7,3,9} → {8,6} → {4}，f 一路維持 4。剩 net1、net2 時撞上 <strong>VCG cycle 死結</strong>，A* 在這裡 dogleg net2 → 完成，<strong>共 5 條 track</strong>（下界 density 是 4，cycle 逼出第 5 條）。</p>
+<div class="say">「我先建 <strong>HCG</strong>，最大 clique 4 = max local density，所以至少 4 條 track。再建 <strong>VCG</strong>，發現 <strong>net1 跟 net2 形成 cycle</strong>（col11 一個順序、col13 相反順序）。這代表純直線排不出來，要對 net2 做 <strong>dogleg</strong>。A* 用 <code>f = g + h</code>，g 是已用 track 數、h 是剩下 nets 的 max density 當下界，每次展開 f 最小的；排到 net1、net2 撞死結就 dogleg。最後 <strong>5 條 track</strong>。重點是我有抓到 VCG 那個 cycle——這題跟課本不一樣，就是故意加了這個 cycle。」</div>
+</div>
+
+<!-- ============ Q4 ============ -->
+<div class="qcard">
+<h3>Q4 · 判斷對錯並解釋（15%）</h3>
+<p><strong>(a)</strong> 「If a problem is NP-complete, then there can never be a polynomial algorithm to solve it in worst cases.」　<span class="verdict v-wrong">正解：✗ 錯（你圈了 ○，扣分點）</span></p>
+<p>「永遠不可能有多項式解」是<strong>沒被證明</strong>的——這正是 P vs NP 未解問題。如果哪天 P=NP，NP-complete 問題就<strong>會</strong>有多項式解。所以「never」把一個未證明的事當成定論，是錯的。</p>
+<p><strong>(b)</strong> 「A is NP-complete. Since B is polynomially reducible to A, B must be NP-complete.」　<span class="verdict v-ok">正解：✗ 錯（你寫 ✗，對了）</span></p>
+<p>方向反了。<code>B ∝ A</code>（B reduce 到 A）只代表 <strong>B 不會比 A 難</strong>，B 甚至可能在 P 裡。要證 B 是 NPC，必須把<strong>已知的 NPC reduce 到 B</strong>（<code>A ∝ B</code>），再證 B ∈ NP。</p>
+<p><strong>(c)</strong> 「If the lower bound of an NP-complete problem is exponential, then NP ≠ P.」　<span class="verdict v-ok">正解：○ 對（你圈 ○，對了）</span></p>
+<p>指數下界 = 該 NPC 問題<strong>沒有</strong>多項式解 → 它不在 P。但 NPC 問題在 NP 裡，「某個 NPC ∉ P」就等於 P ≠ NP。</p>
+<div class="say">「(a) 是錯的——重點在『never』。我們<strong>沒有證明</strong> NPC 沒有多項式解，那就是 P vs NP，至今未解；若 P=NP 它就有多項式解。所以不能說『永遠不可能』。(b) 也是錯的，reduction <strong>方向</strong>要反過來：B reduce 到 A 只說 B 不比 A 難，要證 B 難必須把已知 NPC reduce 到 B。(c) 對：指數下界代表這個 NPC 不在 P，而它在 NP，所以 P≠NP。」</div>
+</div>
+
+<!-- ============ Q5 ============ -->
+<div class="qcard">
+<h3>Q5 · Prove or disprove: 2SAT is NP-complete（15%）</h3>
+<p><strong>Disprove——2SAT 不是 NP-complete，它在 P 裡（甚至線性時間）。</strong></p>
+<pre class="mx">作法：implication graph
+  每個子句 (x ∨ y) → 兩條 implication:  ¬x→y  和  ¬y→x
+  (2n 個 literal 節點)
+求 SCC（Tarjan/Kosaraju, O(n+m)）
+  若存在某變數 x 使 x 與 ¬x 在同一個 SCC → 不可滿足
+  否則 → 可滿足（照 SCC 的反拓樸序讀出真值）</pre>
+<p>因為線性可解 → 在 P → 不可能是 NP-complete（除非 P=NP）。對比：<strong>3SAT 才是 NP-complete</strong>，2→3 個 literal 就是難易的分界。</p>
+<div class="say">「Disprove。2SAT 在 <strong>P</strong> 裡——用 implication graph，每個 (x∨y) 變成 ¬x→y、¬y→x，跑 SCC，只要沒有變數 x 跟 ¬x 落在同一個 SCC 就可滿足，<strong>O(n+m) 線性</strong>。在 P 裡就不可能是 NPC。要小心的是 <strong>3SAT 才是 NPC</strong>，差一個 literal 難度就跳掉了。」</div>
+</div>
+
+<!-- ============ Q6 ============ -->
+<div class="qcard">
+<h3>Q6 · How to find the median of n numbers（10%）</h3>
+<p>這是 <strong>selection 問題</strong>（找第 k 小，median = 第 ⌈n/2⌉ 小）。<strong>median-of-medians（prune-and-search）→ 最壞 O(n)</strong>：</p>
+<pre class="mx">1. 每 5 個一組 → 各組找中位數
+2. 對「這些中位數」遞迴找中位數 → 當 pivot
+3. 用 pivot 把資料 partition 成 < / >
+4. 只往「median 所在的那一邊」遞迴（丟掉另一邊）
+
+T(n) = T(n/5) + T(3n/4) + O(n) = O(n)
+       └找pivot┘  └遞迴一邊┘
+係數和 1/5+3/4 = 19/20 < 1 → 收斂 → 線性</pre>
+<div class="say">「median 就是 selection 找第 n/2 小。用 <strong>median-of-medians</strong>：5 個一組取中位數、對中位數再遞迴取中位數當 pivot（保證 pivot 夠居中，每輪至少丟掉 3n/10），partition 後只遞迴一邊。recurrence <code>T(n)=T(n/5)+T(3n/4)+O(n)</code>，係數和 < 1 → <strong>最壞 O(n)</strong>。比先排序的 O(n log n) 好。」</div>
+</div>
+
+<!-- ============ Q7 ============ -->
+<div class="qcard">
+<h3>Q7 · Divide-and-conquer vs Prune-and-search（10%）</h3>
+<table class="dp" style="font-size:.85rem">
+<tr><th></th><th>Divide-and-Conquer</th><th>Prune-and-Search</th></tr>
+<tr><th>子問題</th><td>切成多個，<strong>每個都解</strong></td><td>每步<strong>丟掉一部分</strong>，只留一個遞迴</td></tr>
+<tr><th>合併</th><td>要 combine 子答案</td><td>不用 combine</td></tr>
+<tr><th>recurrence</th><td>T(n)=2T(n/2)+O(n)</td><td>T(n)=T(αn)+O(n), α&lt;1</td></tr>
+<tr><th>典型</th><td>merge sort = O(n log n)</td><td>selection / LP = O(n)</td></tr>
+</table>
+<div class="say">「兩個都把問題變小，差別在：<strong>divide-and-conquer 把問題切成幾塊、每一塊都解、再合併</strong>（像 merge sort，T(n)=2T(n/2)+O(n)=O(n log n)）。<strong>prune-and-search 每一步先判斷、丟掉一定比例的資料、只往剩下那一塊遞迴、不用合併</strong>（像找 median，T(n)=T(αn)+O(n)=O(n)）。關鍵字：D&C『分而治之、全解再合併』，P&S『砍掉一塊、只追一邊』。」</div>
+</div>
+
+<!-- ============ Q8 ============ -->
+<div class="qcard">
+<h3>Q8 · Prove Clique decision ∝ Node Cover decision（10%）</h3>
+<p>核心引理：<strong>S 是 G 的 clique ⟺ V∖S 是<u>補圖</u> Ḡ 的 vertex cover。</strong></p>
+<pre class="mx">建構：給 CLIQUE 實例 (G, k)，|V|=n。
+  造補圖 Ḡ：{u,v}∈Ē  ⟺  {u,v}∉E
+  輸出 NODE COVER 實例 (Ḡ, n−k)。   ← 多項式時間
+
+(⇒) S 是 G 中大小 k 的 clique：
+    取 Ḡ 任一邊 {u,v} → {u,v}∉E → u,v 不同時在 S
+    → 至少一端在 V∖S → V∖S 蓋住 Ḡ 每條邊
+    → V∖S 是大小 n−k 的 vertex cover ✓
+(⇐) C 是 Ḡ 大小 ≤ n−k 的 vertex cover：
+    V∖C（大小 ≥ k）內沒有 Ḡ 的邊
+    → V∖C 內每對都是 G 的邊 → 是 G 的 clique ✓
+
+∴ G 有 size-k clique ⟺ Ḡ 有 size-(n−k) vertex cover
+  多項式建構 → CLIQUE ∝ NODE COVER ∎</pre>
+<div class="say">「關鍵一句話：<strong>S 在 G 是 clique，等於 V∖S 在補圖 Ḡ 是 vertex cover</strong>。所以給 Clique 的 (G,k)，我就造補圖 Ḡ、問它有沒有大小 <strong>n−k</strong> 的 node cover。證兩個方向：clique 裡兩兩相鄰 → 補圖裡它們之間沒邊 → 補圖每條邊至少一端在 clique 外 → 外面那組就 cover 了所有邊；反向同理。建構是多項式 → Clique ∝ Node Cover。」</div>
+</div>
+
+<div class="note" style="margin-top:2rem"><strong>面試心法（通用）：</strong>每題先講<strong>用什麼方法</strong>（reduce／DP／A*／prune-and-search），再講<strong>關鍵那一步</strong>（reduction 方向、VCG cycle、pivot 怎麼選、下界怎麼來）。NP 題最愛考<strong>方向</strong>和 <strong>P vs NP 未解</strong>這兩個陷阱——Q4(a) 跟 Q4(b) 就是。</div>
+
+<p style="margin-top:2rem"><a href="index.html">← 回 Algorithm Zoo 地圖</a></p>
+</div>
+</body></html>
