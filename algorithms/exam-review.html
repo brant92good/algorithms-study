@@ -18,6 +18,8 @@
   table.dp{border-collapse:collapse;margin:.6rem 0;font-size:.8rem}
   table.dp td,table.dp th{border:1px solid var(--rule);padding:.25rem .5rem;text-align:center}
   table.dp th{color:var(--mut)}
+  table.tb td.p{background:rgba(240,173,78,.18)}
+  table.tb td.t{background:#f0ad4e;color:#1a1a1a;font-weight:700}
   .tag{font-size:.78rem;color:var(--mut)}
 </style>
 </head><body>
@@ -36,7 +38,7 @@
 <img class="exam-photo" src="exam-q.jpg" alt="期末考考卷照片">
 <p class="tag" style="text-align:center">考卷原圖（2026/6/16）</p>
 
-<div class="note"><strong>先講結論——你最可能被扣分的是 Q4(a)。</strong>你在考卷上把 4(a) 圈成「○（對）」，但正確答案是 <strong>✗（錯）</strong>。下面 Q4 詳述。其餘 Q1、Q2、Q3、Q5–Q8 不管你考卷寫什麼，這裡都給完整正解 + 口頭講法，面試直接用。</p>
+<div class="note"><strong>最值得注意的是 Q4(a)。</strong>考卷上 4(a) 被標成「○（對）」，但<strong>正解是 ✗（錯）</strong>——理由見下方 Q4（根據 P vs NP 尚未證明）。<em>（考卷上的 ○/✗ 標記不一定是你寫的，所以這裡只講「正解是什麼、根據什麼」，不論斷你對或錯。）</em>其餘各題都給完整正解 + 面試口頭講法。</div>
 
 <!-- ============ Q1 ============ -->
 <div class="qcard">
@@ -68,6 +70,16 @@ reduced matrix:
    沿最小下界往下展開 (best-first)，
    再 include 1-5, 4-3, 3-2 … 收斂</pre>
 
+<p><strong>best-first（“best-fit”）節點選擇規則 —— 這就是 branch-and-bound 怎麼挑下一個展開誰：</strong></p>
+<pre class="mx">1. 每個活節點(live node)都帶一個 lower bound。
+2. 永遠展開「lower bound 最小」的那個活節點（= 最有希望的）。
+3. 展開 = 對它的分裂弧 (i→j) 造兩個子節點：
+     include i-j：刪 row i、col j，設 (j,i)=∞ 防 subtour，重 reduce，更新 bound
+     exclude i-j：設 (i,j)=∞，重 reduce，更新 bound（bound 上升 = 該弧 penalty）
+4. 一旦某活節點 bound ≥ 目前最佳完整 tour (incumbent) → prune，不展開。
+5. 當「被選中要展開的節點」本身已是完整 tour → 它保證是最佳解，停。</pre>
+<p>選<strong>分裂弧</strong>的規則：在 reduced matrix 的 0 格裡，挑「<strong>exclusion penalty 最大</strong>」那個（penalty = 同列其他最小 + 同行其他最小）——排除它會把下界推最高，最快縮小搜尋。</p>
+
 <p><strong>③ 最佳解（brute-force 驗證，唯一最佳，次佳=33）：</strong></p>
 <pre class="mx">最佳 tour:  1 → 5 → 4 → 3 → 2 → 1
 成本     :  8 + 8 + 5 + 8 + 3 = 32</pre>
@@ -90,6 +102,11 @@ reduced matrix:
 <tr><th>e</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td><td>5</td></tr>
 <tr><th>f</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td><td><b>6</b></td></tr></table>
 <p><strong>LCS 長度 = 6</strong>，一條 LCS = <strong><code>b a b d e f</code></strong>（另一條合法答案 <code>bbadef</code> 也對）。</p>
+
+<p><strong>Trace-back 過程（同一張表上畫路線）。</strong>從右下角 <code>L[9][9]</code> 出發：<u>字元相同</u>就<strong>斜走</strong>到左上、並記下那個字元（<span style="background:#f0ad4e;color:#1a1a1a;padding:0 .3rem;border-radius:3px;font-weight:700">金格</span>）；<u>不同</u>就往「上或左較大的那一格」走（<span style="background:rgba(240,173,78,.25);padding:0 .3rem;border-radius:3px">淺色</span>）。金格由上到下收集 = <code>b a b d e f</code>。</p>
+<table class="dp tb"><tr><th></th><th>·</th><th>b</th><th>b</th><th>a</th><th>e</th><th>b</th><th>d</th><th>e</th><th>c</th><th>f</th></tr><tr><th>·</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><th>b</th><td>0</td><td>1</td><td class="t">1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr><tr><th>a</th><td>0</td><td>1</td><td>1</td><td class="t">2</td><td class="p">2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr><tr><th>b</th><td>0</td><td>1</td><td>2</td><td>2</td><td>2</td><td class="t">3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr><tr><th>a</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td class="p">3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr><tr><th>c</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td class="p">3</td><td>3</td><td>3</td><td>4</td><td>4</td></tr><tr><th>d</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td class="t">4</td><td>4</td><td>4</td><td>4</td></tr><tr><th>a</th><td>0</td><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td class="p">4</td><td>4</td><td>4</td><td>4</td></tr><tr><th>e</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td class="t">5</td><td class="p">5</td><td>5</td></tr><tr><th>f</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>5</td><td class="t">6</td></tr></table>
+<p class="tag">金格 6 個（=LCS 長度）：(b,col b)→(a,col a)→(b,col b)→(d,col d)→(e,col e)→(f,col f）。遇平手（上=左）時往上走，這裡兩條路徑分別給 babdef / bbadef。</p>
+
 <pre class="mx">驗證 babdef:
 A 位置: b(1) a(2) b(3) d(6) e(8) f(9)   遞增 ✓
 B 位置: b(1) a(3) b(5) d(6) e(7) f(9)   遞增 ✓</pre>
@@ -111,26 +128,28 @@ net5 = 單一終端(col10) → 沒有水平線、可略</pre>
 <p><strong>HCG（水平限制）+ VCG（垂直限制）：</strong></p>
 <img class="qfig" src="exam-q3-hcgvcg.png" alt="HCG and VCG for the channel routing instance">
 <ul>
-<li><strong>HCG</strong>：span 重疊的 net 不能同 track。最大 clique = <strong>{1,2,6,9} = 4</strong> → 至少要 <strong>4 條 track</strong>（= max local density，瓶頸在第 11–12 欄）。</li>
+<li><strong>HCG（課本 Fig 6-41 的定義）</strong>：節點 = net，邊 <code>a→b</code> = 「a 完全在 b 左邊，可以同 track（a 在左）」。<strong>一個 clique = 一條 track</strong>（裡面的 net 兩兩不重疊）。本題最大 clique 例如 <code>{8,3,1}</code>，size <strong>3</strong> → 單一 track 最多塞 3 個 net。<br><span class="tag">注意分清楚：HCG 的 clique（=track，最大 3）≠ track 數的下界。下界是另一個量 ↓。</span></li>
+<li><strong>下界 = max local density = 4</strong>（第 11–12 欄同時被 net 1,2,6,9 蓋住）。這就是 A* 的 <code>h</code>。所以 <strong>至少 4 條 track</strong>。</li>
 <li><strong>VCG</strong>：每欄 top net 必須在 bottom net 之上。邊：3→4、6→2、9→6、1→2、2→1。<strong>⚠ 1→2 和 2→1 形成 cycle</strong>（col11 是 1 上 2 下、col13 是 2 上 1 下）。</li>
 </ul>
-<div class="note"><strong>這題改過的「陷阱」就是這個 VCG cycle。</strong>有 cycle 代表<strong>沒辦法用直線（無 dogleg）排線</strong>——net1 要在 net2 上、net2 又要在 net1 上，互相矛盾。必須對 net 2 做 <strong>dogleg</strong>（把它拆成左右兩段、用一段垂直線換 track），才能左邊在 net1 下、右邊在 net1 上。</div>
+<div class="note"><strong>⚠ 老實說：投影片從頭到尾<u>沒有提過 dogleg</u>，課本範例的 VCG 是<u>無環</u>的（1→2, 3→4, 5→6）。</strong>這題被改成有 <strong>cycle 1⇄2</strong>，已經<strong>超出投影片教的範圍</strong>。cycle 代表 net1 要在 net2 上、net2 又要在 net1 上互相矛盾——純用課本的單線 A* 排不出來。要真的繞完，得對 net 2 做 <strong>dogleg</strong>（把它拆成左右兩段、中間用一段垂直線換 track），這是一般 channel routing 的標準技巧，但<strong>不在這門課的投影片裡</strong>。面試時這點要老實講，不要硬掰成課本方法。</div>
 
 <p><strong>A* track-assignment 搜尋</strong>（<code>f = g + h</code>，g = 已用 track 數，h = 剩餘 nets 的 max local density，是 admissible 下界）：</p>
 <img class="qfig" src="exam-q3-astar.png" alt="A* search tree for track assignment with deadlock and dogleg">
-<p>A* 一條 track 一條 track 往下排：先 {7,3,9} → {8,6} → {4}，f 一路維持 4。剩 net1、net2 時撞上 <strong>VCG cycle 死結</strong>，A* 在這裡 dogleg net2 → 完成，<strong>共 5 條 track</strong>（下界 density 是 4，cycle 逼出第 5 條）。</p>
-<div class="say">「我先建 <strong>HCG</strong>，最大 clique 4 = max local density，所以至少 4 條 track。再建 <strong>VCG</strong>，發現 <strong>net1 跟 net2 形成 cycle</strong>（col11 一個順序、col13 相反順序）。這代表純直線排不出來，要對 net2 做 <strong>dogleg</strong>。A* 用 <code>f = g + h</code>，g 是已用 track 數、h 是剩下 nets 的 max density 當下界，每次展開 f 最小的；排到 net1、net2 撞死結就 dogleg。最後 <strong>5 條 track</strong>。重點是我有抓到 VCG 那個 cycle——這題跟課本不一樣，就是故意加了這個 cycle。」</div>
+<p><strong>課本的 A* 怎麼跑（Fig 6-46/6-48）：</strong>root 的子節點 = HCG 的各個 <strong>maximal clique</strong>（每個 clique = 候選的第一條 track），但要符合 VCG（一條 track 只能放「沒有別的 net 一定要在它上面、且那些 net 還沒排」的 net）。<code>g</code> = 已用 track 數，<code>h</code> = 剩餘 nets 的 max local density，<strong>展開 <code>f=g+h</code> 最小的節點</strong>。</p>
+<p>本題 A* 先排 {7,3,9} → {8,6} → {4}（f 一路 4），剩 net1、net2 時撞上 <strong>VCG cycle 死結</strong>（兩個互相要在對方上面）→ <strong>課本 A* 到此做不完</strong>。要完成必須 dogleg net2（投影片外），補一條 track → <strong>5 條 track</strong>；下界 density 仍是 4。</p>
+<div class="say">「方法：建 <strong>HCG</strong>（課本定義：邊=可同 track，clique=一條 track，最大 clique 3）、建 <strong>VCG</strong>（每欄上→下）。下界用 <strong>max local density = 4</strong>。A* 的 root 分支就是 HCG 的 maximal cliques、<code>f = g + h</code>（g=已用 track，h=剩餘 density），展開 f 最小的。<strong>關鍵：我發現 VCG 有 cycle 1⇄2</strong>（col11 跟 col13 順序相反）——這跟課本不一樣，課本 VCG 無環、也沒教 dogleg。所以老實說，純課本 A* 在這裡會卡住；要排完得對 net2 做 dogleg（一般 channel routing 技巧），最後 5 條 track。我會強調我有<strong>抓到這個 cycle</strong>，這就是這題被改的重點。」</div>
 </div>
 
 <!-- ============ Q4 ============ -->
 <div class="qcard">
 <h3>Q4 · 判斷對錯並解釋（15%）</h3>
-<p><strong>(a)</strong> 「If a problem is NP-complete, then there can never be a polynomial algorithm to solve it in worst cases.」　<span class="verdict v-wrong">正解：✗ 錯（你圈了 ○，扣分點）</span></p>
-<p>「永遠不可能有多項式解」是<strong>沒被證明</strong>的——這正是 P vs NP 未解問題。如果哪天 P=NP，NP-complete 問題就<strong>會</strong>有多項式解。所以「never」把一個未證明的事當成定論，是錯的。</p>
-<p><strong>(b)</strong> 「A is NP-complete. Since B is polynomially reducible to A, B must be NP-complete.」　<span class="verdict v-ok">正解：✗ 錯（你寫 ✗，對了）</span></p>
-<p>方向反了。<code>B ∝ A</code>（B reduce 到 A）只代表 <strong>B 不會比 A 難</strong>，B 甚至可能在 P 裡。要證 B 是 NPC，必須把<strong>已知的 NPC reduce 到 B</strong>（<code>A ∝ B</code>），再證 B ∈ NP。</p>
-<p><strong>(c)</strong> 「If the lower bound of an NP-complete problem is exponential, then NP ≠ P.」　<span class="verdict v-ok">正解：○ 對（你圈 ○，對了）</span></p>
-<p>指數下界 = 該 NPC 問題<strong>沒有</strong>多項式解 → 它不在 P。但 NPC 問題在 NP 裡，「某個 NPC ∉ P」就等於 P ≠ NP。</p>
+<p><strong>(a)</strong> 「If a problem is NP-complete, then there can never be a polynomial algorithm to solve it in worst cases.」　<span class="verdict v-wrong">正解：✗ 錯</span> <span class="tag">（考卷標 ○，但 ○ 是錯的）</span></p>
+<p><strong>根據：P vs NP 至今未證明。</strong>「永遠不可能有多項式解」是<u>沒被證明</u>的——若哪天 P=NP，NP-complete 問題就<strong>會</strong>有多項式解。所以「never」把一個未證明的事當成定論，是錯的。</p>
+<p><strong>(b)</strong> 「A is NP-complete. Since B is polynomially reducible to A, B must be NP-complete.」　<span class="verdict v-wrong">正解：✗ 錯</span></p>
+<p><strong>根據：NP-complete 的定義（reduction 方向）。</strong><code>B ∝ A</code>（B reduce 到 A）只代表 <strong>B 不會比 A 難</strong>，B 甚至可能在 P 裡。要證 B 是 NPC，必須把<strong>已知的 NPC reduce 到 B</strong>（<code>A ∝ B</code>），再證 B ∈ NP。方向剛好反了。</p>
+<p><strong>(c)</strong> 「If the lower bound of an NP-complete problem is exponential, then NP ≠ P.」　<span class="verdict v-ok">正解：○ 對</span></p>
+<p><strong>根據：P 的定義 + NPC ⊆ NP。</strong>指數下界 = 該 NPC 問題<u>沒有</u>多項式解 → 它不在 P。但 NPC 問題在 NP 裡，「某個 NPC ∉ P」就等於 P ≠ NP。</p>
 <div class="say">「(a) 是錯的——重點在『never』。我們<strong>沒有證明</strong> NPC 沒有多項式解，那就是 P vs NP，至今未解；若 P=NP 它就有多項式解。所以不能說『永遠不可能』。(b) 也是錯的，reduction <strong>方向</strong>要反過來：B reduce 到 A 只說 B 不比 A 難，要證 B 難必須把已知 NPC reduce 到 B。(c) 對：指數下界代表這個 NPC 不在 P，而它在 NP，所以 P≠NP。」</div>
 </div>
 
@@ -145,13 +164,29 @@ net5 = 單一終端(col10) → 沒有水平線、可略</pre>
   若存在某變數 x 使 x 與 ¬x 在同一個 SCC → 不可滿足
   否則 → 可滿足（照 SCC 的反拓樸序讀出真值）</pre>
 <p>因為線性可解 → 在 P → 不可能是 NP-complete（除非 P=NP）。對比：<strong>3SAT 才是 NP-complete</strong>，2→3 個 literal 就是難易的分界。</p>
-<div class="say">「Disprove。2SAT 在 <strong>P</strong> 裡——用 implication graph，每個 (x∨y) 變成 ¬x→y、¬y→x，跑 SCC，只要沒有變數 x 跟 ¬x 落在同一個 SCC 就可滿足，<strong>O(n+m) 線性</strong>。在 P 裡就不可能是 NPC。要小心的是 <strong>3SAT 才是 NPC</strong>，差一個 literal 難度就跳掉了。」</div>
+
+<div class="note"><strong>什麼是 implication graph（蘊含圖）？</strong><br>
+一個有向圖。每個變數 <code>x</code> 拆成<strong>兩個節點</strong>：<code>x</code>（真）和 <code>¬x</code>（假），所以 n 個變數 → 2n 個節點。<br>
+子句 <code>(a ∨ b)</code> 的意思是「至少一個為真」，等價於兩條<strong>蘊含</strong>：<em>若 a 假則 b 必真</em> → <code>¬a → b</code>；<em>若 b 假則 a 必真</em> → <code>¬b → a</code>。每個 2-子句畫這兩條有向邊。<br>
+<span class="tag">例：子句 (x1 ∨ ¬x2) → 邊 ¬x1→¬x2 和 x2→x1。</span></div>
+
+<div class="note"><strong>什麼是 SCC（strongly connected component，強連通分量）？</strong><br>
+有向圖裡的一群節點，<strong>任兩個之間都互相走得到</strong>（u 走得到 v、v 也走得到 u）的最大集合。可用 Tarjan / Kosaraju 在 <strong>O(n+m)</strong> 求出。<br>
+在 implication graph 裡，同一個 SCC 的節點「真值必須一致（同生同死）」。所以<strong>若 <code>x</code> 和 <code>¬x</code> 落在同一個 SCC → 矛盾（x 必須等於 ¬x）→ 不可滿足</strong>；只要每個變數的 x 與 ¬x 都在<u>不同</u> SCC，就可滿足，照 SCC 的反拓樸序指派真值即可。</div>
+
+<div class="say">「Disprove。2SAT 在 <strong>P</strong>。作法：建 <strong>implication graph</strong>——每個變數拆成 x 和 ¬x 兩個節點，每個子句 (a∨b) 變成兩條蘊含邊 ¬a→b、¬b→a。再求 <strong>SCC</strong>（強連通分量，O(n+m)）：只要沒有任何變數的 x 跟 ¬x 落在<u>同一個</u> SCC，就可滿足。整體 <strong>線性時間</strong>，所以在 P 裡、不可能是 NPC。對比 <strong>3SAT 才是 NPC</strong>，差一個 literal 難度就跳了。」</div>
 </div>
 
 <!-- ============ Q6 ============ -->
 <div class="qcard">
 <h3>Q6 · How to find the median of n numbers（10%）</h3>
-<p>這是 <strong>selection 問題</strong>（找第 k 小，median = 第 ⌈n/2⌉ 小）。<strong>median-of-medians（prune-and-search）→ 最壞 O(n)</strong>：</p>
+
+<div class="note"><strong>先回答你的疑問：「排序後取第 ⌈n/2⌉ 個」算不算對？</strong><br>
+<strong>算對。</strong>排序 → 取第 ⌈n/2⌉ 個（中間那個）<u>確實會得到正確的 median</u>，而且題目只問「how to find」、<strong>沒有限制複雜度</strong>，所以這是個合法答案，複雜度 <strong>O(n log n)</strong>。<br>
+但是——這題就是這門課的 <strong>selection 主題</strong>（你考卷旁邊也寫了「選擇問題」）。老師要的「滿分答案」八成是 <strong>O(n) 的 median-of-medians</strong>，考點就在「不用排序也能線性找到」。<br>
+<strong>面試保險講法：</strong>「最簡單是排序後取中間，O(n log n)；但更好、也是這章的重點，是用 <strong>selection / median-of-medians 做到最壞 O(n)</strong>」——先承認排序可行，再亮出線性解，兩邊都顧到。</div>
+
+<p><strong>selection 問題</strong>（找第 k 小，median = 第 ⌈n/2⌉ 小）。<strong>median-of-medians（prune-and-search）→ 最壞 O(n)</strong>：</p>
 <pre class="mx">1. 每 5 個一組 → 各組找中位數
 2. 對「這些中位數」遞迴找中位數 → 當 pivot
 3. 用 pivot 把資料 partition 成 < / >
